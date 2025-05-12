@@ -1,0 +1,1 @@
+The repository implement the menter platform uses .NET Core, React and Automation Test
