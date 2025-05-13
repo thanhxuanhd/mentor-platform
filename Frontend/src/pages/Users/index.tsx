@@ -1,5 +1,3 @@
-export default function Users() {
-  return (
-    <h1>User</h1>
-  );
+export default function UsersPage() {
+  return <h1>User</h1>;
 }

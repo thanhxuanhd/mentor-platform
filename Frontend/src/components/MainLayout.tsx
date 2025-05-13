@@ -45,7 +45,7 @@ const MainLayout = () => {
       <Sider
         breakpoint="lg"
         collapsedWidth="0"
-        className="border-r border-gray-700 h-screen sticky top-0 bottom-0"
+        className="border-r border-gray-700 min-h-screen sticky top-0 bottom-0 "
       >
         <div className="text-orange-500 text-center py-4 text-xl font-bold">
           Mentor Connect

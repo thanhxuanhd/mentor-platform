@@ -1,16 +1,20 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
-import Dashboard from "../pages/Dashboard";
+import DashboardPage from "../pages/Dashboard";
+import UsersPage from "../pages/Users";
+import CategoriesPage from "../pages/Categories";
+import CoursesPage from "../pages/Courses";
+import NotFoundPage from "../pages/NotFound";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="users" element={<div>Users</div>} />
-        <Route path="categories" element={<div>Categories</div>} />
-        <Route path="courses" element={<div>Courses</div>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="courses" element={<CoursesPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
