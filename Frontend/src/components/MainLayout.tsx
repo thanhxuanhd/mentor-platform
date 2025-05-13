@@ -10,17 +10,6 @@ import { Outlet, useNavigate } from "react-router-dom";
 
 const { Header, Sider, Content, Footer } = Layout;
 
-const siderStyle: React.CSSProperties = {
-  overflow: "auto",
-  height: "100vh",
-  position: "sticky",
-  insetInlineStart: 0,
-  top: 0,
-  bottom: 0,
-  scrollbarWidth: "thin",
-  scrollbarGutter: "stable",
-};
-
 const MainLayout = () => {
   const navigate = useNavigate();
 
@@ -56,16 +45,8 @@ const MainLayout = () => {
       <Sider
         breakpoint="lg"
         collapsedWidth="0"
-        onBreakpoint={(broken) => {
-          console.log(broken);
-        }}
-        onCollapse={(collapsed, type) => {
-          console.log(collapsed, type);
-        }}
-        style={siderStyle}
-        className="border-r border-gray-700"
+        className="border-r border-gray-700 h-screen sticky top-0 bottom-0"
       >
-        <div className="demo-logo-vertical" />
         <div className="text-orange-500 text-center py-4 text-xl font-bold">
           Mentor Connect
         </div>
