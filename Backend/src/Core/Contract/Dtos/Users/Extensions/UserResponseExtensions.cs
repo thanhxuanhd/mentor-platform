@@ -11,7 +11,7 @@ public static class UserResponseExtensions
         {
             Username = user.Username,
             Email = user.Email,
-            Role = user.Role.Name
+            Role = user.Role.Name.ToString()
         };
     }
 }

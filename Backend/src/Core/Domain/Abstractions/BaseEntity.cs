@@ -1,16 +1,6 @@
 ﻿namespace Domain.Abstractions;
 
-public abstract class BaseEntity
+public abstract class BaseEntity<TPrimaryKey> where TPrimaryKey : struct
 {
-    protected BaseEntity(uint id)
-    {
-        Id = id;
-    }
-
-    protected BaseEntity()
-    {
-
-    }
-
-    public uint Id { get; set; }
+    public TPrimaryKey Id { get; set; }
 }

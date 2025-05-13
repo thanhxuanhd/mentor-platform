@@ -1,6 +1,5 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -23,18 +22,5 @@ public class AuthController(IAuthService authService) : ControllerBase
         await authService.RegisterAsync(request);
 
         return Created();
-    }
-
-    [Authorize("Admin")]
-    [HttpGet("test")]
-    public Task<IActionResult> TestAdmin()
-    {
-        return Task.FromResult<IActionResult>(Ok());
-    }
-
-    [HttpGet("ex")]
-    public IActionResult Test()
-    {
-        throw new Exception("Test");
     }
 }

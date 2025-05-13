@@ -8,8 +8,8 @@ using Contract.Shared.Constants;
 
 namespace Infrastructure.Repositories.Base;
 
-public class BaseRepository<TEntity>(ApplicationDbContext context) : IBaseRepository<TEntity>
-    where TEntity : BaseEntity
+public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) : IBaseRepository<TEntity, TPrimaryKey>
+    where TEntity : BaseEntity<TPrimaryKey> where TPrimaryKey : struct
 {
     protected readonly ApplicationDbContext _context = context;
 
@@ -18,14 +18,14 @@ public class BaseRepository<TEntity>(ApplicationDbContext context) : IBaseReposi
         return _context.Set<TEntity>().AsQueryable();
     }
 
-    public virtual async Task<TEntity?> GetByIdAsync(uint id, Expression<Func<TEntity, object>>? includeExpressions = null)
+    public virtual async Task<TEntity?> GetByIdAsync(TPrimaryKey id, Expression<Func<TEntity, object>>? includeExpressions = null)
     {
         var template = _context.Set<TEntity>().AsQueryable();
         if (includeExpressions is not null)
         {
            template = template.Include(includeExpressions);
         }
-        var entity = await template.FirstOrDefaultAsync(e => e.Id == id);
+        var entity = await template.FirstOrDefaultAsync(e => e.Id.Equals(id));
 
         return entity;
     }

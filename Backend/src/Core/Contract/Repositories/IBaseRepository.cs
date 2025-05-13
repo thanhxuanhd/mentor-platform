@@ -5,10 +5,10 @@ using Contract.Shared.Constants;
 
 namespace Contract.Repositories;
 
-public interface IBaseRepository<TEntity> where TEntity : BaseEntity
+public interface IBaseRepository<TEntity, TPrimaryKey> where TEntity : BaseEntity<TPrimaryKey> where TPrimaryKey : struct
 {
     IQueryable<TEntity> GetAll();
-    Task<TEntity?> GetByIdAsync(uint id, Expression<Func<TEntity, object>>? includeExpressions = null);
+    Task<TEntity?> GetByIdAsync(TPrimaryKey id, Expression<Func<TEntity, object>>? includeExpressions = null);
     Task AddAsync(TEntity entity);
     void Update(TEntity entity);
     void Delete(TEntity entity);

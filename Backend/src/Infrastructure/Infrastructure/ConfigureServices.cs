@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Domain.Enums;
 
 namespace Infrastructure;
 
@@ -22,7 +23,7 @@ public static class ConfigureServices
         services.AddScoped<IJwtService, JwtService>();
 
         // Add repositories
-        services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+        services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
 
         // Add Persistence
@@ -56,9 +57,9 @@ public static class ConfigureServices
 
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("Admin", policy => policy.RequireRole("ADMIN"));
-            options.AddPolicy("Mentor", policy => policy.RequireRole("MENTOR"));
-            options.AddPolicy("Learner", policy => policy.RequireRole("LEARNER"));
+            options.AddPolicy("Admin", policy => policy.RequireRole(UserRole.Admin.ToString()));
+            options.AddPolicy("Mentor", policy => policy.RequireRole(UserRole.Mentor.ToString()));
+            options.AddPolicy("Learner", policy => policy.RequireRole(UserRole.Learner.ToString()));
         });
 
         return services;

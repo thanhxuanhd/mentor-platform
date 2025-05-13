@@ -1,9 +1,10 @@
 ﻿using Domain.Abstractions;
+using Domain.Enums;
 
 namespace Domain.Entities;
 
-public class Role : BaseEntity
+public class Role : BaseEntity<int>
 {
-    public string? Name { get; set; }
+    public UserRole Name { get; set; }
     public ICollection<User>? Users { get; set; }
 }

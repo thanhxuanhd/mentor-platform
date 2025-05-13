@@ -1,15 +1,14 @@
-﻿using System.Net;
-using Contract.Dtos.Users.Extensions;
+﻿using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
-using Domain.Entities;
+using System.Net;
 
 namespace Application.Services.Users;
 
 public class UserService(IUserRepository userRepository) : IUserService
 {
-    public async Task<Result<GetUserResponse>> GetUserByIdAsync(uint id)
+    public async Task<Result<GetUserResponse>> GetUserByIdAsync(Guid id)
     {
         var user = await userRepository.GetByIdAsync(id, user => user.Role);
         if (user == null)
@@ -21,14 +20,4 @@ public class UserService(IUserRepository userRepository) : IUserService
 
         return Result.Success(userResponse, HttpStatusCode.OK);
     }
-
-    // Demo pagination 
-    public async Task<Result<PaginatedList<User>>> GetList()
-    {
-        var userList = userRepository.GetAll();
-        var response = await userRepository.ToPaginatedListAsync(userList, 1 , 5);
-
-        return Result.Success(response, HttpStatusCode.OK);
-    }
-
 }

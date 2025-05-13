@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories;
 
-public class UserRepository(ApplicationDbContext context) : BaseRepository<User>(context), IUserRepository
+public class UserRepository(ApplicationDbContext context) : BaseRepository<User, Guid>(context), IUserRepository
 {
     public async Task<User?> GetUserByUsername(string username)
     {
