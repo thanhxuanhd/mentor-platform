@@ -2,18 +2,15 @@
 using Contract.Shared;
 using Domain.Abstractions;
 using Infrastructure.Persistence.Data;
-using Infrastructure.Persistence.Settings;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories.Base;
 
-public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context, IOptions<PaginationSetting> paginationOptions) : IBaseRepository<TEntity, TPrimaryKey>
+public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) : IBaseRepository<TEntity, TPrimaryKey>
     where TEntity : BaseEntity<TPrimaryKey> where TPrimaryKey : struct
 {
     protected readonly ApplicationDbContext _context = context;
-    private readonly PaginationSetting _paginationSetting = paginationOptions.Value;
 
     public IQueryable<TEntity> GetAll()
     {
@@ -53,10 +50,8 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context, 
     }
 
     public async Task<PaginatedList<TResponse>> ToPaginatedListAsync<TResponse>(IQueryable<TResponse> queryable,
-        int pageSize = 0, int pageIndex = 0)
+        int pageSize = 5, int pageIndex = 1)
     {
-        pageSize = pageSize > 0 ? pageSize : _paginationSetting.DefaultPageSize;
-        pageIndex = pageIndex > 0 ? pageIndex : _paginationSetting.DefaultPageIndex;
         var count = await queryable.CountAsync();
         var paginatedResponse = await queryable.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
 

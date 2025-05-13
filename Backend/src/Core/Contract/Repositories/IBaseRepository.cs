@@ -1,7 +1,6 @@
 ﻿using Domain.Abstractions;
 using System.Linq.Expressions;
 using Contract.Shared;
-using Contract.Shared.Constants;
 
 namespace Contract.Repositories;
 
@@ -15,7 +14,6 @@ public interface IBaseRepository<TEntity, TPrimaryKey> where TEntity : BaseEntit
     Task AddRangeAsync(List<TEntity> entities);
     Task<int> SaveChangesAsync();
     Task<List<TResponse>> ToListAsync<TResponse>(IQueryable<TResponse> queryable);
-
     Task<PaginatedList<TResponse>> ToPaginatedListAsync<TResponse>(IQueryable<TResponse> queryable,
-        int pageSize, int pageIndex);
+        int pageSize = 5, int pageIndex = 1);
 }

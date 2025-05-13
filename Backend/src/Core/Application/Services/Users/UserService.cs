@@ -21,10 +21,4 @@ public class UserService(IUserRepository userRepository) : IUserService
 
         return Result.Success(userResponse, HttpStatusCode.OK);
     }
-
-    public async Task<PaginatedList<User>> GetList()
-    {
-        var user = userRepository.GetAll();
-        return await userRepository.ToPaginatedListAsync<User>(user, 0, 0);
-    }
 }

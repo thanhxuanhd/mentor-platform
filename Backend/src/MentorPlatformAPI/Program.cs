@@ -1,5 +1,6 @@
 using Application;
 using Infrastructure;
+using Infrastructure.Persistence.Data;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
 
@@ -43,5 +44,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.SeedData();
 
 app.Run();

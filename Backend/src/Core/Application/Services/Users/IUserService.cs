@@ -7,5 +7,4 @@ namespace Application.Services.Users;
 public interface IUserService
 {
     Task<Result<GetUserResponse>> GetUserByIdAsync(Guid id);
-    Task<PaginatedList<User>> GetList();
 }

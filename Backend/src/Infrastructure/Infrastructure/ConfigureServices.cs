@@ -24,7 +24,6 @@ public static class ConfigureServices
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
-        services.Configure<PaginationSetting>(configuration.GetSection("PaginationSetting"));
 
         // Add repositories
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
