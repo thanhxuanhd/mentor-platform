@@ -2,9 +2,9 @@ name: CI_Automation_Test - Build and Run Test
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   pull_request:
-    branches: [master]
+    branches: [main]
 
 jobs:
   playwright-tests:
