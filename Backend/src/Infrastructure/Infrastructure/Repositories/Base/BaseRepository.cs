@@ -3,6 +3,8 @@ using Domain.Abstractions;
 using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Contract.Shared;
+using Contract.Shared.Constants;
 
 namespace Infrastructure.Repositories.Base;
 
@@ -48,6 +50,15 @@ public class BaseRepository<TEntity>(ApplicationDbContext context) : IBaseReposi
         return await queryable.ToListAsync();
     }
 
+    public async Task<PaginatedList<TResponse>> ToPaginatedListAsync<TResponse>(IQueryable<TResponse> queryable,
+        int pageSize = PaginationConstant.DefaultPageSize, int pageIndex = PaginationConstant.DefaultPageIndex)
+    {
+        var count = await queryable.CountAsync();
+        var paginatedResponse = await queryable.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return new PaginatedList<TResponse>(paginatedResponse, count, pageIndex, pageSize);
+    }
+ 
     public virtual void Update(TEntity entity)
     {
         _context.Set<TEntity>().Update(entity);

@@ -1,4 +1,5 @@
-﻿using Application.Helpers;
+﻿using System.Net;
+using Application.Helpers;
 using Contract.Dtos.Authentication.Requests;
 using Contract.Repositories;
 using Contract.Services;
@@ -14,18 +15,18 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
         var user = await userRepository.GetUserByUsername(request.Username);
         if (user == null)
         {
-            return Result.Failure<string>("Null user");
+            return Result.Failure<string>("Null user", HttpStatusCode.NotFound);
         }
 
         var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash);
         if (!isVerified)
         {
-            return Result.Failure<string>("Invalid password");
+            return Result.Failure<string>("Invalid password", HttpStatusCode.Unauthorized);
         }
 
         var token = jwtService.GenerateToken(user);
 
-        return Result.Success(token);
+        return Result.Success(token, HttpStatusCode.OK);
     }
 
     public async Task RegisterAsync(SignUpRequest request)

@@ -14,7 +14,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         var result = await authService.LoginAsync(request);
 
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+        return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPost("sign-up")]

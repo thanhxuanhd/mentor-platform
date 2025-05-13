@@ -15,7 +15,7 @@ public class UsersController(IUserService userService) : ControllerBase
     public async Task<IActionResult> GetUserById(uint id)
     {
         var result = await userService.GetUserByIdAsync(id);
-            
-        return result.IsSuccess ? Ok(result) : BadRequest(result);
+
+        return StatusCode((int)result.StatusCode, result);
     }
 }

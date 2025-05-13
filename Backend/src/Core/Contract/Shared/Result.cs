@@ -1,4 +1,6 @@
-﻿namespace Contract.Shared;
+﻿using System.Net;
+
+namespace Contract.Shared;
 
 /// <summary>
 /// Result class for return data 
@@ -12,12 +14,16 @@ public class Result
     /// </summary>
     /// <param name="isSuccess"></param>
     /// <param name="error"></param>
+    /// <param name="statusCode"></param>
     /// <exception cref="ArgumentException"></exception>
-    protected internal Result(bool isSuccess, string? error)
+    protected internal Result(bool isSuccess, string? error, HttpStatusCode statusCode)
     {
         IsSuccess = isSuccess;
         Error = error;
+        StatusCode = statusCode;
     }
+
+    public HttpStatusCode StatusCode { get; set; }
 
     /// <summary>
     /// Is result success flag
@@ -29,32 +35,34 @@ public class Result
     /// </summary>
     public string? Error { get; }
 
-    public static Result Success() => new(true, null);
+    public static Result Success(HttpStatusCode statusCode) => new(true, null, statusCode);
 
     /// <summary>
     /// Success result with value
     /// </summary>
     /// <typeparam name="TValue"></typeparam>
     /// <param name="value"></param>
+    /// <param name="statusCode"></param>
     /// <returns></returns>
-    public static Result<TValue> Success<TValue>(TValue value) => new(value, true, null);
+    public static Result<TValue> Success<TValue>(TValue value, HttpStatusCode statusCode) => new(value, true, null, statusCode);
 
     /// <summary>
     /// Failure result with error
     /// </summary>
     /// <param name="error"></param>
+    /// <param name="statusCode"></param>
     /// <returns></returns>
-    public static Result Failure(string error) => new(false, error);
+    public static Result Failure(string error, HttpStatusCode statusCode) => new(false, error, statusCode);
 
-    public static Result<TValue> Failure<TValue>(string? error) => new(default, false, error);
+    public static Result<TValue> Failure<TValue>(string? error, HttpStatusCode statusCode) => new(default, false, error, statusCode);
 }
 
 public class Result<TValue> : Result
 {
     private readonly TValue? _value;
 
-    protected internal Result(TValue? value, bool isSuccess, string? error)
-        : base(isSuccess, error)
+    protected internal Result(TValue? value, bool isSuccess, string? error, HttpStatusCode statusCode)
+        : base(isSuccess, error, statusCode)
     {
         _value = value;
     }
