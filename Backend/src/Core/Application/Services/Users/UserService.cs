@@ -3,6 +3,7 @@ using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using System.Net;
+using Domain.Entities;
 
 namespace Application.Services.Users;
 
@@ -19,5 +20,11 @@ public class UserService(IUserRepository userRepository) : IUserService
         var userResponse = user.ToGetUserResponse();
 
         return Result.Success(userResponse, HttpStatusCode.OK);
+    }
+
+    public async Task<PaginatedList<User>> GetList()
+    {
+        var user = userRepository.GetAll();
+        return await userRepository.ToPaginatedListAsync<User>(user, 0, 0);
     }
 }

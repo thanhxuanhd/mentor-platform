@@ -17,5 +17,5 @@ public interface IBaseRepository<TEntity, TPrimaryKey> where TEntity : BaseEntit
     Task<List<TResponse>> ToListAsync<TResponse>(IQueryable<TResponse> queryable);
 
     Task<PaginatedList<TResponse>> ToPaginatedListAsync<TResponse>(IQueryable<TResponse> queryable,
-        int pageSize = PaginationConstant.DefaultPageSize, int pageIndex = PaginationConstant.DefaultPageIndex);
+        int pageSize, int pageIndex);
 }

@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
@@ -44,16 +42,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                         column: x => x.RoleId,
                         principalTable: "Roles",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "Id", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Admin" },
-                    { 2, "Mentor" },
-                    { 3, "Learner" }
                 });
 
             migrationBuilder.CreateIndex(

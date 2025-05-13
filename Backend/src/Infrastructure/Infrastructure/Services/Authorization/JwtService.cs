@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Infrastructure.Services;
+namespace Infrastructure.Services.Authorization;
 
 public sealed class JwtService(IOptions<JwtSetting> jwtSetting) : IJwtService
 {

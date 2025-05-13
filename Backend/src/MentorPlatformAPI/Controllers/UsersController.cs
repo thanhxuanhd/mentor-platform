@@ -18,4 +18,12 @@ public class UsersController(IUserService userService) : ControllerBase
 
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Test()
+    {
+        var res = await userService.GetList();
+
+        return Ok(res);
+    }
 }
