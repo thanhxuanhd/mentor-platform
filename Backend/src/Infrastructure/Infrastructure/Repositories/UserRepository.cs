@@ -36,7 +36,7 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
 
         if (!request.RoleName.IsNullOrEmpty())
         {
-            query = query.Where(user => user.Role.Name.Equals(request.RoleName));
+            query = query.Where(user => user.Role.Name.ToString().Equals(request.RoleName));
         }
 
         if (!request.FullName.IsNullOrEmpty())
