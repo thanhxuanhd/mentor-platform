@@ -22,9 +22,13 @@ import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
 type SearchProps = GetProps<typeof Input.Search>;
 
-const myUsers: User[] = [];
-
 const { Search } = Input;
+
+const filterOptions = [
+  { label: "All", value: "all" },
+  { label: "Mentor", value: "mentor" },
+  { label: "Learner", value: "learner" },
+];
 
 export default function UsersPage() {
   const [usersData, setUsersData] = useState<PaginatedList<User>>({
@@ -146,11 +150,11 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     // Simulate an API call
     setUsersData({
-      items: myUsers,
-      totalCount: myUsers.length,
-      pageSize: 5,
-      pageIndex: 1,
-      totalPages: Math.ceil(myUsers.length / 5),
+      items: usersData.items,
+      totalCount: usersData.totalCount,
+      pageSize: usersData.pageSize,
+      pageIndex: usersData.pageIndex,
+      totalPages: usersData.totalPages,
     });
   };
 
