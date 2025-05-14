@@ -97,6 +97,27 @@ public class CategoryServiceTest
     }
 
     [Test]
+    [TestCase(0, 10)]
+    [TestCase(10, 0)]
+    [TestCase(-1, 10)]
+    [TestCase(10, -1)]
+    public async Task GetCategoriesAsync_InvalidPageIndexOrPageSize_ReturnsBadRequest(int pageIndex, int pageSize)
+    {
+        // Arrange
+        var keyword = string.Empty;
+
+        // Act
+        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Page index and page size must be greater than or equal to 0", result.Error);
+        _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Test]
     public async Task FilterCourseByCategoryAsync_CategoryNotFound_ReturnsNotFound()
     {
         // Arrange
@@ -152,5 +173,27 @@ public class CategoryServiceTest
         _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(categoryId), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex), Times.Once);
+    }
+
+    [Test]
+    [TestCase(0, 10)]
+    [TestCase(10, 0)]
+    [TestCase(-1, 10)]
+    [TestCase(10, -1)]
+    public async Task FilterCourseByCategoryAsync_InvalidPageIndexOrPageSize_ReturnsBadRequest(int pageIndex, int pageSize)
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        // Act
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Page index and page size must be greater than or equal to 0", result.Error);
+        _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 }
