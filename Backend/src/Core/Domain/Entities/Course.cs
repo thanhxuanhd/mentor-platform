@@ -1,13 +1,12 @@
 ﻿using Domain.Abstractions;
 using Domain.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
-    public class Course : BaseEntity<uint>
+    public class Course : BaseEntity<Guid>
     {
         public string Title { get; set; } = null!;
-        public uint? CategoryId { get; set; }
+        public Guid? CategoryId { get; set; }
         public CourseStatus Status { get; set; } = CourseStatus.Draft;
         public DateTime? DueDate { get; set; }
         public string? Description { get; set; }

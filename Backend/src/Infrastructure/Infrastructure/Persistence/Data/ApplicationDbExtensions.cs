@@ -26,11 +26,11 @@ public static class ApplicationDbExtensions
         if (!dbContext.Categories.Any())
         {
             dbContext.Categories.AddRange([
-                new Category { Name = "Leadership Coaching", Description = "Courses related to developing leadership skills and strategies", Status = true },
-                new Category { Name = "Communication Skills", Description = "Effective communication in professional settings", Status = true },
-                new Category { Name = "Public Speaking", Description = "Techniques to improve public speaking and presentation skills", Status = true },
-                new Category { Name = "Time Management", Description = "Strategies for better time management and productivity", Status = false },
-                new Category { Name = "Career Development", Description = "Resources for career advancement and job hunting", Status = false }
+                new Category { Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching", Description = "Courses related to developing leadership skills and strategies", Status = true },
+                new Category { Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills", Description = "Effective communication in professional settings", Status = true },
+                new Category { Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking", Description = "Techniques to improve public speaking and presentation skills", Status = true },
+                new Category { Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management", Description = "Strategies for better time management and productivity", Status = false },
+                new Category { Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development", Description = "Resources for career advancement and job hunting", Status = false }
             ]);
 
             dbContext.SaveChanges();
@@ -41,8 +41,9 @@ public static class ApplicationDbExtensions
             dbContext.Courses.AddRange([
                 new Course
                 {
+                    Id = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"),
                     Title = "Introduction to Leadership",
-                    CategoryId = 1,
+                    CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                     Status = CourseStatus.Published,
                     DueDate = DateTime.UtcNow.AddMonths(3),
                     Description = "Learn the principles of effective leadership.",
@@ -50,8 +51,9 @@ public static class ApplicationDbExtensions
                 },
                 new Course
                 {
+                    Id = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f"),
                     Title = "Advanced Communication Techniques",
-                    CategoryId = 2,
+                    CategoryId = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
                     Status = CourseStatus.Draft,
                     DueDate = DateTime.UtcNow.AddMonths(2),
                     Description = "Master advanced communication skills for the workplace.",
@@ -59,8 +61,9 @@ public static class ApplicationDbExtensions
                 },
                 new Course
                 {
+                    Id = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a"),
                     Title = "Public Speaking Mastery",
-                    CategoryId = 3,
+                    CategoryId = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
                     Status = CourseStatus.Published,
                     DueDate = DateTime.UtcNow.AddMonths(1),
                     Description = "Become a confident public speaker.",
@@ -68,8 +71,9 @@ public static class ApplicationDbExtensions
                 },
                 new Course
                 {
+                    Id = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
                     Title = "Time Management for Professionals",
-                    CategoryId = 4,
+                    CategoryId = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
                     Status = CourseStatus.Draft,
                     DueDate = DateTime.UtcNow.AddMonths(4),
                     Description = "Learn effective time management strategies.",
@@ -77,8 +81,9 @@ public static class ApplicationDbExtensions
                 },
                 new Course
                 {
+                    Id = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a"),
                     Title = "Effective Team Leadership",
-                    CategoryId = 1,
+                    CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                     Status = CourseStatus.Archived,
                     DueDate = DateTime.UtcNow.AddMonths(5),
                     Description = "Learn how to lead and manage teams effectively.",
@@ -89,6 +94,31 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        if (!dbContext.Tags.Any())
+        {
+            dbContext.Tags.AddRange([
+                new Tag { Id = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2"), Name = "Leadership" },
+                new Tag { Id = Guid.Parse("c13eafac-c4d5-445c-87f1-393c40f90d08"), Name = "Communication" },
+                new Tag { Id = Guid.Parse("4e21ccd5-5b36-4f2b-9472-d1ab4cf95ab6"), Name = "Public Speaking" },
+                new Tag { Id = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce"), Name = "Time Management" },
+                new Tag { Id = Guid.Parse("3a6c27f3-1518-4575-8790-54764c2851a7"), Name = "Career Development" }
+            ]);
+
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.CourseTags.Any())
+        {
+            dbContext.CourseTags.AddRange([
+                new CourseTag { CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"), TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2") },
+                new CourseTag { CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"), TagId = Guid.Parse("c13eafac-c4d5-445c-87f1-393c40f90d08") },
+                new CourseTag { CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f"), TagId = Guid.Parse("4e21ccd5-5b36-4f2b-9472-d1ab4cf95ab6") },
+                new CourseTag { CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a"), TagId = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce") },
+                new CourseTag { CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"), TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2") }
+            ]);
+
+            dbContext.SaveChanges();
+        }
         return app;
     }
 }

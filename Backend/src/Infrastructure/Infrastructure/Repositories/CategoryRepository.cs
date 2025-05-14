@@ -2,15 +2,21 @@
 using Domain.Entities;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories
+namespace Infrastructure.Repositories;
+
+public class CategoryRepository(ApplicationDbContext context) : BaseRepository<Category, Guid>(context), ICategoryRepository
 {
-    public class CategoryRepository(ApplicationDbContext context) : BaseRepository<Category, uint>(context), ICategoryRepository
+    public IQueryable<Course> FilterCourseByCategory(Guid id)
     {
+        var courses = _context.Courses
+            .Where(c => c.CategoryId == id)
+            .Include(c => c.Category)
+            .Include(c => c.CourseTags)
+            .ThenInclude(ct => ct.Tag)
+            .AsQueryable();
+
+        return courses;
     }
 }

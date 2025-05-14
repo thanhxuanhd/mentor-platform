@@ -1,24 +1,28 @@
 ﻿using Application.Services.Categories;
-using Application.Services.Users;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace MentorPlatformAPI.Controllers
+namespace MentorPlatformAPI.Controllers;
+
+[Authorize]
+[Route("api/[controller]")]
+[ApiController]
+public class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CategoriesController(ICategoryService categoryService) : ControllerBase
+    [HttpGet]
+    public async Task<IActionResult> GetCategories([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 5, [FromQuery] string keyword = "")
     {
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> GetCategories([FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 5, [FromQuery] string keyword = "")
-        {
-            keyword = string.IsNullOrEmpty(keyword) ? string.Empty : keyword.Trim();
+        keyword = string.IsNullOrEmpty(keyword) ? string.Empty : keyword.Trim();
 
-            var result = await categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
+        var result = await categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
 
-            return StatusCode((int)result.StatusCode, result);
-        }
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("{id}/courses")]
+    public async Task<IActionResult> FilterCourseByCategory(Guid id, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 5)
+    {
+        var result = await categoryService.FilterCourseByCategoryAsync(id, pageIndex, pageSize);
+        return StatusCode((int)result.StatusCode, result);
     }
 }
