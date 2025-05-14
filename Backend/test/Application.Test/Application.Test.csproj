@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Core\Application\Application.csproj" />
-    <ProjectReference Include="..\..\src\Core\Contract\Contract.csproj" />
   </ItemGroup>
 
   <ItemGroup>
