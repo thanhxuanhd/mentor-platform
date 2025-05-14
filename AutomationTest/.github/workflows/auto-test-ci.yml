@@ -1,0 +1,46 @@
+name: CI_Automation_Test - Build and Run Test
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+
+jobs:
+  playwright-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: AutomationTest
+
+      - name: Install Playwright Browsers and System Dependencies
+        run: npx playwright install --with-deps
+        working-directory: AutomationTest
+
+      - name: Run Playwright tests
+        run: npx playwright test --grep "@SmokeTest"
+        working-directory: AutomationTest
+
+      - name: Publish JUnit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: AutomationTest/test-results/*.xml
+
+      - name: Upload Playwright HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: AutomationTest/playwright-report
