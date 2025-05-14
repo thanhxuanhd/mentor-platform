@@ -23,4 +23,20 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return Created();
     }
+
+    [HttpPost("github")]
+    public async Task<IActionResult> SignInGithub([FromBody] string code)
+    {
+        var result = await authService.LoginGithubAsync(code);
+
+        return Ok(result);
+    }
+
+    [HttpPost("google")]
+    public async Task<IActionResult> SignInGoogle([FromBody] string code)
+    {
+        var result = await authService.LoginGoogleAsync(code);
+
+        return Ok(result);
+    }
 }

@@ -5,10 +5,11 @@ using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
+using Infrastructure.Services.Authorization;
 
 namespace Application.Services.Authentication;
 
-public class AuthService(IUserRepository userRepository, IJwtService jwtService) : IAuthService
+public class AuthService(IUserRepository userRepository, IJwtService jwtService, IOAuthServiceFactory oAuthServiceFactory) : IAuthService
 {
     public async Task<Result<string>> LoginAsync(SignInRequest request)
     {
@@ -42,5 +43,23 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
 
         await userRepository.AddAsync(user);
         await userRepository.SaveChangesAsync();
+    }
+
+    public async Task<object?> LoginGithubAsync(string code)
+    {
+        var oAuthService = oAuthServiceFactory.Create(OAuthProvider.GitHub);
+        var token = await oAuthService.GetAccessTokenAsync(code);
+        var response = await oAuthService.GetUserEmailDataAsync(token);
+
+        return response;
+    }
+
+    public async Task<object?> LoginGoogleAsync(string code)
+    {
+        var oAuthService = oAuthServiceFactory.Create(OAuthProvider.Google);
+        var token = await oAuthService.GetAccessTokenAsync(code);
+        var response = await oAuthService.GetUserEmailDataAsync(token);
+
+        return response;
     }
 }
