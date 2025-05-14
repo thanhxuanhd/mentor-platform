@@ -18,3 +18,9 @@
 body {
   margin: 0;
 }
+
+.ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
