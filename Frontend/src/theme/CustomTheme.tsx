@@ -19,9 +19,6 @@ export const CustomTheme = {
       colorText: "#fff",
       colorBgElevated: "#374151",
     },
-    Button: {
-      pointer: "cursor",
-    },
     Modal: {
       colorTextHeading: "#fff",
       colorText: "#fff",

@@ -19,6 +19,10 @@ body {
   margin: 0;
 }
 
+button {
+  cursor: pointer;
+}
+
 .ant-layout-sider-children {
   display: flex;
   flex-direction: column;
