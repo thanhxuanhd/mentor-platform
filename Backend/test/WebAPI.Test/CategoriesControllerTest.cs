@@ -40,19 +40,22 @@ public class CategoriesControllerTest
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _categoriesController.GetCategories();
-
+        var result = await _categoriesController.GetCategories();        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(objectResult.Value, Is.InstanceOf<Result<PaginatedList<GetCategoryResponse>>>());
-        var returnedValue = objectResult.Value as Result<PaginatedList<GetCategoryResponse>>;
-        Assert.That(returnedValue, Is.Not.Null);
-        Assert.That(returnedValue.IsSuccess, Is.True);
-        Assert.That(returnedValue.Value, Is.EqualTo(paginatedList));
-        _categoryServiceMock.Verify(s => s.GetCategoriesAsync(pageIndex, pageSize, keyword), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.InstanceOf<Result<PaginatedList<GetCategoryResponse>>>());
+            var returnedValue = objectResult.Value as Result<PaginatedList<GetCategoryResponse>>;
+            Assert.That(returnedValue, Is.Not.Null);
+            Assert.That(returnedValue.IsSuccess, Is.True);
+            Assert.That(returnedValue.Value, Is.EqualTo(paginatedList));
+            _categoryServiceMock.Verify(s => s.GetCategoriesAsync(pageIndex, pageSize, keyword), Times.Once);
+        });
     }
 
     [Test]
@@ -71,10 +74,13 @@ public class CategoriesControllerTest
             .ReturnsAsync(serviceResult);
 
         // Act
-        await _categoriesController.GetCategories(pageIndex, pageSize, keywordWithSpaces);
-
+        await _categoriesController.GetCategories(pageIndex, pageSize, keywordWithSpaces);        
+        
         // Assert
-        _categoryServiceMock.Verify(s => s.GetCategoriesAsync(pageIndex, pageSize, trimmedKeyword), Times.Once);
+        Assert.Multiple(() =>
+        {
+            _categoryServiceMock.Verify(s => s.GetCategoriesAsync(pageIndex, pageSize, trimmedKeyword), Times.Once);
+        });
     }
 
     [Test]
@@ -90,17 +96,20 @@ public class CategoriesControllerTest
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _categoriesController.FilterCourseByCategory(categoryId, pageIndex, pageSize);
-
+        var result = await _categoriesController.FilterCourseByCategory(categoryId, pageIndex, pageSize);        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-        var returnedValue = objectResult.Value as Result<PaginatedList<FilterCourseByCategoryResponse>>;
-        Assert.That(returnedValue, Is.Not.Null);
-        Assert.That(returnedValue.IsSuccess, Is.False);
-        Assert.That(returnedValue.Error, Is.EqualTo("Category not found"));
-        _categoryServiceMock.Verify(s => s.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            var returnedValue = objectResult.Value as Result<PaginatedList<FilterCourseByCategoryResponse>>;
+            Assert.That(returnedValue, Is.Not.Null);
+            Assert.That(returnedValue.IsSuccess, Is.False);
+            Assert.That(returnedValue.Error, Is.EqualTo("Category not found"));
+            _categoryServiceMock.Verify(s => s.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize), Times.Once);
+        });
     }
 }

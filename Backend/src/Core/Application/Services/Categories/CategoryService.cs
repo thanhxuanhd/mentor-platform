@@ -30,7 +30,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Status = c.Status
         }); 
 
-        PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync<GetCategoryResponse>(categoryInfos, pageSize, pageIndex);
+        PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync(categoryInfos, pageSize, pageIndex);
 
         return Result.Success(paginatedCategories, HttpStatusCode.OK);
     }
@@ -63,7 +63,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
         });
 
-        PaginatedList<FilterCourseByCategoryResponse> paginatedCourses = await categoryRepository.ToPaginatedListAsync<FilterCourseByCategoryResponse>(courseInfos, pageSize, pageIndex);
+        PaginatedList<FilterCourseByCategoryResponse> paginatedCourses = await categoryRepository.ToPaginatedListAsync(courseInfos, pageSize, pageIndex);
 
         return Result.Success(paginatedCourses, HttpStatusCode.OK);
     }
