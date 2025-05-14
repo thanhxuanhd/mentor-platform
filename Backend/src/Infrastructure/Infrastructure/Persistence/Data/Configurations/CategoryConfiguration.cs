@@ -21,6 +21,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
             .HasMaxLength(256);
 
         builder.Property(c => c.Status)
-            .HasDefaultValue(true);
+            .HasDefaultValue(true)
+            .HasConversion<string>();
     }
 }

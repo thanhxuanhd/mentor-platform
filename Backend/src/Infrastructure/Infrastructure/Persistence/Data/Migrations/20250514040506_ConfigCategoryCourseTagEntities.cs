@@ -12,22 +12,22 @@ namespace Infrastructure.Persistence.Data.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Category",
+                name: "Categories",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Status = table.Column<bool>(type: "bit", nullable: false, defaultValue: true)
+                    Status = table.Column<string>(type: "nvarchar(1)", nullable: false, defaultValue: "1")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Category", x => x.Id);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Tag",
+                name: "Tags",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -36,35 +36,35 @@ namespace Infrastructure.Persistence.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tag", x => x.Id);
+                    table.PrimaryKey("PK_Tags", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Course",
+                name: "Courses",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     CategoryId = table.Column<long>(type: "bigint", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
-                    Duration = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "Draft"),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Difficulty = table.Column<int>(type: "int", nullable: false, defaultValue: 0)
+                    Difficulty = table.Column<string>(type: "nvarchar(max)", nullable: false, defaultValue: "Beginner")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Course", x => x.Id);
+                    table.PrimaryKey("PK_Courses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Course_Category_CategoryId",
+                        name: "FK_Courses_Categories_CategoryId",
                         column: x => x.CategoryId,
-                        principalTable: "Category",
+                        principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
-                name: "CourseTag",
+                name: "CourseTags",
                 columns: table => new
                 {
                     CourseId = table.Column<long>(type: "bigint", nullable: false),
@@ -72,40 +72,40 @@ namespace Infrastructure.Persistence.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CourseTag", x => new { x.CourseId, x.TagId });
+                    table.PrimaryKey("PK_CourseTags", x => new { x.CourseId, x.TagId });
                     table.ForeignKey(
-                        name: "FK_CourseTag_Course_CourseId",
+                        name: "FK_CourseTags_Courses_CourseId",
                         column: x => x.CourseId,
-                        principalTable: "Course",
+                        principalTable: "Courses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CourseTag_Tag_TagId",
+                        name: "FK_CourseTags_Tags_TagId",
                         column: x => x.TagId,
-                        principalTable: "Tag",
+                        principalTable: "Tags",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Category_Name",
-                table: "Category",
+                name: "IX_Categories_Name",
+                table: "Categories",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Course_CategoryId",
-                table: "Course",
+                name: "IX_Courses_CategoryId",
+                table: "Courses",
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CourseTag_TagId",
-                table: "CourseTag",
+                name: "IX_CourseTags_TagId",
+                table: "CourseTags",
                 column: "TagId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tag_Name",
-                table: "Tag",
+                name: "IX_Tags_Name",
+                table: "Tags",
                 column: "Name",
                 unique: true);
         }
@@ -114,16 +114,16 @@ namespace Infrastructure.Persistence.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CourseTag");
+                name: "CourseTags");
 
             migrationBuilder.DropTable(
-                name: "Course");
+                name: "Courses");
 
             migrationBuilder.DropTable(
-                name: "Tag");
+                name: "Tags");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "Categories");
         }
     }
 }

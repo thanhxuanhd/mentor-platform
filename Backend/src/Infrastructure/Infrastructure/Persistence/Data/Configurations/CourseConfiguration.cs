@@ -19,12 +19,13 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .HasMaxLength(256);
 
         builder.Property(c => c.Status)
-            .HasDefaultValue(CourseStatus.Draft);
+            .HasDefaultValue(CourseStatus.Draft)
+            .HasConversion<string>();
 
         builder.Property(c => c.Difficulty)
-            .HasDefaultValue(CourseDifficulty.Beginner);
+            .HasDefaultValue(CourseDifficulty.Beginner)
+            .HasConversion<string>();
 
-        // Configure relationship with Category entity
         builder.HasOne(c => c.Category)
             .WithMany(cat => cat.Courses)
             .HasForeignKey(c => c.CategoryId)

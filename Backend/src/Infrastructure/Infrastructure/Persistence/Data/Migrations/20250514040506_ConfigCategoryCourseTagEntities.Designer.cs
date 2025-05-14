@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250513173059_ConfigCategoryCourseTagEntities")]
+    [Migration("20250514040506_ConfigCategoryCourseTagEntities")]
     partial class ConfigCategoryCourseTagEntities
     {
         /// <inheritdoc />
@@ -42,17 +42,18 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<bool>("Status")
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(true);
+                        .HasColumnType("nvarchar(1)")
+                        .HasDefaultValue("1");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Category");
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Domain.Entities.Course", b =>
@@ -70,18 +71,20 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("Difficulty")
+                    b.Property<string>("Difficulty")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Beginner");
 
-                    b.Property<DateTime?>("Duration")
+                    b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Draft");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -92,7 +95,7 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Course");
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("Domain.Entities.CourseTag", b =>
@@ -107,7 +110,7 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("CourseTag");
+                    b.ToTable("CourseTags");
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
@@ -146,7 +149,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Tag");
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>

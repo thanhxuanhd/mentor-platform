@@ -9,7 +9,7 @@ namespace Domain.Entities
         public string Title { get; set; } = null!;
         public uint? CategoryId { get; set; }
         public CourseStatus Status { get; set; } = CourseStatus.Draft;
-        public DateTime? Duration { get; set; }
+        public DateTime? DueDate { get; set; }
         public string? Description { get; set; }
         public CourseDifficulty Difficulty { get; set; } = CourseDifficulty.Beginner;
         public virtual Category? Category { get; set; }
