@@ -9,6 +9,11 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 {
     public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(int pageIndex, int pageSize, string keyword)
     {
+        if (pageIndex <= 0 || pageSize <= 0)
+        {
+            return Result.Failure<PaginatedList<GetCategoryResponse>>("Page index and page size must be greater than or equal to 0", HttpStatusCode.BadRequest);
+        }
+
         var categories = categoryRepository.GetAll();
 
         if (!string.IsNullOrEmpty(keyword))
@@ -32,6 +37,11 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task<Result<PaginatedList<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id, int pageIndex, int pageSize)
     {
+        if (pageIndex <= 0 || pageSize <= 0)
+        {
+            return Result.Failure<PaginatedList<FilterCourseByCategoryResponse>>("Page index and page size must be greater than or equal to 0", HttpStatusCode.BadRequest);
+        }
+
         var category = await categoryRepository.GetByIdAsync(id);
 
         if (category == null)
