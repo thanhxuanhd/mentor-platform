@@ -8,7 +8,7 @@ namespace Application.Services.Categories;
 
 public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
 {
-    public async Task<Result<GetCategoryResponse>> GetCategoriesAsync(int pageIndex, int pageSize, string keyword)
+    public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(int pageIndex, int pageSize, string keyword)
     {
         var categories = categoryRepository.GetAll();
 
@@ -17,28 +17,18 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             categories = categories.Where(c => c.Name.Contains(keyword));
         }
 
-        PaginatedList<Category> paginatedCategories = await categoryRepository.ToPaginatedListAsync<Category>(categories, pageSize, pageIndex);
-
-        List<CategoryInfo> categoryInfos = new List<CategoryInfo>();
-
-        foreach (var category in paginatedCategories.Items)
+        var categoryInfos = categories.Select(c => new GetCategoryResponse
         {
-            categoryInfos.Add(new CategoryInfo
-            {
-                Id = category.Id,
-                Name = category.Name,
-                Description = category.Description,
-                Courses = category.Courses.Count,
-                Status = category.Status
-            });
-        }
+            Id = c.Id,
+            Name = c.Name,
+            Description = c.Description,
+            Courses = c.Courses.Count,
+            Status = c.Status
+        }); 
 
-        var response = new GetCategoryResponse
-        {
-            Categories = categoryInfos
-        };
+        PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync<GetCategoryResponse>(categoryInfos, pageSize, pageIndex);
 
-        return Result.Success(response, HttpStatusCode.OK);
+        return Result.Success(paginatedCategories, HttpStatusCode.OK);
     }
 }
 

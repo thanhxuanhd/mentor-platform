@@ -9,11 +9,6 @@ namespace Contract.Dtos.Categories.Responses
 {
     public class GetCategoryResponse
     {
-        public List<CategoryInfo> Categories { get; set; } = new List<CategoryInfo>();
-    }
-
-    public class CategoryInfo
-    {
         public uint Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
