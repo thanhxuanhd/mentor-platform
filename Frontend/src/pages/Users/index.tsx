@@ -44,7 +44,7 @@ export default function UsersPage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User>({
-    id: 1,
+    id: "",
     name: "",
     email: "",
     role: "Admin",
