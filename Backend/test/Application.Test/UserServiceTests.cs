@@ -34,17 +34,20 @@ namespace Application.Test
                 .ReturnsAsync(user);
 
             // Act
-            var result = await _userService.GetUserByIdAsync(userId);
-
+            var result = await _userService.GetUserByIdAsync(userId);            
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Is.Not.Null);
-            Assert.That(result.Value?.Id, Is.EqualTo(userId));
-            Assert.That(result.Value?.FullName, Is.EqualTo("Test User"));
-            Assert.That(result.Value?.Role, Is.EqualTo(UserRole.Learner.ToString()));
-        }
-
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Is.Not.Null);
+                Assert.That(result.Value?.Id, Is.EqualTo(userId));
+                Assert.That(result.Value?.FullName, Is.EqualTo("Test User"));
+                Assert.That(result.Value?.Role, Is.EqualTo(UserRole.Learner.ToString()));
+            });
+        }        
+        
         [Test]
         public async Task GetUserByIdAsync_UserDoesNotExist_ReturnsNotFound()
         {
@@ -57,9 +60,12 @@ namespace Application.Test
             var result = await _userService.GetUserByIdAsync(userId);
 
             // Assert
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-            Assert.That(result.Error, Is.EqualTo("Null result"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(result.Error, Is.EqualTo("Null result"));
+            });
         }
 
         [Test]
@@ -77,14 +83,17 @@ namespace Application.Test
                 .ReturnsAsync(paginatedUsers);
 
             // Act
-            var result = await _userService.FilterUserAsync(request);
-
+            var result = await _userService.FilterUserAsync(request);            
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Is.Not.Null);
-            Assert.That(result.Value?.Items.Count, Is.EqualTo(users.Count));
-            Assert.That(result.Value?.TotalCount, Is.EqualTo(users.Count));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Is.Not.Null);
+                Assert.That(result.Value?.Items.Count, Is.EqualTo(users.Count));
+                Assert.That(result.Value?.TotalCount, Is.EqualTo(users.Count));
+            });
         }
         
         [Test]
@@ -99,14 +108,17 @@ namespace Application.Test
                 .ReturnsAsync(paginatedUsers);
         
             // Act
-            var result = await _userService.FilterUserAsync(request);
-        
+            var result = await _userService.FilterUserAsync(request);            
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Is.Not.Null);
-            Assert.That(result.Value?.Items.Count, Is.EqualTo(0));
-            Assert.That(result.Value?.TotalCount, Is.EqualTo(0));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Is.Not.Null);
+                Assert.That(result.Value?.Items.Count, Is.EqualTo(0));
+                Assert.That(result.Value?.TotalCount, Is.EqualTo(0));
+            });
         }
 
         [Test]
@@ -122,13 +134,16 @@ namespace Application.Test
 
             // Act
             var result = await _userService.EditUserAsync(userId, request);
-
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Is.True);
-            _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.FullName == request.FullName && u.Email == request.Email && u.RoleId == request.RoleId)), Times.Once);
-            _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Is.True);
+                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.FullName == request.FullName && u.Email == request.Email && u.RoleId == request.RoleId)), Times.Once);
+                _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            });
         }
 
         [Test]
@@ -141,11 +156,14 @@ namespace Application.Test
 
             // Act
             var result = await _userService.EditUserAsync(userId, request);
-
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-            Assert.That(result.Error, Is.EqualTo("Null result"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(result.Error, Is.EqualTo("Null result"));
+            });
         }
 
         [Test]
@@ -160,14 +178,17 @@ namespace Application.Test
 
             // Act
             var result = await _userService.ChangeUserStatusAsync(userId);
-
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Is.True);
-            Assert.That(user.Status, Is.EqualTo(UserStatus.Deactivated));
-            _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.Status == UserStatus.Deactivated)), Times.Once);
-            _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Is.True);
+                Assert.That(user.Status, Is.EqualTo(UserStatus.Deactivated));
+                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.Status == UserStatus.Deactivated)), Times.Once);
+                _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            });
         }
 
         [Test]
@@ -181,15 +202,18 @@ namespace Application.Test
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 
             // Act
-            var result = await _userService.ChangeUserStatusAsync(userId);
-
+            var result = await _userService.ChangeUserStatusAsync(userId);            
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Is.True);
-            Assert.That(user.Status, Is.EqualTo(UserStatus.Active));
-            _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.Status == UserStatus.Active)), Times.Once);
-            _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Is.True);
+                Assert.That(user.Status, Is.EqualTo(UserStatus.Active));
+                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.Status == UserStatus.Active)), Times.Once);
+                _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            });
         }
 
         [Test]
@@ -200,12 +224,15 @@ namespace Application.Test
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
 
             // Act
-            var result = await _userService.ChangeUserStatusAsync(userId);
-
+            var result = await _userService.ChangeUserStatusAsync(userId);            
+            
             // Assert
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-            Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
+            });
         }
     }
 }
