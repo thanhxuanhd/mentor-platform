@@ -1,42 +1,45 @@
-import { Layout, Menu } from "antd";
+import { Button, Layout, Menu, Tooltip } from "antd";
 import {
   UserOutlined,
   AppstoreOutlined,
   BarChartOutlined,
   BookOutlined,
+  SettingFilled,
+  LogoutOutlined,
 } from "@ant-design/icons";
 
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const MainLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     {
       key: "dashboard",
       icon: <BarChartOutlined />,
       label: "Dashboard",
-      onClick: () => navigate("/"),
+      onClick: () => navigate("dashboard"),
     },
     {
       key: "users",
       icon: <UserOutlined />,
       label: "Users",
-      onClick: () => navigate("/users"),
+      onClick: () => navigate("users"),
     },
     {
       key: "categories",
       icon: <AppstoreOutlined />,
       label: "Categories",
-      onClick: () => navigate("/categories"),
+      onClick: () => navigate("categories"),
     },
     {
       key: "courses",
       icon: <BookOutlined />,
       label: "Courses",
-      onClick: () => navigate("/courses"),
+      onClick: () => navigate("courses"),
     },
   ];
 
@@ -45,23 +48,45 @@ const MainLayout = () => {
       <Sider
         breakpoint="lg"
         collapsedWidth="0"
-        className="border-r border-gray-700 min-h-screen sticky top-0 bottom-0 "
+        style={{
+          position: "sticky",
+        }}
+        className="border-r border-gray-700 h-screen top-0"
       >
-        <div className="text-orange-500 text-center py-4 text-xl font-bold">
-          Mentor Connect
+        <div>
+          <div className="text-orange-500 text-center py-4 text-xl font-bold border-b border-gray-700">
+            Mentor Connect
+          </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            items={menuItems}
+            selectedKeys={[location.pathname.substring(1)]}
+          />
         </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          defaultSelectedKeys={["dashboard"]}
-          items={menuItems}
-        />
+
+        <div className="flex justify-evenly border-t border-gray-700 py-4">
+          <Tooltip title="Settings">
+            <Button icon={<SettingFilled />} />
+          </Tooltip>
+
+          <Button
+            title="Logout"
+            icon={<LogoutOutlined />}
+            onClick={() => {
+              // Handle logout logic here
+              navigate("/login");
+            }}
+          >
+            Logout
+          </Button>
+        </div>
       </Sider>
 
       <Layout>
-        <Header className="border-b border-gray-700"></Header>
+        <Header className="border-b border-gray-700 top-0"></Header>
 
-        <Content className="p-4 bg-gray-900">
+        <Content className="flex-1 overflow-y-auto p-6 bg-gray-900">
           <Outlet />
         </Content>
 
