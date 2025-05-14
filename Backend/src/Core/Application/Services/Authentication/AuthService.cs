@@ -34,7 +34,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
         var passwordHash = PasswordHelper.HashPassword(request.Password);
         var user = new User
         {
-            Username = request.Username,
+            FullName = request.FullName,
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId
