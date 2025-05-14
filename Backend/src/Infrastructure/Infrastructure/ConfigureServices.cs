@@ -12,7 +12,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Domain.Enums;
 using Infrastructure.Services.Authorization;
-using Application.Services.Categories;
 
 namespace Infrastructure;
 
@@ -29,9 +28,8 @@ public static class ConfigureServices
         // Add repositories
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
-
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-
+      
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
