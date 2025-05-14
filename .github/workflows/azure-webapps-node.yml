@@ -32,7 +32,7 @@ permissions:
 
 defaults:
   run:
-    working-directory:  ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    working-directory: 'Frontend'
 
 jobs:
   build:
