@@ -30,6 +30,10 @@ env:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory:  ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
