@@ -1,6 +1,4 @@
-﻿using System.Net;
-using Application.Services.Categories;
-using Contract.Shared;
+﻿using Application.Services.Categories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,8 +23,6 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     public async Task<IActionResult> FilterCourseByCategory(Guid id, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 5)
     {
         var result = await categoryService.FilterCourseByCategoryAsync(id, pageIndex, pageSize);
-
-
 
         return StatusCode((int)result.StatusCode, result);
     }

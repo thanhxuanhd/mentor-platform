@@ -46,15 +46,18 @@ public class CategoryServiceTest
             .ReturnsAsync(paginatedList);
 
         // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, string.Empty);
-
+        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, string.Empty);        
+        
         // Assert
-        Assert.IsTrue(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
-        Assert.IsNotNull(result.Value);
-        Assert.AreEqual(2, result.Value.Items.Count);
-        _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
-        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value.Items.Count, Is.EqualTo(2));
+            _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
+            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex), Times.Once);
+        });
     }
 
     [Test]
@@ -84,16 +87,19 @@ public class CategoryServiceTest
             .ReturnsAsync(paginatedList);
 
         // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
-
+        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);        
+        
         // Assert
-        Assert.IsTrue(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
-        Assert.IsNotNull(result.Value);
-        Assert.AreEqual(1, result.Value.Items.Count);
-        Assert.AreEqual("Category 1", result.Value.Items.First().Name);
-        _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
-        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value.Items.Count, Is.EqualTo(1));
+            Assert.That(result.Value.Items.First().Name, Is.EqualTo("Category 1"));
+            _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
+            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex), Times.Once);
+        });
     }
 
     [Test]
@@ -107,14 +113,17 @@ public class CategoryServiceTest
         var keyword = string.Empty;
 
         // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
-
+        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);        
+        
         // Assert
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
-        Assert.AreEqual("Page index and page size must be greater than or equal to 0", result.Error);
-        _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
-        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
+            _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
+            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        });
     }
 
     [Test]
@@ -127,13 +136,16 @@ public class CategoryServiceTest
         _categoryRepositoryMock.Setup(repo => repo.GetByIdAsync(categoryId, null)).ReturnsAsync(default(Category));
 
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
-
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
+        
         // Assert
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
-        Assert.AreEqual("Category not found", result.Error);
-        _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            Assert.That(result.Error, Is.EqualTo("Category not found"));
+            _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
+        });
     }
 
     [Test]
@@ -163,16 +175,19 @@ public class CategoryServiceTest
             .ReturnsAsync(paginatedList);
         
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
-
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
+        
         // Assert
-        Assert.IsTrue(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
-        Assert.IsNotNull(result.Value);
-        Assert.AreEqual(2, result.Value.Items.Count);
-        _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
-        _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(categoryId), Times.Once);
-        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value.Items.Count, Is.EqualTo(2));
+            _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
+            _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(categoryId), Times.Once);
+            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex), Times.Once);
+        });
     }
 
     [Test]
@@ -186,14 +201,17 @@ public class CategoryServiceTest
         var categoryId = Guid.NewGuid();
 
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
-
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
+        
         // Assert
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
-        Assert.AreEqual("Page index and page size must be greater than or equal to 0", result.Error);
-        _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
-        _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
-        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
+            _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
+            _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
+            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        });
     }
 }
