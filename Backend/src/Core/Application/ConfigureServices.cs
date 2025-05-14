@@ -1,4 +1,5 @@
 ﻿using Application.Services.Authentication;
+using Application.Services.Categories;
 using Application.Services.Users;
 using Contract.Dtos.Users.Requests;
 using FluentValidation;
@@ -14,6 +15,7 @@ public static class ConfigureServices
         // Add Application
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ICategoryService, CategoryService>();
 
         return services;
     }

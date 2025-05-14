@@ -1,0 +1,17 @@
+﻿using Domain.Abstractions;
+using Domain.Enums;
+
+namespace Domain.Entities
+{
+    public class Course : BaseEntity<Guid>
+    {
+        public string Title { get; set; } = null!;
+        public Guid? CategoryId { get; set; }
+        public CourseStatus Status { get; set; } = CourseStatus.Draft;
+        public DateTime? DueDate { get; set; }
+        public string? Description { get; set; }
+        public CourseDifficulty Difficulty { get; set; } = CourseDifficulty.Beginner;
+        public virtual Category? Category { get; set; }
+        public virtual ICollection<CourseTag>? CourseTags { get; set; }
+    }
+}
