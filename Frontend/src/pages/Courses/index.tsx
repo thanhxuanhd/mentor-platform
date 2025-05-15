@@ -1,46 +1,59 @@
-import React, {Suspense, useState} from "react";
-import { SearchBar, type SearchBarOptions } from "./searchBar.tsx";
-import { Pagination } from "antd";
+import React, { useEffect, useState } from "react";
 
-import { CourseStatesEnumMember, initialFormData } from "./initial-values.tsx";
+import {
+  CourseStatesEnumMember,
+  initialFormData,
+  mockCategories,
+} from "./initial-values.tsx";
 import type { Category, Course, CourseFormDataOptions } from "./types.tsx";
-import { CourseDetail } from "./courseDetail.tsx";
 import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
-import { CourseTable } from "./courseTable.tsx";
-import { CourseForm } from "./courseForm.tsx";
+import { CourseTable } from "./CourseTable.tsx";
+import { CourseForm } from "./CourseForm.tsx";
 
+import { CourseResource } from "./CourseResource.tsx";
 import * as CourseClient from "./courseClient.tsx";
-import { CourseResource } from "./courseResource.tsx";
+import {CourseDetail} from "./CourseDetail.tsx";
+import {SearchBar} from "./SearchBar.tsx";
 
 const Page: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [states] = useState<Record<string, string>>(CourseStatesEnumMember);
-
-  const [searchBarOptions, setSearchBarOptions] = useState<
-    SearchBarOptions | undefined
-  >();
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [keyword, setKeyword] = useState<string | undefined>();
+  const [state, setState] = useState<string | undefined>();
+  const [categoryId, setCategoryId] = useState<string | undefined>();
+  const [mentorId, setMentorId] = useState<string | undefined>();
 
+  const [popoverTarget, setPopoverTarget] = useState<string | undefined>();
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [states] = useState<Record<string, string>>(CourseStatesEnumMember);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
 
-  const [popoverTarget, setPopoverTarget] = useState<string | undefined>();
-
   const fetchCourses = async () => {
+    setLoading(true);
 
     const response = await CourseClient.list({
       pageIndex,
       pageSize,
-      keyword: searchBarOptions?.keyword,
-      state: searchBarOptions?.state,
-      categoryId: searchBarOptions?.categoryId,
+      keyword: keyword,
+      state: state,
+      categoryId: categoryId,
     });
 
-    return response;
+    setCourses(response.data);
+    setCategories(mockCategories);
+    setTotalCount(response.total);
+    setLoading(false);
   };
+
+  useEffect(() => {
+    fetchCourses();
+  }, [pageIndex, pageSize, keyword, state, categoryId, mentorId]);
 
   return (
     <>
@@ -66,59 +79,58 @@ const Page: React.FC = () => {
               <SearchBar
                 categories={categories}
                 states={states}
-                onChange={async (options) => {
-                  setSearchBarOptions(options);
-                  await fetchCourses();
+                onChange={(options) => {
+                  setKeyword(options.keyword);
+                  setState(options.state);
+                  setCategoryId(options.categoryId);
+                  setMentorId(options.mentorId);
                 }}
               />
 
-              <Suspense fallback={<div>Loading...</div>}>
-                <CourseTable
-                  coursesPromise={fetchCourses()}
-                  states={states}
-                  onResourceView={(course) => {
-                    setItem(course);
-                    setPopoverTarget(CoursePopoverTarget.resource);
-                  }}
-                  onView={(course) => {
-                    setItem(course);
-                    setPopoverTarget(CoursePopoverTarget.detail);
-                  }}
-                  onDelete={(course) => {
-                    // TODO: handle within CourseTable
-                    setItem(course);
-                    setPopoverTarget(CoursePopoverTarget.remove);
-                  }}
-                  onEdit={(course) => {
-                    setItem(course);
-                    setFormData({
-                      categoryId: course.categoryId,
-                      description: course.description,
-                      difficulty: course.difficulty,
-                      dueDate: course.dueDate,
-                      status: course.status,
-                      tags: course.tags,
-                      title: course.title,
-                    });
-                    setPopoverTarget(CoursePopoverTarget.edit);
-                  }}
-              /></Suspense>
-
-              <div className="flex justify-center items-center mt-6">
-                <Pagination
-                  current={pageIndex}
-                  pageSize={pageSize}
-                  total={totalCount}
-                  showTotal={(total, range) =>
-                    `${range[0]}-${range[1]} of ${total} items`
-                  }
-                  onChange={async (page, pageSize) => {
-                    setPageIndex(page);
-                    setPageSize(pageSize);
-                    await fetchCourses();
-                  }}
-                />
-              </div>
+              <CourseTable
+                courses={courses}
+                states={states}
+                tableProps={{
+                  loading: loading,
+                  pagination: {
+                    pageSize: pageSize,
+                    total: totalCount,
+                    position: ["bottomRight"],
+                    showTotal: (total, range) =>
+                      `${range[0]}-${range[1]} of ${total} items`,
+                    onChange: async (pageNumber, pageSize) => {
+                      setPageIndex(pageNumber - 1);
+                      setPageSize(pageSize);
+                    },
+                  },
+                }}
+                onResourceView={(course) => {
+                  setItem(course);
+                  setPopoverTarget(CoursePopoverTarget.resource);
+                }}
+                onView={(course) => {
+                  setItem(course);
+                  setPopoverTarget(CoursePopoverTarget.detail);
+                }}
+                onDelete={(course) => {
+                  // TODO: handle within CourseTable
+                  setItem(course);
+                  setPopoverTarget(CoursePopoverTarget.remove);
+                }}
+                onEdit={(course) => {
+                  setItem(course);
+                  setFormData({
+                    categoryId: course.categoryId,
+                    description: course.description,
+                    difficulty: course.difficulty,
+                    dueDate: course.dueDate,
+                    status: course.status,
+                    tags: course.tags,
+                    title: course.title,
+                  });
+                  setPopoverTarget(CoursePopoverTarget.edit);
+                }}
+              />
 
               <CourseForm
                 formData={formData}

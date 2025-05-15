@@ -1,5 +1,6 @@
 import type { Course } from "./types.tsx";
 import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
+import type { FC } from "react";
 
 export type CourseDetailProp = {
   course?: Course;
@@ -8,12 +9,12 @@ export type CourseDetailProp = {
   onClose: (targetAction?: string | undefined) => void;
 };
 
-export const CourseDetail = ({
+export const CourseDetail: FC<CourseDetailProp> = ({
   course,
   states,
   active,
   onClose,
-}: CourseDetailProp) => {
+}) => {
   const close = () => {
     onClose();
   };

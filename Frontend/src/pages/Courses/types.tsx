@@ -1,7 +1,3 @@
-
-
-
-
 export type Category = {
   id: string;
   name: string;
@@ -23,6 +19,7 @@ export type Course = {
   tags: string[];
   materials: CourseMaterial[];
   mentorId: string;
+  mentorName?: string;
   feedback: Feedback[];
 };
 

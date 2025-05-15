@@ -1,14 +1,14 @@
-import React from "react";
+import { type FC } from "react";
 import type { Course, CourseMaterial } from "./types.tsx";
 
-export type CourseResourceProp = {
-  course: Course;
+export type CourseResourceProps = {
+  course?: Course;
   onDownload: (material: CourseMaterial) => void;
   active: boolean;
   onClose: (targetAction?: string | undefined) => void;
 };
 
-export const CourseResource: React.FC<CourseResourceProp> = ({
+export const CourseResource: FC<CourseResourceProps> = ({
   course,
   onDownload,
   active,
