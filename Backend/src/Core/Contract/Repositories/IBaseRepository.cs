@@ -8,7 +8,6 @@ public interface IBaseRepository<TEntity, TPrimaryKey> where TEntity : BaseEntit
 {
     IQueryable<TEntity> GetAll();
     Task<TEntity?> GetByIdAsync(TPrimaryKey id, Expression<Func<TEntity, object>>? includeExpressions = null);
-    Task<TEntity?> GetByEmailAsync(string email, Expression<Func<TEntity, object>>? includeExpressions = null);
     Task AddAsync(TEntity entity);
     void Update(TEntity entity);
     void Delete(TEntity entity);
