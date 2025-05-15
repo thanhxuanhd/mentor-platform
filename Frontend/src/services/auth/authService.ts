@@ -1,4 +1,4 @@
-import {axiosClient} from '../apiClient';
+import { axiosClient } from '../apiClient';
 import type { LoginReq, SignUpReq, ResetPasswordReq } from '../../models';
 
 interface AuthResponse {
@@ -9,10 +9,13 @@ interface AuthResponse {
 export const authService = {
   login: async (loginData: LoginReq): Promise<AuthResponse> => {
     try {
-      const response = await axiosClient.post<AuthResponse>('/Auth/sign-in', loginData);
+      const response = await axiosClient.post<AuthResponse>(
+        '/Auth/sign-in',
+        loginData
+      );
       localStorage.setItem('token', response.data.value);
       localStorage.setItem('refreshToken', response.data.refreshToken);
-      
+
       return response.data;
     } catch (error) {
       console.error('Login failed:', error);
@@ -21,11 +24,15 @@ export const authService = {
   },
   signUp: async (signUpData: SignUpReq): Promise<AuthResponse> => {
     try {
-      const response = await axiosClient.post<AuthResponse>('/Auth/sign-up', signUpData);
-      
+      const response = await axiosClient.post<AuthResponse>(
+        '/Auth/sign-up',
+        signUpData
+      );
+
+      // Store tokens in localStorage
       localStorage.setItem('token', response.data.value);
       localStorage.setItem('refreshToken', response.data.refreshToken);
-      
+
       return response.data;
     } catch (error) {
       console.error('Sign up failed:', error);
@@ -45,14 +52,30 @@ export const authService = {
     localStorage.removeItem('refreshToken');
     window.location.href = '/login';
   },
-   
+
   isAuthenticated: (): boolean => {
     return !!localStorage.getItem('token');
   },
 
   getToken: (): string | null => {
     return localStorage.getItem('token');
-  }
+  },
+
+  loginWithOAuth: async (
+    token: string,
+    provider: string
+  ): Promise<AuthResponse> => {
+    try {
+      const response = await axiosClient.post(`/Auth/${provider}`, {
+        token: token,
+      });
+      localStorage.setItem('token', response.data.value);
+      return response.data;
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  },
 };
 
 export default authService;

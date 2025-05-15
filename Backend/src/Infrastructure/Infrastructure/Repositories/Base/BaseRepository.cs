@@ -16,7 +16,6 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
     {
         return _context.Set<TEntity>().AsQueryable();
     }
-
     public virtual async Task<TEntity?> GetByIdAsync(TPrimaryKey id, Expression<Func<TEntity, object>>? includeExpressions = null)
     {
         var template = _context.Set<TEntity>().AsQueryable();
@@ -28,17 +27,7 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
 
         return entity;
     }
-
-    public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> expression)
-    {
-        IQueryable<TEntity> query = _context.Set<TEntity>();
-        if (expression != null)
-        {
-            query = query.Where(expression);
-        }
-        return await query.FirstOrDefaultAsync();
-    }
-
+    
     public virtual async Task AddAsync(TEntity entity)
     {
         await _context.Set<TEntity>().AddAsync(entity);

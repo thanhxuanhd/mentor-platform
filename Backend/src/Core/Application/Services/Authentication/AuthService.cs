@@ -5,10 +5,12 @@ using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
+using Domain.Enums;
+using Infrastructure.Services.Authorization;
 
 namespace Application.Services.Authentication;
 
-public class AuthService(IUserRepository userRepository, IJwtService jwtService) : IAuthService
+public class AuthService(IUserRepository userRepository, IJwtService jwtService, IOAuthServiceFactory oAuthServiceFactory) : IAuthService
 {
     public async Task<Result<string>> LoginAsync(SignInRequest request)
     {
@@ -18,7 +20,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
             return Result.Failure<string>("Null user", HttpStatusCode.NotFound);
         }
 
-        var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash);
+        var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash!);
         if (!isVerified)
         {
             return Result.Failure<string>("Invalid password", HttpStatusCode.Unauthorized);
@@ -38,7 +40,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
         var passwordHash = PasswordHelper.HashPassword(request.Password);
         var user = new User
         {
-            Username = "",
+            FullName = "",
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId
@@ -46,6 +48,26 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
 
         await userRepository.AddAsync(user);
         await userRepository.SaveChangesAsync();
+    }
+
+    public async Task<Result> LoginGithubAsync(OAuthSignInRequest request)
+    {
+        var oAuthService = oAuthServiceFactory.Create(OAuthProvider.GitHub);
+        var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
+        var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
+        var token = await LoginOrRegisterAsync(userEmail!);
+
+        return Result.Success(token, HttpStatusCode.OK);
+    }
+
+    public async Task<Result> LoginGoogleAsync(OAuthSignInRequest request)
+    {
+        var oAuthService = oAuthServiceFactory.Create(OAuthProvider.Google);
+        var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
+        var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
+        var token = await LoginOrRegisterAsync(userEmail!);
+
+        return Result.Success(token, HttpStatusCode.OK);
     }
 
     public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
@@ -71,4 +93,23 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
         bool exists = user is not null;
         return Result.Success(exists, HttpStatusCode.OK);
     }
+    private async Task<string> LoginOrRegisterAsync(string email)
+    {
+        var user = await userRepository.GetUserByEmail(email);
+        if (user == null)
+        {
+            user = new User
+            {
+                FullName = "",
+                Email = email,
+                RoleId = (int)UserRole.Learner
+            };
+            await userRepository.AddAsync(user);
+            await userRepository.SaveChangesAsync();
+        }
+        user = await userRepository.GetUserByEmail(email);
+
+        return jwtService.GenerateToken(user!);
+    }
+
 }

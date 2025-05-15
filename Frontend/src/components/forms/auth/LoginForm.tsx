@@ -1,10 +1,18 @@
-"use client"
-import { GoogleOutlined, GithubOutlined, LinkedinOutlined, EyeOutlined, EyeInvisibleOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons"
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import type { LoginReq } from "../../../models"
-import authService from "../../../services/auth/authService"
+"use client";
+import {
+  GoogleOutlined,
+  GithubOutlined,
+  LinkedinOutlined,
+  EyeOutlined,
+  EyeInvisibleOutlined,
+  CheckCircleOutlined,
+} from "@ant-design/icons";
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import type { LoginReq } from "../../../models";
+import authService from "../../../services/auth/authService";
+import { redirectOAuthHandler } from "./oAuth";
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("")
@@ -26,6 +34,9 @@ const LoginForm: React.FC = () => {
   const validateEmail = (email: string) => {
     return /\S+@\S+\.\S+/.test(email)
   }
+  const handleGoogleLogin = () => redirectOAuthHandler("google");
+
+  const handleGithubLogin = () => redirectOAuthHandler("github");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,8 +90,8 @@ const LoginForm: React.FC = () => {
   }
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword)
-  }
+    setShowPassword(!showPassword);
+  };
 
   return (
     <>
@@ -88,6 +99,8 @@ const LoginForm: React.FC = () => {
         <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm">
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
+            <p className="font-bold">Success!</p>
+            <p>You have successfully logged in.</p>
             <p className="font-bold">Sign in successfully!</p>
           </div>
         </div>
@@ -113,6 +126,7 @@ const LoginForm: React.FC = () => {
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">Email</label>
           <input
             id="email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
@@ -169,14 +183,21 @@ const LoginForm: React.FC = () => {
         <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-300">or continue with</p>
           <div className="mt-3 flex justify-center gap-4">
-            <button type="button" className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-              <GoogleOutlined /> Google
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              onClick={handleGoogleLogin}
+            >
+              <GoogleOutlined />
+              Google
             </button>
-            <button type="button" className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-              <GithubOutlined /> GitHub
-            </button>
-            <button type="button" className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-              <LinkedinOutlined /> LinkedIn
+            <button
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              onClick={handleGithubLogin}
+            >
+              <GithubOutlined />
+              GitHub
             </button>
           </div>
         </div>

@@ -20,14 +20,14 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
 
     public virtual async Task<User?> GetByEmailAsync(string email, Expression<Func<User, object>>? includeExpressions = null)
     {
-        var template = _context.Set<User>().AsQueryable();
+        var user = _context.Users.AsQueryable();
 
         if (includeExpressions is not null)
         {
-            template = template.Include(includeExpressions);
+            user = user.Include(includeExpressions);
         }
 
-        return await template.FirstOrDefaultAsync(e => EF.Property<string>(e, "Email") == email);
+        return await user.FirstOrDefaultAsync(e => e.Email == email);
     }
 
 }
