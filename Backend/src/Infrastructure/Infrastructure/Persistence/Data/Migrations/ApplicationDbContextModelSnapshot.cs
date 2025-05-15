@@ -88,6 +88,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                 {
                     b.Navigation("Users");
                 });
+
 #pragma warning restore 612, 618
         }
     }

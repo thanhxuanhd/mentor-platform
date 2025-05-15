@@ -4,5 +4,5 @@ namespace Contract.Repositories;
 
 public interface IUserRepository : IBaseRepository<User, Guid>
 {
-    Task<User?> GetUserByUsername(string requestUsername);
+    Task<User?> GetUserByEmail(string requestUsername);
 }

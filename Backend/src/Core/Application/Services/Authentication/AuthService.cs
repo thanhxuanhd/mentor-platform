@@ -12,7 +12,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
 {
     public async Task<Result<string>> LoginAsync(SignInRequest request)
     {
-        var user = await userRepository.GetUserByUsername(request.Username);
+        var user = await userRepository.GetUserByEmail(request.Email);
         if (user == null)
         {
             return Result.Failure<string>("Null user", HttpStatusCode.NotFound);
@@ -31,10 +31,14 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
 
     public async Task RegisterAsync(SignUpRequest request)
     {
+        if (request.Password != request.ConfirmPassword)
+        {
+            throw new ArgumentException("Password and confirm password do not match.");
+        }
         var passwordHash = PasswordHelper.HashPassword(request.Password);
         var user = new User
         {
-            Username = request.Username,
+            Username = "",
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId
@@ -43,4 +47,29 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
         await userRepository.AddAsync(user);
         await userRepository.SaveChangesAsync();
     }
+
+    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await userRepository.GetUserByEmail(request.Email);
+        if (user == null)
+        {
+            return Result.Failure("User not found", HttpStatusCode.NotFound);
+        }
+
+        var newHashedPassword = PasswordHelper.HashPassword(request.NewPassword);
+        user.PasswordHash = newHashedPassword;
+
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
+        return Result.Success("Password reset successful", HttpStatusCode.OK);
+    }
+
+    public async Task<Result<bool>> CheckEmailExistsAsync(string email)
+    {
+        var user = await userRepository.GetUserByEmail(email);
+        bool exists = user is not null;
+        return Result.Success(exists, HttpStatusCode.OK);
+    }
+
 }

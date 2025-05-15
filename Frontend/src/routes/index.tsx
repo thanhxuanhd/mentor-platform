@@ -5,11 +5,23 @@ import UsersPage from "../pages/Users";
 import CategoriesPage from "../pages/Categories";
 import CoursesPage from "../pages/Courses";
 import NotFoundPage from "../pages/NotFound";
+import {Login, SignUp} from "../pages/Auth";
+import ResetPassword from "../pages/Auth/ResetPassword";
+//import { AuthRequired } from "../components/AuthRequired"
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route element={<MainLayout />}>
+      <Route path="login" element={<Login />} />
+      <Route path="signup" element={<SignUp />} />
+      <Route path="reset-password" element={<ResetPassword />} />
+      <Route
+        element={
+          // <AuthRequired>
+            <MainLayout />
+          // </AuthRequired>
+        }
+      >
         <Route path="/" element={<DashboardPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />

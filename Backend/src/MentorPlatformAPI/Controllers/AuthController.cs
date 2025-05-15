@@ -1,5 +1,6 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
+using Contract.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -22,5 +23,21 @@ public class AuthController(IAuthService authService) : ControllerBase
         await authService.RegisterAsync(request);
 
         return Created();
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await authService.ResetPasswordAsync(request);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("check-email")]
+    public async Task<IActionResult> CheckEmailExists([FromQuery] string email)
+    {
+        var result = await authService.CheckEmailExistsAsync(email);
+
+        return StatusCode((int)result.StatusCode, result);
     }
 }
