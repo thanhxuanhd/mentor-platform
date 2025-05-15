@@ -1,119 +1,130 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using System.Net;
+using Contract.Dtos.Courses.Requests;
+using Contract.Dtos.Courses.Responses;
+using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
-using Domain.Abstractions;
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Services.Courses;
 
-public class Course : BaseEntity<Guid>
+public class CourseService(ICourseRepository courseRepository) : ICourseService
 {
-    public required string Title { get; set; }
-    public required string Description { get; set; }
+    public async Task<Result<CourseListResponse>> GetAllAsync(CourseListRequest request)
+    {
+        if (request.PageIndex <= 0 || request.PageSize <= 0)
+            return Result.Failure<CourseListResponse>("Page index and page size must be greater than 0",
+                HttpStatusCode.BadRequest);
 
-    public Guid CategoryId { get; set; }
-    // public Category Category { get; set; } = null!;
+        var courses = await courseRepository.GetPaginatedCoursesAsync(
+            request.PageIndex,
+            request.PageSize,
+            request.CategoryId,
+            request.MentorId
+        );
 
-    public Guid MentorId { get; set; }
-    // public User Mentor { get; set; }
+        var items = courses.Items.Select(c => new CourseSummary
+        {
+            Id = c.Id,
+            Title = c.Title,
+            Description = c.Description,
+            CategoryId = c.CategoryId,
+            CategoryName = c.Category?.Name,
+            Difficulty = c.Difficulty,
+            DueDate = c.DueDate,
+            Status = c.Status
+        }).ToList();
 
-    public List<CourseItem> Items { get; set; }
-}
+        var response = new CourseListResponse(items, courses.TotalCount, courses.PageIndex, courses.PageSize);
 
-public class CourseItem : BaseEntity<Guid>
-{
-    public required string Title { get; set; }
-    public required string Description { get; set; }
-    public CourseMediaType MediaType { get; set; }
-    public string WebAddress { get; set; }
+        return Result.Success(response, HttpStatusCode.OK);
+    }
 
-    public Guid CourseId { get; set; }
-    public Course Course { get; set; } = null!;
-}
+    public async Task<Result<CourseSummary>> GetByIdAsync(Guid id)
+    {
+        var course = await courseRepository.GetCourseWithDetailsAsync(id);
+        if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
-[JsonConverter(typeof(JsonStringEnumConverter<CourseStates>))]
-public enum CourseStates
-{
-    Draft = 0,
-    Published = 1,
-    Archived = 2
-}
+        var response = new CourseSummary
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            CategoryId = course.CategoryId,
+            CategoryName = course.Category?.Name,
+            Difficulty = course.Difficulty,
+            DueDate = course.DueDate,
+            Status = course.Status
+        };
 
-[JsonConverter(typeof(JsonStringEnumConverter<CourseMediaType>))]
-public enum CourseMediaType
-{
-    Pdf = 0,
-    Video = 1,
-    ExternalLink = 2,
-}
+        return Result.Success(response, HttpStatusCode.OK);
+    }
 
-[JsonConverter(typeof(JsonStringEnumConverter<CourseDifficulty>))]
-public enum CourseDifficulty
-{
-    Beginner = 0,
-    Intermediate = 1,
-    Advanced = 2,
-}
+    public async Task<Result<CourseSummary>> CreateAsync(CourseCreateRequest request)
+    {
+        var course = new Course
+        {
+            Title = request.Title,
+            Description = request.Description,
+            CategoryId = request.CategoryId,
+            DueDate = request.DueDate,
+            Status = CourseStatus.Draft,
+            Difficulty = request.Difficulty
+        };
 
-public record DeleteCourseResponse
-{
-    public Guid Id { get; set; }
-}
+        await courseRepository.AddAsync(course);
+        await courseRepository.SaveChangesAsync();
 
-public record CourseCreateRequest
-{
-    [Length(1, 256)] public required string Title { get; init; }
-    [Length(1, 256)] public required string Description { get; init; }
-    [Length(1, 256)] public required string CategoryId { get; init; }
-    public required DateTime DueDate { get; init; }
-    public required List<string> Tags { get; init; }
-}
+        var response = new CourseSummary
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            CategoryId = course.CategoryId,
+            Difficulty = course.Difficulty,
+            DueDate = course.DueDate,
+            Status = course.Status
+        };
 
-public record CourseCreateResponse
-{
-}
+        return Result.Success(response, HttpStatusCode.Created);
+    }
 
-public record CourseUpdateRequest
-{
-    [Length(1, 256)] public required string Title { get; init; }
-    [Length(1, 256)] public required string Description { get; init; }
-    [Length(1, 256)] public required string CategoryId { get; init; }
-    public required DateTime DueDate { get; init; }
-    public required List<string> Tags { get; init; }
-}
+    public async Task<Result<CourseSummary>> UpdateAsync(Guid id, CourseUpdateRequest request)
+    {
+        var course = await courseRepository.GetByIdAsync(id);
+        if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
-public record CourseUpdateResponse
-{
-}
+        course.Title = request.Title;
+        course.Description = request.Description;
+        course.CategoryId = request.CategoryId;
+        course.DueDate = request.DueDate;
+        course.Difficulty = request.Difficulty;
 
-public record CourseListRequest
-{
-    public int PageIndex { get; init; }
-    public int PageSize { get; init; }
-    public Guid CategoryId { get; init; }
-    public Guid MentorId { get; init; }
-    public CourseDifficulty Level { get; init; }
-}
+        await courseRepository.SaveChangesAsync();
 
-public record CourseListResponse : PaginatedList<CourseSummary>
-{
-}
+        var response = new CourseSummary
+        {
+            Id = course.Id,
+            Title = course.Title,
+            Description = course.Description,
+            CategoryId = course.CategoryId,
+            Difficulty = course.Difficulty,
+            DueDate = course.DueDate,
+            Status = course.Status
+        };
 
-// public record PaginationRequest
-// {
-//     [DefaultValue(10)] public int PageIndex { get; init; }
-//     [DefaultValue(0)] public int PageSize { get; init; }
-// }
+        return Result.Success(response, HttpStatusCode.OK);
+    }
 
-public interface ICourseService
-{
-    public Task<CourseListResponse> GetAllAsync(CourseListRequest request);
-    public Task<CourseCreateResponse> CreateAsync(CourseCreateRequest request);
-    public Task<CourseUpdateResponse> UpdateAsync(CourseUpdateRequest request);
-    public Task DeleteAsync(Guid id);
-}
+    public async Task<Result> DeleteAsync(Guid id)
+    {
+        var course = await courseRepository.GetByIdAsync(id);
+        if (course == null) return Result.Failure("Course not found", HttpStatusCode.NotFound);
 
-public class CourseService : ICourseService
-{
+        courseRepository.Delete(course);
+        await courseRepository.SaveChangesAsync();
+
+        return Result.Success(HttpStatusCode.NoContent);
+    }
 }
