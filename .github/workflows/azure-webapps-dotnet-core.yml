@@ -60,13 +60,13 @@ jobs:
         run: dotnet build MentorPlatform.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish MentorPlatform.sln -c Release -o ${{ env.DOTNET_ROOT }}/mentor-platform
+        run: dotnet publish MentorPlatform.sln -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ env.DOTNET_ROOT }}/mentor-platform
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
 
   deploy:
     permissions:
