@@ -1,4 +1,5 @@
 using Application.Services.Categories;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
@@ -74,14 +75,14 @@ public class CategoryServiceTest
         }.AsQueryable();
 
         var filteredCategoriesQuery = categories.Where(c => c.Name.Contains(keyword));
-        
+
         var paginatedList = new PaginatedList<GetCategoryResponse>(
             filteredCategoriesQuery.Select(c => new GetCategoryResponse { Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status }).ToList(),
             filteredCategoriesQuery.Count(),
             pageIndex,
             pageSize
         );
-        
+
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex))
             .ReturnsAsync(paginatedList);
@@ -173,7 +174,7 @@ public class CategoryServiceTest
         _categoryRepositoryMock.Setup(repo => repo.FilterCourseByCategory(categoryId)).Returns(coursesForCategory);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex))
             .ReturnsAsync(paginatedList);
-        
+
         // Act
         var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
         
@@ -214,4 +215,232 @@ public class CategoryServiceTest
             _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         });
     }
+
+    [Test]
+    public async Task CreateCategoryAsync_WhenCategoryNameExists_ReturnsFailure()
+    {
+        // Arrange
+        var request = new CategoryRequest
+        {
+            Name = "Existing Category",
+            Description = "Some description",
+            Status = true
+        };
+
+        _categoryRepositoryMock.Setup(repo => repo.ExistByNameAsync(request.Name))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _categoryService.CreateCategoryAsync(request);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Already have this category", result.Error);
+
+        _categoryRepositoryMock.Verify(repo => repo.ExistByNameAsync(request.Name), Times.Once);
+        _categoryRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Category>()), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task CreateCategoryAsync_WhenCategoryNameIsUnique_ReturnsSuccess()
+    {
+        // Arrange
+        var request = new CategoryRequest
+        {
+            Name = "New Category",
+            Description = "Description",
+            Status = true
+        };
+
+        _categoryRepositoryMock.Setup(repo => repo.ExistByNameAsync(request.Name))
+            .ReturnsAsync(false);
+
+        _categoryRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<Category>()))
+            .Returns(Task.CompletedTask);
+
+        _categoryRepositoryMock.Setup(repo => repo.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _categoryService.CreateCategoryAsync(request);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+        Assert.NotNull(result.Value);
+        Assert.AreEqual(request.Name, result.Value.Name);
+        Assert.AreEqual(request.Description, result.Value.Description);
+        Assert.AreEqual(request.Status, result.Value.Status);
+        Assert.AreEqual(0, result.Value.Courses);
+
+        _categoryRepositoryMock.Verify(repo => repo.ExistByNameAsync(request.Name), Times.Once);
+        _categoryRepositoryMock.Verify(repo => repo.AddAsync(It.Is<Category>(c =>
+            c.Name == request.Name &&
+            c.Description == request.Description &&
+            c.Status == request.Status
+        )), Times.Once);
+        _categoryRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task EditCategoryAsync_WhenNameAlreadyExists_ReturnsBadRequest()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var request = new CategoryRequest
+        {
+            Name = "Existing Name",
+            Description = "Updated Desc",
+            Status = true
+        };
+
+        _categoryRepositoryMock.Setup(r => r.ExistByNameAsync(request.Name))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _categoryService.EditCategoryAsync(categoryId, request);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Already have this category", result.Error);
+
+        _categoryRepositoryMock.Verify(r => r.ExistByNameAsync(request.Name), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
+        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task EditCategoryAsync_WhenCategoryNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var request = new CategoryRequest
+        {
+            Name = "Unique Name",
+            Description = "Updated Desc",
+            Status = true
+        };
+
+        _categoryRepositoryMock.Setup(r => r.ExistByNameAsync(request.Name))
+            .ReturnsAsync(false);
+
+        _categoryRepositoryMock.Setup(r => r.GetByIdAsync(categoryId, null))
+            .ReturnsAsync((Category)null);
+
+        // Act
+        var result = await _categoryService.EditCategoryAsync(categoryId, request);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.AreEqual("Categories is not found or is deleted", result.Error);
+
+        _categoryRepositoryMock.Verify(r => r.ExistByNameAsync(request.Name), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
+        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task EditCategoryAsync_WhenValidRequest_UpdatesCategoryAndReturnsSuccess()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var request = new CategoryRequest
+        {
+            Name = "New Name",
+            Description = "New Desc",
+            Status = false
+        };
+
+        var existingCategory = new Category
+        {
+            Id = categoryId,
+            Name = "Old Name",
+            Description = "Old Desc",
+            Status = true
+        };
+
+        _categoryRepositoryMock.Setup(r => r.ExistByNameAsync(request.Name))
+            .ReturnsAsync(false);
+
+        _categoryRepositoryMock.Setup(r => r.GetByIdAsync(categoryId, null))
+            .ReturnsAsync(existingCategory);
+
+        _categoryRepositoryMock.Setup(r => r.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _categoryService.EditCategoryAsync(categoryId, request);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        Assert.IsTrue(result.Value);
+
+        Assert.AreEqual(request.Name, existingCategory.Name);
+        Assert.AreEqual(request.Description, existingCategory.Description);
+        Assert.AreEqual(request.Status, existingCategory.Status);
+
+        _categoryRepositoryMock.Verify(r => r.Update(existingCategory), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task ChangeCategoryStatusAsync_WhenCategoryNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+
+        _categoryRepositoryMock.Setup(r => r.GetByIdAsync(categoryId, null))
+            .ReturnsAsync((Category)null);
+
+        // Act
+        var result = await _categoryService.ChangeCategoryStatusAsync(categoryId);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.AreEqual("Categories is not found or is deleted", result.Error);
+
+        _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
+        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Test]
+    public async Task ChangeCategoryStatusAsync_WhenCategoryExists_TogglesStatusAndReturnsSuccess()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var existingCategory = new Category
+        {
+            Id = categoryId,
+            Name = "Test",
+            Description = "Desc",
+            Status = true
+        };
+
+        _categoryRepositoryMock.Setup(r => r.GetByIdAsync(categoryId, null))
+            .ReturnsAsync(existingCategory);
+
+        _categoryRepositoryMock.Setup(r => r.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _categoryService.ChangeCategoryStatusAsync(categoryId);
+
+        // Assert
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        Assert.IsTrue(result.Value);
+        Assert.IsFalse(existingCategory.Status);
+
+        _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.Update(existingCategory), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
 }

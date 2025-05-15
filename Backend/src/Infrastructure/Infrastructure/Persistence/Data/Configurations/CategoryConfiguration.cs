@@ -12,7 +12,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
 
         builder.Property(c => c.Name)
             .IsRequired()
-            .HasMaxLength(256);
+            .HasMaxLength(50);
 
         builder.HasIndex(c => c.Name)
             .IsUnique();

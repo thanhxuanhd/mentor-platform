@@ -9,9 +9,13 @@ public static class UserResponseExtensions
     {
         return new GetUserResponse
         {
-            Username = user.Username,
+            Id = user.Id,
+            FullName = user.FullName,
             Email = user.Email,
-            Role = user.Role.Name.ToString()
+            RoleId = user.RoleId,
+            Status = user.Status,
+            JoinedDate = user.JoinedDate,
+            LastActive = user.LastActive
         };
     }
 }
