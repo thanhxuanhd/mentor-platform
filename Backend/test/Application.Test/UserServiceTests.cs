@@ -29,7 +29,7 @@ namespace Application.Test
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User { Id = userId, FullName = "Test User", Email = "test@example.com", Role = new Role { Id = 1, Name = UserRole.Learner } }; 
+            var user = new User { Id = userId, FullName = "Test User", Email = "test@example.com", Role = new Role { Id = 1, Name = UserRole.Admin }, RoleId = 1 };
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, It.IsAny<Expression<Func<User, object>>>()))
                 .ReturnsAsync(user);
 
@@ -42,7 +42,7 @@ namespace Application.Test
             Assert.That(result.Value, Is.Not.Null);
             Assert.That(result.Value?.Id, Is.EqualTo(userId));
             Assert.That(result.Value?.FullName, Is.EqualTo("Test User"));
-            Assert.That(result.Value?.Role, Is.EqualTo(UserRole.Learner.ToString()));
+            Assert.That(result.Value?.RoleId, Is.EqualTo((int)UserRole.Admin));
         }
 
         [Test]
@@ -51,7 +51,7 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, It.IsAny<Expression<Func<User, object>>>()))
-                .ReturnsAsync((User?)null); 
+                .ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.GetUserByIdAsync(userId);
@@ -59,7 +59,7 @@ namespace Application.Test
             // Assert
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-            Assert.That(result.Error, Is.EqualTo("Null result"));
+            Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace Application.Test
             Assert.That(result.Value?.Items.Count, Is.EqualTo(users.Count));
             Assert.That(result.Value?.TotalCount, Is.EqualTo(users.Count));
         }
-        
+
         [Test]
         public async Task FilterUserAsync_NoUsersFound_ReturnsEmptyList()
         {
@@ -94,13 +94,13 @@ namespace Application.Test
             var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 10 };
             var emptyUsersList = new List<User>();
             var paginatedUsers = new PaginatedList<User>(emptyUsersList, 0, request.PageIndex, request.PageSize);
-        
+
             _mockUserRepository.Setup(repo => repo.FilterUser(request))
                 .ReturnsAsync(paginatedUsers);
-        
+
             // Act
             var result = await _userService.FilterUserAsync(request);
-        
+
             // Assert
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -116,7 +116,7 @@ namespace Application.Test
             var userId = Guid.NewGuid();
             var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", RoleId = 1 };
             var user = new User { Id = userId, FullName = "Old Name", Email = "old@example.com", RoleId = 2 };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 
@@ -137,7 +137,7 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", RoleId = 1 };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.EditUserAsync(userId, request);
@@ -145,7 +145,7 @@ namespace Application.Test
             // Assert
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-            Assert.That(result.Error, Is.EqualTo("Null result"));
+            Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
         }
 
         [Test]
@@ -154,7 +154,7 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             var user = new User { Id = userId, Status = UserStatus.Active };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 
@@ -176,7 +176,7 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             var user = new User { Id = userId, Status = UserStatus.Deactivated };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 

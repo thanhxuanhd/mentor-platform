@@ -28,7 +28,7 @@ public class UsersControllerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var userResponse = new GetUserResponse { Id = userId, FullName = "Test User", Email = "test@example.com", Role = "Learner" };
+        var userResponse = new GetUserResponse { Id = userId, FullName = "Test User", Email = "test@example.com", RoleId = 3 };
         var serviceResult = Result.Success(userResponse, HttpStatusCode.OK);
 
         _userServiceMock.Setup(s => s.GetUserByIdAsync(userId))
@@ -75,8 +75,8 @@ public class UsersControllerTests
         var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 5, FullName = "Test" };
         var userResponses = new List<GetUserResponse>
         {
-            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 1", Email = "test1@example.com", Role = "Learner" },
-            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 2", Email = "test2@example.com", Role = "Admin" }
+            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 1", Email = "test1@example.com", RoleId = 3 },
+            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 2", Email = "test2@example.com", RoleId = 1 }
         };
         var paginatedList = new PaginatedList<GetUserResponse>(userResponses, userResponses.Count, request.PageIndex, request.PageSize);
         var serviceResult = Result.Success(paginatedList, HttpStatusCode.OK);

@@ -1,6 +1,5 @@
-﻿using System.Net;
-using Application.Services.Categories;
-using Contract.Shared;
+﻿using Application.Services.Categories;
+using Contract.Dtos.Categories.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,6 +27,29 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
 
 
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateCategory([FromBody] CategoryRequest request)
+    {
+        var result = await categoryService.CreateCategoryAsync(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut]
+    [Route("{categoryId}")]
+    public async Task<IActionResult> EditCategory(Guid categoryId, [FromBody] CategoryRequest request)
+    {
+        var result = await categoryService.EditCategoryAsync(categoryId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut]
+    [Route("status/{categoryId}")]
+    public async Task<IActionResult> ChangeCategoryStatus(Guid categoryId)
+    {
+        var result = await categoryService.ChangeCategoryStatusAsync(categoryId);
         return StatusCode((int)result.StatusCode, result);
     }
 }

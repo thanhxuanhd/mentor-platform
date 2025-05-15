@@ -2,8 +2,8 @@
 {
     public enum CourseDifficulty
     {
-        Beginner,
-        Intermediate,
-        Advanced
+        Beginner = 0,
+        Intermediate = 1,
+        Advanced = 2
     }
 }

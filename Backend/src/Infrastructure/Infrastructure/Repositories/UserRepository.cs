@@ -53,4 +53,10 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
 
         return new PaginatedList<User>(items, totalItems, request.PageIndex = 1, request.PageSize = 5);
     }
+
+    public Task<bool> ExistByEmailExcludeAsync(Guid id, string email)
+    {
+        return _context.Users
+            .AnyAsync(u => u.Email == email && u.Id != id);
+    }
 }
