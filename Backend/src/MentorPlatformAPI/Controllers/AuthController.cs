@@ -43,16 +43,4 @@ public class AuthController(IAuthService authService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [HttpPost("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
-    {
-        var (newToken, newRefreshToken, role, userId) = await authService.RefreshTokenAsync(request.RefreshToken);
-
-        var response = new GeneralResponse
-        {
-            Message = "Token refreshed successfully",
-            Data = new { newToken, newRefreshToken, role, userId }
-        };
-        return Ok(response);
-    }
 }

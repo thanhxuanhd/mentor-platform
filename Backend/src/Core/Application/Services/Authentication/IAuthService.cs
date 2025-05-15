@@ -9,5 +9,4 @@ public interface IAuthService
     Task RegisterAsync(SignUpRequest request);
     Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
     Task<Result<bool>> CheckEmailExistsAsync(string email);
-    Task<(string token, string refreshToken, string role, string userId)> RefreshTokenAsync(string refreshToken);
 }
