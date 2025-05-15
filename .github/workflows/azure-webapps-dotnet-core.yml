@@ -57,10 +57,10 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Build with dotnet
-        run: dotnet build MentorPlatform.sln --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish MentorPlatform.sln -c Release --property:PublishDir='${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/app' 
+        run: dotnet publish -c Release --property:PublishDir='${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/app' 
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
