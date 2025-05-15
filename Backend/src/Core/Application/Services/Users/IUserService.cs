@@ -7,4 +7,5 @@ namespace Application.Services.Users;
 public interface IUserService
 {
     Task<Result<GetUserResponse>> GetUserByIdAsync(Guid id);
+    Task<Result<GetUserResponse>> GetUserByEmailAsync(string email);
 }

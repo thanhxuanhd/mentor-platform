@@ -1,4 +1,5 @@
-﻿using Application.Services.Users;
+﻿using Application.Services.Authentication;
+using Application.Services.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,4 +19,14 @@ public class UsersController(IUserService userService) : ControllerBase
 
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [Authorize]
+    [HttpGet("email{email}")]
+    public async Task<IActionResult> GetUserByEmail(string email)
+    {
+        var result = await userService.GetUserByEmailAsync(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
 }
