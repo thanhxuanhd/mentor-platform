@@ -28,7 +28,6 @@ const PaginationControls = <T,>({
         total={totalCount}
         onChange={onPageChange}
         showSizeChanger={false}
-        showQuickJumper
       />
 
       <div className="flex items-center">

@@ -74,17 +74,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
             <Select.Option value="Learner">Learner</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item
-          name="status"
-          label="Status"
-          rules={[{ required: true, message: "Please select a status" }]}
-        >
-          <Select placeholder="Select a status">
-            <Select.Option value="Pending">Pending</Select.Option>
-            <Select.Option value="Active">Active</Select.Option>
-            <Select.Option value="Deactivated">Deactivated</Select.Option>
-          </Select>
-        </Form.Item>
       </Form>
     </Modal>
   );
