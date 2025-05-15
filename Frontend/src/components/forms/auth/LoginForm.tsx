@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import {
   GoogleOutlined,
   GithubOutlined,
@@ -6,32 +6,32 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
   CheckCircleOutlined,
-} from '@ant-design/icons';
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { LoginReq } from '../../../models';
-import authService from '../../../services/auth/authService';
-import { redirectOAuthHandler } from './oAuth';
+} from "@ant-design/icons";
+import type React from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import type { LoginReq } from "../../../models";
+import authService from "../../../services/auth/authService";
+import { redirectOAuthHandler } from "./oAuth";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const remembered = localStorage.getItem('rememberMe') === 'true';
-    const savedEmail = remembered ? localStorage.getItem('email') || '' : '';
+    const remembered = localStorage.getItem("rememberMe") === "true";
+    const savedEmail = remembered ? localStorage.getItem("email") || "" : "";
     setEmail(savedEmail);
     setRememberMe(remembered);
   }, []);
 
-  const handleGoogleLogin = () => redirectOAuthHandler('google');
+  const handleGoogleLogin = () => redirectOAuthHandler("google");
 
-  const handleGithubLogin = () => redirectOAuthHandler('github');
+  const handleGithubLogin = () => redirectOAuthHandler("github");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,24 +39,24 @@ const LoginForm: React.FC = () => {
     const loginData: LoginReq = { email, password };
     try {
       const res = await authService.login(loginData);
-      console.log('Login successful:', res);
+      console.log("Login successful:", res);
       if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true');
-        localStorage.setItem('email', email);
+        localStorage.setItem("rememberMe", "true");
+        localStorage.setItem("email", email);
       } else {
-        localStorage.removeItem('rememberMe');
-        localStorage.removeItem('email');
+        localStorage.removeItem("rememberMe");
+        localStorage.removeItem("email");
       }
 
       setShowNotification(true);
 
       setTimeout(() => {
         setShowNotification(false);
-        navigate('/');
+        navigate("/");
       }, 1000);
     } catch (err) {
-      console.error('Login failed:', err);
-      alert('Account does not exist.');
+      console.error("Login failed:", err);
+      alert("Account does not exist.");
     }
   };
 
@@ -111,17 +111,17 @@ const LoginForm: React.FC = () => {
           <div className="relative">
             <input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
               onInvalid={(e) =>
                 e.currentTarget.setCustomValidity(
-                  'Password must be at least 8 characters.'
+                  "Password must be at least 8 characters.",
                 )
               }
-              onInput={(e) => e.currentTarget.setCustomValidity('')}
+              onInput={(e) => e.currentTarget.setCustomValidity("")}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
             />
             <button
