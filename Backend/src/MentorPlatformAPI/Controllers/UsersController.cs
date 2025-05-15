@@ -43,8 +43,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [Authorize]
-    [HttpGet("email{email}")]
+    [HttpGet("email/{email}")]
     public async Task<IActionResult> GetUserByEmail(string email)
     {
         var result = await userService.GetUserByEmailAsync(email);
