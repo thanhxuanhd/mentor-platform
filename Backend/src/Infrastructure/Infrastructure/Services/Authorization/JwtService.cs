@@ -25,7 +25,7 @@ public sealed class JwtService(IOptions<JwtSetting> jwtSetting) : IJwtService
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Role.Name.ToString())
             ]),
             Issuer = _jwtSetting.Issuer,

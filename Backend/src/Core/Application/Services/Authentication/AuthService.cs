@@ -40,7 +40,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         var passwordHash = PasswordHelper.HashPassword(request.Password);
         var user = new User
         {
-            Username = "",
+            FullName = "",
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId
@@ -100,7 +100,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         {
             user = new User
             {
-                Username = "",
+                FullName = "",
                 Email = email,
                 RoleId = (int)UserRole.Learner
             };

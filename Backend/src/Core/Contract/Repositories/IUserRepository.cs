@@ -1,4 +1,6 @@
-﻿using Domain.Entities;
+﻿using Contract.Dtos.Users.Paginations;
+using Contract.Shared;
+using Domain.Entities;
 using System.Linq.Expressions;
 
 namespace Contract.Repositories;
