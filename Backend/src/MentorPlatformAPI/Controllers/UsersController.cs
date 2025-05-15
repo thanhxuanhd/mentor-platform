@@ -1,17 +1,15 @@
 ﻿using Application.Services.Users;
-using Contract.Dtos.Users.Paginations;
-using Contract.Dtos.Users.Requests;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace MentorPlatformAPI.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController(IUserService userService) : ControllerBase
 {
-    //[Authorize]
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUserById(Guid id)
     {

@@ -11,6 +11,8 @@ public static class UserResponseExtensions
         {
             Id = user.Id,
             FullName = user.FullName,
+            Id = user.Id,
+            FullName = user.FullName,
             Email = user.Email,
             RoleId = user.RoleId,
             Status = user.Status,
@@ -19,3 +21,4 @@ public static class UserResponseExtensions
         };
     }
 }
+

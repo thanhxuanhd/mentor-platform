@@ -1,4 +1,4 @@
-﻿using Contract.Dtos.Categories.Requests;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;

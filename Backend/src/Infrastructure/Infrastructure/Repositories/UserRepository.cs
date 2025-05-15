@@ -11,18 +11,11 @@ namespace Infrastructure.Repositories;
 
 public class UserRepository(ApplicationDbContext context) : BaseRepository<User, Guid>(context), IUserRepository
 {
-    public async Task<List<User>> GetAllUsersWithRole()
-    {
-        var users = await _context.Users
-            .Include(user => user.Role)
-            .ToListAsync();
-        return users;
-    }
-
     public async Task<User?> GetUserByUsername(string fullName)
     {
         var user = await _context.Users
             .Include(user => user.Role)
+            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
             .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
 
         return user;

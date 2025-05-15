@@ -6,6 +6,7 @@ using Contract.Repositories;
 using Contract.Shared;
 using Domain.Enums;
 using System.Net;
+using Domain.Entities;
 
 namespace Application.Services.Users;
 
@@ -26,28 +27,40 @@ public class UserService(IUserRepository userRepository) : IUserService
 
     public async Task<Result<PaginatedList<GetUserResponse>>> FilterUserAsync(UserFilterPagedRequest request)
     {
-        var users = await userRepository.FilterUser(request);
+        var users = userRepository.GetAll();
 
-        var userResponses = users.Items.Select(user => user.ToGetUserResponse()).ToList();
+        if (!string.IsNullOrEmpty(request.FullName))
+        {
+            users = users.Where(user => user.FullName.Contains(request.FullName));
+        }
 
-        var paginatedResponse = new PaginatedList<GetUserResponse>(userResponses, users.TotalCount, users.PageIndex, users.PageSize);
+        if (!string.IsNullOrEmpty(request.RoleName))
+        {
+            users = users.Where(user => user.Role.Name.ToString().Equals(request.RoleName));
+        }
 
-        return Result.Success(paginatedResponse, HttpStatusCode.OK);
+        var usersResponse = users.Select(u => new GetUserResponse()
+        {
+            Id = u.Id,
+            FullName = u.FullName,
+            Email = u.Email,
+            Role = u.Role.Name.ToString(),
+            Status = u.Status,
+            JoinedDate = u.JoinedDate,
+            LastActive = u.LastActive
+        });
+
+        PaginatedList<GetUserResponse> paginatedUsers = await userRepository.ToPaginatedListAsync(usersResponse, request.PageSize, request.PageIndex);
+
+        return Result.Success(paginatedUsers, HttpStatusCode.OK);
     }
 
     public async Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request)
     {
-
-
-        if (await userRepository.ExistByEmailExcludeAsync(id, request.Email))
-        {
-            return Result.Failure<bool>("Email already exists", HttpStatusCode.BadRequest);
-        }
-
         var user = await userRepository.GetByIdAsync(id);
         if (user == null)
         {
-            return Result.Failure<bool>($"User with id {id} not found.", HttpStatusCode.NotFound);
+            return Result.Failure<bool>("Null result", HttpStatusCode.NotFound);
         }
         user.FullName = request.FullName;
         user.Email = request.Email;
@@ -68,14 +81,7 @@ public class UserService(IUserRepository userRepository) : IUserService
             return Result.Failure<bool>($"User with id {userId} not found.", HttpStatusCode.NotFound);
         }
 
-        if (user.Status.Equals(UserStatus.Active))
-        {
-            user.Status = UserStatus.Deactivated;
-        }
-        else
-        {
-            user.Status = UserStatus.Active;
-        }
+        user.Status = user.Status == UserStatus.Active ? UserStatus.Deactivated : UserStatus.Active;
 
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
