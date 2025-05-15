@@ -14,6 +14,14 @@ public class CategoryRepository(ApplicationDbContext context) : BaseRepository<C
             .AnyAsync(c => c.Name == name);
     }
 
+    public Task<bool> ExistByNameExcludeAsync(Guid id, string name)
+    {
+        return _context.Categories
+            .AnyAsync(c => c.Name == name
+                && c.Id != id
+            );
+    }
+
     public IQueryable<Course> FilterCourseByCategory(Guid id)
     {
         var courses = _context.Courses

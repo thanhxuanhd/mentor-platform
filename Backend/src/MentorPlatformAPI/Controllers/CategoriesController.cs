@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CategoriesController(ICategoryService categoryService) : ControllerBase
@@ -40,37 +40,6 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     public async Task<IActionResult> EditCategory(Guid categoryId, [FromBody] CategoryRequest request)
     {
         var result = await categoryService.EditCategoryAsync(categoryId, request);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPut]
-    [Route("status/{categoryId}")]
-    public async Task<IActionResult> ChangeCategoryStatus(Guid categoryId)
-    {
-        var result = await categoryService.ChangeCategoryStatusAsync(categoryId);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateCategory([FromBody] CategoryRequest request)
-    {
-        var result = await categoryService.CreateCategoryAsync(request);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPut]
-    [Route("{categoryId}")]
-    public async Task<IActionResult> EditCategory(Guid categoryId, [FromBody] CategoryRequest request)
-    {
-        var result = await categoryService.EditCategoryAsync(categoryId, request);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPut]
-    [Route("status/{categoryId}")]
-    public async Task<IActionResult> ChangeCategoryStatus(Guid categoryId)
-    {
-        var result = await categoryService.ChangeCategoryStatusAsync(categoryId);
         return StatusCode((int)result.StatusCode, result);
     }
 }

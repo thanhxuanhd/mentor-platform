@@ -6,15 +6,21 @@ export interface Category {
     status: boolean;
 }
 
-export interface EditCataegory {
+export interface EditCategory {
     id: string;
     name: string;
     description?: string;
-    status: 'Active' | 'Inactive';
+    status: boolean;
 }
 
 export interface CategoryFilter {
     pageSize: number;
     pageIndex: number;
     keyword: string;
+}
+
+export interface CategoryRequest {
+    name?: string;
+    description?: string;
+    status: boolean;
 }

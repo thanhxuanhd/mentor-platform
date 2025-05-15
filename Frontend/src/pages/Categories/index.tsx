@@ -4,19 +4,19 @@ import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/es/input/Search';
 import EditCategoryModal from './components/EditCategoryModal';
-import type { Category, CategoryFilter } from '../../types/CategoryTypes';
-import { getListCategories } from '../../services/categoryServices';
+import type { Category, CategoryFilter, CategoryRequest } from '../../types/CategoryTypes';
+import { createCategory, editCategory, getListCategories } from '../../services/categoryServices';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [filters, setFilters] = useState<CategoryFilter>({
     pageIndex: 1,
-    pageSize: 5,
+    pageSize: 50,
     keyword: '',
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isCreating, setIsCreating] = useState(true);
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
@@ -25,8 +25,8 @@ export default function CategoriesPage() {
       const apiResponse = await getListCategories(filters);
       const items = apiResponse.items;
       setCategories(items);
-    } catch (error) {
-      message.error('Failed to fetch categories');
+    } catch (error: any) {
+      message.error(`Failed to fetch categories: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -59,6 +59,7 @@ export default function CategoriesPage() {
 
   const handleEditClick = (category: Category) => {
     setSelectedCategory(category);
+    setIsCreating(false);
     setIsModalVisible(true);
   }
 
@@ -68,31 +69,35 @@ export default function CategoriesPage() {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (id: string) => {
-    setCategories((prev) => prev.filter((cat) => cat.id !== id));
-    message.success('Category deleted successfully');
-  };
-
   const handleModalCancel = () => {
     setIsModalVisible(false);
     setSelectedCategory(null);
+    setIsCreating(false);
   };
 
-  const handleModalSubmit = (values: Category) => {
-    if (isCreating) {
-      const newCategory = {
-        ...values,
-        id: `cat-${Date.now()}`,
+  const handleModalSubmit = async (values: CategoryRequest) => {
+    try {
+      const payload = {
+        name: values.name,
+        description: values.description || '',
+        status: values.status,
       };
-      setCategories((prev) => [...prev, newCategory]);
-    } else {
-      setCategories((prev) =>
-        prev.map((cat) => (cat.id === values.id ? values : cat))
-      );
+      console.log('payload', payload);
+      if (isCreating) {
+        await createCategory(payload);
+        message.success('Category created successfully');
+      } else if (selectedCategory) {
+        await editCategory(selectedCategory.id, payload);
+        message.success('Category updated successfully');
+      }
+
+      await fetchData();
+      setIsModalVisible(false);
+      setSelectedCategory(null);
+      setIsCreating(false);
+    } catch (error: any) {
+      message.error(isCreating ? `Failed to create category: ${error.message}` : `Failed to update category: ${error.message}`);
     }
-    setIsModalVisible(false);
-    setSelectedCategory(null);
-    setIsCreating(false);
   };
 
   const columns: ColumnsType<Category> = [
@@ -144,15 +149,7 @@ export default function CategoriesPage() {
             />
           </Tooltip>
           <Tooltip title="Delete Category">
-            <Popconfirm
-              title="Are you sure you want to delete this category?"
-              onConfirm={() => handleDelete(record.id)}
-              okText="Yes"
-              cancelText="No"
-            >
-              <Button icon={<DeleteOutlined />} size="small" danger />
-            </Popconfirm>
-
+            <Button icon={<DeleteOutlined />} size="small" danger />
           </Tooltip>
         </Space>
       ),
@@ -189,15 +186,15 @@ export default function CategoriesPage() {
         visible={isModalVisible}
         initialValues={
           isCreating
-            ? { id: '', name: '', description: '', status: 'Active' }
+            ? { id: '', name: '', description: '', status: true }
             : selectedCategory
               ? {
                 id: selectedCategory.id,
                 name: selectedCategory.name,
                 description: selectedCategory.description || '',
-                status: selectedCategory.status ? 'Active' : 'Inactive',
+                status: selectedCategory.status,
               }
-              : { id: '', name: '', description: '', status: 'Active' }
+              : { id: '', name: '', description: '', status: false }
         }
         onCancel={handleModalCancel}
         onSubmit={handleModalSubmit}

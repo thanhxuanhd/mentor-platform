@@ -1,10 +1,10 @@
 import { Form, Input, Modal, Select } from "antd";
 import { useEffect } from "react";
-import type { Category, EditCataegory } from '../../../types/CategoryTypes';
+import type { Category, EditCategory } from '../../../types/CategoryTypes';
 
 interface EditCategoryModalProps {
     visible: boolean;
-    initialValues: EditCataegory;
+    initialValues: EditCategory;
     onCancel: () => void;
     onSubmit: (values: Category) => void;
     title: string;
@@ -15,6 +15,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     initialValues,
     onCancel,
     onSubmit,
+    title
 }) => {
     const [form] = Form.useForm();
 
@@ -42,7 +43,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     return (
         <Modal
             centered
-            title="Edit Category"
+            title={title}
             open={visible}
             onOk={handleOk}
             onCancel={handleCancel}
@@ -68,8 +69,8 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 </Form.Item>
                 <Form.Item name="status" label="Status">
                     <Select>
-                        <Select.Option value="Active">Active</Select.Option>
-                        <Select.Option value="Inactive">Inactive</Select.Option>
+                        <Select.Option value={true}>Active</Select.Option>
+                        <Select.Option value={false}>Inactive</Select.Option>
                     </Select>
                 </Form.Item>
             </Form>
