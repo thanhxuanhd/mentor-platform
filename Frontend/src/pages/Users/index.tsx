@@ -20,19 +20,21 @@ import {
 import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
 import { userService } from "../../services/user/userService";
+import {
+  notifySuccess,
+  notifyError,
+} from "../../components/shared/Notification";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
 const { Search } = Input;
 
 const roleOptions = [
-  { label: "All", value: null },
+  { label: "All", value: "" },
   { label: "Admin", value: "Admin" },
   { label: "Mentor", value: "Mentor" },
   { label: "Learner", value: "Learner" },
 ];
-
-console.log("render");
 
 export default function UsersPage() {
   const [usersData, setUsersData] = useState<GetUserResponse[]>([]);
@@ -45,7 +47,6 @@ export default function UsersPage() {
   const [searchValue, setSearchValue] = useState("");
 
   const [loading, setLoading] = useState(false);
-  // const [error, setError] = useState<string | null>(null);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<EditUserRequest>({
@@ -140,7 +141,7 @@ export default function UsersPage() {
       setTotalCount(response.totalCount);
       setUsersData(response.items);
     } catch {
-      console.error("Failed to fetch users");
+      notifyError("Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -167,10 +168,15 @@ export default function UsersPage() {
       try {
         setLoading(true);
         await userService.updateUser(updatedUser.id, updatedUser);
+        setPageIndex(1);
         fetchUsers();
         setIsModalVisible(false);
+        notifySuccess(
+          "User Updated",
+          "User details have been updated successfully.",
+        );
       } catch {
-        console.error("Failed to update user");
+        notifyError("Failed to update user");
       } finally {
         setLoading(false);
       }
@@ -194,29 +200,34 @@ export default function UsersPage() {
     setPageIndex(1);
   }, []);
 
-  const handleFilterChange = useCallback((value: string | null) => {
+  const handleFilterChange = useCallback((value: string) => {
     setSelectedRoleSegment(value);
   }, []);
 
   const handleChangeStatus = useCallback(
     async (userId: string) => {
       try {
-        // Find the user in the current state
         const user = usersData.find((user) => user.id === userId);
         if (!user) return;
 
-        // Toggle the status
-        const newStatus = user.status === 1 ? 2 : 1; // 1 = Active, 2 = Inactive
-
-        // Call the API to update the status
+        const newStatus = user.status === 1 ? 2 : 1;
         await userService.changeUserStatus(userId);
 
-        // Update the local state to reflect the change
         setUsersData((prev) =>
           prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)),
         );
-      } catch (error) {
-        console.error("Failed to change user status:", error);
+
+        notifySuccess(
+          "Status Updated",
+          `User status has been changed to ${
+            newStatus === 1 ? "Active" : "Inactive"
+          }.`,
+        );
+      } catch {
+        notifyError(
+          "Failed to Update Status",
+          "An error occurred while updating the user status.",
+        );
       }
     },
     [usersData],
@@ -233,12 +244,17 @@ export default function UsersPage() {
             size="large"
             enterButton
             onSearch={handleSearchInput}
+            onChange={(e) => {
+              if (e.target.value === "") {
+                setSearchValue("");
+              }
+            }}
           />
         </div>
       </div>
 
       <div className="p-1 mb-6">
-        <Segmented<string | null>
+        <Segmented<string>
           options={roleOptions}
           size="large"
           style={{ fontSize: "10px" }}

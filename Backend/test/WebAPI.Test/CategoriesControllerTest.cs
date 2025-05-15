@@ -257,48 +257,4 @@ public class CategoriesControllerTest
         _categoryServiceMock.Verify(s => s.EditCategoryAsync(categoryId, request), Times.Once);
     }
 
-    [Test]
-    public async Task ChangeCategoryStatus_WhenSuccessful_ReturnsOk()
-    {
-        // Arrange
-        var categoryId = Guid.NewGuid();
-        var result = Result.Success(true, HttpStatusCode.OK);
-
-        _categoryServiceMock
-            .Setup(s => s.ChangeCategoryStatusAsync(categoryId))
-            .ReturnsAsync(result);
-
-        // Act
-        var response = await _categoriesController.ChangeCategoryStatus(categoryId) as ObjectResult;
-
-        // Assert
-        Assert.IsNotNull(response);
-        Assert.AreEqual((int)HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual(result, response.Value);
-
-        _categoryServiceMock.Verify(s => s.ChangeCategoryStatusAsync(categoryId), Times.Once);
-    }
-
-    [Test]
-    public async Task ChangeCategoryStatus_WhenCategoryNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var categoryId = Guid.NewGuid();
-        var result = Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
-
-        _categoryServiceMock
-            .Setup(s => s.ChangeCategoryStatusAsync(categoryId))
-            .ReturnsAsync(result);
-
-        // Act
-        var response = await _categoriesController.ChangeCategoryStatus(categoryId) as ObjectResult;
-
-        // Assert
-        Assert.IsNotNull(response);
-        Assert.AreEqual((int)HttpStatusCode.NotFound, response.StatusCode);
-        Assert.AreEqual(result, response.Value);
-
-        _categoryServiceMock.Verify(s => s.ChangeCategoryStatusAsync(categoryId), Times.Once);
-    }
-
 }

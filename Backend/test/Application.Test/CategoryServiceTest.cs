@@ -370,59 +370,6 @@ public class CategoryServiceTest
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
-    [Test]
-    public async Task ChangeCategoryStatusAsync_WhenCategoryNotFound_ReturnsNotFound()
-    {
-        // Arrange
-        var categoryId = Guid.NewGuid();
 
-        _categoryRepositoryMock.Setup(r => r.GetByIdAsync(categoryId, null))
-            .ReturnsAsync((Category)null);
-
-        // Act
-        var result = await _categoryService.ChangeCategoryStatusAsync(categoryId);
-
-        // Assert
-        Assert.IsFalse(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
-        Assert.AreEqual("Categories is not found or is deleted", result.Error);
-
-        _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
-        _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
-        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
-    }
-
-    [Test]
-    public async Task ChangeCategoryStatusAsync_WhenCategoryExists_TogglesStatusAndReturnsSuccess()
-    {
-        // Arrange
-        var categoryId = Guid.NewGuid();
-        var existingCategory = new Category
-        {
-            Id = categoryId,
-            Name = "Test",
-            Description = "Desc",
-            Status = true
-        };
-
-        _categoryRepositoryMock.Setup(r => r.GetByIdAsync(categoryId, null))
-            .ReturnsAsync(existingCategory);
-
-        _categoryRepositoryMock.Setup(r => r.SaveChangesAsync())
-            .ReturnsAsync(1);
-
-        // Act
-        var result = await _categoryService.ChangeCategoryStatusAsync(categoryId);
-
-        // Assert
-        Assert.IsTrue(result.IsSuccess);
-        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
-        Assert.IsTrue(result.Value);
-        Assert.IsFalse(existingCategory.Status);
-
-        _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
-        _categoryRepositoryMock.Verify(r => r.Update(existingCategory), Times.Once);
-        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
-    }
 
 }

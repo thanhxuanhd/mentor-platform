@@ -44,12 +44,4 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         var result = await categoryService.EditCategoryAsync(categoryId, request);
         return StatusCode((int)result.StatusCode, result);
     }
-
-    [HttpPut]
-    [Route("status/{categoryId}")]
-    public async Task<IActionResult> ChangeCategoryStatus(Guid categoryId)
-    {
-        var result = await categoryService.ChangeCategoryStatusAsync(categoryId);
-        return StatusCode((int)result.StatusCode, result);
-    }
 }

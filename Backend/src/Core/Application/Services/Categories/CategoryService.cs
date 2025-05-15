@@ -97,7 +97,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public async Task<Result<bool>> EditCategoryAsync(Guid categoryId, CategoryRequest request)
     {
 
-        if (await categoryRepository.ExistByNameAsync(request.Name))
+        if (await categoryRepository.ExistByNameExcludeAsync(categoryId, request.Name))
         {
             return Result.Failure<bool>("Already have this category", HttpStatusCode.BadRequest);
         }
@@ -112,21 +112,6 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         categoryRepository.Update(category);
         var result = await categoryRepository.SaveChangesAsync();
         return Result.Success(true, HttpStatusCode.OK);
-    }
-
-    public async Task<Result<bool>> ChangeCategoryStatusAsync(Guid categoryId)
-    {
-
-        var category = await categoryRepository.GetByIdAsync(categoryId);
-        if (category == null)
-        {
-            return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
-        }
-        category.Status = !category.Status;
-        categoryRepository.Update(category);
-        var result = categoryRepository.SaveChangesAsync();
-        return Result.Success(true, HttpStatusCode.OK);
-
     }
 }
 
