@@ -32,7 +32,7 @@ permissions:
 
 defaults:
   run:
-    working-directory: './Frontend'
+    working-directory: Frontend
 
 jobs:
   build:
@@ -47,7 +47,6 @@ jobs:
         cache: 'npm'
 
     - name: npm install, build, and test
-      working-directory: './Frontend'
       run: |
         npm install
         npm run build --if-present
@@ -57,7 +56,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: node-app
-        path: './Frontend'
+        path: .
 
   deploy:
     permissions:
