@@ -1,23 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Tooltip, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Space, Button, Tooltip, Tag, Popconfirm, message } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { getListCategories } from '../../services/categoryServices';
 import Search from 'antd/es/input/Search';
-
-interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  courses: number;
-  status: boolean;
-}
-
-interface CategoryFilter {
-  pageSize: number;
-  pageIndex: number;
-  keyword: string;
-}
+import EditCategoryModal from './components/EditCategoryModal';
+import type { Category, CategoryFilter } from '../../types/CategoryTypes';
+import { getListCategories } from '../../services/categoryServices';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -26,13 +14,24 @@ export default function CategoriesPage() {
     pageSize: 5,
     keyword: '',
   });
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
+    setLoading(true);
+    try {
       const apiResponse = await getListCategories(filters);
       const items = apiResponse.items;
       setCategories(items);
-    };
+    } catch (error) {
+      message.error('Failed to fetch categories');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
     fetchData();
   }, [filters]);
 
@@ -56,6 +55,44 @@ export default function CategoriesPage() {
       ...prev,
       pageIndex: value,
     }));
+  };
+
+  const handleEditClick = (category: Category) => {
+    setSelectedCategory(category);
+    setIsModalVisible(true);
+  }
+
+  const handleCreateClick = () => {
+    setSelectedCategory(null);
+    setIsCreating(true);
+    setIsModalVisible(true);
+  };
+
+  const handleDelete = (id: string) => {
+    setCategories((prev) => prev.filter((cat) => cat.id !== id));
+    message.success('Category deleted successfully');
+  };
+
+  const handleModalCancel = () => {
+    setIsModalVisible(false);
+    setSelectedCategory(null);
+  };
+
+  const handleModalSubmit = (values: Category) => {
+    if (isCreating) {
+      const newCategory = {
+        ...values,
+        id: `cat-${Date.now()}`,
+      };
+      setCategories((prev) => [...prev, newCategory]);
+    } else {
+      setCategories((prev) =>
+        prev.map((cat) => (cat.id === values.id ? values : cat))
+      );
+    }
+    setIsModalVisible(false);
+    setSelectedCategory(null);
+    setIsCreating(false);
   };
 
   const columns: ColumnsType<Category> = [
@@ -103,10 +140,19 @@ export default function CategoriesPage() {
               icon={<EditOutlined />}
               size="small"
               className="text-green-600"
+              onClick={() => handleEditClick(record)}
             />
           </Tooltip>
           <Tooltip title="Delete Category">
-            <Button icon={<DeleteOutlined />} size="small" danger />
+            <Popconfirm
+              title="Are you sure you want to delete this category?"
+              onConfirm={() => handleDelete(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button icon={<DeleteOutlined />} size="small" danger />
+            </Popconfirm>
+
           </Tooltip>
         </Space>
       ),
@@ -117,6 +163,13 @@ export default function CategoriesPage() {
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Category Management</h2>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => handleCreateClick()}
+        >
+          Create Category
+        </Button>
       </div>
       <Search
         placeholder="Search by category name..."
@@ -132,6 +185,25 @@ export default function CategoriesPage() {
         rowKey="id"
         pagination={false}
       />
+      <EditCategoryModal
+        visible={isModalVisible}
+        initialValues={
+          isCreating
+            ? { id: '', name: '', description: '', status: 'Active' }
+            : selectedCategory
+              ? {
+                id: selectedCategory.id,
+                name: selectedCategory.name,
+                description: selectedCategory.description || '',
+                status: selectedCategory.status ? 'Active' : 'Inactive',
+              }
+              : { id: '', name: '', description: '', status: 'Active' }
+        }
+        onCancel={handleModalCancel}
+        onSubmit={handleModalSubmit}
+        title={isCreating ? 'Create Category' : 'Edit Category'}
+      />
     </div>
   );
 }
+

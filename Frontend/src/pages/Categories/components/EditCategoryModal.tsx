@@ -1,12 +1,13 @@
 import { Form, Input, Modal, Select } from "antd";
-import type { Category } from "../../../types/CategoryTypes";
 import { useEffect } from "react";
+import type { Category, EditCataegory } from '../../../types/CategoryTypes';
 
 interface EditCategoryModalProps {
     visible: boolean;
-    initialValues: Category;
+    initialValues: EditCataegory;
     onCancel: () => void;
     onSubmit: (values: Category) => void;
+    title: string;
 }
 
 const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
@@ -15,7 +16,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     onCancel,
     onSubmit,
 }) => {
-    const [form] = Form.useForm<Category>();
+    const [form] = Form.useForm();
 
     useEffect(() => {
         if (visible) {
@@ -53,13 +54,15 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 name="edit_category_form"
                 requiredMark={false}
             >
-                <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+                <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter the category name' },
+                { max: 50, message: 'Name cannot exceed 50 characters' },
+                { min: 3, message: 'Name must be at least 3 characters' }]}>
                     <Input />
                 </Form.Item>
                 <Form.Item
                     name="description"
                     label="Description"
-                    rules={[{ required: true }]}
+                    rules={[{ max: 200, message: 'Description cannot exceed 200 characters' }]}
                 >
                     <Input.TextArea />
                 </Form.Item>
@@ -73,3 +76,4 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
         </Modal>
     );
 }
+export default EditCategoryModal;
