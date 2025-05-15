@@ -60,13 +60,13 @@ jobs:
         run: dotnet build MentorPlatform.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish MentorPlatform.sln -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
+        run: dotnet publish MentorPlatform.sln -c Release --property:PublishDir='${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/app' 
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
+          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/app
 
   deploy:
     permissions:
@@ -89,5 +89,5 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_API_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/app
 
