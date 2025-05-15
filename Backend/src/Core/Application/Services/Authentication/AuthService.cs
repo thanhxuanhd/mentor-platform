@@ -49,22 +49,40 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         await userRepository.SaveChangesAsync();
     }
 
-    public async Task<object?> LoginGithubAsync(string code)
+    public async Task<Result> LoginGithubAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.GitHub);
-        var token = await oAuthService.GetAccessTokenAsync(code);
-        var response = await oAuthService.GetUserEmailDataAsync(token);
+        var token = await oAuthService.GetAccessTokenAsync(request.Token);
+        var userEmail = await oAuthService.GetUserEmailDataAsync(token!);
 
-        return response;
+        var user = new User
+        {
+            Username = string.Empty,
+            Email = userEmail!,
+            RoleId = 3
+        };
+        await userRepository.AddAsync(user);
+        await userRepository.SaveChangesAsync();
+
+        return Result.Success(HttpStatusCode.OK);
     }
 
-    public async Task<object?> LoginGoogleAsync(string code)
+    public async Task<Result> LoginGoogleAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.Google);
-        var token = await oAuthService.GetAccessTokenAsync(code);
-        var response = await oAuthService.GetUserEmailDataAsync(token);
+        var token = await oAuthService.GetAccessTokenAsync(request.Token);
+        var userEmail = await oAuthService.GetUserEmailDataAsync(token!);
 
-        return response;
+        var user = new User
+        {
+            Username = string.Empty,
+            Email = userEmail!,
+            RoleId = 3
+        };
+        await userRepository.AddAsync(user);
+        await userRepository.SaveChangesAsync();
+
+        return Result.Success(HttpStatusCode.OK);
     }
 
     public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)

@@ -1,9 +1,11 @@
-﻿using Contract.Services;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Contract.Services;
+using Microsoft.Extensions.Configuration;
+
+namespace Infrastructure.Services.Authorization.OAuth;
 
 public class GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     : IOAuthService

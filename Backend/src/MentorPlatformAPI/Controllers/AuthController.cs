@@ -26,17 +26,17 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     [HttpPost("github")]
-    public async Task<IActionResult> SignInGithub([FromBody] string code)
+    public async Task<IActionResult> SignInGithub([FromBody] OAuthSignInRequest request)
     {
-        var result = await authService.LoginGithubAsync(code);
+        var result = await authService.LoginGithubAsync(request);
 
         return Ok(result);
     }
 
     [HttpPost("google")]
-    public async Task<IActionResult> SignInGoogle([FromBody] string code)
+    public async Task<IActionResult> SignInGoogle([FromBody] OAuthSignInRequest request)
     {
-        var result = await authService.LoginGoogleAsync(code);
+        var result = await authService.LoginGoogleAsync(request);
 
         return Ok(result);
     }
