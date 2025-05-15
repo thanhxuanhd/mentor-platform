@@ -42,4 +42,13 @@ public class UsersController(IUserService userService) : ControllerBase
         var result = await userService.ChangeUserStatusAsync(userId);
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet("email/{email}")]
+    public async Task<IActionResult> GetUserByEmail(string email)
+    {
+        var result = await userService.GetUserByEmailAsync(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
 }
