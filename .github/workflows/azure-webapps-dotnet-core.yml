@@ -21,7 +21,7 @@ name: Build and deploy ASP.Net Core app to an Azure Web App
 
 env:
   AZURE_WEBAPP_NAME: 'mentor-platform-gr4-be'   # set this to the name of your Azure Web App
-  AZURE_WEBAPP_PACKAGE_PATH: './Backend'      # set this to the path to your web app project, defaults to the repository root
+  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
   DOTNET_VERSION: '8.x'                 # set this to the .NET Core version to use
 
 on:
@@ -89,5 +89,5 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_API_PUBLISH_PROFILE }}
-          package: './${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform'
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
 
