@@ -8,11 +8,11 @@ namespace Infrastructure.Repositories;
 
 public class UserRepository(ApplicationDbContext context) : BaseRepository<User, Guid>(context), IUserRepository
 {
-    public async Task<User?> GetUserByUsername(string username)
+    public async Task<User?> GetUserByUsername(string fullName)
     {
         var user = await _context.Users
             .Include(user => user.Role)
-            .FirstOrDefaultAsync(u => u.Username.Equals(username));
+            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
 
         return user;
     }

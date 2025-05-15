@@ -3,6 +3,7 @@ using Infrastructure;
 using Infrastructure.Persistence.Data;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
+using MentorPlatformAPI.Filter;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -19,6 +20,11 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader()
                 .AllowCredentials();
         });
+});
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<AutoValidateFilter>();
 });
 
 builder.Services
