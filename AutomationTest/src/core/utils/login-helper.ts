@@ -12,7 +12,6 @@ export async function loginStep(page: any, user: LoginUser): Promise<LoginPage> 
     await test.step('Input default account', async () => {
         await loginPage.inputEmail(user.email);
         await loginPage.inputPassword(user.password);
-
     });
 
     await test.step('Click Signin button', async () => {

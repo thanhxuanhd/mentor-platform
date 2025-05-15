@@ -6,10 +6,5 @@ import { test } from '../../../core/fixture/authFixture';
 
 
 test('@SmokeTest @Login Login with valid User', async ({ loggedInPage, page }) => {
-
-    const loginPage = new LoginPage(page);
-    const user: LoginUser = loginData;
-
     await new Promise(resolve => setTimeout(resolve, 5000));
-
 });
