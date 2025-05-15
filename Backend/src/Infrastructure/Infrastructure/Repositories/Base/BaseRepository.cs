@@ -16,7 +16,6 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
     {
         return _context.Set<TEntity>().AsQueryable();
     }
-
     public virtual async Task<TEntity?> GetByIdAsync(TPrimaryKey id, Expression<Func<TEntity, object>>? includeExpressions = null)
     {
         var template = _context.Set<TEntity>().AsQueryable();

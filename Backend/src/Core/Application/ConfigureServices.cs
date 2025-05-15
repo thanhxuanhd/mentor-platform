@@ -1,7 +1,6 @@
 ﻿using Application.Services.Authentication;
 using Application.Services.Categories;
 using Application.Services.Users;
-using Contract.Repositories;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;

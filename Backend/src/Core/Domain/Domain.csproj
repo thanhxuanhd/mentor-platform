@@ -7,6 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Constants\" />
+    <Compile Remove="Constants\**" />
+    <EmbeddedResource Remove="Constants\**" />
+    <None Remove="Constants\**" />
   </ItemGroup>
 </Project>

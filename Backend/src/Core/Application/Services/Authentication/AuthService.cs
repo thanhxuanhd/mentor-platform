@@ -5,6 +5,7 @@ using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Services.Authorization;
 
 namespace Application.Services.Authentication;
@@ -101,7 +102,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             {
                 Username = "",
                 Email = email,
-                RoleId = 3
+                RoleId = (int)UserRole.Learner
             };
             await userRepository.AddAsync(user);
             await userRepository.SaveChangesAsync();
