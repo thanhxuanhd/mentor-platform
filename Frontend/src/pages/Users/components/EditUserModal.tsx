@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import { Modal, Form, Input, Select } from "antd";
-import type { User } from "../../../types/UserTypes";
+import type { EditUserRequest } from "../../../types/UserTypes";
 
 interface EditUserModalProps {
   visible: boolean;
-  initialValues: User;
+  initialValues: EditUserRequest;
   onCancel: () => void;
-  onSubmit: (values: User) => void;
+  onSubmit: (values: EditUserRequest) => void;
 }
 
 const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -15,7 +15,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   onCancel,
   onSubmit,
 }) => {
-  const [form] = Form.useForm<User>();
+  const [form] = Form.useForm<EditUserRequest>();
 
   useEffect(() => {
     if (visible) {
@@ -53,7 +53,11 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         name="edit_user_form"
         requiredMark={false}
       >
-        <Form.Item name="name" label="Name" rules={[{ required: true }]}>
+        <Form.Item
+          name="fullName"
+          label="Full Name"
+          rules={[{ required: true }]}
+        >
           <Input />
         </Form.Item>
         <Form.Item
@@ -64,14 +68,17 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           <Input />
         </Form.Item>
         <Form.Item
-          name="role"
+          name="roleId"
           label="Role"
           rules={[{ required: true, message: "Please select a role" }]}
         >
-          <Select placeholder="Select a role">
-            <Select.Option value="Admin">Admin</Select.Option>
-            <Select.Option value="Mentor">Mentor</Select.Option>
-            <Select.Option value="Learner">Learner</Select.Option>
+          <Select
+            placeholder="Select a role"
+            defaultValue={initialValues.roleId}
+          >
+            <Select.Option value={1}>Admin</Select.Option>
+            <Select.Option value={2}>Mentor</Select.Option>
+            <Select.Option value={3}>Learner</Select.Option>
           </Select>
         </Form.Item>
       </Form>

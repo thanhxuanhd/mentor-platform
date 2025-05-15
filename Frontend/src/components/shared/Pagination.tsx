@@ -1,15 +1,14 @@
-import React from "react";
 import { Pagination, Select } from "antd";
 import type { PaginationProps } from "../../types/Pagination";
 
-const PaginationControls = <T,>({
-  pagination,
+const PaginationControls = ({
+  pageIndex,
+  pageSize,
+  totalCount,
   onPageChange,
   onPageSizeChange,
   itemName = "items",
-}: PaginationProps<T>) => {
-  const { pageIndex, pageSize, totalCount } = pagination;
-
+}: PaginationProps) => {
   // Only show pagination if there are items
   if (totalCount === 0) return null;
 

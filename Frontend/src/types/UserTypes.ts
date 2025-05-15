@@ -1,9 +1,23 @@
-export interface User {
+export interface GetUserResponse {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
-  role: "Admin" | "Mentor" | "Learner";
+  roleId: 1 | 2 | 3;
   joinedDate: string;
-  status: "Pending" | "Active" | "Deactivated";
+  status: 0 | 1 | 2;
   lastActive: string;
+}
+
+export interface EditUserRequest {
+  id: string;
+  fullName: string;
+  email: string;
+  roleId: number;
+}
+
+export interface UserFilterPagedRequest {
+  pageIndex: number;
+  pageSize: number;
+  roleName: string | null;
+  fullName: string | null;
 }
