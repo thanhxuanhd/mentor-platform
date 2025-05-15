@@ -8,6 +8,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Role> Roles { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<Course> Courses { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<CourseTag> CourseTags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
