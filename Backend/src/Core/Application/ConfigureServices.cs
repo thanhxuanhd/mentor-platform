@@ -1,4 +1,5 @@
 ﻿using Application.Services.Authentication;
+using Application.Services.Categories;
 using Application.Services.Users;
 using Contract.Repositories;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,8 @@ public static class ConfigureServices
         // Add Application
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ICategoryService, CategoryService>();
+
         return services;
     }
 }

@@ -9,5 +9,4 @@
   <ItemGroup>
     <Folder Include="Constants\" />
   </ItemGroup>
-
 </Project>
