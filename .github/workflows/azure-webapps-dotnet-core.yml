@@ -58,7 +58,6 @@ jobs:
 
       - name: Build with dotnet
         run: dotnet build MentorPlatform.sln --configuration Release
-        working-directory: './Backend'
 
       - name: dotnet publish
         run: dotnet publish MentorPlatform.sln -c Release -o ${{env.DOTNET_ROOT}}/mentor-platform
