@@ -70,7 +70,9 @@ public class UsersControllerTests
             Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
             _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
         });
-    }    [Test]
+    }    
+    
+    [Test]
     public async Task FilterUser_UsersFound_ReturnsOkResultWithPaginatedUsers()
     {
         // Arrange

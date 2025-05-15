@@ -1,6 +1,7 @@
 ﻿using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
+using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
@@ -47,7 +48,7 @@ namespace Application.Test
                 Assert.That(result.Value?.Role, Is.EqualTo(UserRole.Learner.ToString()));
             });
         }        
-        
+
         [Test]
         public async Task GetUserByIdAsync_UserDoesNotExist_ReturnsNotFound()
         {
@@ -66,8 +67,8 @@ namespace Application.Test
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(result.Error, Is.EqualTo("Null result"));
             });
-        }
-
+        }        
+        
         [Test]
         public async Task FilterUserAsync_ReturnsFilteredUsers()
         {
@@ -75,12 +76,57 @@ namespace Application.Test
             var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 10, FullName = "Test", RoleName = "Learner" };
             var users = new List<User>
             {
-                new User { Id = Guid.NewGuid(), FullName = "Test User 1", Email = "test1@example.com", Role = new Role { Id = 1, Name = UserRole.Learner } },
-                new User { Id = Guid.NewGuid(), FullName = "Another Test User", Email = "test2@example.com", Role = new Role { Id = 2, Name = UserRole.Learner } }
+                new User { 
+                    Id = Guid.NewGuid(), 
+                    FullName = "Test User 1", 
+                    Email = "test1@example.com", 
+                    Status = UserStatus.Active,
+                    JoinedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-30)),
+                    LastActive = DateOnly.FromDateTime(DateTime.Now.AddDays(-2)),
+                    Role = new Role { Id = 1, Name = UserRole.Learner } 
+                },
+                new User { 
+                    Id = Guid.NewGuid(), 
+                    FullName = "Another Test User", 
+                    Email = "test2@example.com", 
+                    Status = UserStatus.Active,
+                    JoinedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
+                    LastActive = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)),
+                    Role = new Role { Id = 2, Name = UserRole.Learner } 
+                }
             };
-            var paginatedUsers = new PaginatedList<User>(users, users.Count, request.PageIndex, request.PageSize);
-            _mockUserRepository.Setup(repo => repo.FilterUser(request))
-                .ReturnsAsync(paginatedUsers);
+            
+            var queryableUsers = users.AsQueryable();
+            
+            _mockUserRepository.Setup(repo => repo.GetAll())
+                .Returns(queryableUsers);
+            
+            var filteredQueryable = queryableUsers
+                .Where(user => user.FullName.Contains(request.FullName))
+                .Where(user => user.Role.Name.ToString().Equals(request.RoleName))
+                .Select(u => new GetUserResponse
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    Role = u.Role.Name.ToString(),
+                    Status = u.Status,
+                    JoinedDate = u.JoinedDate,
+                    LastActive = u.LastActive
+                });
+            
+            var paginatedUserResponses = new PaginatedList<GetUserResponse>(
+                filteredQueryable.ToList(), 
+                filteredQueryable.Count(), 
+                request.PageIndex, 
+                request.PageSize
+            );
+            
+            _mockUserRepository.Setup(repo => repo.ToPaginatedListAsync(
+                    It.IsAny<IQueryable<GetUserResponse>>(), 
+                    request.PageSize, 
+                    request.PageIndex))
+                .ReturnsAsync(paginatedUserResponses);
 
             // Act
             var result = await _userService.FilterUserAsync(request);            
@@ -91,21 +137,41 @@ namespace Application.Test
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
                 Assert.That(result.Value, Is.Not.Null);
-                Assert.That(result.Value?.Items.Count, Is.EqualTo(users.Count));
-                Assert.That(result.Value?.TotalCount, Is.EqualTo(users.Count));
+                Assert.That(result.Value?.Items.Count, Is.EqualTo(filteredQueryable.Count()));
+                Assert.That(result.Value?.TotalCount, Is.EqualTo(filteredQueryable.Count()));
+                
+                _mockUserRepository.Verify(repo => repo.GetAll(), Times.Once);
+                _mockUserRepository.Verify(repo => repo.ToPaginatedListAsync(
+                    It.IsAny<IQueryable<GetUserResponse>>(), 
+                    request.PageSize, 
+                    request.PageIndex), Times.Once);
             });
-        }
+        }          
         
         [Test]
         public async Task FilterUserAsync_NoUsersFound_ReturnsEmptyList()
         {
             // Arrange
-            var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 10 };
+            var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 10, FullName = "NonexistentUser" };
             var emptyUsersList = new List<User>();
-            var paginatedUsers = new PaginatedList<User>(emptyUsersList, 0, request.PageIndex, request.PageSize);
-        
-            _mockUserRepository.Setup(repo => repo.FilterUser(request))
-                .ReturnsAsync(paginatedUsers);
+            var emptyQueryable = emptyUsersList.AsQueryable();
+            
+            _mockUserRepository.Setup(repo => repo.GetAll())
+                .Returns(emptyQueryable);
+                
+            var emptyUserResponses = new List<GetUserResponse>();
+            var emptyPaginatedList = new PaginatedList<GetUserResponse>(
+                emptyUserResponses, 
+                0, 
+                request.PageIndex, 
+                request.PageSize
+            );
+            
+            _mockUserRepository.Setup(repo => repo.ToPaginatedListAsync(
+                    It.IsAny<IQueryable<GetUserResponse>>(), 
+                    request.PageSize, 
+                    request.PageIndex))
+                .ReturnsAsync(emptyPaginatedList);
         
             // Act
             var result = await _userService.FilterUserAsync(request);            
@@ -118,6 +184,12 @@ namespace Application.Test
                 Assert.That(result.Value, Is.Not.Null);
                 Assert.That(result.Value?.Items.Count, Is.EqualTo(0));
                 Assert.That(result.Value?.TotalCount, Is.EqualTo(0));
+                
+                _mockUserRepository.Verify(repo => repo.GetAll(), Times.Once);
+                _mockUserRepository.Verify(repo => repo.ToPaginatedListAsync(
+                    It.IsAny<IQueryable<GetUserResponse>>(), 
+                    request.PageSize, 
+                    request.PageIndex), Times.Once);
             });
         }
 

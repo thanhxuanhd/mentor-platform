@@ -26,13 +26,32 @@ public class UserService(IUserRepository userRepository) : IUserService
 
     public async Task<Result<PaginatedList<GetUserResponse>>> FilterUserAsync(UserFilterPagedRequest request)
     {
-        var users = await userRepository.FilterUser(request);
-       
-        var userResponses = users.Items.Select(user => user.ToGetUserResponse()).ToList();
+        var users = userRepository.GetAll();
 
-        var paginatedResponse = new PaginatedList<GetUserResponse>(userResponses, users.TotalCount, users.PageIndex, users.PageSize);
+        if (!string.IsNullOrEmpty(request.FullName))
+        {
+            users = users.Where(user => user.FullName.Contains(request.FullName));
+        }
 
-        return Result.Success(paginatedResponse, HttpStatusCode.OK);
+        if (!string.IsNullOrEmpty(request.RoleName))
+        {
+            users = users.Where(user => user.Role.Name.ToString().Equals(request.RoleName));
+        }
+
+        var usersResponse = users.Select(u => new GetUserResponse()
+        {
+            Id = u.Id,
+            FullName = u.FullName,
+            Email = u.Email,
+            Role = u.Role.Name.ToString(),
+            Status = u.Status,
+            JoinedDate = u.JoinedDate,
+            LastActive = u.LastActive
+        });
+
+        PaginatedList<GetUserResponse> paginatedUsers = await userRepository.ToPaginatedListAsync(usersResponse, request.PageSize, request.PageIndex);
+
+        return Result.Success(paginatedUsers, HttpStatusCode.OK);
     }
 
     public async Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request)
@@ -61,14 +80,7 @@ public class UserService(IUserRepository userRepository) : IUserService
             return Result.Failure<bool>($"User with id {userId} not found.", HttpStatusCode.NotFound);
         }
 
-        if (user.Status.Equals(UserStatus.Active))
-        {
-            user.Status = UserStatus.Deactivated;
-        }
-        else
-        {
-            user.Status = UserStatus.Active;
-        }
+        user.Status = user.Status == UserStatus.Active ? UserStatus.Deactivated : UserStatus.Active;
 
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
