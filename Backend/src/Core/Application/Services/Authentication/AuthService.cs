@@ -99,14 +99,16 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         {
             user = new User
             {
-                Username = string.Empty,
+                Username = "",
                 Email = email,
                 RoleId = 3
             };
             await userRepository.AddAsync(user);
             await userRepository.SaveChangesAsync();
         }
-        return jwtService.GenerateToken(user);
+        user = await userRepository.GetUserByEmail(email);
+
+        return jwtService.GenerateToken(user!);
     }
 
 }

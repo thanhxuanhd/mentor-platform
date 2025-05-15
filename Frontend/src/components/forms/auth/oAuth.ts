@@ -28,9 +28,7 @@ const oauthConfig = {
 };
 
 export const redirectOAuthHandler = (provider: "google" | "github") => {
-  debugger;
   const { baseUrl, params } = oauthConfig[provider];
-  debugger;
   const queryString = mapQueryString(params);
   const authUrl = `${baseUrl}?${queryString}`;
   window.location.href = authUrl;
