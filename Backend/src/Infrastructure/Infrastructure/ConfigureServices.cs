@@ -28,7 +28,8 @@ public static class ConfigureServices
         // Add repositories
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
-
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+      
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
