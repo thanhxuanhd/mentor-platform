@@ -66,7 +66,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
+          path: './${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform'
 
   deploy:
     permissions:
@@ -89,5 +89,5 @@ jobs:
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_API_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform
+          package: './${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/mentor-platform'
 
