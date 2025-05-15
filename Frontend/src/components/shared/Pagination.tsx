@@ -1,4 +1,3 @@
-import React from "react";
 import { Pagination, Select } from "antd";
 import type { PaginationProps } from "../../types/Pagination";
 
