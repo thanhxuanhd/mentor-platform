@@ -29,18 +29,6 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
         return entity;
     }
 
-    public virtual async Task<TEntity?> GetByEmailAsync(string email, Expression<Func<TEntity, object>>? includeExpressions = null)
-    {
-        var template = _context.Set<TEntity>().AsQueryable();
-
-        if (includeExpressions is not null)
-        {
-            template = template.Include(includeExpressions);
-        }
-
-        return await template.FirstOrDefaultAsync(e => EF.Property<string>(e, "Email") == email);
-    }
-
     public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> expression)
     {
         IQueryable<TEntity> query = _context.Set<TEntity>();
