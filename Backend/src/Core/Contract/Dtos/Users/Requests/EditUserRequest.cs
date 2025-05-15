@@ -17,7 +17,7 @@ public class EditUserRequestValidator : AbstractValidator<EditUserRequest>
             .NotEmpty()
             .WithMessage("Full name is required")
             .MaximumLength(50)
-            .WithMessage("Full name must not exceed 100 characters");
+            .WithMessage("Full name must not exceed 50 characters");
 
         RuleFor(x => x.Email)
             .NotEmpty()
