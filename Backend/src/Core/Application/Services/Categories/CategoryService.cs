@@ -30,7 +30,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Description = c.Description,
             Courses = c.Courses.Count(),
             Status = c.Status
-        });
+        }); 
 
         PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync(categoryInfos, pageSize, pageIndex);
 

@@ -39,9 +39,6 @@ export default function UsersPage() {
     totalPages: 0,
   });
   const [selectedFilter, setSelectedFilter] = useState(filterOptions[0].value);
-  const [searchValue, setSearchValue] = useState("");
-  const [pageSize, setPageSize] = useState(5);
-  const [pageIndex, setPageIndex] = useState(1);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User>({
     id: "",
@@ -162,14 +159,14 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
-  const handleSearchInput: SearchProps["onSearch"] = (value, _e, info) => {
+  const handleSearchInput: SearchProps["onSearch"] = (/*value, _e, info*/) => {
     throw new Error("Function not implemented.");
   };
-  const handlePageChange = (page: number): void => {
+  const handlePageChange = (/*page: number*/): void => {
     throw new Error("Function not implemented.");
   };
 
-  const handlePageSizeChange = (pageSize: number): void => {
+  const handlePageSizeChange = (/*pageSize: number*/): void => {
     throw new Error("Function not implemented.");
   };
 
