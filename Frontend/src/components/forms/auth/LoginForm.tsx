@@ -2,7 +2,7 @@
 import {
   GoogleOutlined,
   GithubOutlined,
-  LinkedinOutlined,
+  CloseCircleOutlined,
   EyeOutlined,
   EyeInvisibleOutlined,
   CheckCircleOutlined,
@@ -99,8 +99,6 @@ const LoginForm: React.FC = () => {
         <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm">
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
-            <p className="font-bold">Success!</p>
-            <p>You have successfully logged in.</p>
             <p className="font-bold">Sign in successfully!</p>
           </div>
         </div>
@@ -125,8 +123,6 @@ const LoginForm: React.FC = () => {
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">Email</label>
           <input
-            id="email"
-            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
