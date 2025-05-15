@@ -3,7 +3,6 @@ using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using System.Net;
-using Domain.Entities;
 
 namespace Application.Services.Users;
 

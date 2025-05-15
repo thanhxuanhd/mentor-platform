@@ -9,6 +9,6 @@ public interface IAuthService
     Task RegisterAsync(SignUpRequest request);
     Task<Result> ResetPasswordAsync(ResetPasswordRequest request);
     Task<Result<bool>> CheckEmailExistsAsync(string email);
-    Task<object?> LoginGithubAsync(string code);
-    Task<object?> LoginGoogleAsync(string code);
+    Task<Result> LoginGithubAsync(OAuthSignInRequest request);
+    Task<Result> LoginGoogleAsync(OAuthSignInRequest request);
 }
