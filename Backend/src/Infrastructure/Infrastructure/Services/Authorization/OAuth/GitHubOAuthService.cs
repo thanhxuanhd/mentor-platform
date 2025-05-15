@@ -1,13 +1,12 @@
-﻿using System.Net.Http.Headers;
+﻿using Contract.Services;
+using Microsoft.Extensions.Configuration;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Web;
-using Contract.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services.Authorization.OAuth;
 
-internal class GitHubOAuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<GitHubOAuthService> logger) : IOAuthService
+internal class GitHubOAuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration) : IOAuthService
 {
     private readonly IConfigurationSection _gitHubConfigurationSection = configuration.GetSection("GitHub");
 
@@ -21,14 +20,12 @@ internal class GitHubOAuthService(IHttpClientFactory httpClientFactory, IConfigu
             { "client_id", _gitHubConfigurationSection["ClientId"]! },
             { "client_secret", _gitHubConfigurationSection["ClientSecret"]! }
         };
-        logger.LogInformation("Request: " + client);
 
         var tokenResponse = await client.PostAsync(
             "https://github.com/login/oauth/access_token",
             new FormUrlEncodedContent(payload)
         );
 
-        logger.LogInformation("Response: " + tokenResponse);
         tokenResponse.EnsureSuccessStatusCode();
 
         var responseString = await tokenResponse.Content.ReadAsStringAsync();

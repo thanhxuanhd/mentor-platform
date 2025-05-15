@@ -19,7 +19,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             return Result.Failure<string>("Null user", HttpStatusCode.NotFound);
         }
 
-        var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash);
+        var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash!);
         if (!isVerified)
         {
             return Result.Failure<string>("Invalid password", HttpStatusCode.Unauthorized);
@@ -52,37 +52,21 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
     public async Task<Result> LoginGithubAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.GitHub);
-        var token = await oAuthService.GetAccessTokenAsync(request.Token);
-        var userEmail = await oAuthService.GetUserEmailDataAsync(token!);
+        var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
+        var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
+        var token = await LoginOrRegisterAsync(userEmail!);
 
-        var user = new User
-        {
-            Username = string.Empty,
-            Email = userEmail!,
-            RoleId = 3
-        };
-        await userRepository.AddAsync(user);
-        await userRepository.SaveChangesAsync();
-
-        return Result.Success(HttpStatusCode.OK);
+        return Result.Success(token, HttpStatusCode.OK);
     }
 
     public async Task<Result> LoginGoogleAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.Google);
-        var token = await oAuthService.GetAccessTokenAsync(request.Token);
-        var userEmail = await oAuthService.GetUserEmailDataAsync(token!);
+        var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
+        var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
+        var token = await LoginOrRegisterAsync(userEmail!);
 
-        var user = new User
-        {
-            Username = string.Empty,
-            Email = userEmail!,
-            RoleId = 3
-        };
-        await userRepository.AddAsync(user);
-        await userRepository.SaveChangesAsync();
-
-        return Result.Success(HttpStatusCode.OK);
+        return Result.Success(token, HttpStatusCode.OK);
     }
 
     public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
@@ -107,6 +91,22 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         var user = await userRepository.GetUserByEmail(email);
         bool exists = user is not null;
         return Result.Success(exists, HttpStatusCode.OK);
+    }
+    private async Task<string> LoginOrRegisterAsync(string email)
+    {
+        var user = await userRepository.GetUserByEmail(email);
+        if (user == null)
+        {
+            user = new User
+            {
+                Username = string.Empty,
+                Email = email,
+                RoleId = 3
+            };
+            await userRepository.AddAsync(user);
+            await userRepository.SaveChangesAsync();
+        }
+        return jwtService.GenerateToken(user);
     }
 
 }
