@@ -41,6 +41,15 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
         return await template.FirstOrDefaultAsync(e => EF.Property<string>(e, "Email") == email);
     }
 
+    public async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> expression)
+    {
+        IQueryable<TEntity> query = _context.Set<TEntity>();
+        if (expression != null)
+        {
+            query = query.Where(expression);
+        }
+        return await query.FirstOrDefaultAsync();
+    }
 
     public virtual async Task AddAsync(TEntity entity)
     {

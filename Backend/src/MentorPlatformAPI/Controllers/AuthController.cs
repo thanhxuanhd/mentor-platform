@@ -1,6 +1,8 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
+using Domain.Models;
 using Contract.Shared;
+using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -39,5 +41,18 @@ public class AuthController(IAuthService authService) : ControllerBase
         var result = await authService.CheckEmailExistsAsync(email);
 
         return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        var (newToken, newRefreshToken, role, userId) = await authService.RefreshTokenAsync(request.RefreshToken);
+
+        var response = new GeneralResponse
+        {
+            Message = "Token refreshed successfully",
+            Data = new { newToken, newRefreshToken, role, userId }
+        };
+        return Ok(response);
     }
 }

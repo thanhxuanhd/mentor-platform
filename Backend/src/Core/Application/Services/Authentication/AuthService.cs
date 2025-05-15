@@ -72,4 +72,22 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService)
         return Result.Success(exists, HttpStatusCode.OK);
     }
 
+    public async Task<(string token, string refreshToken, string role, string userId)> RefreshTokenAsync(string refreshToken)
+    {
+        var user = await userRepository.GetGetByIdAsync(refreshToken);
+        if (user == null || user.ExpiredAt < DateTime.UtcNow)
+        {
+            throw new UnauthorizedAccessException("Invalid or expired refresh token.");
+        }
+
+        var newAccessToken = jwtService.GenerateToken(user);
+        var newRefreshToken = jwtService.GenerateRefreshToken();
+
+        user.RefreshToken = newRefreshToken;
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
+        return (newAccessToken, newRefreshToken, user.Role?.Name ?? "User", user.Id.ToString());
+    }
+
 }

@@ -23,7 +23,6 @@ export const authService = {
     try {
       const response = await axiosClient.post<AuthResponse>('/Auth/sign-up', signUpData);
       
-      // Store tokens in localStorage
       localStorage.setItem('token', response.data.value);
       localStorage.setItem('refreshToken', response.data.refreshToken);
       
