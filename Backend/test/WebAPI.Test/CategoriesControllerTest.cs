@@ -136,8 +136,8 @@ public class CategoriesControllerTest
 
         // Assert
         Assert.IsNotNull(response);
-        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.Created));
-        Assert.That(response.Value, Is.EqualTo(result));
+        Assert.AreEqual((int)HttpStatusCode.Created, response.StatusCode);
+        Assert.AreEqual(result, response.Value);
 
         _categoryServiceMock.Verify(s => s.CreateCategoryAsync(request), Times.Once);
     }
@@ -164,8 +164,8 @@ public class CategoriesControllerTest
 
         // Assert
         Assert.IsNotNull(response);
-        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-        Assert.That(response.Value, Is.EqualTo(result));
+        Assert.AreEqual((int)HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.AreEqual(result, response.Value);
 
         _categoryServiceMock.Verify(s => s.CreateCategoryAsync(request), Times.Once);
     }
@@ -193,8 +193,8 @@ public class CategoriesControllerTest
 
         // Assert
         Assert.IsNotNull(response);
-        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(response.Value, Is.EqualTo(result));
+        Assert.AreEqual((int)HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual(result, response.Value);
 
         _categoryServiceMock.Verify(s => s.EditCategoryAsync(categoryId, request), Times.Once);
     }
@@ -222,8 +222,8 @@ public class CategoriesControllerTest
 
         // Assert
         Assert.IsNotNull(response);
-        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-        Assert.That(response.Value, Is.EqualTo(result));
+        Assert.AreEqual((int)HttpStatusCode.NotFound, response.StatusCode);
+        Assert.AreEqual(result, response.Value);
 
         _categoryServiceMock.Verify(s => s.EditCategoryAsync(categoryId, request), Times.Once);
     }
@@ -251,8 +251,8 @@ public class CategoriesControllerTest
 
         // Assert
         Assert.IsNotNull(response);
-        Assert.That(response.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-        Assert.That(response.Value, Is.EqualTo(result));
+        Assert.AreEqual((int)HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.AreEqual(result, response.Value);
 
         _categoryServiceMock.Verify(s => s.EditCategoryAsync(categoryId, request), Times.Once);
     }

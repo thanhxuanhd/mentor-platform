@@ -6,6 +6,7 @@ using Contract.Repositories;
 using Contract.Shared;
 using Domain.Enums;
 using System.Net;
+using Domain.Entities;
 
 namespace Application.Services.Users;
 
@@ -43,7 +44,7 @@ public class UserService(IUserRepository userRepository) : IUserService
             Id = u.Id,
             FullName = u.FullName,
             Email = u.Email,
-            RoleId = u.RoleId,
+            Role = u.Role.Name.ToString(),
             Status = u.Status,
             JoinedDate = u.JoinedDate,
             LastActive = u.LastActive
@@ -59,7 +60,7 @@ public class UserService(IUserRepository userRepository) : IUserService
         var user = await userRepository.GetByIdAsync(id);
         if (user == null)
         {
-            return Result.Failure<bool>($"User with id {id} not found.", HttpStatusCode.NotFound);
+            return Result.Failure<bool>("Null result", HttpStatusCode.NotFound);
         }
         user.FullName = request.FullName;
         user.Email = request.Email;

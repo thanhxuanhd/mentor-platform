@@ -16,6 +16,8 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         var user = await _context.Users
             .Include(user => user.Role)
             .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
+            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
+
         return user;
     }
 

@@ -50,18 +50,14 @@ public class CategoryServiceTest
         var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, string.Empty);
 
         // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.True, "Result should indicate success.");
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Status code should be OK.");
-            Assert.That(result.Value, Is.Not.Null, "Result value should not be null.");
-            Assert.That(result.Value.Items, Has.Count.EqualTo(2), "Result should contain exactly 2 items.");
-        });
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        Assert.IsNotNull(result.Value);
+        Assert.AreEqual(2, result.Value.Items.Count);
         _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex), Times.Once);
     }
 
-    // Replace all instances of Assert.IsTrue with Assert.That and use the appropriate constraint.
     [Test]
     public async Task GetCategoriesAsync_WithKeyword_ReturnsFilteredPaginatedCategories()
     {
@@ -92,16 +88,15 @@ public class CategoryServiceTest
         var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.True);
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.Items.Count, Is.EqualTo(1));
-        Assert.That(result.Value.Items.First().Name, Is.EqualTo("Category 1"));
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        Assert.IsNotNull(result.Value);
+        Assert.AreEqual(1, result.Value.Items.Count);
+        Assert.AreEqual("Category 1", result.Value.Items.First().Name);
         _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex), Times.Once);
     }
 
-    // Replace all instances of Assert.IsFalse with Assert.That and use the appropriate constraint.
     [Test]
     [TestCase(0, 10)]
     [TestCase(10, 0)]
@@ -116,14 +111,11 @@ public class CategoryServiceTest
         var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
 
         // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
-            _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        });
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Page index and page size must be greater than or equal to 0", result.Error);
+        _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Test]
@@ -139,9 +131,9 @@ public class CategoryServiceTest
         var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.False, "Result should indicate failure.");
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound), "Status code should be NotFound.");
-        Assert.That(result.Error, Is.EqualTo("Category not found"), "Error message should match.");
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.AreEqual("Category not found", result.Error);
         _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
     }
 
@@ -175,10 +167,10 @@ public class CategoryServiceTest
         var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.True, "Result should indicate success.");
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Status code should be OK.");
-        Assert.That(result.Value, Is.Not.Null, "Result value should not be null.");
-        Assert.That(result.Value.Items.Count, Is.EqualTo(2), "Result should contain exactly 2 items.");
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        Assert.IsNotNull(result.Value);
+        Assert.AreEqual(2, result.Value.Items.Count);
         _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(categoryId), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex), Times.Once);
@@ -198,15 +190,12 @@ public class CategoryServiceTest
         var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
 
         // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
-            _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        });
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Page index and page size must be greater than or equal to 0", result.Error);
+        _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
+        _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Test]
@@ -227,9 +216,9 @@ public class CategoryServiceTest
         var result = await _categoryService.CreateCategoryAsync(request);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.False, "Result should indicate failure.");
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), "Status code should be BadRequest.");
-        Assert.That(result.Error, Is.EqualTo("Already have this category"), "Error message should match.");
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Already have this category", result.Error);
 
         _categoryRepositoryMock.Verify(repo => repo.ExistByNameAsync(request.Name), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Category>()), Times.Never);
@@ -260,13 +249,13 @@ public class CategoryServiceTest
         var result = await _categoryService.CreateCategoryAsync(request);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.True);
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-        Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value.Name, Is.EqualTo(request.Name));
-        Assert.That(result.Value.Description, Is.EqualTo(request.Description));
-        Assert.That(result.Value.Status, Is.EqualTo(request.Status));
-        Assert.That(result.Value.Courses, Is.EqualTo(0));
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.Created, result.StatusCode);
+        Assert.NotNull(result.Value);
+        Assert.AreEqual(request.Name, result.Value.Name);
+        Assert.AreEqual(request.Description, result.Value.Description);
+        Assert.AreEqual(request.Status, result.Value.Status);
+        Assert.AreEqual(0, result.Value.Courses);
 
         _categoryRepositoryMock.Verify(repo => repo.ExistByNameAsync(request.Name), Times.Once);
         _categoryRepositoryMock.Verify(repo => repo.AddAsync(It.Is<Category>(c =>
@@ -284,23 +273,23 @@ public class CategoryServiceTest
         var categoryId = Guid.NewGuid();
         var request = new CategoryRequest
         {
-            Name = "Time Management",
+            Name = "Existing Name",
             Description = "Updated Desc",
             Status = true
         };
 
-        _categoryRepositoryMock.Setup(r => r.ExistByNameExcludeAsync(categoryId, request.Name))
+        _categoryRepositoryMock.Setup(r => r.ExistByNameAsync(request.Name))
             .ReturnsAsync(true);
 
         // Act
         var result = await _categoryService.EditCategoryAsync(categoryId, request);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.False, "Result should indicate failure.");
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), "Status code should be BadRequest.");
-        Assert.That(result.Error, Is.EqualTo("Already have this category"), "Error message should match.");
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.AreEqual("Already have this category", result.Error);
 
-        _categoryRepositoryMock.Verify(r => r.ExistByNameExcludeAsync(categoryId, request.Name), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.ExistByNameAsync(request.Name), Times.Once);
         _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
     }
@@ -327,10 +316,11 @@ public class CategoryServiceTest
         var result = await _categoryService.EditCategoryAsync(categoryId, request);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.False, "Result should indicate failure.");
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound), "Status code should be NotFound.");
-        Assert.That(result.Error, Is.EqualTo("Categories is not found or is deleted"), "Error message should match.");
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.NotFound, result.StatusCode);
+        Assert.AreEqual("Categories is not found or is deleted", result.Error);
 
+        _categoryRepositoryMock.Verify(r => r.ExistByNameAsync(request.Name), Times.Once);
         _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
     }
@@ -368,13 +358,13 @@ public class CategoryServiceTest
         var result = await _categoryService.EditCategoryAsync(categoryId, request);
 
         // Assert
-        Assert.That(result.IsSuccess, Is.True, "Result should indicate success.");
-        Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Status code should be OK.");
-        Assert.That(result.Value, Is.True, "Result value should be true.");
+        Assert.IsTrue(result.IsSuccess);
+        Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);
+        Assert.IsTrue(result.Value);
 
-        Assert.That(existingCategory.Name, Is.EqualTo(request.Name), "Category name should be updated.");
-        Assert.That(existingCategory.Description, Is.EqualTo(request.Description), "Category description should be updated.");
-        Assert.That(existingCategory.Status, Is.EqualTo(request.Status), "Category status should be updated.");
+        Assert.AreEqual(request.Name, existingCategory.Name);
+        Assert.AreEqual(request.Description, existingCategory.Description);
+        Assert.AreEqual(request.Status, existingCategory.Status);
 
         _categoryRepositoryMock.Verify(r => r.Update(existingCategory), Times.Once);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
