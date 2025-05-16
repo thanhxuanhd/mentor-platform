@@ -17,12 +17,8 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             return Result.Failure<CourseListResponse>("Page index and page size must be greater than 0",
                 HttpStatusCode.BadRequest);
 
-        var courses = await courseRepository.GetPaginatedCoursesAsync(
-            request.PageIndex,
-            request.PageSize,
-            request.CategoryId,
-            request.MentorId
-        );
+        var courses = await courseRepository.GetPaginatedCoursesAsync(request.PageIndex, request.PageSize,
+            request.CategoryId, request.MentorId);
 
         var items = courses.Items.Select(c => new CourseSummary
         {

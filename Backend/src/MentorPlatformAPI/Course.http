@@ -13,6 +13,7 @@ Content-Type: application/json
   "title": "New Course Title",
   "description": "A description of the new course",
   "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
+  "mentorId": "BC7CB279-B292-4CA3-A994-9EE579770DBE",
   "dueDate": "{{$isoTimestamp}}",
   "difficulty": "Beginner"
 }
@@ -26,13 +27,12 @@ PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
 Accept: application/json
 Content-Type: application/json
 
-{
-  
+{ 
   "id": "{{courseId}}", 
   "title": "Updated Course Title",
   "description": "An updated description",
-  "categoryId": "2"
-  
+  "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1"
+ 
 }
 
 ### DeleteCourse

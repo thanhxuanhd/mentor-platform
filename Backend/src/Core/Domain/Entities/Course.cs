@@ -11,9 +11,9 @@ public class Course : BaseEntity<Guid>
     public DateTime DueDate { get; set; }
     public CourseDifficulty Difficulty { get; set; }
     public Guid CategoryId { get; set; }
-    public Category Category { get; private set; } = null!;
+    public Category Category { get; set; } = null!;
     public Guid MentorId { get; set; }
     public User Mentor { get; private set; } = null!;
-    public List<CourseTag> CourseTags { get; } = [];
+    public List<CourseTag> CourseTags { get; set; }
     public List<Tag>? Tags { get; } = [];
 }
