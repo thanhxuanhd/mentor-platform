@@ -196,6 +196,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("date");
 
                     b.Property<string>("PasswordHash")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleId")

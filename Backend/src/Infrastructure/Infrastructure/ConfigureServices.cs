@@ -12,7 +12,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Domain.Enums;
 using Infrastructure.Services.Authorization;
-using Infrastructure.Services.Authorization.OAuth;
 
 namespace Infrastructure;
 
@@ -20,15 +19,8 @@ public static class ConfigureServices
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Add HttpClient
-        services.AddHttpClient();
-
         // Add services
         services.AddScoped<IJwtService, JwtService>();
-        services.AddScoped<GitHubOAuthService>();
-        services.AddScoped<GoogleOAuthService>();
-        services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
-        
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));

@@ -5,11 +5,6 @@ import AppRoutes from "./routes";
 import { App as AntdApp } from "antd";
 
 function App() {
-   window.addEventListener("storage", () => {
-    if (!localStorage.getItem("token")) {
-      window.location.href = "/";
-    }
-  });
   return (
     <>
       <ConfigProvider theme={CustomTheme}>

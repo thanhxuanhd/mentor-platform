@@ -5,17 +5,17 @@ using Domain.Entities;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Repositories;
 
 public class UserRepository(ApplicationDbContext context) : BaseRepository<User, Guid>(context), IUserRepository
 {
-    public async Task<User?> GetUserByEmail(string email)
+    public async Task<User?> GetUserByUsername(string fullName)
     {
         var user = await _context.Users
             .Include(user => user.Role)
-            .FirstOrDefaultAsync(u => u.Email.Equals(email));
+            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
         return user;
     }
 
@@ -25,12 +25,12 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
             .Include(user => user.Role)
             .AsQueryable();
 
-        if (!string.IsNullOrEmpty(request.RoleName))
+        if (!request.RoleName.IsNullOrEmpty())
         {
             query = query.Where(user => user.Role.Name.ToString().Equals(request.RoleName));
         }
 
-        if (!string.IsNullOrEmpty(request.FullName))
+        if (!request.FullName.IsNullOrEmpty())
         {
             query = query.Where(user => user.FullName.Contains(request.FullName!));
         }
@@ -50,17 +50,4 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         return _context.Users
             .AnyAsync(u => u.Email == email && u.Id != id);
     }
-
-    public virtual async Task<User?> GetByEmailAsync(string email, Expression<Func<User, object>>? includeExpressions = null)
-    {
-        var user = _context.Users.AsQueryable();
-
-        if (includeExpressions is not null)
-        {
-            user = user.Include(includeExpressions);
-        }
-
-        return await user.FirstOrDefaultAsync(e => e.Email == email);
-    }
-
 }

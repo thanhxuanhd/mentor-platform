@@ -6,7 +6,6 @@ using MentorPlatformAPI.Extensions;
 using MentorPlatformAPI.Filter;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddUserSecrets<Program>();
 var configuration = builder.Configuration;
 var allowedOrigins = configuration.GetSection("AllowedOrigins").Value!.Split(';');
 

@@ -5,7 +5,7 @@ export const axiosClient = axios.create({
     Accept: "application/json",
     "Content-Type": "application/json",
   },
-  baseURL: import.meta.env.VITE_BASE_URL_BE,
+  baseURL: "https://localhost:5000/api/",
 });
 
 axiosClient.interceptors.request.use(
