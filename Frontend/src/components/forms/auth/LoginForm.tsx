@@ -35,7 +35,6 @@ const LoginForm: React.FC = () => {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldError, setFieldError] = useState<{ email?: string; password?: string }>({});
-  const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -108,7 +107,6 @@ const LoginForm: React.FC = () => {
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
-        setIsAuthenticated(true);
         navigate("/");
       }, 1000);
     } catch (err) {
@@ -193,6 +191,12 @@ const LoginForm: React.FC = () => {
               placeholder="Enter your password"
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
               required
+                e.currentTarget.setCustomValidity(
+                  "Password must be at least 8 characters.",
+                )
+              }
+              onInput={(e) => e.currentTarget.setCustomValidity("")}
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
             />
             <button
               type="button"
