@@ -83,7 +83,7 @@ const SignUpForm: React.FC = () => {
 
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
-            Email
+            Email Address
           </label>
           <input
             id="email"

@@ -2,9 +2,10 @@ import { ConfigProvider } from "antd";
 import { CustomTheme } from "./theme/CustomTheme";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
+import { App as AntdApp } from "antd";
 
 function App() {
-   window.addEventListener("storage", () => {
+  window.addEventListener("storage", () => {
     if (!localStorage.getItem("token")) {
       window.location.href = "/";
     }
@@ -12,9 +13,11 @@ function App() {
   return (
     <>
       <ConfigProvider theme={CustomTheme}>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <AntdApp>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AntdApp>
       </ConfigProvider>
     </>
   );

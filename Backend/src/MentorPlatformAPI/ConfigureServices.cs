@@ -1,8 +1,8 @@
-﻿using System.Text.Json.Serialization;
-using Contract.Dtos.Users.Requests;
+﻿using Contract.Dtos.Users.Requests;
 using FluentValidation;
 using MentorPlatformAPI.ExceptionHandler;
 using MentorPlatformAPI.Extensions;
+using System.Text.Json.Serialization;
 
 namespace MentorPlatformAPI;
 
@@ -22,7 +22,7 @@ public static class ConfigureServices
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
-       
+
         services.AddValidatorsFromAssemblyContaining<EditUserRequestValidator>();
 
         return services;

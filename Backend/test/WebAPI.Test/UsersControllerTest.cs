@@ -35,8 +35,8 @@ public class UsersControllerTests
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _usersController.GetUserById(userId);        
-        
+        var result = await _usersController.GetUserById(userId);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -47,7 +47,8 @@ public class UsersControllerTests
             Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
             _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
         });
-    }    [Test]
+    }
+    [Test]
     public async Task GetUserById_UserDoesNotExist_ReturnsNotFoundResult()
     {
         // Arrange
@@ -70,8 +71,8 @@ public class UsersControllerTests
             Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
             _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
         });
-    }    
-    
+    }
+
     [Test]
     public async Task FilterUser_UsersFound_ReturnsOkResultWithPaginatedUsers()
     {
@@ -135,15 +136,15 @@ public class UsersControllerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", RoleId = 1 };
+        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", Role = "Admin" };
         var serviceResult = Result.Success<bool>(true, HttpStatusCode.OK);
 
         _userServiceMock.Setup(s => s.EditUserAsync(userId, request))
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.EditUser(userId, request);        
-        
+        var result = await _usersController.EditUser(userId, request);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -164,15 +165,15 @@ public class UsersControllerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", RoleId = 1 };
+        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", Role = "Admin" };
         var serviceResult = Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
 
         _userServiceMock.Setup(s => s.EditUserAsync(userId, request))
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.EditUser(userId, request);        
-        
+        var result = await _usersController.EditUser(userId, request);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -199,8 +200,8 @@ public class UsersControllerTests
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.ChangeUserStatus(userId);        
-        
+        var result = await _usersController.ChangeUserStatus(userId);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -227,8 +228,8 @@ public class UsersControllerTests
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.ChangeUserStatus(userId);        
-        
+        var result = await _usersController.ChangeUserStatus(userId);
+
         // Assert
         Assert.Multiple(() =>
         {

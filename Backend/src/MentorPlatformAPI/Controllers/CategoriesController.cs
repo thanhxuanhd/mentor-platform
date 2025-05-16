@@ -1,4 +1,5 @@
 ﻿using Application.Services.Categories;
+using Contract.Dtos.Categories.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +25,31 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     {
         var result = await categoryService.FilterCourseByCategoryAsync(id, pageIndex, pageSize);
 
+
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateCategory([FromBody] CategoryRequest request)
+    {
+        var result = await categoryService.CreateCategoryAsync(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut]
+    [Route("{categoryId}")]
+    public async Task<IActionResult> EditCategory(Guid categoryId, [FromBody] CategoryRequest request)
+    {
+        var result = await categoryService.EditCategoryAsync(categoryId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpDelete]
+    [Route("{categoryId}")]
+    public async Task<IActionResult> DeleteCategory(Guid categoryId)
+    {
+        var result = await categoryService.SoftDeleteCategoryAsync(categoryId);
         return StatusCode((int)result.StatusCode, result);
     }
 }
