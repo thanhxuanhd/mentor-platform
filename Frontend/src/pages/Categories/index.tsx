@@ -211,6 +211,7 @@ export default function CategoriesPage() {
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => handleCreateClick()}
+          name=''
         >
           Add Category
         </Button>

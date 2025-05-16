@@ -57,9 +57,8 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 name="edit_category_form"
                 requiredMark={false}
             >
-                <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter the category name' },
+                <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter category name' },
                 { max: 50, message: 'Category name should not exceed 50 characters' },
-                { pattern: /^[a-zA-Z0-9 ]*$/, message: 'Category name can only contain letters, numbers, and spaces' },
                 { pattern: /^[^\s]+.*$/, message: 'Category name cannot start with a space' }
                 ]}>
                     <Input placeholder="Enter new category name" />
@@ -68,8 +67,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                     name="description"
                     label="Description"
                     rules={[{ max: 200, message: 'Description cannot exceed 200 characters' },
-                    { pattern: /^[^\s]+.*$/, message: 'Description cannot start with a space' },
-                    { pattern: /^[a-zA-Z0-9 ]*$/, message: 'Description can only contain letters, numbers, and spaces' }
+                    { pattern: /^[^\s]+.*$/, message: 'Description cannot start with a space' }
                     ]}
                 >
                     <Input.TextArea placeholder="Enter your description" />

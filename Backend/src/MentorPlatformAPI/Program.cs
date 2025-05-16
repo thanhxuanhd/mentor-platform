@@ -30,7 +30,6 @@ builder.Services.AddControllers(options =>
 
 builder.Services
     .AddApplicationServices()
-    .AddValidators()
     .AddPresentationServices()
     .AddInfrastructureServices(configuration);
 
