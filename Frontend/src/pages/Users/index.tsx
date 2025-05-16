@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Input,
   Segmented,
@@ -20,10 +21,7 @@ import {
 import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
 import { userService } from "../../services/user/userService";
-import {
-  notifySuccess,
-  notifyError,
-} from "../../components/shared/Notification";
+import type { NotificationProps } from "../../types/Notification";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -45,7 +43,7 @@ export default function UsersPage() {
     roleOptions[0].value,
   );
   const [searchValue, setSearchValue] = useState("");
-
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -53,8 +51,10 @@ export default function UsersPage() {
     id: "",
     fullName: "",
     email: "",
-    roleId: 1,
+    role: "Admin",
   });
+
+  const { notification } = App.useApp();
 
   const columns: ColumnsType<GetUserResponse> = [
     {
@@ -74,9 +74,13 @@ export default function UsersPage() {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      render: (_, { roleId }) => (
-        <Tag color={roleId === 1 ? "pink" : roleId === 2 ? "cyan" : "lime"}>
-          {roleId === 1 ? "Admin" : roleId === 2 ? "Mentor" : "Learner"}
+      render: (_, { role }) => (
+        <Tag
+          color={
+            role === "Admin" ? "pink" : role === "Mentor" ? "cyan" : "lime"
+          }
+        >
+          {role}
         </Tag>
       ),
     },
@@ -91,8 +95,16 @@ export default function UsersPage() {
       dataIndex: "status",
       key: "status",
       render: (_, { status }) => (
-        <Tag color={status === 1 ? "lime" : status === 2 ? "red" : "orange"}>
-          {status === 1 ? "Active" : status === 2 ? "Inactive" : "Pending"}
+        <Tag
+          color={
+            status === "Active"
+              ? "lime"
+              : status === "Deactivated"
+                ? "red"
+                : "orange"
+          }
+        >
+          {status}
         </Tag>
       ),
     },
@@ -115,7 +127,7 @@ export default function UsersPage() {
           />
           <Button
             icon={
-              record.status === 1 ? (
+              record.status === "Active" ? (
                 <StopOutlined type="default" style={{ color: "red" }} />
               ) : (
                 <CheckOutlined type="default" style={{ color: "lime" }} />
@@ -141,7 +153,11 @@ export default function UsersPage() {
       setTotalCount(response.totalCount);
       setUsersData(response.items);
     } catch {
-      notifyError("Failed to fetch users");
+      setNotify({
+        type: "error",
+        message: "Failed to fetch users",
+        description: "An error occurred while fetching users.",
+      });
     } finally {
       setLoading(false);
     }
@@ -151,12 +167,23 @@ export default function UsersPage() {
     fetchUsers();
   }, [fetchUsers]);
 
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
   const handleEditClick = (user: GetUserResponse) => {
     setEditingUser({
       id: user.id,
       fullName: user.fullName,
       email: user.email,
-      roleId: user.roleId,
+      role: user.role,
     });
     setIsModalVisible(true);
   };
@@ -171,12 +198,17 @@ export default function UsersPage() {
         setPageIndex(1);
         fetchUsers();
         setIsModalVisible(false);
-        notifySuccess(
-          "User Updated",
-          "User details have been updated successfully.",
-        );
+        setNotify({
+          type: "success",
+          message: "Success",
+          description: "User updated successfully.",
+        });
       } catch {
-        notifyError("Failed to update user");
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "An error occurred while updating user.",
+        });
       } finally {
         setLoading(false);
       }
@@ -210,24 +242,27 @@ export default function UsersPage() {
         const user = usersData.find((user) => user.id === userId);
         if (!user) return;
 
-        const newStatus = user.status === 1 ? 2 : 1;
+        const newStatus = user.status === "Active" ? "Deactivated" : "Active";
         await userService.changeUserStatus(userId);
 
         setUsersData((prev) =>
-          prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)),
+          prev.map((u) =>
+            u.id === userId
+              ? { ...u, status: newStatus as GetUserResponse["status"] }
+              : u,
+          ),
         );
-
-        notifySuccess(
-          "Status Updated",
-          `User status has been changed to ${
-            newStatus === 1 ? "Active" : "Inactive"
-          }.`,
-        );
+        setNotify({
+          type: "success",
+          message: "Success",
+          description: `User status updated to ${newStatus}.`,
+        });
       } catch {
-        notifyError(
-          "Failed to Update Status",
-          "An error occurred while updating the user status.",
-        );
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "An error occurred while changing user status.",
+        });
       }
     },
     [usersData],

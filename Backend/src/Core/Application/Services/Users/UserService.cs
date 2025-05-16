@@ -6,9 +6,6 @@ using Contract.Repositories;
 using Contract.Shared;
 using Domain.Enums;
 using System.Net;
-using Contract.Dtos.Users.Paginations;
-using Domain.Enums;
-using Contract.Dtos.Users.Requests;
 
 namespace Application.Services.Users;
 
@@ -61,7 +58,7 @@ public class UserService(IUserRepository userRepository) : IUserService
             FullName = u.FullName,
             Email = u.Email,
             Role = u.Role.Name.ToString(),
-            Status = u.Status,
+            Status = u.Status.ToString(),
             JoinedDate = u.JoinedDate,
             LastActive = u.LastActive
         });
@@ -73,14 +70,27 @@ public class UserService(IUserRepository userRepository) : IUserService
 
     public async Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request)
     {
+        if (await userRepository.ExistByEmailExcludeAsync(id, request.Email))
+        {
+            return Result.Failure<bool>($"Email {request.Email} already exists.", HttpStatusCode.Conflict);
+        }
+
         var user = await userRepository.GetByIdAsync(id);
         if (user == null)
         {
             return Result.Failure<bool>($"User with id {id} not found.", HttpStatusCode.NotFound);
         }
+
+        if (!Enum.TryParse(typeof(UserRole), request.Role, out var roleEnum))
+        {
+            return Result.Failure<bool>($"Invalid role: {request.Role}", HttpStatusCode.BadRequest);
+        }
+        else
+        {
+            user.RoleId = (int)roleEnum;
+        }
         user.FullName = request.FullName;
         user.Email = request.Email;
-        user.RoleId = request.RoleId;
 
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();

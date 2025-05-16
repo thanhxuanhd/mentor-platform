@@ -12,7 +12,7 @@ export interface EditUserRequest {
   id: string;
   fullName: string;
   email: string;
-  roleId: number;
+  role: string;
 }
 
 export interface UserFilterPagedRequest {

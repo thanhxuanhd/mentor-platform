@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Application.Helpers;
+﻿using Application.Helpers;
 using Contract.Dtos.Authentication.Requests;
 using Contract.Repositories;
 using Contract.Services;
@@ -7,6 +6,7 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Services.Authorization;
+using System.Net;
 
 namespace Application.Services.Authentication;
 

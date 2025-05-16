@@ -71,7 +71,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           name="role"
           label="Role"
           rules={[{ required: true, message: "Please select a role" }]}
-          initialValue={initialValues.roleId}
+          initialValue={initialValues.role}
         >
           <Select placeholder="Select a role">
             <Select.Option value="Admin">Admin</Select.Option>
