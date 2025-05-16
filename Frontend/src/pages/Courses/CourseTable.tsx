@@ -69,6 +69,11 @@ export const CourseTable = ({
       dataIndex: "mentorName",
       key: "mentorName",
     },
+    {
+      title: "Difficulty",
+      dataIndex: "difficulty",
+      key: "difficulty",
+    },
     // {
     //   title: "Students",
     //   dataIndex: "enrolledStudents",
