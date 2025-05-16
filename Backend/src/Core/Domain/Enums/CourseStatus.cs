@@ -2,8 +2,8 @@
 {
     public enum CourseStatus
     {
-        Draft = 0,
-        Published = 1,
-        Archived = 2
+        Draft, 
+        Published, 
+        Archived
     }
 }

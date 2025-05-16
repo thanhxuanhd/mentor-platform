@@ -2,9 +2,9 @@ export interface GetUserResponse {
   id: string;
   fullName: string;
   email: string;
-  roleId: 1 | 2 | 3;
+  role: "Admin" | "Mentor" | "Learner";
   joinedDate: string;
-  status: 0 | 1 | 2;
+  status: "Pending" | "Active" | "Deactivated";
   lastActive: string;
 }
 

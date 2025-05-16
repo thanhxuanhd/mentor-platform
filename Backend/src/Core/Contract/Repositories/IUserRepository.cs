@@ -1,13 +1,13 @@
 ﻿using Contract.Dtos.Users.Paginations;
 using Contract.Shared;
 using Domain.Entities;
+using System.Linq.Expressions;
 
 namespace Contract.Repositories;
 
 public interface IUserRepository : IBaseRepository<User, Guid>
 {
-    Task<User?> GetUserByUsername(string requestUsername);
-    Task<List<User>> GetAllUsersWithRole();
-    Task<PaginatedList<User>> FilterUser(UserFilterPagedRequest request);
+    Task<User?> GetUserByFullname(string fullname);
+    Task<User?> GetByEmailAsync(string email, Expression<Func<User, object>>? includeExpressions = null);
     Task<bool> ExistByEmailExcludeAsync(Guid id, string email);
 }

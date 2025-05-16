@@ -68,15 +68,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           <Input />
         </Form.Item>
         <Form.Item
-          name="roleId"
+          name="role"
           label="Role"
           rules={[{ required: true, message: "Please select a role" }]}
           initialValue={initialValues.roleId}
         >
           <Select placeholder="Select a role">
-            <Select.Option value={1}>Admin</Select.Option>
-            <Select.Option value={2}>Mentor</Select.Option>
-            <Select.Option value={3}>Learner</Select.Option>
+            <Select.Option value="Admin">Admin</Select.Option>
+            <Select.Option value="Mentor">Mentor</Select.Option>
+            <Select.Option value="Learner">Learner</Select.Option>
           </Select>
         </Form.Item>
       </Form>

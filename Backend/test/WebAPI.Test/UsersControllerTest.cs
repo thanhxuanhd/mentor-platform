@@ -28,25 +28,26 @@ public class UsersControllerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var userResponse = new GetUserResponse { Id = userId, FullName = "Test User", Email = "test@example.com", RoleId = 3 };
+        var userResponse = new GetUserResponse { Id = userId, FullName = "Test User", Email = "test@example.com", Role = "Learner" };
         var serviceResult = Result.Success(userResponse, HttpStatusCode.OK);
 
         _userServiceMock.Setup(s => s.GetUserByIdAsync(userId))
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _usersController.GetUserById(userId);
-
+        var result = await _usersController.GetUserById(userId);        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
-    }
-
-    [Test]
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
+        });
+    }    [Test]
     public async Task GetUserById_UserDoesNotExist_ReturnsNotFoundResult()
     {
         // Arrange
@@ -60,14 +61,17 @@ public class UsersControllerTests
         var result = await _usersController.GetUserById(userId);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
-    }
-
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.GetUserByIdAsync(userId), Times.Once);
+        });
+    }    
+    
     [Test]
     public async Task FilterUser_UsersFound_ReturnsOkResultWithPaginatedUsers()
     {
@@ -75,8 +79,8 @@ public class UsersControllerTests
         var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 5, FullName = "Test" };
         var userResponses = new List<GetUserResponse>
         {
-            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 1", Email = "test1@example.com", RoleId = 3 },
-            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 2", Email = "test2@example.com", RoleId = 1 }
+            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 1", Email = "test1@example.com", Role = "Learner" },
+            new GetUserResponse { Id = Guid.NewGuid(), FullName = "Test User 2", Email = "test2@example.com", Role = "Admin" }
         };
         var paginatedList = new PaginatedList<GetUserResponse>(userResponses, userResponses.Count, request.PageIndex, request.PageSize);
         var serviceResult = Result.Success(paginatedList, HttpStatusCode.OK);
@@ -88,12 +92,15 @@ public class UsersControllerTests
         var result = await _usersController.FilterUser(request);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.FilterUserAsync(request), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.FilterUserAsync(request), Times.Once);
+        });
     }
 
     [Test]
@@ -112,12 +119,15 @@ public class UsersControllerTests
         var result = await _usersController.FilterUser(request);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.FilterUserAsync(request), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.FilterUserAsync(request), Times.Once);
+        });
     }
 
     [Test]
@@ -132,15 +142,21 @@ public class UsersControllerTests
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.EditUser(userId, request);
-
+        var result = await _usersController.EditUser(userId, request);        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.EditUserAsync(userId, request), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            if (objectResult != null)
+            {
+                Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+                Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            }
+            _userServiceMock.Verify(s => s.EditUserAsync(userId, request), Times.Once);
+        });
     }
 
     [Test]
@@ -155,15 +171,21 @@ public class UsersControllerTests
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.EditUser(userId, request);
-
+        var result = await _usersController.EditUser(userId, request);        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.EditUserAsync(userId, request), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            if (objectResult != null)
+            {
+                Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+                Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            }
+            _userServiceMock.Verify(s => s.EditUserAsync(userId, request), Times.Once);
+        });
     }
 
     [Test]
@@ -177,15 +199,21 @@ public class UsersControllerTests
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.ChangeUserStatus(userId);
-
+        var result = await _usersController.ChangeUserStatus(userId);        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.ChangeUserStatusAsync(userId), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            if (objectResult != null)
+            {
+                Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+                Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            }
+            _userServiceMock.Verify(s => s.ChangeUserStatusAsync(userId), Times.Once);
+        });
     }
 
     [Test]
@@ -199,14 +227,20 @@ public class UsersControllerTests
             .Returns(Task.FromResult(serviceResult));
 
         // Act
-        var result = await _usersController.ChangeUserStatus(userId);
-
+        var result = await _usersController.ChangeUserStatus(userId);        
+        
         // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = result as ObjectResult;
-        Assert.That(objectResult, Is.Not.Null);
-        Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-        Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        _userServiceMock.Verify(s => s.ChangeUserStatusAsync(userId), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            if (objectResult != null)
+            {
+                Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+                Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            }
+            _userServiceMock.Verify(s => s.ChangeUserStatusAsync(userId), Times.Once);
+        });
     }
 }

@@ -10,5 +10,5 @@ public class GetUserResponse
     public UserStatus Status { get; set; }
     public DateOnly LastActive { get; set; }
     public DateOnly JoinedDate { get; set; }
-    public int RoleId { get; set; }
+    public string? Role { get; set; }
 }

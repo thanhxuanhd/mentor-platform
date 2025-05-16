@@ -11,4 +11,5 @@ public interface IUserService
     Task<Result<PaginatedList<GetUserResponse>>> FilterUserAsync(UserFilterPagedRequest request);
     Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request);
     Task<Result<bool>> ChangeUserStatusAsync(Guid userId);
+    Task<Result<GetUserResponse>> GetUserByEmailAsync(string email);
 }
