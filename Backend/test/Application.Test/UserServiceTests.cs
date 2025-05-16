@@ -65,7 +65,7 @@ namespace Application.Test
             {
                 Assert.That(result.IsSuccess, Is.False);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-                Assert.That(result.Error, Is.EqualTo("Null result"));
+                Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
             });
         }
 
@@ -110,7 +110,7 @@ namespace Application.Test
                     FullName = u.FullName,
                     Email = u.Email,
                     Role = u.Role.Name.ToString(),
-                    Status = u.Status,
+                    Status = u.Status.ToString(),
                     JoinedDate = u.JoinedDate,
                     LastActive = u.LastActive
                 });
@@ -198,7 +198,7 @@ namespace Application.Test
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", RoleId = 1 };
+            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", Role = "Admin" };
             var user = new User { Id = userId, FullName = "Old Name", Email = "old@example.com", RoleId = 2 };
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
@@ -213,7 +213,10 @@ namespace Application.Test
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
                 Assert.That(result.Value, Is.True);
-                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.FullName == request.FullName && u.Email == request.Email && u.RoleId == request.RoleId)), Times.Once);
+                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u =>
+                    u.FullName == request.FullName &&
+                    u.Email == request.Email &&
+                    u.RoleId == (int)Enum.Parse(typeof(UserRole), request.Role))), Times.Once);
                 _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
             });
         }
@@ -223,7 +226,7 @@ namespace Application.Test
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", RoleId = 1 };
+            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", Role = "Admin" };
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
 
             // Act
@@ -234,7 +237,7 @@ namespace Application.Test
             {
                 Assert.That(result.IsSuccess, Is.False);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-                Assert.That(result.Error, Is.EqualTo("Null result"));
+                Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
             });
         }
 

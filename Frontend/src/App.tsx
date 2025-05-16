@@ -13,9 +13,10 @@ function App() {
   return (
     <>
       <ConfigProvider theme={CustomTheme}>
-        <AntdApp><BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <AntdApp>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
         </AntdApp>
       </ConfigProvider>
     </>

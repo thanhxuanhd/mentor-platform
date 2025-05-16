@@ -136,7 +136,7 @@ public class UsersControllerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", RoleId = 1 };
+        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", Role = "Admin" };
         var serviceResult = Result.Success<bool>(true, HttpStatusCode.OK);
 
         _userServiceMock.Setup(s => s.EditUserAsync(userId, request))
@@ -165,7 +165,7 @@ public class UsersControllerTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", RoleId = 1 };
+        var request = new EditUserRequest { FullName = "Updated Name", Email = "test@example.com", Role = "Admin" };
         var serviceResult = Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
 
         _userServiceMock.Setup(s => s.EditUserAsync(userId, request))

@@ -1,5 +1,5 @@
 export interface NotificationProps {
-    message: string;
-    description: string;
-    type: "info" | "success" | "error" | "warning";
+  message: string;
+  description: string;
+  type: "info" | "success" | "error" | "warning";
 }

@@ -25,6 +25,8 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     {
         var result = await categoryService.FilterCourseByCategoryAsync(id, pageIndex, pageSize);
 
+
+
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -40,6 +42,14 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     public async Task<IActionResult> EditCategory(Guid categoryId, [FromBody] CategoryRequest request)
     {
         var result = await categoryService.EditCategoryAsync(categoryId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpDelete]
+    [Route("{categoryId}")]
+    public async Task<IActionResult> DeleteCategory(Guid categoryId)
+    {
+        var result = await categoryService.SoftDeleteCategoryAsync(categoryId);
         return StatusCode((int)result.StatusCode, result);
     }
 }

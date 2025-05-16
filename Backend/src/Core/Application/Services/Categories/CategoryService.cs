@@ -30,7 +30,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Description = c.Description,
             Courses = c.Courses.Count(),
             Status = c.Status
-        }); 
+        });
 
         PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync(categoryInfos, pageSize, pageIndex);
 
@@ -109,6 +109,19 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         category.Name = request.Name;
         category.Description = request.Description;
         category.Status = request.Status;
+        categoryRepository.Update(category);
+        var result = await categoryRepository.SaveChangesAsync();
+        return Result.Success(true, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<bool>> SoftDeleteCategoryAsync(Guid categoryId)
+    {
+        var category = await categoryRepository.GetByIdAsync(categoryId);
+        if (category == null)
+        {
+            return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
+        }
+        category.IsDeleted = true;
         categoryRepository.Update(category);
         var result = await categoryRepository.SaveChangesAsync();
         return Result.Success(true, HttpStatusCode.OK);

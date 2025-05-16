@@ -1,6 +1,4 @@
-﻿using Contract.Dtos.Users.Paginations;
-using Contract.Repositories;
-using Contract.Shared;
+﻿using Contract.Repositories;
 using Domain.Entities;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
@@ -20,6 +18,15 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         return user;
     }
 
+    public async Task<User?> GetUserByFullname(string fullName)
+    {
+        var user = await _context.Users
+            .Include(user => user.Role)
+            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
+
+        return user;
+    }
+
     public virtual async Task<User?> GetByEmailAsync(string email, Expression<Func<User, object>>? includeExpressions = null)
     {
         var user = _context.Users.AsQueryable();
@@ -32,4 +39,9 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         return await user.FirstOrDefaultAsync(e => e.Email == email);
     }
 
+    public Task<bool> ExistByEmailExcludeAsync(Guid id, string email)
+    {
+        return _context.Users
+            .AnyAsync(e => e.Email == email && e.Id != id);
+    }
 }

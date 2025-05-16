@@ -6,7 +6,7 @@ public class EditUserRequest
 {
     public string FullName { get; set; } = default!;
     public string Email { get; set; } = default!;
-    public int RoleId { get; set; }
+    public string Role { get; set; } = default!;
 }
 
 public class EditUserRequestValidator : AbstractValidator<EditUserRequest>
@@ -25,8 +25,8 @@ public class EditUserRequestValidator : AbstractValidator<EditUserRequest>
             .EmailAddress()
             .WithMessage("Invalid email format");
 
-        RuleFor(x => x.RoleId)
+        RuleFor(x => x.Role)
             .NotEmpty()
-            .WithMessage("Role ID is required");
+            .WithMessage("Role is required");
     }
 }

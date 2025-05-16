@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Input,
   Segmented,
@@ -7,9 +8,8 @@ import {
   Tag,
   type GetProps,
 } from "antd";
-import { useEffect, useState } from "react";
-import type { User } from "../../types/UserTypes";
-import type { PaginatedList } from "../../types/Pagination";
+import { useCallback, useEffect, useState } from "react";
+import type { EditUserRequest, GetUserResponse } from "../../types/UserTypes";
 import type { ColumnsType } from "antd/es/table";
 import PaginationControls from "../../components/shared/Pagination";
 import {
@@ -20,37 +20,43 @@ import {
 } from "@ant-design/icons";
 import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
+import { userService } from "../../services/user/userService";
+import type { NotificationProps } from "../../types/Notification";
+
 type SearchProps = GetProps<typeof Input.Search>;
 
 const { Search } = Input;
 
-const filterOptions = [
-  { label: "All", value: "all" },
-  { label: "Mentor", value: "mentor" },
-  { label: "Learner", value: "learner" },
+const roleOptions = [
+  { label: "All", value: "" },
+  { label: "Admin", value: "Admin" },
+  { label: "Mentor", value: "Mentor" },
+  { label: "Learner", value: "Learner" },
 ];
 
 export default function UsersPage() {
-  const [usersData, setUsersData] = useState<PaginatedList<User>>({
-    items: [],
-    totalCount: 0,
-    pageSize: 5,
-    pageIndex: 1,
-    totalPages: 0,
-  });
-  const [selectedFilter, setSelectedFilter] = useState(filterOptions[0].value);
+  const [usersData, setUsersData] = useState<GetUserResponse[]>([]);
+  const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+  const [totalCount, setTotalCount] = useState(0);
+  const [selectedRoleSegment, setSelectedRoleSegment] = useState(
+    roleOptions[0].value,
+  );
+  const [searchValue, setSearchValue] = useState("");
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const [loading, setLoading] = useState(false);
+
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingUser, setEditingUser] = useState<User>({
+  const [editingUser, setEditingUser] = useState<EditUserRequest>({
     id: "",
-    name: "",
+    fullName: "",
     email: "",
     role: "Admin",
-    joinedDate: "",
-    status: "Active",
-    lastActive: "",
   });
 
-  const columns: ColumnsType<User> = [
+  const { notification } = App.useApp();
+
+  const columns: ColumnsType<GetUserResponse> = [
     {
       title: "User",
       width: "30%",
@@ -59,7 +65,7 @@ export default function UsersPage() {
       key: "userInfo",
       render: (_, record) => (
         <div className="truncate">
-          <div className="font-medium">{record.name}</div>
+          <div className="font-medium">{record.fullName}</div>
           <div className="text-gray-500 text-sm">{record.email}</div>
         </div>
       ),
@@ -117,16 +123,17 @@ export default function UsersPage() {
           <Button
             type="primary"
             icon={<EditFilled />}
-            onClick={handleEditClick}
+            onClick={() => handleEditClick(record)}
           />
           <Button
             icon={
-              record.status == "Active" ? (
+              record.status === "Active" ? (
                 <StopOutlined type="default" style={{ color: "red" }} />
               ) : (
                 <CheckOutlined type="default" style={{ color: "lime" }} />
               )
             }
+            onClick={() => handleChangeStatus(record.id)}
           />
           <Button color="cyan" icon={<MessageOutlined />} />
         </Space>
@@ -134,45 +141,134 @@ export default function UsersPage() {
     },
   ];
 
-  const handleEditClick = () => setIsModalVisible(true);
-
-  const handleCancel = () => setIsModalVisible(false);
-
-  const handleSubmit = (updatedUser: User) => {
-    console.log("Updated user:", updatedUser);
-    setEditingUser(updatedUser);
-    setIsModalVisible(false);
-  };
-
-  const fetchUsers = async () => {
-    // Simulate an API call
-    setUsersData({
-      items: usersData.items,
-      totalCount: usersData.totalCount,
-      pageSize: usersData.pageSize,
-      pageIndex: usersData.pageIndex,
-      totalPages: usersData.totalPages,
-    });
-  };
+  const fetchUsers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await userService.getUsers({
+        pageIndex: pageIndex,
+        pageSize: pageSize,
+        roleName: selectedRoleSegment,
+        fullName: searchValue,
+      });
+      setTotalCount(response.totalCount);
+      setUsersData(response.items);
+    } catch {
+      setNotify({
+        type: "error",
+        message: "Failed to fetch users",
+        description: "An error occurred while fetching users.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [pageIndex, pageSize, searchValue, selectedRoleSegment]);
 
   useEffect(() => {
     fetchUsers();
+  }, [fetchUsers]);
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
+  const handleEditClick = (user: GetUserResponse) => {
+    setEditingUser({
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+    });
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => setIsModalVisible(false);
+
+  const handleSubmit = useCallback(
+    async (updatedUser: EditUserRequest) => {
+      try {
+        setLoading(true);
+        await userService.updateUser(updatedUser.id, updatedUser);
+        setPageIndex(1);
+        fetchUsers();
+        setIsModalVisible(false);
+        setNotify({
+          type: "success",
+          message: "Success",
+          description: "User updated successfully.",
+        });
+      } catch {
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "An error occurred while updating user.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchUsers],
+  );
+
+  const handleSearchInput: SearchProps["onSearch"] = useCallback(
+    (value: string) => {
+      setSearchValue(value);
+    },
+    [],
+  );
+
+  const handlePageChange = useCallback((newPage: number) => {
+    setPageIndex(newPage);
   }, []);
 
-  const handleSearchInput: SearchProps["onSearch"] = (/*value, _e, info*/) => {
-    throw new Error("Function not implemented.");
-  };
-  const handlePageChange = (/*page: number*/): void => {
-    throw new Error("Function not implemented.");
-  };
+  const handlePageSizeChange = useCallback((newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPageIndex(1);
+  }, []);
 
-  const handlePageSizeChange = (/*pageSize: number*/): void => {
-    throw new Error("Function not implemented.");
-  };
+  const handleFilterChange = useCallback((value: string) => {
+    setSelectedRoleSegment(value);
+    setPageIndex(1);
+  }, []);
 
-  const handleFilterChange = (value: string): void => {
-    setSelectedFilter(value);
-  };
+  const handleChangeStatus = useCallback(
+    async (userId: string) => {
+      try {
+        const user = usersData.find((user) => user.id === userId);
+        if (!user) return;
+
+        const newStatus = user.status === "Active" ? "Deactivated" : "Active";
+        await userService.changeUserStatus(userId);
+
+        setUsersData((prev) =>
+          prev.map((u) =>
+            u.id === userId
+              ? { ...u, status: newStatus as GetUserResponse["status"] }
+              : u,
+          ),
+        );
+        setPageIndex(1);
+        setNotify({
+          type: "success",
+          message: "Success",
+          description: `User status updated to ${newStatus}.`,
+        });
+      } catch {
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "An error occurred while changing user status.",
+        });
+      }
+    },
+    [usersData],
+  );
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
@@ -185,31 +281,38 @@ export default function UsersPage() {
             size="large"
             enterButton
             onSearch={handleSearchInput}
+            onChange={(e) => {
+              if (e.target.value === "") {
+                setSearchValue("");
+              }
+            }}
           />
         </div>
       </div>
 
       <div className="p-1 mb-6">
         <Segmented<string>
-          options={filterOptions}
+          options={roleOptions}
           size="large"
           style={{ fontSize: "10px" }}
-          value={selectedFilter}
+          value={selectedRoleSegment}
           onChange={handleFilterChange}
         />
       </div>
 
-      <Table<User>
+      <Table<GetUserResponse>
         pagination={false}
         columns={columns}
-        dataSource={usersData.items}
+        dataSource={usersData}
         className="mb-6"
         rowKey="id"
+        loading={loading}
+        scroll={{ x: true }}
       />
       <PaginationControls
-        pageIndex={usersData.pageIndex}
-        pageSize={usersData.pageSize}
-        totalCount={usersData.totalCount}
+        pageIndex={pageIndex}
+        pageSize={pageSize}
+        totalCount={totalCount}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       />

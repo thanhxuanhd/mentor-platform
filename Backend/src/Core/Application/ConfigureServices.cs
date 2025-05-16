@@ -16,4 +16,10 @@ public static class ConfigureServices
 
         return services;
     }
+
+    public static IServiceCollection AddValidators(this IServiceCollection services)
+    {
+        services.AddValidatorsFromAssemblyContaining<EditUserRequestValidator>();
+        return services;
+    }
 }
