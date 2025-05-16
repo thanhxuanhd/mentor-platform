@@ -1,5 +1,8 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
+using Domain.Models;
+using Contract.Shared;
+using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
