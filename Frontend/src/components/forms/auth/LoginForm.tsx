@@ -13,7 +13,6 @@ import { useNavigate, Link } from "react-router-dom";
 import type { LoginReq } from "../../../models";
 import authService from "../../../services/auth/authService";
 import { redirectOAuthHandler } from "./oAuth";
-import { useAuth } from "../../../hooks";
 
 const encodePassword = (password: string): string => {
   const salt = "SECURITY_SALT"; 
@@ -190,13 +189,8 @@ const LoginForm: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
-              required
-                e.currentTarget.setCustomValidity(
-                  "Password must be at least 8 characters.",
-                )
-              }
+              required           
               onInput={(e) => e.currentTarget.setCustomValidity("")}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
             />
             <button
               type="button"
