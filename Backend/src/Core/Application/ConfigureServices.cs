@@ -13,13 +13,6 @@ public static class ConfigureServices
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICategoryService, CategoryService>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddValidators(this IServiceCollection services)
-    {
-        services.AddValidatorsFromAssemblyContaining<EditUserRequestValidator>();
         return services;
     }
 }
