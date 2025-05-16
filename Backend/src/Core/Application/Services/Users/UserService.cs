@@ -1,11 +1,11 @@
 ﻿using Contract.Dtos.Users.Extensions;
+using Contract.Dtos.Users.Paginations;
+using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
-using System.Net;
-using Contract.Dtos.Users.Paginations;
 using Domain.Enums;
-using Contract.Dtos.Users.Requests;
+using System.Net;
 
 namespace Application.Services.Users;
 
@@ -30,7 +30,7 @@ public class UserService(IUserRepository userRepository) : IUserService
         var user = await userRepository.GetByIdAsync(id, user => user.Role);
         if (user == null)
         {
-            return Result.Failure<GetUserResponse>("Null result", HttpStatusCode.NotFound);
+            return Result.Failure<GetUserResponse>($"User with id {id} not found.", HttpStatusCode.NotFound);
         }
 
         var userResponse = user.ToGetUserResponse();
@@ -44,7 +44,7 @@ public class UserService(IUserRepository userRepository) : IUserService
 
         if (!string.IsNullOrEmpty(request.FullName))
         {
-            users = users.Where(user => user.FullName.Contains(request.FullName));
+            users = users.Where(user => user.FullName.ToLower().Contains(request.FullName.ToLower()));
         }
 
         if (!string.IsNullOrEmpty(request.RoleName))
@@ -58,7 +58,7 @@ public class UserService(IUserRepository userRepository) : IUserService
             FullName = u.FullName,
             Email = u.Email,
             Role = u.Role.Name.ToString(),
-            Status = u.Status,
+            Status = u.Status.ToString(),
             JoinedDate = u.JoinedDate,
             LastActive = u.LastActive
         });
@@ -70,14 +70,27 @@ public class UserService(IUserRepository userRepository) : IUserService
 
     public async Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request)
     {
+        if (await userRepository.ExistByEmailExcludeAsync(id, request.Email))
+        {
+            return Result.Failure<bool>($"Email {request.Email} already exists.", HttpStatusCode.Conflict);
+        }
+
         var user = await userRepository.GetByIdAsync(id);
         if (user == null)
         {
-            return Result.Failure<bool>("Null result", HttpStatusCode.NotFound);
+            return Result.Failure<bool>($"User with id {id} not found.", HttpStatusCode.NotFound);
+        }
+
+        if (!Enum.TryParse(typeof(UserRole), request.Role, out var roleEnum))
+        {
+            return Result.Failure<bool>($"Invalid role: {request.Role}", HttpStatusCode.BadRequest);
+        }
+        else
+        {
+            user.RoleId = (int)roleEnum;
         }
         user.FullName = request.FullName;
         user.Email = request.Email;
-        user.RoleId = request.RoleId;
 
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
