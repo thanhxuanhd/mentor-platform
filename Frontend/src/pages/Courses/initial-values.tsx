@@ -1,4 +1,4 @@
-import type { Category, Course, CourseFormDataOptions } from "./types.tsx";
+import type { Course, CourseFormDataOptions } from "./types.tsx";
 
 export type CourseStates = "draft" | "published" | "archived";
 export const CourseStatesEnumMember: Record<CourseStates, string> = {
@@ -140,24 +140,6 @@ export const mockCourses: Course[] = [
     feedback: [],
   },
   {
-    id: "6",
-    title: "Time Management Techniques",
-    description: "Boost productivity and manage your time effectively",
-    categoryId: "5",
-    categoryName: "Time Management",
-    createdAt: "2024-08-18",
-    updatedAt: "2024-10-25",
-    status: "published",
-    enrolledStudents: 50,
-    completionRate: 88,
-    dueDate: "3 weeks",
-    difficulty: "beginner",
-    tags: ["time management"],
-    materials: [],
-    mentorId: "106",
-    feedback: [],
-  },
-  {
     id: "7",
     title: "Resolving Workplace Conflict",
     description: "Learn strategies for navigating and resolving conflict",
@@ -266,19 +248,4 @@ export const mockCourses: Course[] = [
     mentorId: "112",
     feedback: [],
   },
-];
-
-export const mockCategories: Category[] = [
-  { id: "1", name: "Leadership Coaching" },
-  { id: "2", name: "Career Development" },
-  { id: "3", name: "Project Management" },
-  { id: "4", name: "Public Speaking" },
-  { id: "5", name: "Time Management" },
-  { id: "6", name: "Conflict Resolution" },
-  { id: "7", name: "Communication Skills" },
-  { id: "8", name: "Negotiation" },
-  { id: "9", name: "Team Building" },
-  { id: "10", name: "Decision Making" },
-  { id: "11", name: "Emotional Intelligence" },
-  { id: "12", name: "Strategic Planning" },
 ];

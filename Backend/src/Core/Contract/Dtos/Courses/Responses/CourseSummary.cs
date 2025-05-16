@@ -1,4 +1,3 @@
-using System;
 using Domain.Enums;
 
 namespace Contract.Dtos.Courses.Responses;
@@ -12,5 +11,5 @@ public class CourseSummary
     public string? CategoryName { get; set; }
     public CourseDifficulty Difficulty { get; set; }
     public DateTime? DueDate { get; set; }
-    public CourseStatus Status { get; set; }
+    public CourseState State { get; set; }
 }

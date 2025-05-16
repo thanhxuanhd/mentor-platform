@@ -17,8 +17,13 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             return Result.Failure<CourseListResponse>("Page index and page size must be greater than 0",
                 HttpStatusCode.BadRequest);
 
-        var courses = await courseRepository.GetPaginatedCoursesAsync(request.PageIndex, request.PageSize,
-            request.CategoryId, request.MentorId);
+        var courses = await courseRepository.GetPaginatedCoursesAsync(
+            request.PageIndex,
+            request.PageSize,
+            request.CategoryId,
+            request.MentorId,
+            request.Keyword,
+            request.State);
 
         var items = courses.Items.Select(c => new CourseSummary
         {
@@ -29,7 +34,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             CategoryName = c.Category?.Name,
             Difficulty = c.Difficulty,
             DueDate = c.DueDate,
-            Status = c.Status
+            State = c.State
         }).ToList();
 
         var response = new CourseListResponse(items, courses.TotalCount, courses.PageIndex, courses.PageSize);
@@ -51,7 +56,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             CategoryName = course.Category?.Name,
             Difficulty = course.Difficulty,
             DueDate = course.DueDate,
-            Status = course.Status
+            State = course.State
         };
 
         return Result.Success(response, HttpStatusCode.OK);
@@ -65,7 +70,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             Description = request.Description,
             CategoryId = request.CategoryId,
             DueDate = request.DueDate,
-            Status = CourseStatus.Draft,
+            State = CourseState.Draft,
             Difficulty = request.Difficulty
         };
 
@@ -80,7 +85,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             CategoryId = course.CategoryId,
             Difficulty = course.Difficulty,
             DueDate = course.DueDate,
-            Status = course.Status
+            State = course.State
         };
 
         return Result.Success(response, HttpStatusCode.Created);
@@ -107,7 +112,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             CategoryId = course.CategoryId,
             Difficulty = course.Difficulty,
             DueDate = course.DueDate,
-            Status = course.Status
+            State = course.State
         };
 
         return Result.Success(response, HttpStatusCode.OK);

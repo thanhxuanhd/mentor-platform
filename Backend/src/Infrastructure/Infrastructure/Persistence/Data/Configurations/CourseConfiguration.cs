@@ -1,5 +1,4 @@
 using Domain.Entities;
-using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -21,7 +20,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .IsRequired()
             .HasMaxLength(256);
 
-        builder.Property(c => c.Status)
+        builder.Property(c => c.State)
             .HasConversion<string>();
 
         builder.Property(c => c.Difficulty)
@@ -31,13 +30,11 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .WithMany(cat => cat.Courses)
             .HasForeignKey(c => c.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
-        
-        // TODO: https://github.com/dotnet/efcore/issues/13146, https://github.com/dotnet/efcore/issues/15854
-        // Solution: raise issue and wait for user seeding 
-        // builder.HasOne(c => c.Mentor)
-        //     .WithMany()
-        //     .HasForeignKey(c => c.MentorId);
-        
+
+        builder.HasOne(c => c.Mentor)
+            .WithMany()
+            .HasForeignKey(c => c.MentorId);
+
         builder.HasMany(c => c.Tags)
             .WithMany()
             .UsingEntity<CourseTag>();

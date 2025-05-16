@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
 
-import {
-  CourseStatesEnumMember,
-  initialFormData,
-  mockCategories,
-} from "./initial-values.tsx";
-import type { Category, Course, CourseFormDataOptions } from "./types.tsx";
+import { CourseStatesEnumMember, initialFormData } from "./initial-values.tsx";
+import type {
+  Category,
+  Course,
+  CourseFormDataOptions,
+  Mentor,
+} from "./types.tsx";
 import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
 import { CourseTable } from "./CourseTable.tsx";
 import { CourseForm } from "./CourseForm.tsx";
 
 import { CourseResource } from "./CourseResource.tsx";
 import * as CourseClient from "./courseClient.tsx";
-import {CourseDetail} from "./CourseDetail.tsx";
-import {SearchBar} from "./SearchBar.tsx";
+import { CourseDetail } from "./CourseDetail.tsx";
+import { SearchBar } from "./SearchBar.tsx";
 
 const Page: React.FC = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -28,30 +29,38 @@ const Page: React.FC = () => {
   const [popoverTarget, setPopoverTarget] = useState<string | undefined>();
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
   const [states] = useState<Record<string, string>>(CourseStatesEnumMember);
   const [courses, setCourses] = useState<Course[]>([]);
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
 
-  const fetchCourses = async () => {
-    setLoading(true);
-
-    const response = await CourseClient.list({
-      pageIndex,
-      pageSize,
-      keyword: keyword,
-      state: state,
-      categoryId: categoryId,
-    });
-
-    setCourses(response.data);
-    setCategories(mockCategories);
-    setTotalCount(response.total);
-    setLoading(false);
-  };
-
   useEffect(() => {
+    const fetchCourses = async () => {
+      setLoading(true);
+
+      const courseResponse = await CourseClient.list({
+        pageIndex,
+        pageSize,
+        keyword: keyword,
+        state: state,
+        categoryId: categoryId,
+        mentorId: mentorId,
+      });
+
+      const categoryResponse = await CourseClient.categoryList();
+
+      const mentorResponse = await CourseClient.mentorList();
+
+      setTotalCount(courseResponse.totalPages);
+      setCategories(categoryResponse.items);
+      setMentors(mentorResponse.items);
+      setCourses(courseResponse.items);
+
+      setLoading(false);
+    };
+
     fetchCourses();
   }, [pageIndex, pageSize, keyword, state, categoryId, mentorId]);
 
@@ -79,6 +88,7 @@ const Page: React.FC = () => {
               <SearchBar
                 categories={categories}
                 states={states}
+                mentors={mentors}
                 onChange={(options) => {
                   setKeyword(options.keyword);
                   setState(options.state);

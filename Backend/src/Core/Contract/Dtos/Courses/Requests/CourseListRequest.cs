@@ -1,6 +1,4 @@
-using System;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
+using Domain.Enums;
 
 namespace Contract.Dtos.Courses.Requests;
 
@@ -10,4 +8,6 @@ public record CourseListRequest
     public int PageSize { get; init; }
     public Guid? CategoryId { get; init; }
     public Guid? MentorId { get; init; }
+    public string? Keyword { get; init; }
+    public CourseState? State { get; init; }
 }

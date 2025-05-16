@@ -7,7 +7,7 @@ public class Course : BaseEntity<Guid>
 {
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
-    public CourseStatus Status { get; set; }
+    public CourseState State { get; set; }
     public DateTime DueDate { get; set; }
     public CourseDifficulty Difficulty { get; set; }
     public Guid CategoryId { get; set; }

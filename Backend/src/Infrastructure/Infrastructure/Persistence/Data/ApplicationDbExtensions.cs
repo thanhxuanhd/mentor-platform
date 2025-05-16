@@ -31,7 +31,7 @@ public static class ApplicationDbExtensions
                 new User
                 {
                     Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                    FullName = "MySuperKawaiiMentorXxX@at.local",
+                    FullName = "MySuperKawawiiMentorXxX@at.local",
                     Email = "MySuperKawaiiMentorXxX@at.local",
                     PasswordHash = PasswordHelper.HashPassword("http://localhost:8080/register"),
                     RoleId = mentorRole.Id
@@ -75,7 +75,7 @@ public static class ApplicationDbExtensions
                 Title = "Introduction to Leadership",
                 CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                Status = CourseStatus.Published,
+                State = CourseState.Published,
                 DueDate = DateTime.UtcNow.AddMonths(3),
                 Description = "Learn the principles of effective leadership.",
                 Difficulty = CourseDifficulty.Beginner
@@ -85,7 +85,7 @@ public static class ApplicationDbExtensions
                 Title = "Advanced Communication Techniques",
                 CategoryId = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                Status = CourseStatus.Draft,
+                State = CourseState.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(2),
                 Description = "Master advanced communication skills for the workplace.",
                 Difficulty = CourseDifficulty.Intermediate
@@ -95,7 +95,7 @@ public static class ApplicationDbExtensions
                 Title = "Public Speaking Mastery",
                 CategoryId = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                Status = CourseStatus.Published,
+                State = CourseState.Published,
                 DueDate = DateTime.UtcNow.AddMonths(1),
                 Description = "Become a confident public speaker.",
                 Difficulty = CourseDifficulty.Advanced
@@ -105,7 +105,7 @@ public static class ApplicationDbExtensions
                 Title = "Time Management for Professionals",
                 CategoryId = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                Status = CourseStatus.Draft,
+                State = CourseState.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(4),
                 Description = "Learn effective time management strategies.",
                 Difficulty = CourseDifficulty.Beginner
@@ -115,7 +115,7 @@ public static class ApplicationDbExtensions
                 Title = "Effective Team Leadership",
                 CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                Status = CourseStatus.Archived,
+                State = CourseState.Archived,
                 DueDate = DateTime.UtcNow.AddMonths(5),
                 Description = "Learn how to lead and manage teams effectively.",
                 Difficulty = CourseDifficulty.Advanced

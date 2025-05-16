@@ -1,27 +1,26 @@
+using System.Net;
 using Application.Services.Courses;
 using Contract.Dtos.Courses.Requests;
-using Contract.Dtos.Courses.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
-using System.Net;
 
 namespace Application.Test;
 
 [TestFixture]
 public class CourseServiceTests
 {
-    private Mock<ICourseRepository> _courseRepositoryMock;
-    private CourseService _courseService;
-
     [SetUp]
     public void Setup()
     {
         _courseRepositoryMock = new Mock<ICourseRepository>();
         _courseService = new CourseService(_courseRepositoryMock.Object);
     }
+
+    private Mock<ICourseRepository> _courseRepositoryMock;
+    private CourseService _courseService;
 
     [Test]
     public async Task GetAllAsync_WithValidRequest_ReturnsPaginatedCourses()
@@ -42,7 +41,7 @@ public class CourseServiceTests
                 Id = Guid.NewGuid(),
                 Title = "Course 1",
                 Description = "Description 1",
-                Status = CourseStatus.Published,
+                State = CourseState.Published,
                 Difficulty = CourseDifficulty.Beginner,
                 DueDate = DateTime.UtcNow.AddDays(30),
                 Category = new Category { Id = Guid.NewGuid(), Name = "Category 1" },
@@ -53,7 +52,7 @@ public class CourseServiceTests
                 Id = Guid.NewGuid(),
                 Title = "Course 2",
                 Description = "Description 2",
-                Status = CourseStatus.Draft,
+                State = CourseState.Draft,
                 Difficulty = CourseDifficulty.Intermediate,
                 DueDate = DateTime.UtcNow.AddDays(60),
                 Category = new Category { Id = Guid.NewGuid(), Name = "Category 2" },
@@ -69,9 +68,10 @@ public class CourseServiceTests
         );
 
         _courseRepositoryMock.Setup(repo =>
-                repo.GetPaginatedCoursesAsync(pageIndex, pageSize, request.CategoryId, request.MentorId))
+                repo.GetPaginatedCoursesAsync(pageIndex, pageSize, request.CategoryId, request.MentorId,
+                    request.Keyword, request.State))
             .ReturnsAsync(paginatedResponse);
-        
+
         // Act
         var result = await _courseService.GetAllAsync(request);
 
@@ -114,7 +114,7 @@ public class CourseServiceTests
                 Title = "Course 1",
                 Description = "Description 1",
                 CategoryId = categoryId,
-                Status = CourseStatus.Published,
+                State = CourseState.Published,
                 Category = new Category { Id = categoryId, Name = "Category 1" }
             },
             new()
@@ -123,7 +123,7 @@ public class CourseServiceTests
                 Title = "Course 2",
                 Description = "Description 2",
                 CategoryId = Guid.NewGuid(),
-                Status = CourseStatus.Draft,
+                State = CourseState.Draft,
                 Category = new Category { Id = Guid.NewGuid(), Name = "Category 2" }
             }
         };
@@ -138,7 +138,8 @@ public class CourseServiceTests
         );
 
         _courseRepositoryMock.Setup(repo =>
-                repo.GetPaginatedCoursesAsync(pageIndex, pageSize, categoryId, request.MentorId))
+                repo.GetPaginatedCoursesAsync(pageIndex, pageSize, categoryId, request.MentorId, request.Keyword,
+                    request.State))
             .ReturnsAsync(paginatedList);
 
         // Act
@@ -193,7 +194,7 @@ public class CourseServiceTests
             Id = courseId,
             Title = "Test Course",
             Description = "Test Description",
-            Status = CourseStatus.Published,
+            State = CourseState.Published,
             Difficulty = CourseDifficulty.Beginner,
             DueDate = DateTime.UtcNow.AddDays(30)
         };
@@ -234,6 +235,70 @@ public class CourseServiceTests
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             Assert.That(result.Error, Is.EqualTo("Course not found"));
             _courseRepositoryMock.Verify(repo => repo.GetCourseWithDetailsAsync(courseId), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task GetAllAsync_WithKeywordFilter_ReturnsPaginatedCoursesMatchingKeyword()
+    {
+        // Arrange
+        var pageIndex = 1;
+        var pageSize = 10;
+        var keyword = "Programming";
+        var request = new CourseListRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            Keyword = keyword
+        };
+
+        var allCourses = new List<Course>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Programming Basics",
+                Description = "Learn programming fundamentals",
+                State = CourseState.Published,
+                Category = new Category { Id = Guid.NewGuid(), Name = "Programming" }
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Advanced Math",
+                Description = "Learn advanced mathematics",
+                State = CourseState.Published,
+                Category = new Category { Id = Guid.NewGuid(), Name = "Mathematics" }
+            }
+        }.AsQueryable();
+
+        var filteredList = allCourses.Where(c =>
+            c.Title.Contains(keyword) || c.Description.Contains(keyword)).ToList();
+
+        var paginatedList = new PaginatedList<Course>(
+            filteredList,
+            filteredList.Count,
+            pageIndex,
+            pageSize
+        );
+
+        _courseRepositoryMock.Setup(repo =>
+                repo.GetPaginatedCoursesAsync(pageIndex, pageSize, null, null, keyword, null))
+            .ReturnsAsync(paginatedList);
+
+        // Act
+        var result = await _courseService.GetAllAsync(request);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Items, Has.Count.EqualTo(1));
+            Assert.That(result.Value.Items.First().Title, Is.EqualTo("Programming Basics"));
+            _courseRepositoryMock.Verify(repo =>
+                repo.GetPaginatedCoursesAsync(pageIndex, pageSize, null, null, keyword, request.State), Times.Once);
         });
     }
 }

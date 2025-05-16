@@ -1,4 +1,4 @@
-import {type FC, useEffect, useState} from "react";
+import { type FC, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "./types.tsx";
 import { Button, Form, Input, Modal, Select, Space, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";

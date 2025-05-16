@@ -1,121 +1,107 @@
-import { mockCourses } from "./initial-values.tsx";
+import { axiosClient } from "../../services/apiClient";
+import type { Course, Mentor } from "./types.tsx";
 
 interface CourseListParams {
   keyword?: string;
   state?: string;
   categoryId?: string;
+  mentorId?: string;
   pageIndex?: number;
   pageSize?: number;
+}
+
+interface CourseListResponse {
+  items: Course[];
+  pageSize: number;
+  pageIndex: number;
+  totalPages: number;
+  totalCount: number;
 }
 
 interface CourseCreateParams {
   title: string;
   description: string;
   categoryId: string;
-  status: string;
+  mentorId: string;
   dueDate: string;
   difficulty: string;
-  tags: string[];
-  mentorId: string;
 }
 
 interface CourseUpdateParams {
+  id: string;
   title: string;
   description: string;
   categoryId: string;
-  status: string;
-  difficulty: string;
-  dueDate: string;
-  tags: string[];
-  mentorId: string;
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+export const categoryList = async (
+  pageIndex: number = 1,
+  pageSize: number = 5,
+  keyword: string = "",
+) => {
+  const response = await axiosClient.get("/Categories", {
+    params: {
+      pageIndex,
+      pageSize,
+      keyword: keyword.trim(),
+    },
+  });
+  return response.data.value;
+};
 
-export async function list(params: CourseListParams) {
-  await delay(250);
-
-  let filteredCourses = [...mockCourses];
-
-  if (params.keyword) {
-    filteredCourses = filteredCourses.filter(
-      (course) =>
-        course.title.toLowerCase().includes(params.keyword!.toLowerCase()) ||
-        course.description
-          .toLowerCase()
-          .includes(params.keyword!.toLowerCase()),
-    );
+export const mentorList = async () => {
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  if (params.state) {
-    filteredCourses = filteredCourses.filter(
-      (course) => course.status === params.state,
-    );
-  }
+  // TODO: Api not implemented
+  await delay(100);
 
-  if (params.categoryId) {
-    filteredCourses = filteredCourses.filter(
-      (course) => course.categoryId === params.categoryId,
-    );
-  }
-
-  const startIndex = (params.pageIndex || 0) * (params.pageSize || 10);
-  const endIndex = startIndex + (params.pageSize || 10);
+  const mentors: Mentor[] = [
+    {
+      id: "BC7CB279-B292-4CA3-A994-9EE579770DBE",
+      name: "MySuperKawawiiMentorXxX@at.local",
+    },
+  ];
 
   return {
-    total: filteredCourses.length,
-    data: filteredCourses.slice(startIndex, endIndex),
+    items: mentors,
+    pageSize: null,
+    pageIndex: null,
+    totalPages: null,
+    totalCount: null,
+  };
+};
+
+export async function list(
+  params: CourseListParams,
+): Promise<CourseListResponse> {
+  const pageIndex = params.pageIndex ?? 1;
+  params.pageIndex = pageIndex + 1;
+  const response = await axiosClient.get("/Course", { params });
+  const responseData = response.data.value;
+  return {
+    items: responseData.items,
+    pageSize: responseData.pageSize,
+    pageIndex: responseData.pageIndex,
+    totalPages: responseData.totalCount,
+    totalCount: responseData.totalCount,
   };
 }
 
 export async function update(id: string, params: CourseUpdateParams) {
-  await delay(250);
-
-  const courseIndex = mockCourses.findIndex((c) => c.id === id);
-  if (courseIndex === -1) {
-    throw new Error("Course not found");
-  }
-
-  mockCourses[courseIndex] = {
-    ...mockCourses[courseIndex],
+  const response = await axiosClient.put(`/Course/${id}`, {
     ...params,
-    updatedAt: new Date().toISOString(),
-  };
-
-  return mockCourses[courseIndex];
+  });
+  return response.data;
 }
 
 export async function create(params: CourseCreateParams) {
-  await delay(250);
-
-  const newCourse = {
-    id: String(mockCourses.length + 1),
-    ...params,
-    categoryName:
-      mockCourses.find((c) => c.categoryId === params.categoryId)
-        ?.categoryName || "Unknown",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    enrolledStudents: 0,
-    completionRate: 0,
-    materials: [],
-    feedback: [],
-  };
-
-  mockCourses.push(newCourse);
-  return newCourse;
+  const response = await axiosClient.post("/Course", params);
+  return response.data;
 }
 
 export async function del(id: string) {
-  await delay(250);
-
-  const courseIndex = mockCourses.findIndex((c) => c.id === id);
-  if (courseIndex === -1) {
-    throw new Error("Course not found");
-  }
-
-  mockCourses.splice(courseIndex, 1);
+  await axiosClient.delete(`/Course/${id}`);
   return true;
 }

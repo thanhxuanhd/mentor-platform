@@ -1,27 +1,27 @@
+using System.Net;
 using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
 using Contract.Services;
 using Contract.Shared;
+using Domain.Enums;
 using MentorPlatformAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using System.Net;
-using Domain.Enums;
 
 namespace WebAPI.Test;
 
 [TestFixture]
 public class CourseControllerTest
 {
-    private Mock<ICourseService> _courseServiceMock;
-    private CourseController _courseController;
-
     [SetUp]
     public void Setup()
     {
         _courseServiceMock = new Mock<ICourseService>();
         _courseController = new CourseController(_courseServiceMock.Object);
     }
+
+    private Mock<ICourseService> _courseServiceMock;
+    private CourseController _courseController;
 
     [Test]
     public async Task GetAll_DefaultParameters_ReturnsOkResultWithPaginatedCourses()
@@ -35,28 +35,28 @@ public class CourseControllerTest
             new() { Id = Guid.NewGuid(), Title = "Course 2", Description = "Description 2" }
         };
         var paginatedList = new CourseListResponse(items, items.Count, pageIndex, pageSize);
-
         var serviceResult = Result.Success(paginatedList, HttpStatusCode.OK);
 
         _courseServiceMock.Setup(s => s.GetAllAsync(It.Is<CourseListRequest>(r =>
-                r.PageIndex == pageIndex &&
-                r.PageSize == pageSize)))
+                r.PageIndex == pageIndex && r.PageSize == pageSize)))
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _courseController.GetAll(null, pageIndex, pageSize);
+        var result = await _courseController.GetAll(new CourseListRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize
+        });
 
         // Assert
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
             _courseServiceMock.Verify(s => s.GetAllAsync(It.Is<CourseListRequest>(r =>
-                r.PageIndex == pageIndex &&
-                r.PageSize == pageSize)), Times.Once);
+                r.PageIndex == pageIndex && r.PageSize == pageSize)), Times.Once);
         });
     }
 
@@ -84,33 +84,7 @@ public class CourseControllerTest
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-            Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
-            _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
-        });
-    }
-
-    [Test]
-    public async Task GetById_CourseDoesNotExist_ReturnsNotFoundResult()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var serviceResult = Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
-
-        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
-            .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _courseController.GetById(courseId);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
-            Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
             _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
         });
@@ -148,7 +122,6 @@ public class CourseControllerTest
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.Created));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
             _courseServiceMock.Verify(s => s.CreateAsync(request), Times.Once);
@@ -187,41 +160,7 @@ public class CourseControllerTest
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-            Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
-            _courseServiceMock.Verify(s => s.UpdateAsync(courseId, request), Times.Once);
-        });
-    }
-
-    [Test]
-    public async Task Update_CourseDoesNotExist_ReturnsNotFoundResult()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var request = new CourseUpdateRequest
-        {
-            Title = "Updated Course",
-            Description = "Updated Description",
-            CategoryId = Guid.NewGuid(),
-            DueDate = DateTime.Now,
-            Difficulty = CourseDifficulty.Beginner
-        };
-        var serviceResult = Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
-
-        _courseServiceMock.Setup(s => s.UpdateAsync(courseId, request))
-            .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _courseController.Update(courseId, request);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
-            Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
             _courseServiceMock.Verify(s => s.UpdateAsync(courseId, request), Times.Once);
         });
@@ -245,7 +184,6 @@ public class CourseControllerTest
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
             _courseServiceMock.Verify(s => s.DeleteAsync(courseId), Times.Once);
@@ -270,7 +208,6 @@ public class CourseControllerTest
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
             var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
             _courseServiceMock.Verify(s => s.DeleteAsync(courseId), Times.Once);

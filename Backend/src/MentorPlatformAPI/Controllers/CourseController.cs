@@ -1,24 +1,19 @@
 ﻿using Contract.Dtos.Courses.Requests;
 using Contract.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CourseController(ICourseService courseService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll(
-        [FromQuery] string? keyword,
-        [FromQuery] int pageIndex = 1,
-        [FromQuery] int pageSize = 5)
+    public async Task<IActionResult> GetAll([FromQuery] CourseListRequest request)
     {
-        var result = await courseService.GetAllAsync(new CourseListRequest
-        {
-            PageIndex = pageIndex,
-            PageSize = pageSize
-        });
+        var result = await courseService.GetAllAsync(request);
         return StatusCode((int)result.StatusCode, result);
     }
 

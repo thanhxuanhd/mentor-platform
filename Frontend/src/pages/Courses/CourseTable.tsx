@@ -69,17 +69,17 @@ export const CourseTable = ({
       dataIndex: "mentorName",
       key: "mentorName",
     },
-    {
-      title: "Students",
-      dataIndex: "enrolledStudents",
-      key: "enrolledStudents",
-    },
-    {
-      title: "Completion",
-      dataIndex: "completionRate",
-      key: "completionRate",
-      render: (text: number) => `${text}%`,
-    },
+    // {
+    //   title: "Students",
+    //   dataIndex: "enrolledStudents",
+    //   key: "enrolledStudents",
+    // },
+    // {
+    //   title: "Completion",
+    //   dataIndex: "completionRate",
+    //   key: "completionRate",
+    //   render: (text: number) => `${text}%`,
+    // },
     {
       title: "Action",
       key: "action",

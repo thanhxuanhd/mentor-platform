@@ -1,3 +1,8 @@
+export type Mentor = {
+  id: string;
+  name: string;
+};
+
 export type Category = {
   id: string;
   name: string;
@@ -31,6 +36,14 @@ export type CourseMaterial = {
   uploadedAt: string;
 };
 
+export type Feedback = {
+  id: string;
+  userId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+};
+
 export type CourseFormDataOptions = {
   title: string;
   description: string;
@@ -39,12 +52,4 @@ export type CourseFormDataOptions = {
   dueDate: string;
   difficulty: string;
   tags: string[];
-};
-
-export type Feedback = {
-  id: string;
-  userId: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
 };
