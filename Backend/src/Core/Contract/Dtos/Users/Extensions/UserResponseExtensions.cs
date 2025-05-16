@@ -12,10 +12,11 @@ public static class UserResponseExtensions
             Id = user.Id,
             FullName = user.FullName,
             Email = user.Email,
-            RoleId = user.RoleId,
+            Role = user.Role.Name.ToString(),
             Status = user.Status,
             JoinedDate = user.JoinedDate,
             LastActive = user.LastActive
         };
     }
 }
+

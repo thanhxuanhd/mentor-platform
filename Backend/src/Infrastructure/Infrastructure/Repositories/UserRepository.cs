@@ -5,58 +5,31 @@ using Domain.Entities;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories;
 
 public class UserRepository(ApplicationDbContext context) : BaseRepository<User, Guid>(context), IUserRepository
 {
-    public async Task<List<User>> GetAllUsersWithRole()
-    {
-        var users = await _context.Users
-            .Include(user => user.Role)
-            .ToListAsync();
-        return users;
-    }
-
-    public async Task<User?> GetUserByUsername(string fullName)
+    public async Task<User?> GetUserByEmail(string email)
     {
         var user = await _context.Users
             .Include(user => user.Role)
-            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
+            .FirstOrDefaultAsync(u => u.Email.Equals(email));
 
         return user;
     }
 
-    public async Task<PaginatedList<User>> FilterUser(UserFilterPagedRequest request)
+    public virtual async Task<User?> GetByEmailAsync(string email, Expression<Func<User, object>>? includeExpressions = null)
     {
-        var query = GetAll()
-            .Include(user => user.Role)
-            .AsQueryable();
+        var user = _context.Users.AsQueryable();
 
-        if (!request.RoleName.IsNullOrEmpty())
+        if (includeExpressions is not null)
         {
-            query = query.Where(user => user.Role.Name.ToString().Equals(request.RoleName));
+            user = user.Include(includeExpressions);
         }
 
-        if (!request.FullName.IsNullOrEmpty())
-        {
-            query = query.Where(user => user.FullName.Contains(request.FullName!));
-        }
-
-        var totalItems = await query.CountAsync();
-
-        var items = await query
-            .Skip((request.PageIndex - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToListAsync();
-
-        return new PaginatedList<User>(items, totalItems, request.PageIndex = 1, request.PageSize = 5);
+        return await user.FirstOrDefaultAsync(e => e.Email == email);
     }
 
-    public Task<bool> ExistByEmailExcludeAsync(Guid id, string email)
-    {
-        return _context.Users
-            .AnyAsync(u => u.Email == email && u.Id != id);
-    }
 }

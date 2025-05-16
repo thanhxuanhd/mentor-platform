@@ -10,9 +10,9 @@ public class UserFilterPagedRequest
     public string? FullName { get; set; }
 }
 
-public class UserFilterPagedRequestValidator : AbstractValidator<UserFilterPagedRequest>
+public class UserFillterPagedRequestValidator : AbstractValidator<UserFilterPagedRequest>
 {
-    public UserFilterPagedRequestValidator()
+    public UserFillterPagedRequestValidator()
     {
         RuleFor(x => x.PageIndex)
             .GreaterThan(0)
