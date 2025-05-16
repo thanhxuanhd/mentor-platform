@@ -13,5 +13,6 @@ public interface ICourseRepository : IBaseRepository<Course, Guid>
         Guid? categoryId = null,
         Guid? mentorId = null,
         string? keyword = null,
-        CourseState? status = null);
+        CourseStatus? status = null,
+        CourseDifficulty? difficulty = null);
 }

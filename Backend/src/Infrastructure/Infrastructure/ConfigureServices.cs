@@ -46,7 +46,7 @@ public static class ConfigureServices
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            options.EnableSensitiveDataLogging();
+            // options.EnableSensitiveDataLogging();
         });
 
         // Add JWT Authentication

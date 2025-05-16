@@ -35,7 +35,24 @@ public static class ApplicationDbExtensions
                     Email = "MySuperKawaiiMentorXxX@at.local",
                     PasswordHash = PasswordHelper.HashPassword("http://localhost:8080/register"),
                     RoleId = mentorRole.Id
-                });
+                },
+                new User
+                {
+                    Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                    FullName = "DuongSenpai@at.local",
+                    Email = "DuongSenpai@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("RollRoyce420$$$"),
+                    RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                    FullName = "AnhDoSkibidi@at.local",
+                    Email = "AnhDoSkibidi@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
+                    RoleId = mentorRole.Id
+                }
+            );
 
             dbContext.SaveChanges();
         }
@@ -75,7 +92,7 @@ public static class ApplicationDbExtensions
                 Title = "Introduction to Leadership",
                 CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                State = CourseState.Published,
+                Status = CourseStatus.Published,
                 DueDate = DateTime.UtcNow.AddMonths(3),
                 Description = "Learn the principles of effective leadership.",
                 Difficulty = CourseDifficulty.Beginner
@@ -84,8 +101,8 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f"),
                 Title = "Advanced Communication Techniques",
                 CategoryId = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
-                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                State = CourseState.Draft,
+                MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                Status = CourseStatus.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(2),
                 Description = "Master advanced communication skills for the workplace.",
                 Difficulty = CourseDifficulty.Intermediate
@@ -95,7 +112,7 @@ public static class ApplicationDbExtensions
                 Title = "Public Speaking Mastery",
                 CategoryId = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                State = CourseState.Published,
+                Status = CourseStatus.Published,
                 DueDate = DateTime.UtcNow.AddMonths(1),
                 Description = "Become a confident public speaker.",
                 Difficulty = CourseDifficulty.Advanced
@@ -104,8 +121,8 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
                 Title = "Time Management for Professionals",
                 CategoryId = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
-                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                State = CourseState.Draft,
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = CourseStatus.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(4),
                 Description = "Learn effective time management strategies.",
                 Difficulty = CourseDifficulty.Beginner
@@ -115,7 +132,7 @@ public static class ApplicationDbExtensions
                 Title = "Effective Team Leadership",
                 CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                State = CourseState.Archived,
+                Status = CourseStatus.Archived,
                 DueDate = DateTime.UtcNow.AddMonths(5),
                 Description = "Learn how to lead and manage teams effectively.",
                 Difficulty = CourseDifficulty.Advanced

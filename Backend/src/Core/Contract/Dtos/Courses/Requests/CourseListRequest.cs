@@ -9,5 +9,6 @@ public record CourseListRequest
     public Guid? CategoryId { get; init; }
     public Guid? MentorId { get; init; }
     public string? Keyword { get; init; }
-    public CourseState? State { get; init; }
+    public CourseStatus? Status { get; init; }
+    public CourseDifficulty? Difficulty { get; init; }
 }

@@ -3,7 +3,7 @@ import type { Course, Mentor } from "./types.tsx";
 
 interface CourseListParams {
   keyword?: string;
-  state?: string;
+  difficulty?: string;
   categoryId?: string;
   mentorId?: string;
   pageIndex?: number;
@@ -61,6 +61,14 @@ export const mentorList = async () => {
     {
       id: "BC7CB279-B292-4CA3-A994-9EE579770DBE",
       name: "MySuperKawawiiMentorXxX@at.local",
+    },
+    {
+      id: "B5095B17-D0FE-47CC-95B8-FD7E560926F8",
+      name: "DuongSenpai@at.local",
+    },
+    {
+      id: "01047F62-6E87-442B-B1E8-2A54C9E17D7C",
+      name: "AnhDoSkibidi@at.local",
     },
   ];
 

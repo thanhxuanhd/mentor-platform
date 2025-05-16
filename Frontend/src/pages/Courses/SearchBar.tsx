@@ -1,9 +1,10 @@
 import { type ChangeEvent, type FC, useState } from "react";
 import type { Category, Mentor } from "./types.tsx";
+import type { CourseDifficulty } from "./initial-values.tsx";
 
 export type SearchBarOptions = {
   keyword?: string;
-  state?: string;
+  difficulty?: string;
   categoryId?: string;
   mentorId?: string;
 };
@@ -11,25 +12,25 @@ export type SearchBarOptions = {
 type SearchBarProps = {
   categories: Category[];
   mentors: Mentor[];
-  states: Record<string, string>;
+  difficulties: Record<CourseDifficulty, string>;
   onChange: (options: SearchBarOptions) => void;
 };
 
 export const SearchBar: FC<SearchBarProps> = ({
   categories,
   mentors,
-  states,
+  difficulties,
   onChange,
 }) => {
   const [keyword, setKeyword] = useState<string | undefined>();
-  const [state, setState] = useState<string | undefined>();
+  const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
 
   const updateSearchBar = (props: Record<string, string>) => {
     onChange({
       keyword: keyword,
-      state: state,
+      difficulty: difficulty,
       categoryId: categoryId,
       mentorId: mentorId,
       ...props,
@@ -50,8 +51,8 @@ export const SearchBar: FC<SearchBarProps> = ({
     });
   }
 
-  function handleStateChange(event: ChangeEvent<HTMLSelectElement>) {
-    setState(event.target.value);
+  function handleDifficultyChange(event: ChangeEvent<HTMLSelectElement>) {
+    setDifficulty(event.target.value);
     updateSearchBar({
       state: event.target.value,
     });
@@ -80,17 +81,17 @@ export const SearchBar: FC<SearchBarProps> = ({
         />
       </div>
       <div>
-        <label htmlFor="status" className="block text-sm font-medium mb-1">
-          Status
+        <label htmlFor="difficulty" className="block text-sm font-medium mb-1">
+          Difficulty
         </label>
         <select
-          id="status"
-          value={state}
-          onChange={handleStateChange}
+          id="difficulty"
+          value={difficulty}
+          onChange={handleDifficultyChange}
           className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
         >
           <option value="">-</option>
-          {Object.entries(states).map(([value, memberName]) => (
+          {Object.entries(difficulties).map(([value, memberName]) => (
             <option key={value} value={memberName}>
               {memberName}
             </option>

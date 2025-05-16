@@ -2,7 +2,7 @@ import { type FC, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "./types.tsx";
 import { Button, Form, Input, Modal, Select, Space, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { CourseLevelEnumMember } from "./initial-values.tsx";
+import {CourseDifficultyEnumMember} from "./initial-values.tsx";
 
 type CourseFormProp = {
   formData: CourseFormDataOptions;
@@ -109,7 +109,7 @@ export const CourseForm: FC<CourseFormProp> = ({
             rules={[{ required: true, message: "Please select a difficulty!" }]}
           >
             <Select>
-              {Object.entries(CourseLevelEnumMember).map(([value, label]) => (
+              {Object.entries(CourseDifficultyEnumMember).map(([value, label]) => (
                 <Select.Option key={value} value={value}>
                   {label}
                 </Select.Option>

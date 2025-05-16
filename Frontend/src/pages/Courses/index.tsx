@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { CourseStatesEnumMember, initialFormData } from "./initial-values.tsx";
+import {CourseDifficultyEnumMember, CourseStatesEnumMember, initialFormData} from "./initial-values.tsx";
 import type {
   Category,
   Course,
@@ -22,7 +22,7 @@ const Page: React.FC = () => {
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [keyword, setKeyword] = useState<string | undefined>();
-  const [state, setState] = useState<string | undefined>();
+  const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
 
@@ -31,6 +31,7 @@ const Page: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [states] = useState<Record<string, string>>(CourseStatesEnumMember);
+  const [difficulties] = useState<Record<string, string>>(CourseDifficultyEnumMember);
   const [courses, setCourses] = useState<Course[]>([]);
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
@@ -44,7 +45,7 @@ const Page: React.FC = () => {
         pageIndex,
         pageSize,
         keyword: keyword,
-        state: state,
+        difficulty: difficulty,
         categoryId: categoryId,
         mentorId: mentorId,
       });
@@ -62,7 +63,7 @@ const Page: React.FC = () => {
     };
 
     fetchCourses();
-  }, [pageIndex, pageSize, keyword, state, categoryId, mentorId]);
+  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId]);
 
   return (
     <>
@@ -87,11 +88,11 @@ const Page: React.FC = () => {
 
               <SearchBar
                 categories={categories}
-                states={states}
+                difficulties={difficulties}
                 mentors={mentors}
                 onChange={(options) => {
                   setKeyword(options.keyword);
-                  setState(options.state);
+                  setDifficulty(options.difficulty);
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
                 }}

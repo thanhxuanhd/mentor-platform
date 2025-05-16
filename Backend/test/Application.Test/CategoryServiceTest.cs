@@ -192,13 +192,13 @@ public class CategoryServiceTest
         {
             new()
             {
-                Id = Guid.NewGuid(), Title = "Course 1", Description = "Desc 1", State = CourseState.Published,
+                Id = Guid.NewGuid(), Title = "Course 1", Description = "Desc 1", Status = CourseStatus.Published,
                 Difficulty = CourseDifficulty.Beginner, DueDate = DateTime.UtcNow.AddDays(10),
                 CourseTags = new List<CourseTag>(), CategoryId = categoryId, Category = category
             },
             new()
             {
-                Id = Guid.NewGuid(), Title = "Course 2", Description = "Desc 2", State = CourseState.Draft,
+                Id = Guid.NewGuid(), Title = "Course 2", Description = "Desc 2", Status = CourseStatus.Draft,
                 Difficulty = CourseDifficulty.Intermediate, DueDate = DateTime.UtcNow.AddDays(20),
                 CourseTags = new List<CourseTag>(), CategoryId = categoryId, Category = category
             }
@@ -207,7 +207,7 @@ public class CategoryServiceTest
         var paginatedList = new PaginatedList<FilterCourseByCategoryResponse>(
             coursesForCategory.Select(c => new FilterCourseByCategoryResponse
             {
-                Id = c.Id, Title = c.Title, CategoryName = category.Name, Status = c.State.ToString(),
+                Id = c.Id, Title = c.Title, CategoryName = category.Name, Status = c.Status.ToString(),
                 Description = c.Description, Difficulty = c.Difficulty.ToString(), DueDate = c.DueDate,
                 Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
             }).ToList(),

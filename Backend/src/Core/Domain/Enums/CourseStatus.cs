@@ -2,8 +2,8 @@
 
 namespace Domain.Enums;
 
-[JsonConverter(typeof(JsonStringEnumConverter<CourseState>))]
-public enum CourseState
+[JsonConverter(typeof(JsonStringEnumConverter<CourseStatus>))]
+public enum CourseStatus
 {
     Draft,
     Published,

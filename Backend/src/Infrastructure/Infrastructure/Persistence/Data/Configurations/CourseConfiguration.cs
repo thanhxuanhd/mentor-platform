@@ -20,7 +20,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .IsRequired()
             .HasMaxLength(256);
 
-        builder.Property(c => c.State)
+        builder.Property(c => c.Status)
             .HasConversion<string>();
 
         builder.Property(c => c.Difficulty)

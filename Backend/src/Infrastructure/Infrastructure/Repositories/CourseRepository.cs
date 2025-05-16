@@ -25,10 +25,12 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
         Guid? categoryId = null,
         Guid? mentorId = null,
         string? keyword = null,
-        CourseState? status = null)
+        CourseStatus? status = null,
+        CourseDifficulty? difficulty = null)
     {
         var query = _context.Courses
             .Include(c => c.Category)
+            .Include(c => c.Mentor)
             .Include(c => c.CourseTags)
             .ThenInclude(ct => ct.Tag)
             .AsQueryable();
@@ -40,7 +42,9 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
 
         if (mentorId.HasValue) query = query.Where(c => c.MentorId == mentorId);
 
-        if (status.HasValue) query = query.Where(c => c.State == status);
+        if (status.HasValue) query = query.Where(c => c.Status == status);
+
+        if (difficulty.HasValue) query = query.Where(c => c.Difficulty == difficulty);
 
         return await ToPaginatedListAsync(query, pageSize, pageIndex);
     }

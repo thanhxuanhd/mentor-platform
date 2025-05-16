@@ -52,7 +52,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Id = c.Id,
             Title = c.Title,
             CategoryName = category.Name,
-            Status = c.State.ToString(),
+            Status = c.Status.ToString(),
             Description = c.Description,
             Difficulty = c.Difficulty.ToString(),
             DueDate = c.DueDate,

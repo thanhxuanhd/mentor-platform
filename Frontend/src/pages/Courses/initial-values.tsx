@@ -1,14 +1,14 @@
 import type { Course, CourseFormDataOptions } from "./types.tsx";
 
-export type CourseStates = "draft" | "published" | "archived";
-export const CourseStatesEnumMember: Record<CourseStates, string> = {
+export type CourseStatus = "draft" | "published" | "archived" | string;
+export const CourseStatesEnumMember: Record<CourseStatus, string> = {
   draft: "Draft",
   published: "Published",
   archived: "Archived",
 };
 
-export type CourseLevel = "beginner" | "intermediate" | "advanced";
-export const CourseLevelEnumMember: Record<CourseLevel, string> = {
+export type CourseDifficulty = "beginner" | "intermediate" | "advanced" | string;
+export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
   beginner: "Beginner",
   intermediate: "Intermediate",
   advanced: "Advanced",
