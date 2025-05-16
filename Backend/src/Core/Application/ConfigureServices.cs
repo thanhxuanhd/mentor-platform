@@ -1,10 +1,7 @@
 ﻿using Application.Services.Authentication;
 using Application.Services.Categories;
 using Application.Services.Users;
-using Contract.Dtos.Users.Requests;
-using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Application;
 
@@ -16,13 +13,6 @@ public static class ConfigureServices
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICategoryService, CategoryService>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddValidators(this IServiceCollection services)
-    {
-        services.AddValidatorsFromAssemblyContaining<EditUserRequestValidator>();
         return services;
     }
 }
