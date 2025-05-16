@@ -190,7 +190,6 @@ export default function UsersPage() {
   };
 
   const handleCancel = () => setIsModalVisible(false);
-
   const handleSubmit = useCallback(
     async (updatedUser: EditUserRequest) => {
       try {
@@ -204,12 +203,13 @@ export default function UsersPage() {
           message: "Success",
           description: "User updated successfully.",
         });
-      } catch {
+      } catch (error: any) {
         setNotify({
           type: "error",
           message: "Error",
-          description: "An error occurred while updating user.",
+          description: error?.response?.data?.error || "An error occurred.",
         });
+        console.log("Error updating user:", error);
       } finally {
         setLoading(false);
       }

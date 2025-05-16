@@ -15,8 +15,9 @@ export const userService = {
   },
 
   updateUser: async (userId: string, userData: EditUserRequest) => {
-    const response = await axiosClient.put(`Users/${userId}`, userData);
-    return response.data.value;
+    await axiosClient.put(`Users/${userId}`, userData).then((response) => {
+      return response.data.value;
+    });
   },
 
   changeUserStatus: async (userId: string) => {
