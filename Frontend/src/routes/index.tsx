@@ -8,6 +8,7 @@ import NotFoundPage from '../pages/NotFound';
 import { Login, SignUp } from '../pages/Auth';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
+
 const AppRoutes = () => {
   return (
     <Routes>
