@@ -44,7 +44,7 @@ public class UserService(IUserRepository userRepository) : IUserService
 
         if (!string.IsNullOrEmpty(request.FullName))
         {
-            users = users.Where(user => user.FullName.Contains(request.FullName));
+            users = users.Where(user => user.FullName.ToLower().Contains(request.FullName.ToLower()));
         }
 
         if (!string.IsNullOrEmpty(request.RoleName))
