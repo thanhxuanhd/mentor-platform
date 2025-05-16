@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Tooltip, Tag, App } from 'antd';
+import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/es/input/Search';
 import EditCategoryModal from './components/EditCategoryModal';
 import type { Category, CategoryFilter, CategoryRequest } from '../../types/CategoryTypes';
-import { createCategory, editCategory, getListCategories } from '../../services/categoryServices';
+import { createCategory, deleteCategory, editCategory, getListCategories } from '../../services/categoryServices';
 import type { NotificationProps } from '../../types/Notification';
 import type { PaginatedList } from '../../types/Pagination';
 import PaginationControls from '../../components/shared/Pagination';
@@ -109,6 +109,24 @@ export default function CategoriesPage() {
     setIsCreating(false);
   };
 
+  const handleModelDelete = async (categoryId: string) => {
+    try {
+      await deleteCategory(categoryId);
+      setNotify({
+        type: 'success',
+        message: 'Category deleted successfully',
+        description: 'The category has been deleted successfully.',
+      });
+      await fetchData();
+    } catch (error) {
+      setNotify({
+        type: 'error',
+        message: 'Error',
+        description: 'An error occurred while deleting the category.',
+      });
+    }
+  }
+
   const handleModalSubmit = async (values: CategoryRequest) => {
     try {
       const payload = {
@@ -146,8 +164,6 @@ export default function CategoriesPage() {
           description: Object.values(validateErrors).join('\n'),
         });
       }
-      console.error('Error:', error);
-      console.log('Error response:', Object.values(error.response?.data?.error));
     }
   };
 
@@ -200,7 +216,19 @@ export default function CategoriesPage() {
             />
           </Tooltip>
           <Tooltip title="Delete Category">
-            <Button icon={<DeleteOutlined />} size="small" danger />
+            <Popconfirm
+              title="Are you sure to delete this category?"
+              onConfirm={() => handleModelDelete(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                icon={<DeleteOutlined />}
+                size="small"
+                danger
+                className="text-red-600"
+              />
+            </Popconfirm>
           </Tooltip>
         </Space>
       ),

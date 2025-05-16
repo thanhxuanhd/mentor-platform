@@ -29,9 +29,14 @@ export const createCategory = async (category: any) => {
 export const editCategory = async (categoryId: string, request: CategoryRequest) => {
   const response = await axiosClient.put(`categories/${categoryId}`, request);
   return response.data.value;
-}
+};
 
 export const changeCategoryStatus = async (categoryId: string) => {
   const response = await axiosClient.put(`categories/status/${categoryId}`);
+  return response.data;
+};
+
+export const deleteCategory = async (categoryId: string) => {
+  const response = await axiosClient.delete(`categories/${categoryId}`);
   return response.data;
 };
