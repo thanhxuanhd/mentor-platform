@@ -206,8 +206,10 @@ export default function UsersPage() {
         className="mb-6"
         rowKey="id"
       />
-      <PaginationControls<User>
-        pagination={usersData}
+      <PaginationControls
+        pageIndex={usersData.pageIndex}
+        pageSize={usersData.pageSize}
+        totalCount={usersData.totalCount}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
       />

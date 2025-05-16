@@ -1,4 +1,4 @@
-import { Form, Input, Modal, Select } from "antd";
+import { Form, Input, Modal, Radio } from "antd";
 import { useEffect } from "react";
 import type { Category, EditCategory } from '../../../types/CategoryTypes';
 
@@ -8,6 +8,7 @@ interface EditCategoryModalProps {
     onCancel: () => void;
     onSubmit: (values: Category) => void;
     title: string;
+    onText: string;
 }
 
 const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
@@ -15,7 +16,8 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
     initialValues,
     onCancel,
     onSubmit,
-    title
+    title,
+    onText
 }) => {
     const [form] = Form.useForm();
 
@@ -47,7 +49,7 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
             open={visible}
             onOk={handleOk}
             onCancel={handleCancel}
-            okText="Save"
+            okText={onText}
         >
             <Form
                 form={form}
@@ -56,22 +58,27 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 requiredMark={false}
             >
                 <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter the category name' },
-                { max: 50, message: 'Name cannot exceed 50 characters' },
-                { min: 3, message: 'Name must be at least 3 characters' }]}>
-                    <Input />
+                { max: 50, message: 'Category name should not exceed 50 characters' },
+                { pattern: /^[a-zA-Z0-9 ]*$/, message: 'Category name can only contain letters, numbers, and spaces' },
+                { pattern: /^[^\s]+.*$/, message: 'Category name cannot start with a space' }
+                ]}>
+                    <Input placeholder="Enter new category name" />
                 </Form.Item>
                 <Form.Item
                     name="description"
                     label="Description"
-                    rules={[{ max: 200, message: 'Description cannot exceed 200 characters' }]}
+                    rules={[{ max: 200, message: 'Description cannot exceed 200 characters' },
+                    { pattern: /^[^\s]+.*$/, message: 'Description cannot start with a space' },
+                    { pattern: /^[a-zA-Z0-9 ]*$/, message: 'Description can only contain letters, numbers, and spaces' }
+                    ]}
                 >
-                    <Input.TextArea />
+                    <Input.TextArea placeholder="Enter your description" />
                 </Form.Item>
                 <Form.Item name="status" label="Status">
-                    <Select>
-                        <Select.Option value={true}>Active</Select.Option>
-                        <Select.Option value={false}>Inactive</Select.Option>
-                    </Select>
+                    <Radio.Group>
+                        <Radio value={true}>Active</Radio>
+                        <Radio value={false}>Inactive</Radio>
+                    </Radio.Group>
                 </Form.Item>
             </Form>
         </Modal>

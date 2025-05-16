@@ -1,39 +1,73 @@
 import { useState, useEffect } from 'react';
-import { Table, Space, Button, Tooltip, Tag, Popconfirm, message } from 'antd';
+import { Table, Space, Button, Tooltip, Tag, App } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/es/input/Search';
 import EditCategoryModal from './components/EditCategoryModal';
 import type { Category, CategoryFilter, CategoryRequest } from '../../types/CategoryTypes';
 import { createCategory, editCategory, getListCategories } from '../../services/categoryServices';
+import type { NotificationProps } from '../../types/Notification';
+import type { PaginatedList } from '../../types/Pagination';
+import PaginationControls from '../../components/shared/Pagination';
+
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [pagination, setPagination] = useState<PaginatedList<Category>>({
+    items: [],
+    pageIndex: 1,
+    totalPages: 1,
+    totalCount: 0,
+    pageSize: 5,
+  });
   const [filters, setFilters] = useState<CategoryFilter>({
     pageIndex: 1,
-    pageSize: 50,
+    pageSize: 5,
     keyword: '',
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [isCreating, setIsCreating] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const { notification } = App.useApp();
+
 
   const fetchData = async () => {
-    setLoading(true);
     try {
-      const apiResponse = await getListCategories(filters);
+      const apiResponse = await getListCategories(filters.pageIndex, filters.pageSize, filters.keyword);
       const items = apiResponse.items;
-      setCategories(items);
+      setPagination({
+        items: apiResponse.items || [],
+        pageIndex: apiResponse.pageIndex || 1,
+        totalPages: apiResponse.totalPages || 1,
+        totalCount: apiResponse.totalCount || 0,
+        pageSize: apiResponse.pageSize || filters.pageSize,
+      });
+      setCategories(items || []);
     } catch (error: any) {
-      message.error(`Failed to fetch categories: ${error.message}`);
-    } finally {
-      setLoading(false);
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "An error occurred while fetching users.",
+      });
+      setCategories([]);
+      setPagination((prev) => ({ ...prev, items: [], totalCount: 0 }));
     }
   };
   useEffect(() => {
     fetchData();
   }, [filters]);
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
 
   const onSearch = (value: string) => {
     setFilters((prev) => ({
@@ -47,6 +81,7 @@ export default function CategoriesPage() {
     setFilters((prev) => ({
       ...prev,
       pageSize: value,
+      pageIndex: 1,
     }));
   };
 
@@ -85,10 +120,18 @@ export default function CategoriesPage() {
       console.log('payload', payload);
       if (isCreating) {
         await createCategory(payload);
-        message.success('Category created successfully');
+        setNotify({
+          type: 'success',
+          message: 'Category created successfully',
+          description: 'The category has been created successfully.',
+        });
       } else if (selectedCategory) {
         await editCategory(selectedCategory.id, payload);
-        message.success('Category updated successfully');
+        setNotify({
+          type: 'success',
+          message: 'Category updated successfully',
+          description: 'The category has been updated successfully.',
+        });
       }
 
       await fetchData();
@@ -96,7 +139,11 @@ export default function CategoriesPage() {
       setSelectedCategory(null);
       setIsCreating(false);
     } catch (error: any) {
-      message.error(isCreating ? `Failed to create category: ${error.message}` : `Failed to update category: ${error.message}`);
+      setNotify({
+        type: 'error',
+        message: 'Error',
+        description: error.response?.data?.error || 'An error occurred while processing your request.',
+      });
     }
   };
 
@@ -165,7 +212,7 @@ export default function CategoriesPage() {
           icon={<PlusOutlined />}
           onClick={() => handleCreateClick()}
         >
-          Create Category
+          Add Category
         </Button>
       </div>
       <Search
@@ -182,6 +229,14 @@ export default function CategoriesPage() {
         rowKey="id"
         pagination={false}
       />
+      <PaginationControls
+        pageIndex={pagination.pageIndex}
+        pageSize={pagination.pageSize}
+        totalCount={pagination.totalCount}
+        onPageChange={onPageIndexChange}
+        onPageSizeChange={onPageSizeChange}
+        itemName="categories"
+      />
       <EditCategoryModal
         visible={isModalVisible}
         initialValues={
@@ -190,17 +245,17 @@ export default function CategoriesPage() {
             : selectedCategory
               ? {
                 id: selectedCategory.id,
-                name: selectedCategory.name,
-                description: selectedCategory.description || '',
+                name: selectedCategory.name.trimEnd(),
+                description: selectedCategory.description?.trimEnd() || '',
                 status: selectedCategory.status,
               }
               : { id: '', name: '', description: '', status: false }
         }
         onCancel={handleModalCancel}
         onSubmit={handleModalSubmit}
-        title={isCreating ? 'Create Category' : 'Edit Category'}
+        title={isCreating ? 'Add Category' : 'Edit Category'}
+        onText={isCreating ? 'Add' : 'Update'}
       />
     </div>
   );
 }
-
