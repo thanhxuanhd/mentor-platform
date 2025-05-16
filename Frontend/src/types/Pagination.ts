@@ -6,8 +6,10 @@ export interface PaginatedList<T> {
   pageSize: number;
 }
 
-export interface PaginationProps<T> {
-  pagination: PaginatedList<T>;
+export interface PaginationProps {
+  pageIndex: number;
+  pageSize: number;
+  totalCount: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
   itemName?: string;
