@@ -1,4 +1,5 @@
-﻿using Application.Services.Users;
+﻿using Application.Services.Authentication;
+using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
@@ -11,7 +12,6 @@ namespace MentorPlatformAPI.Controllers;
 [ApiController]
 public class UsersController(IUserService userService) : ControllerBase
 {
-    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUserById(Guid id)
     {
@@ -43,4 +43,13 @@ public class UsersController(IUserService userService) : ControllerBase
         var result = await userService.ChangeUserStatusAsync(userId);
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpGet("email/{email}")]
+    public async Task<IActionResult> GetUserByEmail(string email)
+    {
+        var result = await userService.GetUserByEmailAsync(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
 }
