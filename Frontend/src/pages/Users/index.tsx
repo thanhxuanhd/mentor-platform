@@ -22,6 +22,7 @@ import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
 import { userService } from "../../services/user/userService";
 import type { NotificationProps } from "../../types/Notification";
+import { normalizeName } from "../../utils/UserFullNameNormalization";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -218,7 +219,8 @@ export default function UsersPage() {
 
   const handleSearchInput: SearchProps["onSearch"] = useCallback(
     (value: string) => {
-      setSearchValue(value);
+      const alphaOnly = value.replace(/[^A-Za-z\s]/g, "");
+      setSearchValue(normalizeName(alphaOnly));
     },
     [],
   );

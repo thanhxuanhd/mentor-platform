@@ -93,6 +93,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         bool exists = user is not null;
         return Result.Success(exists, HttpStatusCode.OK);
     }
+
     private async Task<string> LoginOrRegisterAsync(string email)
     {
         var user = await userRepository.GetUserByEmail(email);

@@ -102,6 +102,7 @@ public class CategoryServiceTest
         });
     }
 
+    [Test]
     [TestCase(0, 10)]
     [TestCase(10, 0)]
     [TestCase(-1, 10)]
@@ -189,7 +190,7 @@ public class CategoryServiceTest
         });
     }
 
->>>>>>>>> Temporary merge branch 2
+    [Test]
     [TestCase(0, 10)]
     [TestCase(10, 0)]
     [TestCase(-1, 10)]

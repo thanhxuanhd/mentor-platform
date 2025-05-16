@@ -18,11 +18,11 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         return user;
     }
 
-    public async Task<User?> GetUserByFullname(string fullName)
+    public IQueryable<User> GetUserByFullname(string fullName)
     {
-        var user = await _context.Users
+        var user = _context.Users
             .Include(user => user.Role)
-            .FirstOrDefaultAsync(u => u.FullName.Equals(fullName));
+            .Where(u => u.FullName.Equals(fullName));
 
         return user;
     }
