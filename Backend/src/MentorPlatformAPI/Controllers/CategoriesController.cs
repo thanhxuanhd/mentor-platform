@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-//[Authorize]
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class CategoriesController(ICategoryService categoryService) : ControllerBase
