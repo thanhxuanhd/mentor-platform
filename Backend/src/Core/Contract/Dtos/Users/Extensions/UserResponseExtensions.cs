@@ -13,7 +13,7 @@ public static class UserResponseExtensions
             FullName = user.FullName,
             Email = user.Email,
             Role = user.Role.Name.ToString(),
-            Status = user.Status,
+            Status = user.Status.ToString(),
             JoinedDate = user.JoinedDate,
             LastActive = user.LastActive
         };
