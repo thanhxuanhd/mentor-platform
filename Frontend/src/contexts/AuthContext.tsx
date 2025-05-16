@@ -35,7 +35,7 @@ export const AuthContext = createContext<AuthContextProps>({
     dateOfBirth: "",
     isFirstTimeLogin: false,
     staffCode: "",
-    role: "Staff",
+    role: "Admin",
     location: 1,
   },
   setUser: () => {},

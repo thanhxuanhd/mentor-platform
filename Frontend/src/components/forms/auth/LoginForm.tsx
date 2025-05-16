@@ -13,6 +13,19 @@ import { useNavigate, Link } from "react-router-dom";
 import type { LoginReq } from "../../../models";
 import authService from "../../../services/auth/authService";
 import { redirectOAuthHandler } from "./oAuth";
+import { useAuth } from "../../../hooks";
+
+const encodePassword = (password: string): string => {
+  const salt = "SECURITY_SALT"; 
+  const encodedString = btoa(password + salt);
+  return encodedString;
+};
+
+const decodePassword = (encodedPassword: string): string => {
+  const salt = "SECURITY_SALT";
+  const decodedString = atob(encodedPassword);
+  return decodedString.replace(salt, "");
+};
 
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -22,13 +35,26 @@ const LoginForm: React.FC = () => {
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldError, setFieldError] = useState<{ email?: string; password?: string }>({});
+  const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const remembered = localStorage.getItem("rememberMe") === "true";
-    const savedEmail = remembered ? localStorage.getItem("email") || "" : "";
-    setEmail(savedEmail);
-    setRememberMe(remembered);
+    try {
+      const remembermeInfoString = localStorage.getItem("RemembermeInfo");
+      if (remembermeInfoString) {
+        const remembermeInfo = JSON.parse(remembermeInfoString);
+        const remembered = remembermeInfo.enabled || false;
+        const savedEmail = remembered ? remembermeInfo.email || "" : "";
+        const savedEncodedPassword = remembered ? remembermeInfo.password || "" : "";
+        
+        setEmail(savedEmail);
+        setPassword(savedEncodedPassword ? decodePassword(savedEncodedPassword) : "");
+        setRememberMe(remembered);
+      }
+    } catch (error) {
+      console.error("Error retrieving remembered info:", error);
+      localStorage.removeItem("RemembermeInfo");
+    }
   }, []);
 
   const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
@@ -42,8 +68,7 @@ const LoginForm: React.FC = () => {
     setFieldError({});
 
     let hasError = false;
-    const trimmedEmail = email.trim();
-    const cleanedEmail = trimmedEmail.replace(/^\s+/, ""); 
+    const cleanedEmail = email.trim();
     const errors: { email?: string; password?: string } = {};
 
     if (!cleanedEmail) {
@@ -56,7 +81,6 @@ const LoginForm: React.FC = () => {
       errors.email = "Email must not exceed 50 characters";
       hasError = true;
     }
-
     if (!password.trim()) {
       errors.password = "Please enter your password";
       hasError = true;
@@ -66,22 +90,25 @@ const LoginForm: React.FC = () => {
     if (hasError) return;
 
     const loginData: LoginReq = { email: cleanedEmail, password };
-
     try {
       const res = await authService.login(loginData);
       console.log("Login successful:", res);
 
       if (rememberMe) {
-        localStorage.setItem("rememberMe", "true");
-        localStorage.setItem("email", cleanedEmail);
+        const remembermeInfo = {
+          enabled: true,
+          email: cleanedEmail,
+          password: encodePassword(password),
+        };
+        localStorage.setItem("RemembermeInfo", JSON.stringify(remembermeInfo));
       } else {
-        localStorage.removeItem("rememberMe");
-        localStorage.removeItem("email");
+        localStorage.removeItem("RemembermeInfo");
       }
 
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
+        setIsAuthenticated(true);
         navigate("/");
       }, 1000);
     } catch (err) {
@@ -89,7 +116,7 @@ const LoginForm: React.FC = () => {
       setErrorMessage("Email or password is not correct");
       setTimeout(() => {
         setErrorMessage("");
-      }, 3000);
+      }, 1000);
     }
   };
 
