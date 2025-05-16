@@ -1,4 +1,5 @@
 import {
+  App,
   Button,
   Input,
   Segmented,
@@ -20,10 +21,7 @@ import {
 import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
 import { userService } from "../../services/user/userService";
-import {
-  notifySuccess,
-  notifyError,
-} from "../../components/shared/Notification";
+import type { NotificationProps } from "../../types/Notification";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -45,7 +43,7 @@ export default function UsersPage() {
     roleOptions[0].value,
   );
   const [searchValue, setSearchValue] = useState("");
-
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -55,6 +53,8 @@ export default function UsersPage() {
     email: "",
     roleId: 1,
   });
+
+  const { notification } = App.useApp();
 
   const columns: ColumnsType<GetUserResponse> = [
     {
@@ -141,7 +141,11 @@ export default function UsersPage() {
       setTotalCount(response.totalCount);
       setUsersData(response.items);
     } catch {
-      notifyError("Failed to fetch users");
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "An error occurred while fetching users.",
+      });
     } finally {
       setLoading(false);
     }
@@ -150,6 +154,17 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
 
   const handleEditClick = (user: GetUserResponse) => {
     setEditingUser({
@@ -171,12 +186,17 @@ export default function UsersPage() {
         setPageIndex(1);
         fetchUsers();
         setIsModalVisible(false);
-        notifySuccess(
-          "User Updated",
-          "User details have been updated successfully.",
-        );
+        setNotify({
+          type: "success",
+          message: "Success",
+          description: "User updated successfully.",
+        });
       } catch {
-        notifyError("Failed to update user");
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "An error occurred while updating user.",
+        });
       } finally {
         setLoading(false);
       }
@@ -202,6 +222,7 @@ export default function UsersPage() {
 
   const handleFilterChange = useCallback((value: string) => {
     setSelectedRoleSegment(value);
+    setPageIndex(1);
   }, []);
 
   const handleChangeStatus = useCallback(
@@ -217,17 +238,19 @@ export default function UsersPage() {
           prev.map((u) => (u.id === userId ? { ...u, status: newStatus } : u)),
         );
 
-        notifySuccess(
-          "Status Updated",
-          `User status has been changed to ${
+        setNotify({
+          type: "success",
+          message: "Success",
+          description: `User status changed to ${
             newStatus === 1 ? "Active" : "Inactive"
           }.`,
-        );
+        });
       } catch {
-        notifyError(
-          "Failed to Update Status",
-          "An error occurred while updating the user status.",
-        );
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "An error occurred while changing user status.",
+        });
       }
     },
     [usersData],

@@ -9,8 +9,7 @@ public static class UserResponseExtensions
     {
         return new GetUserResponse
         {
-            Id = user.Id,
-            FullName = user.FullName,
+
             Id = user.Id,
             FullName = user.FullName,
             Email = user.Email,
