@@ -9,85 +9,89 @@ import {
 } from "@ant-design/icons";
 import type React from "react";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import type { LoginReq } from "../../../models";
 import authService from "../../../services/auth/authService";
 import { redirectOAuthHandler } from "./oAuth";
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [rememberMe, setRememberMe] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showSuccessNotification, setShowSuccessNotification] = useState(false)
-  const [errorMessage, setErrorMessage] = useState("")
-  const [fieldError, setFieldError] = useState<{ email?: string; password?: string }>({})
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [fieldError, setFieldError] = useState<{ email?: string; password?: string }>({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const remembered = localStorage.getItem("rememberMe") === "true"
-    const savedEmail = remembered ? localStorage.getItem("email") || "" : ""
-    setEmail(savedEmail)
-    setRememberMe(remembered)
-  }, [])
+    const remembered = localStorage.getItem("rememberMe") === "true";
+    const savedEmail = remembered ? localStorage.getItem("email") || "" : "";
+    setEmail(savedEmail);
+    setRememberMe(remembered);
+  }, []);
 
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email)
-  }
+  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
+
   const handleGoogleLogin = () => redirectOAuthHandler("google");
-
   const handleGithubLogin = () => redirectOAuthHandler("github");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setErrorMessage("")
-    setFieldError({})
+    e.preventDefault();
+    setErrorMessage("");
+    setFieldError({});
 
-    let hasError = false
-    const errors: { email?: string; password?: string } = {}
+    let hasError = false;
+    const trimmedEmail = email.trim();
+    const cleanedEmail = trimmedEmail.replace(/^\s+/, ""); 
+    const errors: { email?: string; password?: string } = {};
 
-    if (!email.trim()) {
-      errors.email = "Please enter your email"
-      hasError = true
-    } else if (!validateEmail(email)) {
-      errors.email = "Email must be in a correct format"
-      hasError = true
+    if (!cleanedEmail) {
+      errors.email = "Please enter your email";
+      hasError = true;
+    } else if (!validateEmail(cleanedEmail)) {
+      errors.email = "Email must be in a correct format";
+      hasError = true;
+    } else if (cleanedEmail.length > 50) {
+      errors.email = "Email must not exceed 50 characters";
+      hasError = true;
     }
 
     if (!password.trim()) {
-      errors.password = "Please enter your password"
-      hasError = true
+      errors.password = "Please enter your password";
+      hasError = true;
     }
 
-    setFieldError(errors)
-    if (hasError) return
+    setFieldError(errors);
+    if (hasError) return;
 
-    const loginData: LoginReq = { email, password }
+    const loginData: LoginReq = { email: cleanedEmail, password };
+
     try {
-      const res = await authService.login(loginData)
-      console.log("Login successful:", res)
+      const res = await authService.login(loginData);
+      console.log("Login successful:", res);
 
       if (rememberMe) {
-        localStorage.setItem("rememberMe", "true")
-        localStorage.setItem("email", email)
+        localStorage.setItem("rememberMe", "true");
+        localStorage.setItem("email", cleanedEmail);
       } else {
-        localStorage.removeItem("rememberMe")
-        localStorage.removeItem("email")
+        localStorage.removeItem("rememberMe");
+        localStorage.removeItem("email");
       }
 
-      setShowSuccessNotification(true)
+      setShowSuccessNotification(true);
       setTimeout(() => {
-        setShowSuccessNotification(false)
-        navigate("/")
-      }, 1000)
+        setShowSuccessNotification(false);
+        navigate("/");
+      }, 1000);
     } catch (err) {
-      console.error("Login failed:", err)
-      setErrorMessage("Email or password is not correct")
+      console.error("Login failed:", err);
+      setErrorMessage("Email or password is not correct");
       setTimeout(() => {
-        setErrorMessage("")
-      }, 1000)
+        setErrorMessage("");
+      }, 3000);
     }
-  }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -96,7 +100,11 @@ const LoginForm: React.FC = () => {
   return (
     <>
       {showSuccessNotification && (
-        <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm"
+        >
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
             <p className="font-bold">Sign in successfully!</p>
@@ -105,7 +113,11 @@ const LoginForm: React.FC = () => {
       )}
 
       {errorMessage && (
-        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50">
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50"
+        >
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm">
             <CloseCircleOutlined className="text-red-500 text-xl mr-2" />
             <div>
@@ -116,25 +128,35 @@ const LoginForm: React.FC = () => {
         </div>
       )}
 
-
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow">
-        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">Sign in to your account</h2>
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow mx-auto"
+      >
+        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
+          Sign in to your account
+        </h2>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">Email</label>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
+            Email
+          </label>
           <input
+            id="email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email"
             className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+            required
           />
-          {fieldError.email && (
-            <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>
-          )}
+          {fieldError.email && <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>}
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white">Password</label>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white">
+            Password
+          </label>
           <div className="relative">
             <input
               id="password"
@@ -143,18 +165,18 @@ const LoginForm: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+              required
             />
             <button
               type="button"
               onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Hide password" : "Show password"}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-300"
             >
               {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             </button>
           </div>
-          {fieldError.password && (
-            <p className="text-red-500 text-sm mt-1">{fieldError.password}</p>
-          )}
+          {fieldError.password && <p className="text-red-500 text-sm mt-1">{fieldError.password}</p>}
         </div>
 
         <div className="flex items-center justify-between">
@@ -167,12 +189,15 @@ const LoginForm: React.FC = () => {
             />
             Remember me
           </label>
-          <a href="/reset-password" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+          <Link to="/reset-password" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
             Forgot password?
-          </a>
+          </Link>
         </div>
 
-        <button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded">
+        <button
+          type="submit"
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+        >
           Sign In
         </button>
 
@@ -181,16 +206,16 @@ const LoginForm: React.FC = () => {
           <div className="mt-3 flex justify-center gap-4">
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
               onClick={handleGoogleLogin}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               <GoogleOutlined />
               Google
             </button>
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
               onClick={handleGithubLogin}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               <GithubOutlined />
               GitHub
@@ -199,13 +224,24 @@ const LoginForm: React.FC = () => {
         </div>
 
         <div className="text-center">
-          <a href="/signup" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+          <Link to="/signup" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
             Don't have an account? Sign up
+          </Link>
+        </div>
+
+        <div className="text-center mt-4">
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-gray-500 hover:text-blue-600 underline"
+          >
+            Terms of Service and Privacy Policy
           </a>
         </div>
       </form>
     </>
-  )
-}
+  );
+};
 
-export default LoginForm
+export default LoginForm;
