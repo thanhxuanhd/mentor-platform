@@ -234,6 +234,7 @@ export default function UsersPage() {
 
   const handleFilterChange = useCallback((value: string) => {
     setSelectedRoleSegment(value);
+    setPageIndex(1);
   }, []);
 
   const handleChangeStatus = useCallback(
@@ -252,6 +253,7 @@ export default function UsersPage() {
               : u,
           ),
         );
+        setPageIndex(1);
         setNotify({
           type: "success",
           message: "Success",
