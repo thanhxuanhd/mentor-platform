@@ -58,16 +58,14 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 requiredMark={false}
             >
                 <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter category name' },
-                { max: 50, message: 'Category name should not exceed 50 characters' },
-                { pattern: /^[^\s]+.*$/, message: 'Category name cannot start with a space' }
+                { max: 50, message: 'Category name should not exceed 50 characters' }
                 ]}>
                     <Input placeholder="Enter new category name" />
                 </Form.Item>
                 <Form.Item
                     name="description"
                     label="Description"
-                    rules={[{ max: 200, message: 'Description cannot exceed 200 characters' },
-                    { pattern: /^[^\s]+.*$/, message: 'Description cannot start with a space' }
+                    rules={[{ max: 200, message: 'Description cannot exceed 200 characters' }
                     ]}
                 >
                     <Input.TextArea placeholder="Enter your description" />

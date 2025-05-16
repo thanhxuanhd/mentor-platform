@@ -31,7 +31,6 @@ export default function CategoriesPage() {
   const [isCreating, setIsCreating] = useState(true);
   const { notification } = App.useApp();
 
-
   const fetchData = async () => {
     try {
       const apiResponse = await getListCategories(filters.pageIndex, filters.pageSize, filters.keyword);
@@ -139,11 +138,16 @@ export default function CategoriesPage() {
       setSelectedCategory(null);
       setIsCreating(false);
     } catch (error: any) {
-      setNotify({
-        type: 'error',
-        message: 'Error',
-        description: error.response?.data?.error || 'An error occurred while processing your request.',
-      });
+      const validateErrors = error.response?.data?.errors;
+      if (validateErrors) {
+        setNotify({
+          type: 'error',
+          message: 'Validation Error',
+          description: Object.values(validateErrors).join('\n'),
+        });
+      }
+      console.error('Error:', error);
+      console.log('Error response:', Object.values(error.response?.data?.error));
     }
   };
 
@@ -246,7 +250,7 @@ export default function CategoriesPage() {
             : selectedCategory
               ? {
                 id: selectedCategory.id,
-                name: selectedCategory.name.trimEnd(),
+                name: selectedCategory.name.trimEnd().trimStart(),
                 description: selectedCategory.description?.trimEnd() || '',
                 status: selectedCategory.status,
               }
