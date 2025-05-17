@@ -1,4 +1,4 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 using System.Linq.Expressions;
 
 namespace Contract.Repositories;

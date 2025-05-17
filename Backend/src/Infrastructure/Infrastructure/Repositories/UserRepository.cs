@@ -18,6 +18,15 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         return user;
     }
 
+    public IQueryable<User> GetUserByFullname(string fullName)
+    {
+        var user = _context.Users
+            .Include(user => user.Role)
+            .Where(u => u.FullName.Equals(fullName));
+
+        return user;
+    }
+
     public virtual async Task<User?> GetByEmailAsync(string email, Expression<Func<User, object>>? includeExpressions = null)
     {
         var user = _context.Users.AsQueryable();
