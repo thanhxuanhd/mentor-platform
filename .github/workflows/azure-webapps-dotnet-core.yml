@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 defaults:
   run:
@@ -73,7 +74,7 @@ jobs:
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@85270a1854658d167ab239bce43949edb336fa7c
+        uses: azure/webapps-deploy@v4
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_API_PUBLISH_PROFILE }}
