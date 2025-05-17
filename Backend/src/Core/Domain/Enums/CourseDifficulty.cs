@@ -1,9 +1,11 @@
-﻿namespace Domain.Enums
+﻿using System.Text.Json.Serialization;
+
+namespace Domain.Enums;
+
+[JsonConverter(typeof(JsonStringEnumConverter<CourseDifficulty>))]
+public enum CourseDifficulty
 {
-    public enum CourseDifficulty
-    {
-        Beginner,
-        Intermediate,
-        Advanced
-    }
+    Beginner,
+    Intermediate,
+    Advanced
 }
