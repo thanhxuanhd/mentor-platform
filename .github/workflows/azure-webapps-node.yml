@@ -53,6 +53,8 @@ jobs:
         npm install
         npm run build --if-present
         npm run test --if-present
+      env:
+        VITE_BASE_URL_BE: ${{ secrets.VITE_BASE_URL_BE }}
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
@@ -82,6 +84,4 @@ jobs:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-      env:
-        VITE_BASE_URL_BE: ${{ secrets.VITE_BASE_URL_BE }}
         
