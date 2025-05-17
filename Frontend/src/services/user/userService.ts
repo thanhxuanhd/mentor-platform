@@ -1,17 +1,23 @@
-import type { PaginatedList } from "../../types/Pagination";
 import type {
   EditUserRequest,
   GetUserResponse,
   UserFilterPagedRequest,
 } from "../../types/UserTypes";
 import { axiosClient } from "../apiClient";
+import type { PaginatedList } from "../../types/Pagination";
 
 export const userService = {
   getUsers: async (
     request: UserFilterPagedRequest,
   ): Promise<PaginatedList<GetUserResponse>> => {
-    const response = await axiosClient.get(`Users/filter`, { params: request });
-    return response.data.value;
+    return await axiosClient
+      .get(`Users/filter`, { params: request })
+      .then((response) => {
+        return response.data.value;
+      })
+      .catch((error) => {
+        throw error;
+      });
   },
 
   updateUser: async (userId: string, userData: EditUserRequest) => {
@@ -21,7 +27,8 @@ export const userService = {
   },
 
   changeUserStatus: async (userId: string) => {
-    const response = await axiosClient.put(`Users/status/${userId}`);
-    return response.data.value;
+    await axiosClient.put(`Users/status/${userId}`).then((response) => {
+      return response.data.value;
+    });
   },
 };

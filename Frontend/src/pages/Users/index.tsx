@@ -134,7 +134,7 @@ export default function UsersPage() {
                 <CheckOutlined type="default" style={{ color: "lime" }} />
               )
             }
-            onClick={() => handleChangeStatus(record.id)}
+            onClick={() => handleChangeStatus(record)}
           />
           <Button color="cyan" icon={<MessageOutlined />} />
         </Space>
@@ -145,19 +145,22 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await userService.getUsers({
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        roleName: selectedRoleSegment,
-        fullName: searchValue,
-      });
-      setTotalCount(response.totalCount);
-      setUsersData(response.items);
-    } catch {
+      await userService
+        .getUsers({
+          pageIndex: pageIndex,
+          pageSize: pageSize,
+          roleName: selectedRoleSegment,
+          fullName: searchValue,
+        })
+        .then((response) => {
+          setTotalCount(response.totalCount);
+          setUsersData(response.items);
+        });
+    } catch (error: any) {
       setNotify({
         type: "error",
         message: "Failed to fetch users",
-        description: "An error occurred while fetching users.",
+        description: error?.response?.data?.error || "Error fetching users.",
       });
     } finally {
       setLoading(false);
@@ -174,6 +177,9 @@ export default function UsersPage() {
         message: notify.message,
         description: notify.description,
         placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
       });
       setNotify(null);
     }
@@ -207,9 +213,8 @@ export default function UsersPage() {
         setNotify({
           type: "error",
           message: "Error",
-          description: error?.response?.data?.error || "An error occurred.",
+          description: error?.response?.data?.error || "Error updating user.",
         });
-        console.log("Error updating user:", error);
       } finally {
         setLoading(false);
       }
@@ -239,38 +244,33 @@ export default function UsersPage() {
     setPageIndex(1);
   }, []);
 
-  const handleChangeStatus = useCallback(
-    async (userId: string) => {
-      try {
-        const user = usersData.find((user) => user.id === userId);
-        if (!user) return;
+  const handleChangeStatus = useCallback(async (user: GetUserResponse) => {
+    try {
+      const newStatus = user.status === "Active" ? "Deactivated" : "Active";
+      await userService.changeUserStatus(user.id);
 
-        const newStatus = user.status === "Active" ? "Deactivated" : "Active";
-        await userService.changeUserStatus(userId);
-
-        setUsersData((prev) =>
-          prev.map((u) =>
-            u.id === userId
-              ? { ...u, status: newStatus as GetUserResponse["status"] }
-              : u,
-          ),
-        );
-        setPageIndex(1);
-        setNotify({
-          type: "success",
-          message: "Success",
-          description: `User status updated to ${newStatus}.`,
-        });
-      } catch {
-        setNotify({
-          type: "error",
-          message: "Error",
-          description: "An error occurred while changing user status.",
-        });
-      }
-    },
-    [usersData],
-  );
+      setUsersData((prev) =>
+        prev.map((u) =>
+          u.id === user.id
+            ? { ...u, status: newStatus as GetUserResponse["status"] }
+            : u,
+        ),
+      );
+      setPageIndex(1);
+      setNotify({
+        type: "success",
+        message: "Success",
+        description: `User status updated to ${newStatus}.`,
+      });
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description:
+          error?.response?.data?.error || "Error changing user status.",
+      });
+    }
+  }, []);
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
