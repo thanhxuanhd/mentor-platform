@@ -203,7 +203,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
     for (let i = 0; i < rowCount; i++) {
       const status = await userRoleManagementPage.getUserStatus(i);
 
-      if (status === "Pending" || status === "Inactive") {
+      if (status === "Pending" || status === "Deactivated") {
         await test.step(`Activate user in row ${i}`, async () => {
           await userRoleManagementPage.clickOnDeactivateUserBtn(i);
           await expect(userRoleManagementPage.getUserStatus(i)).resolves.toBe(
@@ -214,7 +214,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
         await test.step(`Deactivate user in row ${i}`, async () => {
           await userRoleManagementPage.clickOnActivateUserBtn(i);
           await expect(userRoleManagementPage.getUserStatus(i)).resolves.toBe(
-            "Inactive"
+            "Deactivated"
           );
         });
       }
