@@ -8,7 +8,8 @@ import NotFoundPage from '../pages/NotFound';
 import { Login, SignUp } from '../pages/Auth';
 import ResetPassword from '../pages/Auth/ResetPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
-import { AuthRequired } from "../components/AuthRequired"
+import ProtectedRoute from './ProtectedRoute';
+import { applicationRole } from '../constants/role';
 
 const AppRoutes = () => {
   return (
@@ -19,9 +20,9 @@ const AppRoutes = () => {
       <Route path="auth/callback/:provider" element={<OAuthCallback />} />
       <Route
         element={
-          <AuthRequired>
+          <ProtectedRoute requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}>
             <MainLayout />
-          </AuthRequired>
+          </ProtectedRoute>
         }
       >
         <Route path="/" element={<DashboardPage />} />
