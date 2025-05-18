@@ -8,6 +8,9 @@ export class UserRoleManagementPage extends BasePage {
   private USER_STATUS: Locator = this.page.locator(
     ".ant-table-cell:nth-child(4) .ant-tag"
   );
+  private USER_ROLE: Locator = this.page.locator(
+    ".ant-table-cell:nth-child(2) .ant-tag"
+  );
   private btnDeactivateUser = this.page.locator(
     `tr button:has([aria-label="stop"])`
   );
@@ -148,8 +151,16 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //Filter user
-  async filterByRole(role = "All") {
+  async filterUserByRole(role = "All") {
     await this.roleFilter(role).click();
+  }
+
+  async getUserRole(index: number) {
+    await expect(this.USER_ROLE.first()).toBeVisible();
+    return await this.ROW_USER.nth(index)
+      .locator(this.USER_ROLE)
+      .first()
+      .innerText();
   }
 
   //Search user

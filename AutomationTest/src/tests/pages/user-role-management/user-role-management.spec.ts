@@ -2,7 +2,7 @@ import test, { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../pages/user-role-management-page/user-role-management-page";
 import userData from "./user-role-management.json";
 
-test.describe("@SmokeTest @UserRoleManagement All user role management testcase", async () => {
+test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
   const validateButton = userData.validate_button;
   const editUser = userData.validate_edit_user;
@@ -20,7 +20,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   //Save button
-  test("Validate save button", async () => {
+  test("@SmokeTest Validate save button", async () => {
     await test.step("Click edit user button", async () => {
       await userRoleManagementPage.clickOnEditUserBtn(0);
     });
@@ -32,7 +32,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   validateButton.forEach((user, index) => {
-    test(`Validate save button when fill form ${index}`, async () => {
+    test(`@SmokeTest Validate save button when fill form ${index}`, async () => {
       await test.step("Click edit user button", async () => {
         await userRoleManagementPage.clickOnEditUserBtn(index);
       });
@@ -52,7 +52,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
 
   //Edit function
   editUser.forEach((user, index) => {
-    test(`Validate edit user successfully ${index}`, async () => {
+    test(`@SmokeTest Validate edit user successfully ${index}`, async () => {
       await test.step("Click edit user button", async () => {
         await userRoleManagementPage.clickOnEditUserBtn(index);
       });
@@ -77,7 +77,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   //Cancel button
-  test("Validate cancel button", async () => {
+  test("@SmokeTest Validate cancel button", async () => {
     await test.step("Click edit user button", async () => {
       await userRoleManagementPage.clickOnEditUserBtn(0);
     });
@@ -92,7 +92,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
 
   //Search user
   searchUser.forEach((user, index) => {
-    test(`Verify search user successfully ${index};`, async () => {
+    test(`@SmokeTest Verify search user successfully ${index};`, async () => {
       await test.step("Perform search user", async () => {
         await userRoleManagementPage.searchUser();
       });
@@ -129,13 +129,13 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   userRoleFilter.forEach((role, index) => {
-    test(`Verify search user with filter successfully ${index}`, async () => {
+    test(`@SmokeTest Verify search user with filter successfully ${index}`, async () => {
       await test.step("Perform search user", async () => {
         await userRoleManagementPage.searchUser();
       });
 
       await test.step("Search user", async () => {
-        await userRoleManagementPage.filterByRole(role);
+        await userRoleManagementPage.filterUserByRole(role);
         await userRoleManagementPage.searchUser(
           searchUserWithFilter.oneKeyword
         );
@@ -147,7 +147,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   //Pagination function
-  test("Verify pagination default value", async () => {
+  test("@SmokeTest Verify pagination default value", async () => {
     const isTrue = await userRoleManagementPage.getPaginationDefaultValue();
     expect(isTrue).toEqual("5");
   });
@@ -165,20 +165,20 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
     expect(isTrue).toBeFalsy();
   });
 
-  test("Verify Next button is enable if user stays from Page 2 to the last page", async () => {
+  test("@SmokeTest Verify Next button is enable if user stays from Page 2 to the last page", async () => {
     await userRoleManagementPage.clickOnNavigationButton(1);
     const isTrue = await userRoleManagementPage.getNextButtonStatus();
     expect(isTrue).toBeTruthy();
   });
 
-  test("Verify Previous button is enable if user stays from the page before the last page", async () => {
+  test("@SmokeTest Verify Previous button is enable if user stays from the page before the last page", async () => {
     const totalPaging = await userRoleManagementPage.getAllPagingCount();
     await userRoleManagementPage.clickOnNavigationButton(totalPaging - 2);
     const isTrue = await userRoleManagementPage.getNextButtonStatus();
     expect(isTrue).toBeTruthy();
   });
 
-  test("Verify data changed among pages", async () => {
+  test("@SmokeTest Verify data changed among pages", async () => {
     const firstPageData = await userRoleManagementPage.getAllUser();
     await userRoleManagementPage.clickOnNavigationButton(1);
     const secondPageData = await userRoleManagementPage.getAllUser();
@@ -186,7 +186,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   itemsPerPage.forEach((item) => {
-    test(`Verify that user table display ${item} users`, async () => {
+    test(`@SmokeTest Verify that user table display ${item} users`, async () => {
       console.log("item: ", item);
       await test.step("Click on items per page dropdown", async () => {
         await userRoleManagementPage.clickOnItemPerPage(item);
@@ -197,7 +197,7 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
   });
 
   //Activate/Deactivate user
-  test("Verify that Activate/Deactivate user works correctly", async () => {
+  test("@SmokeTest Verify that Activate/Deactivate user works correctly", async () => {
     const rowCount = await userRoleManagementPage.getAllTableRowCount();
 
     for (let i = 0; i < rowCount; i++) {
@@ -219,5 +219,18 @@ test.describe("@SmokeTest @UserRoleManagement All user role management testcase"
         });
       }
     }
+  });
+
+  //User role filter
+  userRoleFilter.forEach((role, index) => {
+    test(`@SmokeTest Verify that user role ${role} filter works correctly`, async () => {
+      await test.step("Select user role filter", async () => {
+        await userRoleManagementPage.filterUserByRole(role);
+      });
+      await test.step("Verify that the filter is applied successfully", async () => {
+        const actualResult = await userRoleManagementPage.getUserRole(index);
+        expect(actualResult).toEqual(role);
+      });
+    });
   });
 });
