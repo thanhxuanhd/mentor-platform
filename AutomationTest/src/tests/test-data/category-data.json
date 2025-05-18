@@ -1,0 +1,42 @@
+{
+  "create_valid_category": {
+    "name": "A new Category valid",
+    "description": "This is category description",
+    "isActive": false
+  },
+  "create_duplicate_category": {
+    "name": "A new Category 111",
+    "description": "This is category des",
+    "isActive": true
+  },
+  "create_empty_category_name": {
+    "name": "",
+    "description": "This is category des",
+    "isActive": true
+  },
+  "create_over_length_category_name": {
+    "name": "This is over 50 characters category name abc def ghi klm opq rst uvxyz",
+    "description": "This is category des",
+    "isActive": true
+  },
+  "update_valid_category": {
+    "name": "New category updated",
+    "description": "This is category description updated",
+    "isActive": true
+  },
+  "update_duplicate_category": {
+    "name": "A new Category 111",
+    "description": "This is category des",
+    "isActive": true
+  },
+  "update_empty_category_name": {
+    "name": "",
+    "description": "This is category des",
+    "isActive": true
+  },
+  "update_over_length_category_name": {
+    "name": "This is over 50 characters category name abc def ghi klm opq rst uvxyz",
+    "description": "This is category des",
+    "isActive": true
+  }
+}

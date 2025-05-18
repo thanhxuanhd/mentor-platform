@@ -7,6 +7,7 @@ export async function loginStep(page: any, user: LoginUser): Promise<LoginPage> 
 
     await test.step('Navigate to Login Page', async () => {
         await loginPage.navigateToHomePage();
+        await loginPage.goToLoginPage();
     });
 
     await test.step('Input default account', async () => {
