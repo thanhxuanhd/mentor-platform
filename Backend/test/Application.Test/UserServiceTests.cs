@@ -30,13 +30,13 @@ namespace Application.Test
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User { Id = userId, FullName = "Test User", Email = "test@example.com", Role = new Role { Id = 1, Name = UserRole.Learner } }; 
+            var user = new User { Id = userId, FullName = "Test User", Email = "test@example.com", Role = new Role { Id = 1, Name = UserRole.Learner } };
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, It.IsAny<Expression<Func<User, object>>>()))
                 .ReturnsAsync(user);
 
             // Act
-            var result = await _userService.GetUserByIdAsync(userId);            
-            
+            var result = await _userService.GetUserByIdAsync(userId);
+
             // Assert
             Assert.Multiple(() =>
             {
@@ -47,7 +47,7 @@ namespace Application.Test
                 Assert.That(result.Value?.FullName, Is.EqualTo("Test User"));
                 Assert.That(result.Value?.Role, Is.EqualTo(UserRole.Learner.ToString()));
             });
-        }        
+        }
 
         [Test]
         public async Task GetUserByIdAsync_UserDoesNotExist_ReturnsNotFound()
@@ -55,7 +55,7 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, It.IsAny<Expression<Func<User, object>>>()))
-                .ReturnsAsync((User?)null); 
+                .ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.GetUserByIdAsync(userId);
@@ -65,10 +65,10 @@ namespace Application.Test
             {
                 Assert.That(result.IsSuccess, Is.False);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-                Assert.That(result.Error, Is.EqualTo("Null result"));
+                Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
             });
-        }        
-        
+        }
+
         [Test]
         public async Task FilterUserAsync_ReturnsFilteredUsers()
         {
@@ -76,31 +76,31 @@ namespace Application.Test
             var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 10, FullName = "Test", RoleName = "Learner" };
             var users = new List<User>
             {
-                new User { 
-                    Id = Guid.NewGuid(), 
-                    FullName = "Test User 1", 
-                    Email = "test1@example.com", 
+                new User {
+                    Id = Guid.NewGuid(),
+                    FullName = "Test User 1",
+                    Email = "test1@example.com",
                     Status = UserStatus.Active,
                     JoinedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-30)),
                     LastActive = DateOnly.FromDateTime(DateTime.Now.AddDays(-2)),
-                    Role = new Role { Id = 1, Name = UserRole.Learner } 
+                    Role = new Role { Id = 1, Name = UserRole.Learner }
                 },
-                new User { 
-                    Id = Guid.NewGuid(), 
-                    FullName = "Another Test User", 
-                    Email = "test2@example.com", 
+                new User {
+                    Id = Guid.NewGuid(),
+                    FullName = "Another Test User",
+                    Email = "test2@example.com",
                     Status = UserStatus.Active,
                     JoinedDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-20)),
                     LastActive = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)),
-                    Role = new Role { Id = 2, Name = UserRole.Learner } 
+                    Role = new Role { Id = 2, Name = UserRole.Learner }
                 }
             };
-            
+
             var queryableUsers = users.AsQueryable();
-            
+
             _mockUserRepository.Setup(repo => repo.GetAll())
                 .Returns(queryableUsers);
-            
+
             var filteredQueryable = queryableUsers
                 .Where(user => user.FullName.Contains(request.FullName))
                 .Where(user => user.Role.Name.ToString().Equals(request.RoleName))
@@ -110,27 +110,27 @@ namespace Application.Test
                     FullName = u.FullName,
                     Email = u.Email,
                     Role = u.Role.Name.ToString(),
-                    Status = u.Status,
+                    Status = u.Status.ToString(),
                     JoinedDate = u.JoinedDate,
                     LastActive = u.LastActive
                 });
-            
+
             var paginatedUserResponses = new PaginatedList<GetUserResponse>(
-                filteredQueryable.ToList(), 
-                filteredQueryable.Count(), 
-                request.PageIndex, 
+                filteredQueryable.ToList(),
+                filteredQueryable.Count(),
+                request.PageIndex,
                 request.PageSize
             );
-            
+
             _mockUserRepository.Setup(repo => repo.ToPaginatedListAsync(
-                    It.IsAny<IQueryable<GetUserResponse>>(), 
-                    request.PageSize, 
+                    It.IsAny<IQueryable<GetUserResponse>>(),
+                    request.PageSize,
                     request.PageIndex))
                 .ReturnsAsync(paginatedUserResponses);
 
             // Act
-            var result = await _userService.FilterUserAsync(request);            
-            
+            var result = await _userService.FilterUserAsync(request);
+
             // Assert
             Assert.Multiple(() =>
             {
@@ -139,15 +139,15 @@ namespace Application.Test
                 Assert.That(result.Value, Is.Not.Null);
                 Assert.That(result.Value?.Items.Count, Is.EqualTo(filteredQueryable.Count()));
                 Assert.That(result.Value?.TotalCount, Is.EqualTo(filteredQueryable.Count()));
-                
+
                 _mockUserRepository.Verify(repo => repo.GetAll(), Times.Once);
                 _mockUserRepository.Verify(repo => repo.ToPaginatedListAsync(
-                    It.IsAny<IQueryable<GetUserResponse>>(), 
-                    request.PageSize, 
+                    It.IsAny<IQueryable<GetUserResponse>>(),
+                    request.PageSize,
                     request.PageIndex), Times.Once);
             });
-        }          
-        
+        }
+
         [Test]
         public async Task FilterUserAsync_NoUsersFound_ReturnsEmptyList()
         {
@@ -155,27 +155,27 @@ namespace Application.Test
             var request = new UserFilterPagedRequest { PageIndex = 1, PageSize = 10, FullName = "NonexistentUser" };
             var emptyUsersList = new List<User>();
             var emptyQueryable = emptyUsersList.AsQueryable();
-            
+
             _mockUserRepository.Setup(repo => repo.GetAll())
                 .Returns(emptyQueryable);
-                
+
             var emptyUserResponses = new List<GetUserResponse>();
             var emptyPaginatedList = new PaginatedList<GetUserResponse>(
-                emptyUserResponses, 
-                0, 
-                request.PageIndex, 
+                emptyUserResponses,
+                0,
+                request.PageIndex,
                 request.PageSize
             );
-            
+
             _mockUserRepository.Setup(repo => repo.ToPaginatedListAsync(
-                    It.IsAny<IQueryable<GetUserResponse>>(), 
-                    request.PageSize, 
+                    It.IsAny<IQueryable<GetUserResponse>>(),
+                    request.PageSize,
                     request.PageIndex))
                 .ReturnsAsync(emptyPaginatedList);
-        
+
             // Act
-            var result = await _userService.FilterUserAsync(request);            
-            
+            var result = await _userService.FilterUserAsync(request);
+
             // Assert
             Assert.Multiple(() =>
             {
@@ -184,11 +184,11 @@ namespace Application.Test
                 Assert.That(result.Value, Is.Not.Null);
                 Assert.That(result.Value?.Items.Count, Is.EqualTo(0));
                 Assert.That(result.Value?.TotalCount, Is.EqualTo(0));
-                
+
                 _mockUserRepository.Verify(repo => repo.GetAll(), Times.Once);
                 _mockUserRepository.Verify(repo => repo.ToPaginatedListAsync(
-                    It.IsAny<IQueryable<GetUserResponse>>(), 
-                    request.PageSize, 
+                    It.IsAny<IQueryable<GetUserResponse>>(),
+                    request.PageSize,
                     request.PageIndex), Times.Once);
             });
         }
@@ -198,22 +198,25 @@ namespace Application.Test
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", RoleId = 1 };
+            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", Role = "Admin" };
             var user = new User { Id = userId, FullName = "Old Name", Email = "old@example.com", RoleId = 2 };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 
             // Act
             var result = await _userService.EditUserAsync(userId, request);
-            
+
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
                 Assert.That(result.Value, Is.True);
-                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u => u.FullName == request.FullName && u.Email == request.Email && u.RoleId == request.RoleId)), Times.Once);
+                _mockUserRepository.Verify(repo => repo.Update(It.Is<User>(u =>
+                    u.FullName == request.FullName &&
+                    u.Email == request.Email &&
+                    u.RoleId == (int)Enum.Parse(typeof(UserRole), request.Role))), Times.Once);
                 _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
             });
         }
@@ -223,18 +226,18 @@ namespace Application.Test
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", RoleId = 1 };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null); 
+            var request = new EditUserRequest { FullName = "Updated Name", Email = "updated@example.com", Role = "Admin" };
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
 
             // Act
             var result = await _userService.EditUserAsync(userId, request);
-            
+
             // Assert
             Assert.Multiple(() =>
             {
                 Assert.That(result.IsSuccess, Is.False);
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-                Assert.That(result.Error, Is.EqualTo("Null result"));
+                Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
             });
         }
 
@@ -244,13 +247,13 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             var user = new User { Id = userId, Status = UserStatus.Active };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 
             // Act
             var result = await _userService.ChangeUserStatusAsync(userId);
-            
+
             // Assert
             Assert.Multiple(() =>
             {
@@ -269,13 +272,13 @@ namespace Application.Test
             // Arrange
             var userId = Guid.NewGuid();
             var user = new User { Id = userId, Status = UserStatus.Deactivated };
-            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user); 
+            _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync(user);
             _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
             _mockUserRepository.Setup(repo => repo.SaveChangesAsync()).ReturnsAsync(1);
 
             // Act
-            var result = await _userService.ChangeUserStatusAsync(userId);            
-            
+            var result = await _userService.ChangeUserStatusAsync(userId);
+
             // Assert
             Assert.Multiple(() =>
             {
@@ -296,8 +299,8 @@ namespace Application.Test
             _mockUserRepository.Setup(repo => repo.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
 
             // Act
-            var result = await _userService.ChangeUserStatusAsync(userId);            
-            
+            var result = await _userService.ChangeUserStatusAsync(userId);
+
             // Assert
             Assert.Multiple(() =>
             {

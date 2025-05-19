@@ -11,7 +11,6 @@ interface User {
   username: string;
   dateOfBirth: string;
   isFirstTimeLogin: boolean;
-  staffCode: string;
   role: string;
   location: number;
 }
@@ -34,8 +33,7 @@ export const AuthContext = createContext<AuthContextProps>({
     username: "",
     dateOfBirth: "",
     isFirstTimeLogin: false,
-    staffCode: "",
-    role: "Staff",
+    role: "Admin",
     location: 1,
   },
   setUser: () => {},
@@ -49,7 +47,6 @@ interface AuthProviderProps {
 interface Token {
   UserId: string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
-  StaffCode: string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
   IsFirstTimeLogin: string;
   DateOfBirth: string;
@@ -65,7 +62,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     username: "",
     dateOfBirth: "",
     isFirstTimeLogin: false,
-    staffCode: "",
     role: "Staff",
     location: 1,
   });
@@ -88,7 +84,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           ],
         dateOfBirth: decodedToken.DateOfBirth,
         isFirstTimeLogin: decodedToken.IsFirstTimeLogin === "true",
-        staffCode: decodedToken.StaffCode,
         role: decodedToken[
           "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
         ],
@@ -100,7 +95,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         username: "",
         dateOfBirth: "",
         isFirstTimeLogin: false,
-        staffCode: "",
         role: "Staff",
         location: 1,
       });

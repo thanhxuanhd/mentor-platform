@@ -29,7 +29,6 @@ export const authService = {
         signUpData
       );
 
-      // Store tokens in localStorage
       localStorage.setItem('token', response.data.value);
       localStorage.setItem('refreshToken', response.data.refreshToken);
 

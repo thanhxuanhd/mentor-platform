@@ -40,8 +40,8 @@ public class CategoriesControllerTest
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _categoriesController.GetCategories();        
-        
+        var result = await _categoriesController.GetCategories();
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -74,8 +74,8 @@ public class CategoriesControllerTest
             .ReturnsAsync(serviceResult);
 
         // Act
-        await _categoriesController.GetCategories(pageIndex, pageSize, keywordWithSpaces);        
-        
+        await _categoriesController.GetCategories(pageIndex, pageSize, keywordWithSpaces);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -96,8 +96,8 @@ public class CategoriesControllerTest
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _categoriesController.FilterCourseByCategory(categoryId, pageIndex, pageSize);        
-        
+        var result = await _categoriesController.FilterCourseByCategory(categoryId, pageIndex, pageSize);
+
         // Assert
         Assert.Multiple(() =>
         {
