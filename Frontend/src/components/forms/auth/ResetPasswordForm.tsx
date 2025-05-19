@@ -5,6 +5,7 @@ import { useState } from "react"
 import { EyeOutlined, EyeInvisibleOutlined, CheckCircleOutlined } from "@ant-design/icons"
 import authService from "../../../services/auth/authService"
 import type { ResetPasswordReq } from "../../../models"
+import { useNavigate } from "react-router-dom";
 
 const ResetPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("")
@@ -13,6 +14,7 @@ const ResetPasswordForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,6 +26,7 @@ const ResetPasswordForm: React.FC = () => {
       setShowNotification(true)
       setTimeout(() => {
         setShowNotification(false)
+        navigate("/login", { replace: true });
         setSubmitted(true)
       }, 1000)
     } catch (err) {
