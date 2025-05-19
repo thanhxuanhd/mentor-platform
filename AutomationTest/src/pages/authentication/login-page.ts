@@ -46,5 +46,4 @@ export class LoginPage extends BasePage {
     async expectFailedLogin() {
         await this.isVisible(this.LBL_FAILEDMESSAGE_LOCATOR);
     }
-
 }

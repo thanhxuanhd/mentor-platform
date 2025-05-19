@@ -1,4 +1,4 @@
-import { CUCategory } from './../../../models/categories/create-category';
+import { CUCategory } from '../../../models/categories/create-category';
 import { expect } from '@playwright/test';
 import categoryData from '../../test-data/category-data.json';
 import { test } from '../../../core/fixture/authFixture';
