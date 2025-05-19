@@ -13,7 +13,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CourseItem> CourseItems { get; set; }
     public DbSet<CourseTag> CourseTags { get; set; }
     public DbSet<Tag> Tags { get; set; }
-
+    public DbSet<Expertise> Expertises { get; set; }
+    public DbSet<UserExpertise> UserExpertises { get; set; }
+    public DbSet<UserDetail> UserDetails { get; set; }
+ 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
