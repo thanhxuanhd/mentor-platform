@@ -4,11 +4,13 @@ import type React from "react"
 import { useState } from "react"
 import { userService } from "../../../services/user/userService"
 import { HiExclamationCircle } from "react-icons/hi"
+import { useNavigate } from "react-router-dom";
 
 const ForgotPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState("")
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,6 +18,9 @@ const ForgotPasswordForm: React.FC = () => {
     try {
       await userService.forgotPassword(email)
       setSubmitted(true)
+      setTimeout(() => {
+        navigate("/reset-password", { replace: true });
+      }, 1000);
     } catch (err) {
       console.error("Forgot password error:", err)
       setError("Account does not exist. Please check your email.")
@@ -58,7 +63,7 @@ const ForgotPasswordForm: React.FC = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded"
+            className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded"
           >
             Send Reset Link
           </button>

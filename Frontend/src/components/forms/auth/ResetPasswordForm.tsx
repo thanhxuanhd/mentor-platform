@@ -8,32 +8,32 @@ import type { ResetPasswordReq } from "../../../models"
 
 const ResetPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("")
+  const [oldPassword, setOldPassword] = useState("") 
   const [newPassword, setNewPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const data: ResetPasswordReq = { email, newPassword }
+    const data: ResetPasswordReq = { email, oldPassword, newPassword } 
     try {
       await authService.resetPassword(data)
       console.log("Reset password successful for:", email)
-      
+
       setShowNotification(true)
-      
       setTimeout(() => {
         setShowNotification(false)
         setSubmitted(true)
       }, 1000)
     } catch (err) {
       console.error("Reset password failed:", err)
-      alert("Account does not exist.");
+      alert("Reset password failed: incorrect email or old password.")
     }
   }
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    setShowPassword(!showPassword)
   }
 
   return (
@@ -47,7 +47,7 @@ const ResetPasswordForm: React.FC = () => {
           </div>
         </div>
       )}
-      
+
       <div className="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded shadow">
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
           Reset your password
@@ -72,6 +72,23 @@ const ResetPasswordForm: React.FC = () => {
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
                 placeholder="you@example.com"
               />
+            </div>
+
+            <div>
+              <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 dark:text-white">
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  id="oldPassword"
+                  type={showPassword ? "text" : "password"}
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  required
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter your current password"
+                />
+              </div>
             </div>
 
             <div>
@@ -100,7 +117,7 @@ const ResetPasswordForm: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded"
             >
               Reset Password
             </button>
@@ -113,7 +130,6 @@ const ResetPasswordForm: React.FC = () => {
           </form>
         )}
       </div>
-      
     </>
   )
 }
