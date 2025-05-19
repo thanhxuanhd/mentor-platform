@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type {ReactNode} from "react";
+import type { ReactNode } from "react";
 interface User {
   id: string;
   username: string;
@@ -26,8 +26,8 @@ export interface AuthContextProps {
 
 export const AuthContext = createContext<AuthContextProps>({
   token: null,
-  isAuthenticated: false,
-  setIsAuthenticated: () => {},
+  isAuthenticated: true,
+  setIsAuthenticated: () => { },
   user: {
     id: "",
     username: "",
@@ -36,7 +36,7 @@ export const AuthContext = createContext<AuthContextProps>({
     role: "Admin",
     location: 1,
   },
-  setUser: () => {},
+  setUser: () => { },
   loading: true,
 });
 
@@ -80,7 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         id: decodedToken.UserId,
         username:
           decodedToken[
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
           ],
         dateOfBirth: decodedToken.DateOfBirth,
         isFirstTimeLogin: decodedToken.IsFirstTimeLogin === "true",
