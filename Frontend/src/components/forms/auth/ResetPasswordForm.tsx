@@ -14,10 +14,14 @@ const ResetPasswordForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isLoading) return
+    setIsLoading(true)
+
     const data: ResetPasswordReq = { email, oldPassword, newPassword } 
     try {
       await authService.resetPassword(data)
@@ -28,7 +32,7 @@ const ResetPasswordForm: React.FC = () => {
         setShowNotification(false)
         navigate("/login", { replace: true });
         setSubmitted(true)
-      }, 1000)
+      }, 3000)
     } catch (err) {
       console.error("Reset password failed:", err)
       alert("Reset password failed: incorrect email or old password.")
@@ -46,7 +50,7 @@ const ResetPasswordForm: React.FC = () => {
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
             <p className="font-bold">Success!</p>
-            <p>Your password has been reset successfully.</p>
+            <p>Reset Password successfully!</p>
           </div>
         </div>
       )}
@@ -120,9 +124,12 @@ const ResetPasswordForm: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-2 rounded"
+              disabled={isLoading}
+              className={`w-full text-white font-semibold py-2 rounded ${
+                isLoading ? "bg-orange-400 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700"
+              }`}
             >
-              Reset Password
+              {isLoading ? "Processing..." : "Reset Password"}
             </button>
 
             <div className="text-center">
