@@ -196,12 +196,18 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       await userRoleManagementPage.clickOnEditUserBtn(0);
     });
     await test.step("Fill edit user form with existing email", async () => {
-      await userRoleManagementPage.fillEditUserForm(existedEmail);
+      await userRoleManagementPage.fillEditUserForm(
+        existedEmail.fullname,
+        existedEmail.email
+      );
+    });
+    await test.step("Click save button", async () => {
+      await userRoleManagementPage.clickOnSaveBtn();
     });
     await test.step("Verify error message is shown", async () => {
       const errorMessage =
         await userRoleManagementPage.getEmailAlreadyExistsErrorMessage();
-      expect(errorMessage).toBe(`Email ${existedEmail} already exists.`);
+      expect(errorMessage).toBe(`Email ${existedEmail.email} already exists.`);
     });
   });
 });

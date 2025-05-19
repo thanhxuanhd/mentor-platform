@@ -14,7 +14,7 @@
 
   "search_user": [
     {
-      "fullname": "AnhDoSkibidi@at.local"
+      "fullname": "MySuperKawawiiMentorXxX"
     },
     {
       "empty": ""
@@ -26,7 +26,7 @@
       "multipleKeywords": "Senpai"
     },
     {
-      "invalidKeyword": "123456789"
+      "invalidKeyword": "Sempoi"
     },
     {
       "wildCard": "Du"
@@ -40,5 +40,8 @@
     }
   },
   "items_per_page": ["5", "10", "25"],
-  "existed_email": "MySuperKawaiiMentorXxX@at.local"
+  "existed_email": {
+    "fullname": "AnhDoSkibidi",
+    "email": "MySuperKawaiiMentorXxX@at.local"
+  }
 }
