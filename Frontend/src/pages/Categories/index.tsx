@@ -156,14 +156,12 @@ export default function CategoriesPage() {
       setSelectedCategory(null);
       setIsCreating(false);
     } catch (error: any) {
-      const validateErrors = error.response?.data?.errors;
-      if (validateErrors) {
-        setNotify({
-          type: 'error',
-          message: 'Validation Error',
-          description: Object.values(validateErrors).join('\n'),
-        });
-      }
+      setNotify({
+        type: 'error',
+        message: 'Error',
+        description: error.response?.data?.error || 'An error occurred while processing your request.',
+      });
+      console.log('Error:', error);
     }
   };
 

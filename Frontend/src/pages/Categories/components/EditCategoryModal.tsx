@@ -58,7 +58,8 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
                 requiredMark={false}
             >
                 <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please enter category name' },
-                { max: 50, message: 'Category name should not exceed 50 characters' }
+                { max: 50, message: 'Category name should not exceed 50 characters' },
+                { whitespace: true, message: 'Category name cannot be empty' }
                 ]}>
                     <Input placeholder="Enter new category name" />
                 </Form.Item>
