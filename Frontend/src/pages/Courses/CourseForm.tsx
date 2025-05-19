@@ -10,6 +10,7 @@ type CourseFormProp = {
   states: Record<string, string>;
   active: boolean;
   onClose: (targetAction?: string | undefined) => void;
+  onSubmit: string;
 };
 
 export const CourseForm: FC<CourseFormProp> = ({
@@ -18,13 +19,21 @@ export const CourseForm: FC<CourseFormProp> = ({
   states,
   active,
   onClose,
+  onSubmit
 }) => {
   const [form] = Form.useForm<CourseFormDataOptions>();
   const [newTag, setNewTag] = useState<string>("");
+  const [tags, setTags] = useState<string[]>([]);
 
+  // Helper to get current tags
+  const getTags = () => tags;
   useEffect(() => {
     if (active) {
       form.setFieldsValue(formData);
+      
+      // Initialize tags from formData
+      const initialTags = Array.isArray(formData.tags) ? formData.tags : [];
+      setTags(initialTags);
     }
   }, [active, form, formData]);
 
@@ -43,11 +52,18 @@ export const CourseForm: FC<CourseFormProp> = ({
   }
 
   const handleAddTag = () => {
-    if (newTag && !formData.tags.includes(newTag)) {
-      const tags = [...(form.getFieldValue("tags") || []), newTag];
-      form.setFieldValue("tags", tags);
+    const trimmedTag = newTag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      const updatedTags = [...tags, trimmedTag];
+      setTags(updatedTags);
+      form.setFieldValue("tags", updatedTags);
       setNewTag("");
     }
+  };
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter((t: string) => t !== tagToRemove);
+    setTags(updatedTags);
+    form.setFieldValue("tags", updatedTags);
   };
 
   return (
@@ -65,7 +81,7 @@ export const CourseForm: FC<CourseFormProp> = ({
         </Button>,
       ]}
     >
-      <Form form={form} layout="vertical" initialValues={formData}>
+      <Form form={form} layout="vertical" initialValues={{...formData, tags: Array.isArray(formData.tags) ? formData.tags : []}}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
             name="title"
@@ -123,9 +139,7 @@ export const CourseForm: FC<CourseFormProp> = ({
             rules={[{ required: true, message: "Please input the duration!" }]}
           >
             <Input placeholder="e.g. 6 weeks" />
-          </Form.Item>
-
-          <Form.Item
+          </Form.Item>          <Form.Item
             name="tags"
             label="Tags"
             rules={[
@@ -133,37 +147,36 @@ export const CourseForm: FC<CourseFormProp> = ({
             ]}
           >
             <Space direction="vertical" style={{ width: "100%" }}>
-              <Space wrap>
-                {form.getFieldValue("tags")?.map((tag: string) => (
-                  <Tag
-                    key={tag}
-                    closable
-                    onClose={() => {
-                      const tags = form
-                        .getFieldValue("tags")
-                        .filter((t: string) => t !== tag);
-                      form.setFieldValue("tags", tags);
-                    }}
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-              </Space>
               <Space.Compact style={{ width: "100%" }}>
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a tag"
-                  onPressEnter={handleAddTag}
+                  onPressEnter={e => {
+                    e.preventDefault();
+                    handleAddTag();
+                  }}
                 />
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleAddTag}
+                  disabled={!newTag.trim() || getTags().includes(newTag.trim())}
                 >
                   Add
                 </Button>
               </Space.Compact>
+              <Space wrap style={{ marginTop: 8 }}>
+                {getTags().map((tag: string) => (
+                  <Tag
+                    key={tag}
+                    closable
+                    onClose={() => handleRemoveTag(tag)}
+                  >
+                    {tag}
+                  </Tag>
+                ))}
+              </Space>
             </Space>
           </Form.Item>
 
