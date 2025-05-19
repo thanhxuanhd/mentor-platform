@@ -60,6 +60,9 @@ export class UserRoleManagementPage extends BasePage {
   private BTN_NAVIGATION: Locator = this.page.locator(
     "ul.ant-pagination .ant-pagination-item"
   );
+  private ERROR_MESSAGE_EMAIL: Locator = this.page.locator(
+    ".ant-notification-notice-description"
+  );
 
   constructor(page: Page) {
     super(page);
@@ -223,5 +226,13 @@ export class UserRoleManagementPage extends BasePage {
   async clickOnItemPerPage(number: string) {
     await this.DDL_ITEM_PER_PAGE.click();
     await this.itemPerPage(number).click();
+  }
+
+  //Verify error message
+  async getEmailAlreadyExistsErrorMessage() {
+    const errorMessage = await this.ERROR_MESSAGE_EMAIL.textContent();
+    if (errorMessage) {
+      return errorMessage;
+    }
   }
 }

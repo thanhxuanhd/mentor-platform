@@ -4,49 +4,18 @@ import userData from "./user-role-management.json";
 
 test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
-  const validateButton = userData.validate_button;
   const editUser = userData.validate_edit_user;
   const searchUser = userData.search_user;
   const userRoleFilter = userData.search_with_filter.user_roles;
   const searchUserWithFilter = userData.search_with_filter.search_filters;
   const itemsPerPage = userData.items_per_page;
+  const existedEmail = userData.existed_email;
 
   test.beforeEach(async ({ page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();
       await userRoleManagementPage.navigateToUsers();
-    });
-  });
-
-  //Save button
-  test("@SmokeTest Validate save button", async () => {
-    await test.step("Click edit user button", async () => {
-      await userRoleManagementPage.clickOnEditUserBtn(0);
-    });
-    await test.step("Verify save button is enabled", async () => {
-      const isEnable = await userRoleManagementPage.verifySaveButtonIsEnabled();
-      console.log("isEnable", isEnable);
-      expect(isEnable).toBeTruthy();
-    });
-  });
-
-  validateButton.forEach((user, index) => {
-    test(`@SmokeTest Validate save button when fill form ${index}`, async () => {
-      await test.step("Click edit user button", async () => {
-        await userRoleManagementPage.clickOnEditUserBtn(index);
-      });
-      await test.step("Fill edit user form", async () => {
-        await userRoleManagementPage.fillEditUserForm(
-          user.fullname,
-          user.email
-        );
-      });
-      await test.step("Verify save button is enable", async () => {
-        const isEnable =
-          await userRoleManagementPage.verifySaveButtonIsEnabled();
-        expect(isEnable).toBeTruthy();
-      });
     });
   });
 
@@ -67,26 +36,22 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
 
       await test.step(`Click save button`, async () => {
         await userRoleManagementPage.clickOnSaveBtn();
+        await test.step("Verify save button is enable", async () => {
+          const isEnable =
+            await userRoleManagementPage.verifySaveButtonIsEnabled();
+          expect(isEnable).toBeTruthy();
+        });
+        await test.step("Verify cancel button is enabled", async () => {
+          const isEnable =
+            await userRoleManagementPage.verifyCancelButtonIsEnabled();
+          expect(isEnable).toBeTruthy();
+        });
       });
 
       await test.step(`Verify update successfully`, async () => {
         const actualData = await userRoleManagementPage.getEditUserData(index);
         expect(actualData).toEqual(editUser[index]);
       });
-    });
-  });
-
-  //Cancel button
-  test("@SmokeTest Validate cancel button", async () => {
-    await test.step("Click edit user button", async () => {
-      await userRoleManagementPage.clickOnEditUserBtn(0);
-    });
-    await test.step("Click cancel button", async () => {
-      await userRoleManagementPage.clickOnCancelBtn();
-    });
-    await test.step("Verify cancel button is enabled", async () => {
-      const isEnable = await userRoleManagementPage.verifySaveButtonIsEnabled();
-      expect(isEnable).toBeTruthy();
     });
   });
 
@@ -136,6 +101,10 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
 
       await test.step("Search user", async () => {
         await userRoleManagementPage.filterUserByRole(role);
+        await test.step("Verify that the filter is applied successfully", async () => {
+          const actualResult = await userRoleManagementPage.getUserRole(index);
+          expect(actualResult).toEqual(role);
+        });
         await userRoleManagementPage.searchUser(
           searchUserWithFilter.oneKeyword
         );
@@ -221,16 +190,18 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
     }
   });
 
-  //User role filter
-  userRoleFilter.forEach((role, index) => {
-    test(`@SmokeTest Verify that user role ${role} filter works correctly`, async () => {
-      await test.step("Select user role filter", async () => {
-        await userRoleManagementPage.filterUserByRole(role);
-      });
-      await test.step("Verify that the filter is applied successfully", async () => {
-        const actualResult = await userRoleManagementPage.getUserRole(index);
-        expect(actualResult).toEqual(role);
-      });
+  //Check error message when enter user email is exists in edit user
+  test("Verify that error message is shown when user email already exists", async () => {
+    await test.step("Click edit user button", async () => {
+      await userRoleManagementPage.clickOnEditUserBtn(0);
+    });
+    await test.step("Fill edit user form with existing email", async () => {
+      await userRoleManagementPage.fillEditUserForm(existedEmail);
+    });
+    await test.step("Verify error message is shown", async () => {
+      const errorMessage =
+        await userRoleManagementPage.getEmailAlreadyExistsErrorMessage();
+      expect(errorMessage).toBe(`Email ${existedEmail} already exists.`);
     });
   });
 });

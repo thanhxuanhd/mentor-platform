@@ -1,14 +1,4 @@
 {
-  "validate_button": [
-    {
-      "fullname": "CuongLK",
-      "email": "cuonglkhe150595@gmail.com"
-    },
-    {
-      "fullname": "",
-      "email": ""
-    }
-  ],
   "validate_edit_user": [
     {
       "userFullname": "Cuong Kim",
@@ -16,7 +6,7 @@
       "userRole": "Mentor"
     },
     {
-      "userFullname": "Phuong Huyen",
+      "userFullname": "DuongSenpai@at.local",
       "userEmail": "huyen123456@gmail.com",
       "userRole": "Learner"
     }
@@ -24,30 +14,31 @@
 
   "search_user": [
     {
-      "fullname": "Learner User"
+      "fullname": "AnhDoSkibidi@at.local"
     },
     {
       "empty": ""
     },
     {
-      "oneKeyword": "Mentor"
+      "oneKeyword": "DuongSenpai"
     },
     {
-      "multipleKeywords": "Emma Taylor"
+      "multipleKeywords": "Senpai"
     },
     {
       "invalidKeyword": "123456789"
     },
     {
-      "wildCard": "Ad"
+      "wildCard": "Du"
     }
   ],
   "search_with_filter": {
     "user_roles": ["Mentor", "Learner", "Admin"],
     "search_filters": {
-      "oneKeyword": "Mentor",
-      "multipleKeywords": "Emma Taylor"
+      "oneKeyword": "Duy",
+      "multipleKeywords": "Senpai"
     }
   },
-  "items_per_page": ["5", "10", "25"]
+  "items_per_page": ["5", "10", "25"],
+  "existed_email": "MySuperKawaiiMentorXxX@at.local"
 }
