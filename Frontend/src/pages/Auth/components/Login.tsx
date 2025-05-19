@@ -8,10 +8,8 @@ export const Login: React.FC = () => {
   if (isAuthenticated) return <Navigate to="/" />;
 
   return (
-    <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-red-100 dark:from-gray-800 dark:to-gray-900">
-      <div className="mb-24 flex w-full justify-center ">
-        <LoginForm />
-      </div>
+    <div className="h-screen flex flex-col items-center justify-center">
+      <LoginForm />
     </div>
   );
 };
