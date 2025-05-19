@@ -25,7 +25,9 @@ public static class ApplicationDbExtensions
         if (!dbContext.Users.Any())
         {
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
+            var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
             if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
 
             dbContext.Users.AddRange(
                 new User
@@ -51,6 +53,14 @@ public static class ApplicationDbExtensions
                     Email = "AnhDoSkibidi@at.local",
                     PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
                     RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
+                    FullName = "Aute@at.local",
+                    Email = "Aute@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("Aute888"),
+                    RoleId = learnerRole.Id
                 }
             );
 
@@ -178,6 +188,41 @@ public static class ApplicationDbExtensions
             });
 
             dbContext.SaveChanges();
+        }
+
+        if (!dbContext.CourseItems.Any())
+        {
+            dbContext.CourseItems.Add(new CourseItem()
+            {
+                Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
+                Title = "Chicken jockey",
+                Description = "Chicken jockey",
+                MediaType = CourseMediaType.ExternalWebAddress,
+                WebAddress = "https://www.chickenjockey.com/blob-content",
+                CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
+            });
+            
+            dbContext.CourseItems.Add(new CourseItem()
+            {
+                Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
+                Title = "Suggestive content",
+                Description = "Definitely not porn",
+                MediaType = CourseMediaType.Pdf,
+                WebAddress = "/goon.pdf",
+                CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
+            });
+            
+            dbContext.CourseItems.Add(new CourseItem()
+            {
+                Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
+                Title = "How to touch grass",
+                Description = "Get used to nature",
+                MediaType = CourseMediaType.Video,
+                WebAddress = "/grass.mp4",
+                CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
+            });
+
+            dbContext.SaveChangesAsync();
         }
 
         return app;

@@ -1,19 +1,42 @@
-﻿@MentorConnectAPI_HostAddress = http://localhost:5127
+﻿@MentorConnectAPI_HostAddress = https://localhost:5000
 @courseId = 2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6
-### GetAllCourse
-GET {{MentorConnectAPI_HostAddress}}/api/Course
+@resourceId = f6f4362d-233e-4188-8f31-63f108f67142
+
+### Authorize
+POST {{MentorConnectAPI_HostAddress}}/api/Auth/sign-in
 Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+ client.global.set("auth_token", response.body.value); 
+%}
+
+### GetAllCourse
+GET {{MentorConnectAPI_HostAddress}}/api/Course?pageIndex=1&pageSize=10
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### GetAllCourse with keyword > 256 should fail
+GET {{MentorConnectAPI_HostAddress}}/api/Course?pageIndex=1&pageSize=10&keyword={{$random.alphanumeric(257)}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 ### PostCourse
 POST {{MentorConnectAPI_HostAddress}}/api/Course
 Accept: application/json
 Content-Type: application/json
+Authorization: Bearer {{auth_token}}
 
 {
-  "title": "New Course Title",
+  "title": "A dealer's       delight",
   "description": "A description of the new course",
   "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
-  "mentorId": "BC7CB279-B292-4CA3-A994-9EE579770DBE",
+  "mentorId": "01047f62-6e87-442b-b1e8-2a54c9e17d7c",
   "dueDate": "{{$isoTimestamp}}",
   "difficulty": "Beginner"
 }
@@ -21,11 +44,13 @@ Content-Type: application/json
 ### GetCourseById
 GET {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
 Accept: application/json
+Authorization: Bearer {{auth_token}}
 
 ### PutCourse
 PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
 Accept: application/json
 Content-Type: application/json
+Authorization: Bearer {{auth_token}}
 
 { 
   "id": "{{courseId}}", 
@@ -38,3 +63,45 @@ Content-Type: application/json
 ### DeleteCourse
 DELETE {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
 Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### GetAllCourseItems
+GET {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### GetCourseItemById
+GET {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource/{{resourceId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### CreateCourseItem
+POST {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "title": "Introduction Video",
+  "description": "Watch this introductory video to understand the course basics",
+  "mediaType": "Video",
+  "webAddress": "https://example.com/intro-video"
+}
+
+### UpdateCourseItem
+PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource/{{resourceId}}
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+  "title": "Updated Resource",
+  "description": "Updated resource description",
+  "mediaType": "pdf",
+  "webAddress": "https://example.com/updated-resource"
+}
+
+### DeleteCourseItem
+DELETE {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource/{{resourceId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}

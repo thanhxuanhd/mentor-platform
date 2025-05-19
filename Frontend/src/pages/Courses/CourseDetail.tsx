@@ -51,22 +51,18 @@ export const CourseDetail: FC<CourseDetailProp> = ({
               {states[course.status] ?? course.status}
             </p>
           </div>
-          {/*<div>*/}
-          {/*  <p className="text-sm text-gray-400 mb-1">Duration</p>*/}
-          {/*  <p>{course.dueDate}</p>*/}
-          {/*</div>*/}
+          <div>
+            <p className="text-sm text-gray-400 mb-1">Due Date</p>
+            <p>{course.dueDate}</p>
+          </div>
           <div>
             <p className="text-sm text-gray-400 mb-1">Difficulty</p>
             <p className="capitalize">{course.difficulty}</p>
           </div>
-          {/*<div>*/}
-          {/*  <p className="text-sm text-gray-400 mb-1">Created</p>*/}
-          {/*  <p>{course.createdAt}</p>*/}
-          {/*</div>*/}
-          {/*<div>*/}
-          {/*  <p className="text-sm text-gray-400 mb-1">Last Updated</p>*/}
-          {/*  <p>{course.updatedAt}</p>*/}
-          {/*</div>*/}
+          <div>
+            <p className="text-sm text-gray-400 mb-1">Mentor</p>
+            <p className="capitalize">{course.mentorName}</p>
+          </div>
         </div>
 
         <div className="mb-6">
@@ -74,33 +70,25 @@ export const CourseDetail: FC<CourseDetailProp> = ({
           <p>{course.description}</p>
         </div>
 
-        {/*<div className="mb-6">*/}
-        {/*  <p className="text-sm text-gray-400 mb-1">Tags</p>*/}
-        {/*  <div className="flex flex-wrap gap-2">*/}
-        {/*    {course.tags.map((tag) => (*/}
-        {/*      <span*/}
-        {/*        key={tag}*/}
-        {/*        className="bg-gray-700 px-2 py-1 rounded-md text-xs"*/}
-        {/*      >*/}
-        {/*        {tag}*/}
-        {/*      </span>*/}
-        {/*    ))}*/}
-        {/*  </div>*/}
-        {/*</div>*/}
-
-        {/*<div className="mb-6">*/}
-        {/*  <p className="text-sm text-gray-400 mb-1">Performance</p>*/}
-        {/*  <div className="grid grid-cols-2 gap-4">*/}
-        {/*    <div>*/}
-        {/*      <p className="text-sm">Enrolled Students</p>*/}
-        {/*      <p className="text-xl font-semibold">{course.enrolledStudents}</p>*/}
-        {/*    </div>*/}
-        {/*    <div>*/}
-        {/*      <p className="text-sm">Completion Rate</p>*/}
-        {/*      <p className="text-xl font-semibold">{course.completionRate}%</p>*/}
-        {/*    </div>*/}
-        {/*  </div>*/}
-        {/*</div>*/}
+        <div className="mb-6">
+          <p className="text-sm text-gray-400 mb-1">Tags</p>
+          <div className="flex flex-wrap gap-2">
+            {course.tags && course.tags.length > 0 ? (
+              course.tags.map((tag) => (
+                <div className="flex space-x-2 mt-2">
+                  <span
+                    key={tag}
+                    className="bg-gray-700 px-2 py-1 rounded-md text-xs"
+                  >
+                    {tag}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <span>-</span>
+            )}
+          </div>
+        </div>
 
         <div className="flex justify-end space-x-3">
           <button

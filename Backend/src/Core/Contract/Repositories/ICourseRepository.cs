@@ -1,3 +1,4 @@
+using Contract.Dtos.Courses.Responses;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
@@ -8,7 +9,7 @@ public interface ICourseRepository : IBaseRepository<Course, Guid>
 {
     Task<Course?> GetCourseWithDetailsAsync(Guid id);
 
-    Task<PaginatedList<Course>> GetPaginatedCoursesAsync(int pageIndex,
+    Task<PaginatedList<CourseSummary>> GetPaginatedCoursesAsync(int pageIndex,
         int pageSize,
         Guid? categoryId = null,
         Guid? mentorId = null,
