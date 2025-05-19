@@ -55,6 +55,11 @@ jobs:
         npm run test --if-present
       env:
         VITE_BASE_URL_BE: ${{ secrets.VITE_BASE_URL_BE }}
+        VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+        VITE_GOOGLE_REDIRECT_URI: ${{ secrets.VITE_GOOGLE_REDIRECT_URI }}
+        VITE_GITHUB_AUTH_URL: ${{ secrets.VITE_GITHUB_AUTH_URL }}
+        VITE_GOOGLE_AUTH_URL: ${{ secrets.VITE_GOOGLE_AUTH_URL }}
+        VITE_GITHUB_CLIENT_ID: ${{ secrets.VITE_GITHUB_CLIENT_ID }}
 
     - name: Upload artifact for deployment job
       uses: actions/upload-artifact@v4
