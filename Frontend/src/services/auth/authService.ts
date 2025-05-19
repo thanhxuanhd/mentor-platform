@@ -13,25 +13,19 @@ export const authService = {
         '/Auth/sign-in',
         loginData
       );
-      localStorage.setItem('token', response.data.value);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-
       return response.data;
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
     }
   },
+  
   signUp: async (signUpData: SignUpReq): Promise<AuthResponse> => {
     try {
       const response = await axiosClient.post<AuthResponse>(
         '/Auth/sign-up',
         signUpData
       );
-
-      localStorage.setItem('token', response.data.value);
-      localStorage.setItem('refreshToken', response.data.refreshToken);
-
       return response.data;
     } catch (error) {
       console.error('Sign up failed:', error);
@@ -46,19 +40,6 @@ export const authService = {
       throw error;
     }
   },
-  logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    window.location.href = '/login';
-  },
-
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('token');
-  },
-
-  getToken: (): string | null => {
-    return localStorage.getItem('token');
-  },
 
   loginWithOAuth: async (
     token: string,
@@ -68,7 +49,6 @@ export const authService = {
       const response = await axiosClient.post(`/Auth/${provider}`, {
         token: token,
       });
-      localStorage.setItem('token', response.data.value);
       return response.data;
     } catch (error) {
       console.error('Login failed:', error);
