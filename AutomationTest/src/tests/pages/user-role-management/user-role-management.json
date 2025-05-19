@@ -35,8 +35,8 @@
   "search_with_filter": {
     "user_roles": ["Mentor", "Learner", "Admin"],
     "search_filters": {
-      "oneKeyword": "Duy",
-      "multipleKeywords": "Senpai"
+      "oneKeyword": "Senpai",
+      "multipleKeywords": "Cuong kc"
     }
   },
   "items_per_page": ["5", "10", "25"],
