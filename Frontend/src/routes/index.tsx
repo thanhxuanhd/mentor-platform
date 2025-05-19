@@ -25,13 +25,19 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
       </Route>
-      <Route path="*" element={<NotFoundPage />} />
+      <Route
+        element={
+          <MainLayout />
+        }
+      >
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 };
