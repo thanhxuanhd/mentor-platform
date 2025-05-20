@@ -15,15 +15,18 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   });
 
   //Activate/Deactivate user
-  test("@SmokeTest Verify that Activate/Deactivate user works correctly", async () => {
+
+  test("@SmokeTest Verify that Activate user works correctly", async () => {
     const statusList = await userRoleManagementPage.getAllUserStatus();
 
     for (let i = 0; i < statusList.length; i++) {
-      await test.step(`Deactivate, Activate user in row ${i}`, async () => {
-        await userRoleManagementPage.clickOnActivateUserBtn(i);
-        const actualResult = await userRoleManagementPage.getNotification();
-        expect(actualResult).toBe(notification[statusList[i].toLowerCase()]);
-      });
+      const status = statusList[i].toLowerCase();
+      await userRoleManagementPage.clickOnActivateOrDeactivateUserBtn(
+        status,
+        i
+      );
+      const actualResult = await userRoleManagementPage.getNotification(i);
+      expect(actualResult).toBe(notification[status]);
     }
   });
 });

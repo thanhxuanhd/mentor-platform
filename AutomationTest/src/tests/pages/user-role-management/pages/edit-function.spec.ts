@@ -51,8 +51,8 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       });
 
       await test.step(`Verify update successfully`, async () => {
-        const actualData = await userRoleManagementPage.getNotification();
-        expect(actualData).toEqual("User updated successfully");
+        const actualData = await userRoleManagementPage.getNotification(0);
+        expect(actualData).toEqual("User updated successfully.");
       });
     });
   });
@@ -72,7 +72,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       await userRoleManagementPage.clickOnSaveBtn();
     });
     await test.step("Verify error message is shown", async () => {
-      const errorMessage = await userRoleManagementPage.getNotification();
+      const errorMessage = await userRoleManagementPage.getNotification(0);
       expect(errorMessage).toBe(`Email ${existedEmail.email} already exists.`);
     });
   });

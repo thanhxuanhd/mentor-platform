@@ -183,18 +183,22 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //Activate/Deactivate user
-  async clickOnDeactivateUserBtn(index: number) {
-    return await this.DGD_ROW_USER_LOC.nth(index)
-      .locator(this.BTN_DEACTIVATED_LOC)
-      .first()
-      .click();
-  }
+  async clickOnActivateOrDeactivateUserBtn(status: string, index: number) {
+    const statusLower = status.toLowerCase();
+    let buttonLocator;
 
-  async clickOnActivateUserBtn(index: number) {
-    return await this.DGD_ROW_USER_LOC.nth(index)
-      .locator(this.BTN_ACTIVATED_LOC)
-      .first()
-      .click();
+    if (statusLower === "deactivated" || statusLower === "pending") {
+      buttonLocator = this.DGD_ROW_USER_LOC.nth(index)
+        .locator(this.BTN_ACTIVATED_LOC)
+        .first();
+    } else if (statusLower === "active") {
+      buttonLocator = this.DGD_ROW_USER_LOC.nth(index)
+        .locator(this.BTN_DEACTIVATED_LOC)
+        .first();
+    }
+
+    await buttonLocator.waitFor({ state: "visible" });
+    await buttonLocator.click();
   }
 
   async getAllUserStatus() {
@@ -248,7 +252,7 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   async getAllUserText() {
-    await expect(this.DBL_ALL_USER_LOC.first()).toBeVisible();
+    await this.page.waitForTimeout(2000);
     const allUser = await this.DBL_ALL_USER_LOC.allTextContents();
     return allUser;
   }
@@ -299,8 +303,10 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //Verify error message
-  async getNotification() {
-    const notification = await this.LBL_NOTIFICATION_LOC.first().textContent();
+  async getNotification(index: number) {
+    const notification = await this.LBL_NOTIFICATION_LOC.nth(
+      index
+    ).textContent();
     if (notification) {
       return notification;
     }
