@@ -12,10 +12,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Domain.Enums;
-using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
+using Application.Services.Email;
 
 namespace Infrastructure;
 
@@ -31,8 +29,8 @@ public static class ConfigureServices
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<GitHubOAuthService>();
         services.AddScoped<GoogleOAuthService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
-        
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));

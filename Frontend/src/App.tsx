@@ -3,6 +3,7 @@ import { CustomTheme } from "./theme/CustomTheme";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
 import { App as AntdApp } from "antd";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   window.addEventListener("storage", () => {
@@ -11,15 +12,15 @@ function App() {
     }
   });
   return (
-    <>
-      <ConfigProvider theme={CustomTheme}>
-        <AntdApp>
-          <BrowserRouter>
+    <ConfigProvider theme={CustomTheme}>
+      <AntdApp>
+        <BrowserRouter>
+          <AuthProvider>
             <AppRoutes />
-          </BrowserRouter>
-        </AntdApp>
-      </ConfigProvider>
-    </>
+          </AuthProvider>
+        </BrowserRouter>
+      </AntdApp>
+    </ConfigProvider>
   );
 }
 

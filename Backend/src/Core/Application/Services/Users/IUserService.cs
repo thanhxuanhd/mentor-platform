@@ -12,4 +12,5 @@ public interface IUserService
     Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request);
     Task<Result<bool>> ChangeUserStatusAsync(Guid userId);
     Task<Result<GetUserResponse>> GetUserByEmailAsync(string email);
+    Task<Result> ForgotPasswordRequest(string email);
 }
