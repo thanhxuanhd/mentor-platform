@@ -99,14 +99,14 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         return Result.Success(response, HttpStatusCode.OK);
     }
 
-    public async Task<Result> DeleteAsync(Guid id)
+    public async Task<Result<bool>> DeleteAsync(Guid id)
     {
         var course = await courseRepository.GetByIdAsync(id);
-        if (course == null) return Result.Failure("Course not found", HttpStatusCode.NotFound);
+        if (course == null) return Result.Failure<bool>("Course not found", HttpStatusCode.NotFound);
 
         courseRepository.Delete(course);
         await courseRepository.SaveChangesAsync();
 
-        return Result.Success(HttpStatusCode.NoContent);
+        return Result.Success(true, HttpStatusCode.OK);
     }
 }

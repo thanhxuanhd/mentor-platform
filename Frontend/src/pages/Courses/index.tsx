@@ -17,6 +17,7 @@ import { categoryService } from "../../services/category";
 import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./CourseDetail.tsx";
 import { SearchBar } from "./SearchBar.tsx";
+import { App, Modal } from "antd";
 
 const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -39,6 +40,7 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
+  const { modal } = App.useApp();
 
   useEffect(() => {
     if (refreshTrigger > 0) {
@@ -99,6 +101,28 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
     fetchCourses();
   }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId, refreshTrigger]);
 
+  const handleDeleteCourse = async (course: Course) => {
+    modal.confirm({
+      title: "Are you sure delete this course?",
+      content: `Course: ${course.title}`,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.delete(course.id);
+          setRefreshTrigger(prev => prev + 1); // Refresh the list after deletion
+        } catch (error) {
+          console.error("Error deleting course:", error);
+          Modal.error({
+            title: "Failed to delete course",
+            content: "There was an error deleting the course. Please try again.",
+          });
+        }
+      },
+    });
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gray-900 text-gray-200">
@@ -156,10 +180,7 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   setItem(course);
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
-                onDelete={(course) => {
-                  setItem(course);
-                  setPopoverTarget(CoursePopoverTarget.remove);
-                }}                onEdit={(course) => {
+                onDelete={handleDeleteCourse}                onEdit={(course) => {
                   setItem(course);
                   setFormData({
                     id: course.id,
