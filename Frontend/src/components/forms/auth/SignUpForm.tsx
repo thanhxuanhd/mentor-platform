@@ -9,7 +9,7 @@ const SignUpForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; terms?: string }>({});
+  const [error, setError] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
@@ -26,45 +26,21 @@ const SignUpForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: typeof errors = {};
+    setError(null);
 
-    const trimmedEmail = email.trim();
-
-    if (!trimmedEmail) {
-      newErrors.email = "Please enter your email";
-    } else if (!validateEmail(trimmedEmail)) {
-      newErrors.email = "Email must be in a correct format";
-    } else if (trimmedEmail.length > 50) {
-      newErrors.email = "Email should not exceed 50 characters";
-    }
-
-    if (!password) {
-      newErrors.password = "Please enter your password";
-    } else {
-      if (password.length < 8 || password.length > 32) {
-        newErrors.password = "Password should be in 8-32 characters";
-      } else if (!validatePassword(password)) {
-        if (/\s/.test(password)) {
-          newErrors.password = "Password should not include space characters";
-        } else {
-          newErrors.password = "Password must include a mix of letters, numbers, symbols";
-        }
-      }
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Please enter your confirm password";
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Confirm password is incorrect";
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long.");
+      return;
     }
 
     if (!agreeToTerms) {
       newErrors.terms = "Please agree with Terms of Service and Privacy Policy";
     }
 
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) return;
+    if (!agreeToTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy.");
+      return;
+    }
 
     const signUpData: SignUpReq = {
       email: trimmedEmail,
@@ -90,10 +66,15 @@ const SignUpForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[60vh] w-full max-w-md space-y-6 bg-[#1A1F2B] dark:bg-gray-800 p-6 rounded shadow mx-auto text-sm text-gray-300">
+    <div className="min-h-[60vh] w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow mx-auto text-sm text-gray-300"
+>
       {showNotification && (
         <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm text-sm">
           <CheckCircleOutlined className="text-green-500 text-lg mr-2" />
+          <div>
+            <p className="font-bold">Success!</p>
+            <p>Your account has been created successfully.</p>
+          </div>
         </div>
       )}
 
@@ -110,26 +91,24 @@ const SignUpForm: React.FC = () => {
             <label htmlFor="email" className="block text-base">Email Address</label>
             <input
               id="email"
-              type="text"
+              type="email"
               value={email}
-              placeholder="Enter your email"
               onChange={(e) => setEmail(e.target.value)}
+              required
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </div>
 
           <div className="space-y-1">
             <label htmlFor="password" className="block text-base">Password</label>
             <input
               id="password"
-              type="text"
-              placeholder="Enter your password"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
           </div>
 
           <div className="space-y-1">
@@ -137,12 +116,11 @@ const SignUpForm: React.FC = () => {
             <input
               id="confirmPassword"
               type="password"
-              placeholder="Enter your confirm password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              required
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             />
-            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
           </div>
 
           <div className="flex items-center">
@@ -157,7 +135,8 @@ const SignUpForm: React.FC = () => {
               I agree to the <a href="/terms" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-orange-500 hover:underline">Privacy Policy</a>
             </label>
           </div>
-          {errors.terms && <p className="text-red-500 text-xs mt-1">{errors.terms}</p>}
+
+          {error && <p className="text-red-500 text-xs">{error}</p>}
 
           <button
             type="submit"

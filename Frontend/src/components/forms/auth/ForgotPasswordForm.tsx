@@ -34,8 +34,8 @@ const ForgotPasswordForm: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto mt-10 bg-[#1A1F2B] p-6 rounded shadow">
-      <h2 className="text-2xl font-bold text-center text-white-800 dark:text-white">
+    <div className="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded shadow">
+      <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
         Forgot Password
       </h2>
 
@@ -56,7 +56,7 @@ const ForgotPasswordForm: React.FC = () => {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-white-700 dark:text-white">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
               Email
             </label>
             <input
@@ -79,7 +79,7 @@ const ForgotPasswordForm: React.FC = () => {
                 : "bg-orange-600 hover:bg-orange-700"
             }`}
           >
-            {isLoading ? "Sending..." : "Send New Password"}
+            {isLoading ? "Sending..." : "Send Reset Link"}
           </button>
         </form>
       )}

@@ -55,8 +55,8 @@ const ResetPasswordForm: React.FC = () => {
         </div>
       )}
 
-      <div className="w-full max-w-md mx-auto mt-10 bg-[#1A1F2B] dark:bg-gray-800 p-6 rounded shadow">
-        <h2 className="text-2xl font-bold text-center text-white-800 dark:text-white">
+      <div className="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded shadow">
+        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
           Reset your password
         </h2>
 
@@ -82,7 +82,7 @@ const ResetPasswordForm: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="oldPassword" className="block text-sm font-medium text-white-700 dark:text-white">
+              <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 dark:text-white">
                 Current Password
               </label>
               <div className="relative">
