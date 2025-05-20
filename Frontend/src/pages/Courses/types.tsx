@@ -40,6 +40,7 @@ export type Feedback = {
 };
 
 export type CourseFormDataOptions = {
+  id?: string;
   title: string;
   description: string;
   categoryId: string;

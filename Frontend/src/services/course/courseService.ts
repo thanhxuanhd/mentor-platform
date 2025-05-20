@@ -29,10 +29,13 @@ interface CourseCreateParams {
 }
 
 interface CourseUpdateParams {
-  id: string;
   title: string;
   description: string;
   categoryId: string;
+  mentorId: string;
+  dueDate: string;
+  difficulty: string;
+  tags?: string[];
 }
 
 export const courseService = {
@@ -63,13 +66,13 @@ export const courseService = {
     });
     return response.data;
   },
-
   /**
    * Update an existing course
    */
   update: async (id: string, params: CourseUpdateParams) => {
     const response = await axiosClient.put(`/Course/${id}`, {
       ...params,
+      tags: params.tags || []
     });
     return response.data;
   },

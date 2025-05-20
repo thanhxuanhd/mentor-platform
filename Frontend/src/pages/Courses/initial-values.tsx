@@ -21,6 +21,7 @@ export const CourseMediaTypeEnumMember: Record<CourseMimeType, string> = {
 };
 
 export const initialFormData: CourseFormDataOptions = {
+  id: undefined,
   title: "",
   description: "",
   categoryId: "",

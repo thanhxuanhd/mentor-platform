@@ -114,21 +114,35 @@ export const CourseForm: FC<CourseFormProp> = ({
           formattedDueDate = dateObj.toISOString();
         }
       }
-      
-      if (formData.title) {
-        // Edit mode - would call update API
-        console.log("EDIT MODE - Data that would be sent to update API:", {
-          title: values.title,
-          description: values.description,
-          categoryId: values.categoryId,
-          dueDate: formattedDueDate, // Using the formatted date
-          difficulty: values.difficulty,
-          status: values.status,
-          tags: getTags()
-        });
+        if (formData.id) {
+        // Edit mode - call update API
+        console.log("EDIT MODE - Sending update request for course ID:", formData.id);
         
-        // Close without update for now
-        onClose();
+        setSubmitting(true);
+        try {
+          // Make the API call to update the course
+          await courseService.update(formData.id, {
+            title: values.title,
+            description: values.description,
+            categoryId: values.categoryId,
+            dueDate: formattedDueDate as string,
+            difficulty: values.difficulty,
+            mentorId: user?.id || "", // Use current user's ID as mentorId
+            tags: getTags() // Include tags in the API call
+          });
+          
+          // Close the form and signal to refresh the course list
+          onClose("refresh");
+        } catch (error) {
+          console.error("Error updating course:", error);
+          // Show error message to user
+          Modal.error({
+            title: 'Failed to update course',
+            content: 'There was an error updating your course. Please try again.',
+          });
+        } finally {
+          setSubmitting(false);
+        }
       } else {        // Create mode - call the POST /api/course endpoint
         console.log("CREATE MODE - Data being sent to create API:", {
           title: values.title,
@@ -189,29 +203,27 @@ export const CourseForm: FC<CourseFormProp> = ({
     setTags(updatedTags);
     form.setFieldValue("tags", updatedTags);
   };
-  return (
-    <Modal
-      title={formData.title ? `Edit Course: ${formData.title}` : "Add New Course"}
+  return (    <Modal
+      title={formData.id ? `Edit Course: ${formData.title}` : "Add New Course"}
       open={active}
       onCancel={() => onClose()}
       width={800}footer={[
         <Button key="cancel" onClick={() => onClose()}>
           Cancel
-        </Button>,
-        <Button 
+        </Button>,        <Button 
           key="submit" 
           type="primary" 
           onClick={handleSubmit}
           loading={submitting}
           disabled={submitting}
         >
-          {formData.title ? "Save Changes" : "Create Course"}
+          {formData.id ? "Save Changes" : "Create Course"}
         </Button>,
       ]}
     >      <Form form={form} layout="vertical" initialValues={{
         ...formData, 
         tags: Array.isArray(formData.tags) ? formData.tags : [],
-        status: !formData.title ? "draft" : formData.status,
+        status: !formData.id ? "draft" : formData.status,
         dueDate: undefined
       }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

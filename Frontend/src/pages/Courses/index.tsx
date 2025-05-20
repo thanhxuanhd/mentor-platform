@@ -40,14 +40,13 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
 
-  // Effect for handling refresh operations specifically
   useEffect(() => {
     if (refreshTrigger > 0) {
       setIsRefreshing(true);
       const refreshData = async () => {
         try {
           const courseResponse = await courseService.list({
-            pageIndex: 0, // Always reset to first page on refresh
+            pageIndex: 0, 
             pageSize,
             keyword,
             difficulty,
@@ -83,13 +82,9 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
           mentorId: mentorId,
         });
 
-        // Get categories
         const categoryResponse = await categoryService.list();
-
-        // Get mentors
         const mentorResponse = await mentorService.list();
 
-        // Update state with fetched data
         setTotalCount(courseResponse.totalPages);
         setCategories(categoryResponse.items);
         setMentors(mentorResponse.items);
@@ -135,7 +130,8 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
                 }}
-              />              <CourseTable
+              />              
+              <CourseTable
                 courses={courses}
                 states={states}
                 tableProps={{
@@ -161,13 +157,12 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
                 onDelete={(course) => {
-                  // TODO: handle within CourseTable
                   setItem(course);
                   setPopoverTarget(CoursePopoverTarget.remove);
-                }}
-                onEdit={(course) => {
+                }}                onEdit={(course) => {
                   setItem(course);
                   setFormData({
+                    id: course.id,
                     categoryId: course.categoryId,
                     description: course.description,
                     difficulty: course.difficulty,
@@ -178,7 +173,8 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   });
                   setPopoverTarget(CoursePopoverTarget.edit);
                 }}
-              />              <CourseForm
+              />              
+              <CourseForm
                 formData={formData}
                 categories={categories}
                 states={states}
@@ -193,7 +189,8 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   }
                   setPopoverTarget(targetAction);
                 }}
-              />              <CourseDetail
+              />              
+              <CourseDetail
                 course={item}
                 states={states}
                 active={popoverTarget === CoursePopoverTarget.detail}
@@ -204,13 +201,13 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   }
                   setPopoverTarget(targetAction);
                 }}
-              />              <CourseResource
+              />              
+              <CourseResource
                 course={item}
                 onDownload={(material) => window.alert(material.webAddress)}
                 active={popoverTarget === CoursePopoverTarget.resource}
                 onClose={(targetAction) => {
                   if (targetAction === "refresh") {
-                    // Trigger a refresh of the course list
                     setRefreshTrigger(prev => prev + 1);
                   }
                   setPopoverTarget(targetAction);
