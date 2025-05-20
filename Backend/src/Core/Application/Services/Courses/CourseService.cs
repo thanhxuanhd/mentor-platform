@@ -9,7 +9,7 @@ using Domain.Enums;
 
 namespace Application.Services.Courses;
 
-public class CourseService(ICourseRepository courseRepository) : ICourseService
+public class CourseService(ICourseRepository courseRepository, ITagRepository tagRepository) : ICourseService
 {
     public async Task<Result<PaginatedList<CourseSummary>>> GetAllAsync(CourseListRequest request)
     {
@@ -40,6 +40,11 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
 
     public async Task<Result<CourseSummary>> CreateAsync(CourseCreateRequest request)
     {
+        var normalizedTagNames = request.Tags.Select(t => char.ToUpper(t[0]) + t[1..].ToLower()).ToHashSet();
+        var tags = await tagRepository.UpsertAsync(normalizedTagNames);
+        await tagRepository.SaveChangesAsync();
+
+        // TODO: Not checking MentorId contains role: Mentor, Tags not being processed in stores
         var course = new Course
         {
             Title = request.Title,
@@ -52,6 +57,8 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
         };
 
         await courseRepository.AddAsync(course);
+        await courseRepository.UpdateTagsCollection(tags, course);
+
         await courseRepository.SaveChangesAsync();
 
         var createdCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
@@ -69,12 +76,17 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
         var course = await courseRepository.GetByIdAsync(id);
         if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
+        var normalizedTagNames = request.Tags.Select(t => char.ToUpper(t[0]) + t[1..].ToLower()).ToHashSet();
+        var tags = await tagRepository.UpsertAsync(normalizedTagNames);
+        await tagRepository.SaveChangesAsync();
+
         course.Title = request.Title;
         course.Description = request.Description;
         course.CategoryId = request.CategoryId;
         course.DueDate = request.DueDate;
         course.Difficulty = request.Difficulty;
 
+        await courseRepository.UpdateTagsCollection(tags, course);
         await courseRepository.SaveChangesAsync();
 
         var updatedCourse = await courseRepository.GetCourseWithDetailsAsync(id);

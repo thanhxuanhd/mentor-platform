@@ -18,10 +18,12 @@ public class CourseServiceTests
     public void Setup()
     {
         _courseRepositoryMock = new Mock<ICourseRepository>();
-        _courseService = new CourseService(_courseRepositoryMock.Object);
+        _tagRepositoryMock = new Mock<ITagRepository>();
+        _courseService = new CourseService(_courseRepositoryMock.Object, _tagRepositoryMock.Object);
     }
 
     private Mock<ICourseRepository> _courseRepositoryMock;
+    private Mock<ITagRepository> _tagRepositoryMock;
     private CourseService _courseService;
 
     [Test]

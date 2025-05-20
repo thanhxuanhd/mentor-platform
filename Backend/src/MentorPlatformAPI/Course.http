@@ -13,7 +13,9 @@ Content-Type: application/json
 }
 
 > {%
+
  client.global.set("auth_token", response.body.value); 
+
 %}
 
 ### GetAllCourse
@@ -33,11 +35,12 @@ Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-  "title": "A dealer's       delight",
-  "description": "A description of the new course",
+  "title": "{{$random.book.title}}",
+  "description": "{{$random.lorem.sentence}}",
   "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
   "mentorId": "01047f62-6e87-442b-b1e8-2a54c9e17d7c",
   "dueDate": "{{$isoTimestamp}}",
+  "tags": ["thrilling", "adventure"],
   "difficulty": "Beginner"
 }
 
@@ -56,8 +59,10 @@ Authorization: Bearer {{auth_token}}
   "id": "{{courseId}}", 
   "title": "Updated Course Title",
   "description": "An updated description",
-  "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1"
- 
+  "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
+  "dueDate": "{{$isoTimestamp}}",
+  "tags": ["thrilling", "adventure", "{{$random.hacker.adjective}}"],
+  "difficulty": "Beginner"
 }
 
 ### DeleteCourse
