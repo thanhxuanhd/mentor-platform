@@ -136,7 +136,7 @@ public class AuthControllerTests
     public async Task ResetPassword_ValidRequest_ReturnsOkResult()
     {
         // Arrange
-        var request = new ResetPasswordRequest(Email: "test@example.com", NewPassword: "newpassword");
+        var request = new ResetPasswordRequest(Email: "test@example.com", OldPassword: "oldpassword", NewPassword: "newpassword");
         var serviceResult = Result.Success(true, HttpStatusCode.OK);
 
         _authServiceMock.Setup(s => s.ResetPasswordAsync(request))
@@ -161,7 +161,7 @@ public class AuthControllerTests
     public async Task ResetPassword_InvalidRequest_ReturnsBadRequestResult()
     {
         // Arrange
-        var request = new ResetPasswordRequest(Email: "nonexistent@example.com", NewPassword: "newpassword");
+        var request = new ResetPasswordRequest(Email: "nonexistent@example.com", OldPassword: "oldpassword", NewPassword: "newpassword");
         var serviceResult = Result.Failure<bool>("User not found", HttpStatusCode.BadRequest);
 
         _authServiceMock.Setup(s => s.ResetPasswordAsync(request))

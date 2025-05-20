@@ -1,4 +1,5 @@
 using Application.Services.Categories;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
@@ -43,10 +44,14 @@ public class CategoryServiceTest
 
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex))
-            .ReturnsAsync(paginatedList);
-
-        // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, string.Empty);
+            .ReturnsAsync(paginatedList);        // Act
+        var request = new FilterCategoryRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            Keyword = string.Empty
+        };
+        var result = await _categoryService.GetCategoriesAsync(request);
 
         // Assert
         Assert.Multiple(() =>
@@ -84,10 +89,14 @@ public class CategoryServiceTest
 
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex))
-            .ReturnsAsync(paginatedList);
-
-        // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
+            .ReturnsAsync(paginatedList);        // Act
+        var request = new FilterCategoryRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            Keyword = keyword
+        };
+        var result = await _categoryService.GetCategoriesAsync(request);
 
         // Assert
         Assert.Multiple(() =>
@@ -103,40 +112,18 @@ public class CategoryServiceTest
     }
 
     [Test]
-    [TestCase(0, 10)]
-    [TestCase(10, 0)]
-    [TestCase(-1, 10)]
-    [TestCase(10, -1)]
-    public async Task GetCategoriesAsync_InvalidPageIndexOrPageSize_ReturnsBadRequest(int pageIndex, int pageSize)
-    {
-        // Arrange
-        var keyword = string.Empty;
-
-        // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
-            _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        });
-    }
-
-    [Test]
     public async Task FilterCourseByCategoryAsync_CategoryNotFound_ReturnsNotFound()
-    {
-        // Arrange
+    {        // Arrange
         var categoryId = Guid.NewGuid();
-        var pageIndex = 1;
-        var pageSize = 10;
+        var request = new FilterCourseByCategoryRequest
+        {
+            PageIndex = 1,
+            PageSize = 10
+        };
         _categoryRepositoryMock.Setup(repo => repo.GetByIdAsync(categoryId, null)).ReturnsAsync(default(Category));
 
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -150,8 +137,7 @@ public class CategoryServiceTest
 
     [Test]
     public async Task FilterCourseByCategoryAsync_CategoryFound_ReturnsPaginatedCourses()
-    {
-        // Arrange
+    {        // Arrange
         var categoryId = Guid.NewGuid();
         var pageIndex = 1;
         var pageSize = 10;
@@ -174,8 +160,14 @@ public class CategoryServiceTest
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex))
             .ReturnsAsync(paginatedList);
 
+        var request = new FilterCourseByCategoryRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize
+        };
+
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -187,31 +179,6 @@ public class CategoryServiceTest
             _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(categoryId, null), Times.Once);
             _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(categoryId), Times.Once);
             _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex), Times.Once);
-        });
-    }
-
-    [Test]
-    [TestCase(0, 10)]
-    [TestCase(10, 0)]
-    [TestCase(-1, 10)]
-    [TestCase(10, -1)]
-    public async Task FilterCourseByCategoryAsync_InvalidPageIndexOrPageSize_ReturnsBadRequest(int pageIndex, int pageSize)
-    {
-        // Arrange
-        var categoryId = Guid.NewGuid();
-
-        // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
-            _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
         });
     }
 

@@ -7,6 +7,7 @@ import CoursesPage from '../pages/Courses';
 import NotFoundPage from '../pages/NotFound';
 import { Login, SignUp } from '../pages/Auth';
 import ResetPassword from '../pages/Auth/ResetPassword';
+import ForgotPassword from '../pages/Auth/ForgotPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
 import ProtectedRoute from './ProtectedRoute';
 import { applicationRole } from '../constants/role';
@@ -17,6 +18,7 @@ const AppRoutes = () => {
       <Route path="login" element={<Login />} />
       <Route path="signup" element={<SignUp />} />
       <Route path="reset-password" element={<ResetPassword />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="auth/callback/:provider" element={<OAuthCallback />} />
       <Route
         element={

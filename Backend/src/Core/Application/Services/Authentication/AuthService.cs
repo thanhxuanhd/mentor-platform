@@ -65,6 +65,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId,
+            JoinedDate = DateOnly.FromDateTime(DateTime.Now)
         };
 
         await userRepository.AddAsync(user);
@@ -99,6 +100,10 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             return Result.Failure("User not found", HttpStatusCode.NotFound);
         }
 
+        if (!PasswordHelper.VerifyPassword(request.OldPassword, user.PasswordHash!))
+        {
+            return Result.Failure("Old password is incorrect", HttpStatusCode.Unauthorized);
+        }
         var newHashedPassword = PasswordHelper.HashPassword(request.NewPassword);
         user.PasswordHash = newHashedPassword;
 

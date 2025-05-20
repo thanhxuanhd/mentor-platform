@@ -23,4 +23,9 @@ export const userService = {
     const response = await axiosClient.put(`Users/status/${userId}`);
     return response.data.value;
   },
+  forgotPassword: async (email: string) => {
+    const encodedEmail = encodeURIComponent(email);
+    const response = await axiosClient.post(`/Users/request-forgot-password/${encodedEmail}`);
+    return response.data.value;
+  },
 };

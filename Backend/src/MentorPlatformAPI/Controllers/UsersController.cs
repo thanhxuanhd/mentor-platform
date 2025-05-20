@@ -56,6 +56,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpGet("email/{email}")]
     public async Task<IActionResult> GetUserByEmail(string email)
     {
@@ -64,4 +65,11 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [HttpPost("request-forgot-password/{email}")]
+    public async Task<IActionResult> ForgotPasswordRequest( string email)
+    {
+        var result = await userService.ForgotPasswordRequest(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
 }
