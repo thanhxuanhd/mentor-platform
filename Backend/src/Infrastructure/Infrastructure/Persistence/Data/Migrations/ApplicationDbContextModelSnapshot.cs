@@ -204,15 +204,30 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("Availability")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
 
+                    b.Property<string>("Experiences")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Goal")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateOnly>("JoinedDate")
                         .HasColumnType("date");
@@ -223,8 +238,24 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PreferredCommunicationMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Skills")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -239,63 +270,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Domain.Entities.UserDetail", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Availability")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Bio")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Experiences")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Goal")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("PreferredCommunicationMethod")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfileCompleteStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfilePhotoUrl")
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("Skills")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("UserDetails");
-                });
-
             modelBuilder.Entity("Domain.Entities.UserExpertise", b =>
                 {
                     b.Property<Guid>("Id")
@@ -305,14 +279,14 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<Guid>("ExpertiseId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("UserDetailId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ExpertiseId");
 
-                    b.HasIndex("UserDetailId", "ExpertiseId");
+                    b.HasIndex("UserId", "ExpertiseId");
 
                     b.ToTable("UserExpertises");
                 });
@@ -377,17 +351,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("Domain.Entities.UserDetail", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithOne("UserDetail")
-                        .HasForeignKey("Domain.Entities.UserDetail", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Entities.UserExpertise", b =>
                 {
                     b.HasOne("Domain.Entities.Expertise", "Expertise")
@@ -396,15 +359,15 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.UserDetail", "UserDetail")
+                    b.HasOne("Domain.Entities.User", "User")
                         .WithMany("UserExpertises")
-                        .HasForeignKey("UserDetailId")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Expertise");
 
-                    b.Navigation("UserDetail");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Domain.Entities.Category", b =>
@@ -433,11 +396,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
-                {
-                    b.Navigation("UserDetail");
-                });
-
-            modelBuilder.Entity("Domain.Entities.UserDetail", b =>
                 {
                     b.Navigation("UserExpertises");
                 });
