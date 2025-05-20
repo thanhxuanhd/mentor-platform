@@ -2,10 +2,10 @@
 
 namespace Domain.Entities;
 
-public class UserExpertise : BaseEntity<Guid>
+public class UserCategory : BaseEntity<Guid>
 {
     public required Guid UserId { get; set; }
-    public required Guid ExpertiseId { get; set; }
+    public required Guid CategoryId { get; set; }
     public virtual User? User { get; set; }
-    public virtual Expertise? Expertise { get; set; }
+    public virtual Category? Category { get; set; }
 }
