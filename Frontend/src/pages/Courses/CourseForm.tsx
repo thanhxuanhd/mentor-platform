@@ -1,10 +1,28 @@
-import { type FC, useEffect, useState } from "react";
+import { type FC, use, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "./types.tsx";
 import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import {CourseDifficultyEnumMember} from "./initial-values.tsx";
 // Import dayjs for proper date handling with Ant Design DatePicker
 import dayjs from 'dayjs';
+import { categoryList } from "./courseClient.tsx";
+
+// Add a debounce utility
+const debounce = <F extends (...args: any[]) => any>(
+  func: F,
+  waitFor: number,
+) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  const debounced = (...args: Parameters<F>) => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => func(...args), waitFor);
+  };
+
+  return debounced as (...args: Parameters<F>) => ReturnType<F>;
+};
 
 type CourseFormProp = {
   formData: CourseFormDataOptions;
@@ -24,10 +42,32 @@ export const CourseForm: FC<CourseFormProp> = ({
   const [form] = Form.useForm<CourseFormDataOptions>();
   const [newTag, setNewTag] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
+  const [myCategories, setMyCategories] = useState<Category[]>([]);
+  const [categoryKeyword, setCategoryKeyword] = useState<string>("");
 
+const fetchCategories = async () => {
+      try {
+        const response = await categoryList(
+          1,
+          5,
+          categoryKeyword.trim(),
+        );
+        setMyCategories(response.items);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+  useEffect(() => {
+    fetchCategories();
+  }, [categoryKeyword]);
   // Helper to get current tags
-  const getTags = () => tags;  useEffect(() => {
+  const getTags = () => tags;  
+    useEffect(() => {
     if (active) {
+      // Initial fetch of categories when the form becomes active
+      fetchCategories();
+      
       const formValues = {...formData};
       
       // Set status to "draft" for new courses
@@ -175,14 +215,20 @@ export const CourseForm: FC<CourseFormProp> = ({
             label="Category"
             rules={[{ required: true, message: "Please select a category!" }]}
           >
-            <Select placeholder="Select a category">
-              {categories.map((category) => (
-                <Select.Option key={category.id} value={category.id}>
-                  {category.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>          <Form.Item
+            <Select
+              showSearch
+              placeholder="Select a category"
+              options={myCategories.map((category) => ({
+                label: category.name,
+                value: category.id
+              }))}
+              filterOption={false}
+              onSearch={debounce((input) => setCategoryKeyword(input), 100)}
+              notFoundContent={categoryKeyword ? "No matching categories" : "Type to search categories"}
+              loading={!myCategories.length && categoryKeyword !== ""}
+            />
+          </Form.Item>
+          <Form.Item
             name="status"
             label="Status"
             initialValue="draft"
@@ -220,7 +266,8 @@ export const CourseForm: FC<CourseFormProp> = ({
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>          <Form.Item
+          </Form.Item>          
+          <Form.Item
             name="dueDate"
             label="Due Date"
             rules={[{ required: true, message: "Please select a due date!" }]}
