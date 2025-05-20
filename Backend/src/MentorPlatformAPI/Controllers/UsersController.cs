@@ -1,3 +1,4 @@
+using Application.Services.Authentication;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -46,6 +47,14 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [HttpPut]
+    [Route("user-detail/{userId}")]
+    public async Task<IActionResult> EditUserDetailAsync(Guid userId, [FromBody] EditUserProfileRequest request)
+    {
+        var result = await userService.EditUserDetailAsync(userId, request);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
     [Authorize]
     [HttpGet("email/{email}")]
     public async Task<IActionResult> GetUserByEmail(string email)
@@ -56,7 +65,7 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPost("request-forgot-password/{email}")]
-    public async Task<IActionResult> ForgotPasswordRequest( string email)
+    public async Task<IActionResult> ForgotPasswordRequest(string email)
     {
         var result = await userService.ForgotPasswordRequest(email);
 

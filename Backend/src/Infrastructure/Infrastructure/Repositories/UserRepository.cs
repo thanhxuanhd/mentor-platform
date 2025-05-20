@@ -4,6 +4,8 @@ using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using Domain.Abstractions;
+using Domain.Enums;
 
 namespace Infrastructure.Repositories;
 
@@ -14,15 +16,6 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
         var user = await _context.Users
             .Include(user => user.Role)
             .FirstOrDefaultAsync(u => u.Email.Equals(email));
-
-        return user;
-    }
-
-    public IQueryable<User> GetUserByFullname(string fullName)
-    {
-        var user = _context.Users
-            .Include(user => user.Role)
-            .Where(u => u.FullName.Equals(fullName));
 
         return user;
     }
@@ -43,5 +36,39 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
     {
         return _context.Users
             .AnyAsync(e => e.Email == email && e.Id != id);
+    }
+
+    public async Task<User?> GetUserByEmailAsync(string email)
+    {
+        var user = await _context.Users
+            .Include(u => u.Role)
+            .Where(u => u.Email.Equals(email))
+            .Where(u => !u.Status.Equals(UserStatus.Deactivated))
+            .FirstOrDefaultAsync();
+
+        return user;
+    }
+
+    public async Task<User?> GetUserDetailAsync(Guid id)
+    {
+        var user = await _context.Users
+            .Include(u => u.Role)
+            .Include(u => u.UserAvailabilities)
+            .Include(u => u.UserExpertises)
+            .Include(u => u.UserTeachingApproaches)
+            .Where(u => !u.Status.Equals(UserStatus.Deactivated))
+            .FirstOrDefaultAsync(u => u.Id.Equals(id));
+
+        return user;
+    }
+
+    public async Task<bool> CheckEntityListExist<TEntity, TPrimaryKey>(List<TPrimaryKey> listIds) where TEntity : BaseEntity<TPrimaryKey> where TPrimaryKey : struct
+    {
+        var validExpertiseIds = await _context.Set<TEntity>()
+            .Where(e => listIds.Contains(e.Id))
+            .Select(e => e.Id)
+            .ToListAsync();
+
+        return validExpertiseIds.Count == listIds.Count;
     }
 }

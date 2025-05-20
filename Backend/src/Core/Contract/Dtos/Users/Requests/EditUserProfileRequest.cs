@@ -1,0 +1,114 @@
+﻿using Domain.Entities;
+using Domain.Enums;
+using FluentValidation;
+
+namespace Contract.Dtos.Users.Requests;
+
+public record EditUserProfileRequest(
+    string FullName,
+    int RoleId,
+    string? Bio,
+    string? ProfilePhotoUrl,
+    string? PhoneNumber,
+    string? Skills,
+    string? Experiences,
+    CommunicationMethod? PreferredCommunicationMethod,
+    string? Goal,
+    SessionFrequency PreferredSessionFrequency,
+    int PreferredSessionDuration,
+    LearningStyle PreferredLearningStyle,
+    bool IsPrivate,
+    bool IsAllowedMessage,
+    bool IsReceiveNotification,
+    List<Guid>? AvailabilityIds,
+    List<Guid>? ExpertiseIds,
+    List<Guid>? TeachingApproachIds,
+    List<Guid>? CategoryIds
+)
+{
+    public void ToUser(User user)
+    {
+        user.FullName = FullName;
+        user.RoleId = RoleId;
+        user.Bio = Bio;
+        user.ProfilePhotoUrl = ProfilePhotoUrl;
+        user.PhoneNumber = PhoneNumber;
+        user.Skills = Skills;
+        user.Experiences = Experiences;
+        user.PreferredCommunicationMethod = PreferredCommunicationMethod;
+        user.Goal = Goal;
+        user.PreferredSessionFrequency = PreferredSessionFrequency;
+        user.PreferredSessionDuration = PreferredSessionDuration;
+        user.PreferredLearningStyle = PreferredLearningStyle;
+        user.IsPrivate = IsPrivate;
+        user.IsAllowedMessage = IsAllowedMessage;
+        user.IsReceiveNotification = IsReceiveNotification;
+    }
+}
+
+public class UpdateUserDetailRequestValidator : AbstractValidator<EditUserProfileRequest>
+{
+    private static readonly List<int> _allowedDurations = new() { 30, 45, 60, 90, 120 };
+    public UpdateUserDetailRequestValidator()
+    {
+        RuleFor(x => x.FullName)
+            .NotEmpty().WithMessage("Full name is required")
+            .MaximumLength(100).WithMessage("Full name must not exceed 100 characters");
+
+        RuleFor(x => x.RoleId)
+            .GreaterThan(0).WithMessage("Role ID is not valid");
+
+        RuleFor(x => x.Bio)
+            .MaximumLength(300).WithMessage("Bio must not exceed 300 characters")
+            .When(x => x.Bio != null);
+
+        RuleFor(x => x.ProfilePhotoUrl)
+            .MaximumLength(200).WithMessage("Profile photo URL must not exceed 200 characters")
+            .Must(BeAValidUrl).WithMessage("Invalid URL format for profile photo")
+            .When(x => x.ProfilePhotoUrl != null);
+
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty().WithMessage("Phone number is required")
+            .MaximumLength(10).WithMessage("Phone number must not exceed 10 characters");
+
+        RuleFor(x => x.Skills)
+            .MaximumLength(200).WithMessage("Skills must not exceed 200 characters")
+            .When(x => x.Skills != null);
+
+        RuleFor(x => x.Experiences)
+            .MaximumLength(200).WithMessage("Experiences must not exceed 200 characters")
+            .When(x => x.Experiences != null);
+
+        RuleFor(x => x.Goal)
+            .MaximumLength(200).WithMessage("Goal must not exceed 200 characters")
+            .When(x => x.Goal != null);
+
+        RuleFor(x => x.PreferredSessionDuration)
+            .Must(duration => _allowedDurations.Contains(duration))
+            .WithMessage("Preferred session duration must be 30, 45, 60, 90, or 120 minutes");
+
+        RuleFor(x => x.AvailabilityIds)
+            .Must(ids => ids == null).WithMessage("All Availability IDs must be valid")
+            .When(x => x.AvailabilityIds != null);
+
+        RuleFor(x => x.ExpertiseIds)
+            .Must(ids => ids == null).WithMessage("All Expertise IDs must be valid")
+            .When(x => x.ExpertiseIds != null);
+
+        RuleFor(x => x.TeachingApproachIds)
+            .Must(ids => ids == null).WithMessage("All Expertise IDs must be valid")
+            .When(x => x.TeachingApproachIds != null);
+
+        RuleFor(x => x.CategoryIds)
+            .Must(ids => ids == null).WithMessage("All Category IDs must be valid")
+            .When(x => x.CategoryIds != null);
+    }
+
+    private bool BeAValidUrl(string? url)
+    {
+        if (string.IsNullOrEmpty(url))
+            return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out var uriResult) &&
+               (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    }
+}
