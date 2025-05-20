@@ -4,6 +4,7 @@ using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250520054718_AddTableAvailability")]
+    partial class AddTableAvailability
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -212,25 +215,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("Domain.Entities.TeachingApproach", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("TeachingApproaches");
-                });
-
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -258,17 +242,8 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasDefaultValue("");
 
                     b.Property<string>("Goal")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsAllowedMessage")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPrivate")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsReceiveNotification")
-                        .HasColumnType("bit");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateOnly>("JoinedDate")
                         .HasColumnType("date");
@@ -287,27 +262,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasDefaultValue("");
 
                     b.Property<string>("PreferredCommunicationMethod")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("VideoCall");
-
-                    b.Property<string>("PreferredLearningStyle")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Visual");
-
-                    b.Property<int>("PreferredSessionDuration")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(30);
-
-                    b.Property<string>("PreferredSessionFrequency")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("AsNeeded");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProfilePhotoUrl")
                         .HasMaxLength(255)
@@ -332,10 +287,7 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", t =>
-                        {
-                            t.HasCheckConstraint("CK_PreferredSessionDuration", "\"PreferredSessionDuration\" IN (30, 45, 60, 90, 120)");
-                        });
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserAvailability", b =>
@@ -359,27 +311,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("UserAvailabilities");
                 });
 
-            modelBuilder.Entity("Domain.Entities.UserCategory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("UserId", "CategoryId");
-
-                    b.ToTable("UserCategories");
-                });
-
             modelBuilder.Entity("Domain.Entities.UserExpertise", b =>
                 {
                     b.Property<Guid>("Id")
@@ -399,27 +330,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasIndex("UserId", "ExpertiseId");
 
                     b.ToTable("UserExpertises");
-                });
-
-            modelBuilder.Entity("Domain.Entities.UserTeachingApproach", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("TeachingApproachId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeachingApproachId");
-
-                    b.HasIndex("UserId", "TeachingApproachId");
-
-                    b.ToTable("UserTeachingApproaches");
                 });
 
             modelBuilder.Entity("Domain.Entities.Course", b =>
@@ -501,25 +411,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.UserCategory", b =>
-                {
-                    b.HasOne("Domain.Entities.Category", "Category")
-                        .WithMany("UserCategories")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("UserCategories")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Entities.UserExpertise", b =>
                 {
                     b.HasOne("Domain.Entities.Expertise", "Expertise")
@@ -539,25 +430,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.UserTeachingApproach", b =>
-                {
-                    b.HasOne("Domain.Entities.TeachingApproach", "TeachingApproach")
-                        .WithMany("UserTeachingApproaches")
-                        .HasForeignKey("TeachingApproachId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.User", "User")
-                        .WithMany("UserTeachingApproaches")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TeachingApproach");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Entities.Availability", b =>
                 {
                     b.Navigation("UserAvailabilities");
@@ -566,8 +438,6 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.Category", b =>
                 {
                     b.Navigation("Courses");
-
-                    b.Navigation("UserCategories");
                 });
 
             modelBuilder.Entity("Domain.Entities.Course", b =>
@@ -590,20 +460,11 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("CourseTags");
                 });
 
-            modelBuilder.Entity("Domain.Entities.TeachingApproach", b =>
-                {
-                    b.Navigation("UserTeachingApproaches");
-                });
-
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Navigation("UserAvailabilities");
 
-                    b.Navigation("UserCategories");
-
                     b.Navigation("UserExpertises");
-
-                    b.Navigation("UserTeachingApproaches");
                 });
 #pragma warning restore 612, 618
         }
