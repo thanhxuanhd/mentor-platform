@@ -10,15 +10,27 @@ import ResetPassword from '../pages/Auth/ResetPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
 import ProtectedRoute from './ProtectedRoute';
 import { applicationRole } from '../constants/role';
-import UserPreference from '../pages/Auth/UserPreference';
+import UserPreference from '../pages/Auth/components/UserPreference';
+import UserProfile from '../pages/Auth/components/UserProfile';
+import AuthLayout from '../components/AuthLayout';
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="login" element={<Login />} />
-      <Route path="signup" element={<SignUp />} />
-      <Route path="reset-password" element={<ResetPassword />} />
-      <Route path="auth/callback/:provider" element={<OAuthCallback />} />
+      <Route
+        element={
+          <AuthLayout />
+        }
+      >
+        <Route path="login" element={<Login />} />
+        <Route path="signup" element={<SignUp />} />
+        <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="auth/callback/:provider" element={<OAuthCallback />} />
+
+        <Route path='user-preference' element={<UserPreference />} />
+        <Route path='user-profile' element={<UserProfile />} />
+      </Route>
+
       <Route
         element={
           <ProtectedRoute requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}>
@@ -31,7 +43,6 @@ const AppRoutes = () => {
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
-        <Route path='user-preference' element={<UserPreference />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

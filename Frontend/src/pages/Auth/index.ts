@@ -1,3 +1,3 @@
 export * from "./Login";
 export * from "./SignUp";
-export * from "./UserPreference";
+export * from "./components/UserPreference";
