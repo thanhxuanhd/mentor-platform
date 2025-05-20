@@ -4,6 +4,7 @@ using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250520041710_ChangeTableUsers_AddNewFields")]
+    partial class ChangeTableUsers_AddNewFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -150,15 +153,11 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Expertises");
+                    b.ToTable("Expertise");
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
@@ -222,10 +221,8 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)")
-                        .HasDefaultValue("");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Goal")
                         .HasMaxLength(255)
@@ -242,10 +239,8 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("PreferredCommunicationMethod")
                         .HasColumnType("nvarchar(max)");
@@ -262,9 +257,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("Status")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -292,9 +285,9 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("ExpertiseId");
 
-                    b.HasIndex("UserId", "ExpertiseId");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("UserExpertises");
+                    b.ToTable("UserExpertise");
                 });
 
             modelBuilder.Entity("Domain.Entities.Course", b =>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class ChangeTableUsers_AddNewFields_AddTableExpertise : Migration
+    public partial class ChangeTableUsers_AddNewFields : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -66,37 +66,20 @@ namespace Infrastructure.Persistence.Data.Migrations
                 maxLength: 1000,
                 nullable: true);
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Categories",
-                type: "nvarchar(50)",
-                maxLength: 50,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(256)",
-                oldMaxLength: 256);
-
-            migrationBuilder.AddColumn<bool>(
-                name: "IsDeleted",
-                table: "Categories",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
             migrationBuilder.CreateTable(
-                name: "Expertises",
+                name: "Expertise",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Expertises", x => x.Id);
+                    table.PrimaryKey("PK_Expertise", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserExpertises",
+                name: "UserExpertise",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -105,15 +88,15 @@ namespace Infrastructure.Persistence.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserExpertises", x => x.Id);
+                    table.PrimaryKey("PK_UserExpertise", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserExpertises_Expertises_ExpertiseId",
+                        name: "FK_UserExpertise_Expertise_ExpertiseId",
                         column: x => x.ExpertiseId,
-                        principalTable: "Expertises",
+                        principalTable: "Expertise",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserExpertises_Users_UserId",
+                        name: "FK_UserExpertise_Users_UserId",
                         column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "Id",
@@ -121,30 +104,24 @@ namespace Infrastructure.Persistence.Data.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Expertises_Name",
-                table: "Expertises",
-                column: "Name",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserExpertises_ExpertiseId",
-                table: "UserExpertises",
+                name: "IX_UserExpertise_ExpertiseId",
+                table: "UserExpertise",
                 column: "ExpertiseId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserExpertises_UserId_ExpertiseId",
-                table: "UserExpertises",
-                columns: new[] { "UserId", "ExpertiseId" });
+                name: "IX_UserExpertise_UserId",
+                table: "UserExpertise",
+                column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "UserExpertises");
+                name: "UserExpertise");
 
             migrationBuilder.DropTable(
-                name: "Expertises");
+                name: "Expertise");
 
             migrationBuilder.DropColumn(
                 name: "Availability",
@@ -177,20 +154,6 @@ namespace Infrastructure.Persistence.Data.Migrations
             migrationBuilder.DropColumn(
                 name: "Skills",
                 table: "Users");
-
-            migrationBuilder.DropColumn(
-                name: "IsDeleted",
-                table: "Categories");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Categories",
-                type: "nvarchar(256)",
-                maxLength: 256,
-                nullable: false,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(50)",
-                oldMaxLength: 50);
         }
     }
 }
