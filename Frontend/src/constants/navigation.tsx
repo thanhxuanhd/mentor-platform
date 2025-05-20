@@ -36,7 +36,7 @@ export const menuItems: MenuItemProps[] = [
     icon: <BookOutlined />,
     label: "Courses",
     link: "courses",
-    role: [applicationRole.LEARNER, applicationRole.ADMIN],
+    role: [applicationRole.LEARNER, applicationRole.ADMIN, applicationRole.MENTOR],
   },
 ];
 

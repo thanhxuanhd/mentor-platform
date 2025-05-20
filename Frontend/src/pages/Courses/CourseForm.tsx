@@ -4,7 +4,9 @@ import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag } from "antd
 import { PlusOutlined } from "@ant-design/icons";
 import {CourseDifficultyEnumMember} from "./initial-values.tsx";
 import dayjs from 'dayjs';
-import { categoryList } from "./courseClient.tsx";
+import { courseService } from "../../services/course";
+import { categoryService } from "../../services/category";
+import { useAuth } from "../../hooks/useAuth";
 
 // Add a debounce utility
 const debounce = <F extends (...args: any[]) => any>(
@@ -36,32 +38,31 @@ export const CourseForm: FC<CourseFormProp> = ({
   states,
   active,
   onClose,
-}) => {
+}) => {  
+  const { user } = useAuth(); // Get current user from auth context
   const [form] = Form.useForm<CourseFormDataOptions>();
   const [newTag, setNewTag] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [myCategories, setMyCategories] = useState<Category[]>([]);
   const [categoryKeyword, setCategoryKeyword] = useState<string>("");
-
-const fetchCategories = async () => {
-      try {
-        const response = await categoryList(
-          1,
-          5,
-          categoryKeyword.trim(),
-        );
-        setMyCategories(response.items);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
-    };
-
-  useEffect(() => {
+  const [submitting, setSubmitting] = useState<boolean>(false);const fetchCategories = async () => {
+    try {
+      const response = await categoryService.list({
+        pageIndex: 1,
+        pageSize: 5,
+        keyword: categoryKeyword.trim(),
+      });
+      setMyCategories(response.items);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };useEffect(() => {
     fetchCategories();
   }, [categoryKeyword]);
+  
   // Helper to get current tags
-  const getTags = () => tags;  
-    useEffect(() => {
+  const getTags = () => tags;
+  useEffect(() => {
     if (active) {
       // Initial fetch of categories when the form becomes active
       fetchCategories();
@@ -91,13 +92,13 @@ const fetchCategories = async () => {
       const initialTags = Array.isArray(formData.tags) ? formData.tags : [];
       setTags(initialTags);
     }
-  }, [active, form, formData]);
-  const handleSubmit = async () => {
+  }, [active, form, formData]);  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-        // Format the date for .NET DateTime compatibility
-      // The dueDate from Ant Design DatePicker can be a Dayjs/Moment object
+      
+      // Format the date for .NET DateTime compatibility
       let formattedDueDate = values.dueDate;
+      
       // Check if it's an object with a dayjs format method
       if (values.dueDate && typeof values.dueDate === 'object') {
         // Using type assertion to safely access the properties
@@ -123,39 +124,48 @@ const fetchCategories = async () => {
           dueDate: formattedDueDate, // Using the formatted date
           difficulty: values.difficulty,
           status: values.status,
-          tags: values.tags
+          tags: getTags()
         });
         
-        console.log("BACKEND UPDATE EXPECTS:", {
-          Title: "string",
-          Description: "string", 
-          CategoryId: "Guid",
-          DueDate: "DateTime", // Now we're sending ISO format string which is compatible with .NET DateTime
-          Difficulty: "CourseDifficulty enum"
-        });
-      } else {        
-        console.log("CREATE MODE - Data that would be sent to create API:", {
+        // Close without update for now
+        onClose();
+      } else {        // Create mode - call the POST /api/course endpoint
+        console.log("CREATE MODE - Data being sent to create API:", {
           title: values.title,
           description: values.description,
           categoryId: values.categoryId,
           dueDate: formattedDueDate, 
           difficulty: values.difficulty,
-          status: "draft",
-          tags: values.tags,
-          mentorId: "Would need to provide a mentorId here"
+          tags: getTags(),
+          mentorId: user?.id || "" // Use current user's ID as mentorId
         });
         
-        console.log("BACKEND CREATE EXPECTS:", {
-          Title: "string",
-          Description: "string",
-          CategoryId: "Guid",
-          MentorId: "Guid (missing in our form)",
-          DueDate: "DateTime", 
-          Difficulty: "CourseDifficulty enum"
-        });
+        setSubmitting(true);
+        try {          
+          // Make the API call to create a new course
+          await courseService.create({
+            title: values.title,
+            description: values.description,
+            categoryId: values.categoryId,
+            dueDate: formattedDueDate as string,
+            difficulty: values.difficulty,
+            mentorId: user?.id || "", // Use current user's ID as mentorId
+            tags: getTags() // Include tags in the API call
+          });
+          
+          // Close the form and signal to refresh the course list
+          onClose("refresh");
+        } catch (error) {
+          console.error("Error creating course:", error);
+          // Show error message to user
+          Modal.error({
+            title: 'Failed to create course',
+            content: 'There was an error creating your course. Please try again.',
+          });
+        } finally {
+          setSubmitting(false);
+        }
       }
-      
-      onClose();
     } catch (errorInfo) {
       console.log("Failed:", errorInfo);
     }
@@ -188,7 +198,13 @@ const fetchCategories = async () => {
         <Button key="cancel" onClick={() => onClose()}>
           Cancel
         </Button>,
-        <Button key="submit" type="primary" onClick={handleSubmit}>
+        <Button 
+          key="submit" 
+          type="primary" 
+          onClick={handleSubmit}
+          loading={submitting}
+          disabled={submitting}
+        >
           {formData.title ? "Save Changes" : "Create Course"}
         </Button>,
       ]}

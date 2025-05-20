@@ -12,12 +12,13 @@ import { CourseTable } from "./CourseTable.tsx";
 import { CourseForm } from "./CourseForm.tsx";
 
 import { CourseResource } from "./CourseResource.tsx";
-import * as CourseClient from "./courseClient.tsx";
+import { courseService } from "../../services/course";
+import { categoryService } from "../../services/category";
+import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./CourseDetail.tsx";
 import { SearchBar } from "./SearchBar.tsx";
 
-const Page: React.FC = () => {
-  const [pageIndex, setPageIndex] = useState<number>(0);
+const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -25,6 +26,8 @@ const Page: React.FC = () => {
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const [popoverTarget, setPopoverTarget] = useState<string | undefined>();
 
@@ -37,33 +40,69 @@ const Page: React.FC = () => {
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
 
+  // Effect for handling refresh operations specifically
   useEffect(() => {
-    const fetchCourses = async () => {
+    if (refreshTrigger > 0) {
+      setIsRefreshing(true);
+      const refreshData = async () => {
+        try {
+          const courseResponse = await courseService.list({
+            pageIndex: 0, // Always reset to first page on refresh
+            pageSize,
+            keyword,
+            difficulty,
+            categoryId,
+            mentorId,
+          });
+          
+          setCourses(courseResponse.items);
+          setTotalCount(courseResponse.totalPages);
+          console.log("Course list refreshed after create/update");
+        } catch (error) {
+          console.error("Error refreshing courses:", error);
+        } finally {
+          setIsRefreshing(false);
+        }
+      };
+      
+      refreshData();
+    }
+  }, [refreshTrigger]);
+
+  useEffect(() => {    const fetchCourses = async () => {
       setLoading(true);
 
-      const courseResponse = await CourseClient.list({
-        pageIndex,
-        pageSize,
-        keyword: keyword,
-        difficulty: difficulty,
-        categoryId: categoryId,
-        mentorId: mentorId,
-      });
+      try {
+        // Get courses
+        const courseResponse = await courseService.list({
+          pageIndex,
+          pageSize,
+          keyword: keyword,
+          difficulty: difficulty,
+          categoryId: categoryId,
+          mentorId: mentorId,
+        });
 
-      const categoryResponse = await CourseClient.categoryList();
+        // Get categories
+        const categoryResponse = await categoryService.list();
 
-      const mentorResponse = await CourseClient.mentorList();
+        // Get mentors
+        const mentorResponse = await mentorService.list();
 
-      setTotalCount(courseResponse.totalPages);
-      setCategories(categoryResponse.items);
-      setMentors(mentorResponse.items);
-      setCourses(courseResponse.items);
-
-      setLoading(false);
+        // Update state with fetched data
+        setTotalCount(courseResponse.totalPages);
+        setCategories(categoryResponse.items);
+        setMentors(mentorResponse.items);
+        setCourses(courseResponse.items);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchCourses();
-  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId]);
+  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId, refreshTrigger]);
 
   return (
     <>
@@ -96,13 +135,11 @@ const Page: React.FC = () => {
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
                 }}
-              />
-
-              <CourseTable
+              />              <CourseTable
                 courses={courses}
                 states={states}
                 tableProps={{
-                  loading: loading,
+                  loading: loading || isRefreshing,
                   pagination: {
                     pageSize: pageSize,
                     total: totalCount,
@@ -141,9 +178,7 @@ const Page: React.FC = () => {
                   });
                   setPopoverTarget(CoursePopoverTarget.edit);
                 }}
-              />
-
-              <CourseForm
+              />              <CourseForm
                 formData={formData}
                 categories={categories}
                 states={states}
@@ -151,21 +186,35 @@ const Page: React.FC = () => {
                   popoverTarget === CoursePopoverTarget.add ||
                   popoverTarget === CoursePopoverTarget.edit
                 }
-                onClose={(targetAction) => setPopoverTarget(targetAction)}
-              />
-
-              <CourseDetail
+                onClose={(targetAction) => {
+                  if (targetAction === "refresh") {
+                    // Trigger a refresh of the course list
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                  setPopoverTarget(targetAction);
+                }}
+              />              <CourseDetail
                 course={item}
                 states={states}
                 active={popoverTarget === CoursePopoverTarget.detail}
-                onClose={(targetAction) => setPopoverTarget(targetAction)}
-              />
-
-              <CourseResource
+                onClose={(targetAction) => {
+                  if (targetAction === "refresh") {
+                    // Trigger a refresh of the course list
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                  setPopoverTarget(targetAction);
+                }}
+              />              <CourseResource
                 course={item}
                 onDownload={(material) => window.alert(material.webAddress)}
                 active={popoverTarget === CoursePopoverTarget.resource}
-                onClose={(targetAction) => setPopoverTarget(targetAction)}
+                onClose={(targetAction) => {
+                  if (targetAction === "refresh") {
+                    // Trigger a refresh of the course list
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                  setPopoverTarget(targetAction);
+                }}
               />
             </div>
           </div>

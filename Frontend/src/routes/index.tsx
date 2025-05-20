@@ -20,7 +20,7 @@ const AppRoutes = () => {
       <Route path="auth/callback/:provider" element={<OAuthCallback />} />
       <Route
         element={
-          <ProtectedRoute requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}>
+          <ProtectedRoute requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR]}>
             <MainLayout />
           </ProtectedRoute>
         }
