@@ -31,25 +31,25 @@ public static class ApplicationDbExtensions
                 new User
                 {
                     Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                    FullName = "Mentor Account 1",
-                    Email = "mentor1@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("mentor@1"),
+                    FullName = "MySuperKawawiiMentorXxX@at.local",
+                    Email = "MySuperKawaiiMentorXxX@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("http://localhost:8080/register"),
                     RoleId = mentorRole.Id
                 },
                 new User
                 {
                     Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
-                    FullName = "Mentor Account 2",
-                    Email = "mentor2@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("mentor@2"),
+                    FullName = "DuongSenpai@at.local",
+                    Email = "DuongSenpai@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("RollRoyce420$$$"),
                     RoleId = mentorRole.Id
                 },
                 new User
                 {
                     Id = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
-                    FullName = "Mentor Account 3",
-                    Email = "mentor3@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("mentor@3"),
+                    FullName = "AnhDoSkibidi@at.local",
+                    Email = "AnhDoSkibidi@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
                     RoleId = mentorRole.Id
                 }
             );
