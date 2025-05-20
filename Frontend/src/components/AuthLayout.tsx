@@ -16,7 +16,7 @@ const AuthLayout = () => {
         </div>
       </Header>
 
-      <Content className="h-screen overflow-y-auto bg-gray-900">
+      <Content className="min-h-screen h-content overflow-y-auto bg-gray-900">
         <Outlet />
       </Content>
     </Layout>

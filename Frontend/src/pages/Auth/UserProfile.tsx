@@ -6,13 +6,14 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
-import { Upload, Button, Input, Form, Select, Radio } from "antd";
+import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import type { SelectProps } from "rc-select";
 const { TextArea } = Input;
 import { useEffect, useState } from "react";
 import type { DefaultOptionType } from "antd/es/select";
+import type { NotificationProps } from "../../types/Notification";
 const availabilityOptions = [
   "Weekdays",
   "Weekends",
@@ -78,10 +79,12 @@ const roleOptions: CheckboxGroupProps<string>["options"] = [
 
 export default function UserProfile() {
   const [imageUrl, setImageUrl] = useState("");
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>(
     [],
   );
-
+  const { notification } = App.useApp();
   const [tags, setTags] = useState<DefaultOptionType[]>([]);
   //   const [selectedTags, setSelectedTags] = useState([]);
 
@@ -95,6 +98,43 @@ export default function UserProfile() {
     }
     setTags(options);
   }, []);
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
+  const beforeUpload = (file: RcFile) => {
+    const isFormatAllowed =
+      file.type === "image/jpeg" ||
+      file.type === "image/png" ||
+      file.type === "image/jpg";
+    if (!isFormatAllowed) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "File format not allowed!",
+      });
+    }
+    const isLt1M = file.size / 1024 / 1024 < 1;
+    if (!isLt1M) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "Image must smaller than 2MB!",
+      });
+    }
+    return isFormatAllowed && isLt1M;
+  };
 
   const handleChange = (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === "done" || info.file.status === "uploading") {
@@ -140,7 +180,7 @@ export default function UserProfile() {
             <Upload
               maxCount={1}
               showUploadList={false}
-              beforeUpload={() => true}
+              beforeUpload={beforeUpload}
               onChange={handleChange}
             >
               <div className="relative w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer">
@@ -173,15 +213,52 @@ export default function UserProfile() {
             </Upload>
           </Form.Item>
           <div className="flex-1">
-            <Form.Item
-              name="fullname"
-              label="Full Name"
-              rules={[
-                { required: true, message: "Please enter your full name!" },
-              ]}
-            >
-              <Input size="large" placeholder="Full Name" />
-            </Form.Item>
+            <div className="flex gap-4">
+              <div className="flex-2">
+                <Form.Item
+                  name="fullname"
+                  label="Full Name"
+                  rules={[
+                    { required: true, message: "Please enter your full name!" },
+                    {
+                      max: 50,
+                      message: "Full name can not exceed 50 characters!",
+                    },
+                    {
+                      pattern: /^[A-Za-z\s]+$/,
+                      message: "Full name can only contain letters and spaces!",
+                    },
+                  ]}
+                >
+                  <Input maxLength={50} size="large" placeholder="Full Name" />
+                </Form.Item>
+              </div>
+              <div className="flex-1">
+                <Form.Item
+                  name="phone"
+                  label="Phone Number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your phone number!",
+                    },
+                    {
+                      pattern: /^\d{10}$/,
+                      message:
+                        "Phone number must consist of exactly 10 digits!",
+                    },
+                  ]}
+                >
+                  <Input
+                    maxLength={10}
+                    size="large"
+                    placeholder="Phone Number"
+                    type="tel"
+                  />
+                </Form.Item>
+              </div>
+            </div>
+
             <Form.Item
               name="bio"
               label="Bio"
@@ -257,7 +334,7 @@ export default function UserProfile() {
             },
           ]}
         >
-          <div className="flex gap-2 items-center justify-center">
+          <div className="flex gap-2 items-center justify-center flex-wrap">
             {availabilityOptions.map((item) => (
               <Button
                 key={item}

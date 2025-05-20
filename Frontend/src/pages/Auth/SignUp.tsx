@@ -3,7 +3,7 @@ import SignUpForm from "../../components/forms/auth/SignUpForm";
 
 export const SignUp: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col h-full items-center justify-center">
+    <div className="h-screen flex flex-col items-center justify-center">
       <SignUpForm />
     </div>
   );
