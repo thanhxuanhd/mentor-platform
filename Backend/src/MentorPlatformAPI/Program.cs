@@ -28,7 +28,6 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<AutoValidateFilter>();
 });
-builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSetting"));
 
 builder.Services
     .AddApplicationServices()

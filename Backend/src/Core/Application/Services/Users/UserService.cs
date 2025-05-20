@@ -1,5 +1,5 @@
 ﻿using Application.Helpers;
-using Application.Services.Email;
+using Contract.Services;
 using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -140,7 +140,11 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure("Failed to send email", HttpStatusCode.InternalServerError);
         }
 
-        return Result.Success("Password reset successful. Please check your email.", HttpStatusCode.OK);
+        return Result.Success(new
+        {
+            message = "Password reset successful. Please check your email.",
+            newPassword = newPassword
+        }, HttpStatusCode.OK);
     }
     private string GenerateRandomPassword(int length)
     {

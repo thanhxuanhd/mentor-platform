@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Infrastructure.Services.Authorization.OAuth;
-using Application.Services.Email;
 
 namespace Infrastructure;
 
@@ -46,7 +45,7 @@ public static class ConfigureServices
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             // options.EnableSensitiveDataLogging();
         });
-
+        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
         // Add JWT Authentication
         services.AddAuthentication(options =>
         {
