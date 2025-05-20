@@ -5,7 +5,6 @@ using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
-using Infrastructure.Services.Authorization;
 using Moq;
 using System.Net;
 using Application.Helpers;
