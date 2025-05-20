@@ -31,12 +31,17 @@ export class UserRoleManagementPage extends BasePage {
   //Table elements locator
   private readonly DBL_ALL_USER_LOC: Locator;
   private readonly DGD_ROW_USER_LOC: Locator;
-  private LBL_USER_FULLNAME_LOC: (index: number) => Locator;
-  private LBL_USER_EMAIL_LOC: (index: number) => Locator;
-  private LBL_USER_ROLE_LOC: (index: number) => Locator;
+  private LBL_USER_FULLNAME_LOC: Locator;
+  private LBL_USER_EMAIL_LOC: Locator;
+  private LBL_USER_ROLE_LOC: Locator;
+  private LBL_JOINED_DATE_LOC: Locator;
+  private LBL_LAST_ACTIVATE_DATE_LOC: Locator;
+  private DDL_DEFAULT_ROLE_FILTER_LOC: Locator;
 
   //Activate/Deactivate user
-  private readonly USER_STATUS_LOC: Locator;
+  private readonly USER_STATUS_LOC: string;
+  private readonly BTN_DEACTIVATED_LOC: string;
+  private readonly BTN_ACTIVATED_LOC: string;
 
   //Error message
   private readonly LBL_NOTIFICATION_LOC: Locator;
@@ -47,9 +52,7 @@ export class UserRoleManagementPage extends BasePage {
     this.LBL_NOTIFICATION_LOC = page.locator(
       ".ant-notification-notice-description"
     );
-    this.USER_STATUS_LOC = page.locator(
-      ".ant-table-cell:nth-child(4) .ant-tag"
-    );
+    this.USER_STATUS_LOC = ".ant-table-cell:nth-child(4) .ant-tag";
     this.DGD_ROW_USER_LOC = page.locator(".ant-table-content .ant-table-row");
     this.DDL_ITEM_PER_PAGE_SELECTED_VALUE_LOC = page.locator("div.ant-select");
     this.DBL_ALL_USER_LOC = page.locator(
@@ -74,21 +77,15 @@ export class UserRoleManagementPage extends BasePage {
     this.LNK_USER_ROLE_MANAGEMENT_LOC = page.locator(
       'span.ant-menu-title-content:has-text("Users")'
     );
-    this.LBL_USER_FULLNAME_LOC = (index: number) => {
-      return page.locator(
-        `.ant-table-row:nth-child(${index + 2}) .truncate .font-medium`
-      );
-    };
-    this.LBL_USER_EMAIL_LOC = (index: number) => {
-      return this.page.locator(
-        `.ant-table-row:nth-child(${index + 2}) .truncate .text-gray-500`
-      );
-    };
-    this.LBL_USER_ROLE_LOC = (index: number) => {
-      return this.page.locator(
-        `.ant-table-row .ant-table-cell:nth-child(2) span`
-      );
-    };
+    this.LBL_USER_FULLNAME_LOC = page.locator(
+      `.ant-table-row .truncate .font-medium`
+    );
+    this.LBL_USER_EMAIL_LOC = page.locator(
+      `.ant-table-row .truncate .text-gray-500`
+    );
+    this.LBL_USER_ROLE_LOC = page.locator(
+      ".ant-table-row .ant-table-cell:nth-child(2) span"
+    );
     this.BTN_EDIT_USER_LOC = page.getByRole("img", { name: "edit" });
     this.BTN_CANCEL_USER_LOC = page.getByRole("button", {
       name: "Cancel",
@@ -107,6 +104,17 @@ export class UserRoleManagementPage extends BasePage {
         `.ant-select-item .ant-select-item-option-content:has-text("${role}")`
       );
     };
+    this.BTN_DEACTIVATED_LOC = `button:has([aria-label="stop"])`;
+    this.BTN_ACTIVATED_LOC = `button:has([aria-label="check"])`;
+    this.DDL_DEFAULT_ROLE_FILTER_LOC = page.locator(
+      "label.ant-segmented-item-selected .ant-segmented-item-label"
+    );
+    this.LBL_JOINED_DATE_LOC = page.locator(
+      ".ant-table-row .ant-table-cell:nth-child(3) div"
+    );
+    this.LBL_LAST_ACTIVATE_DATE_LOC = page.locator(
+      ".ant-table-row .ant-table-cell:nth-child(5) div"
+    );
   }
 
   async navigateToUserRoleManagementPage(url = "") {
@@ -118,8 +126,26 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //View detailed user information
-  async clickOnEditUserBtn(index = 0) {
-    await this.BTN_EDIT_USER_LOC.nth(index).click();
+  async viewOneUser() {
+    await this.waitUntilVisible(this.LBL_USER_FULLNAME_LOC.first());
+    const fullname = this.LBL_USER_FULLNAME_LOC.first().textContent();
+    const email = this.LBL_USER_EMAIL_LOC.first().textContent();
+    const role = this.LBL_USER_ROLE_LOC.first().textContent();
+    const joinedDate = this.LBL_JOINED_DATE_LOC.first().textContent();
+    const lastActiveDate =
+      this.LBL_LAST_ACTIVATE_DATE_LOC.first().textContent();
+    const userStatus = this.page
+      .locator(this.USER_STATUS_LOC)
+      .first()
+      .textContent();
+    return {
+      fullname,
+      email,
+      role,
+      joinedDate,
+      lastActiveDate,
+      userStatus,
+    };
   }
 
   //Save button
@@ -129,6 +155,12 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //Edit function
+  async clickOnEditUserBtn(index = 0) {
+    const isEnable = await this.BTN_EDIT_USER_LOC.nth(index).isEnabled();
+    expect(isEnable).toBeTruthy();
+    return await this.BTN_EDIT_USER_LOC.nth(index).click();
+  }
+
   async fillEditUserForm(fullname = "", email = "", role = "Admin") {
     await this.fill(this.TXT_EDIT_USER_FULLNAME_LOC, fullname);
     await this.fill(this.TXT_EDIT_USER_EMAIL_LOC, email);
@@ -138,19 +170,6 @@ export class UserRoleManagementPage extends BasePage {
 
   async clickOnSaveBtn() {
     await this.BTN_SAVE_LOC.click();
-  }
-
-  async getEditUserData(index: number) {
-    const userFullname = await this.LBL_USER_FULLNAME_LOC(index).textContent();
-    const userEmail = await this.LBL_USER_EMAIL_LOC(index).textContent();
-    const userRole = await this.LBL_USER_ROLE_LOC(index)
-      .nth(index)
-      .textContent();
-    return {
-      userFullname,
-      userEmail,
-      userRole,
-    };
   }
 
   //Cancel button
@@ -165,23 +184,25 @@ export class UserRoleManagementPage extends BasePage {
 
   //Activate/Deactivate user
   async clickOnDeactivateUserBtn(index: number) {
-    const btnDeactivate = `button:has([aria-label="stop"])`;
     return await this.DGD_ROW_USER_LOC.nth(index)
-      .locator(btnDeactivate)
+      .locator(this.BTN_DEACTIVATED_LOC)
+      .first()
       .click();
   }
 
   async clickOnActivateUserBtn(index: number) {
-    const btnActivate = `button:has([aria-label="check"])`;
-    return await this.DGD_ROW_USER_LOC.nth(index).locator(btnActivate).click();
+    return await this.DGD_ROW_USER_LOC.nth(index)
+      .locator(this.BTN_ACTIVATED_LOC)
+      .first()
+      .click();
   }
 
-  async getUserStatus(index: number) {
-    await expect(this.USER_STATUS_LOC.first()).toBeVisible();
-    return await this.DGD_ROW_USER_LOC.nth(index)
-      .locator(this.USER_STATUS_LOC)
-      .first()
-      .innerText();
+  async getAllUserStatus() {
+    await this.waitUntilVisible(this.BTN_SEARCH_LOC);
+    const allUserStatus = await this.DGD_ROW_USER_LOC.locator(
+      this.USER_STATUS_LOC
+    ).allInnerTexts();
+    return allUserStatus;
   }
 
   //Filter user
@@ -195,10 +216,21 @@ export class UserRoleManagementPage extends BasePage {
       .innerText();
   }
 
+  async getUserRoleTabDefaultValue() {
+    const allTab = await this.DDL_DEFAULT_ROLE_FILTER_LOC.textContent();
+    return allTab;
+  }
+
   //Search user
   async searchUser(userName = "") {
     await this.fill(this.TXT_SEARCH_USER_LOC, userName);
     await this.BTN_SEARCH_LOC.click();
+  }
+
+  async verifyInitialValueOfSearchUser() {
+    this.waitUntilVisible(this.TXT_SEARCH_USER_LOC);
+    const actualData = await this.TXT_SEARCH_USER_LOC.inputValue();
+    return actualData;
   }
 
   async getNoDataErrorMessage() {
@@ -209,17 +241,14 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   async expectAllUsersContain(value: string) {
-    if (await this.getAllUser()) {
-      const actualData = await this.getAllUser();
-      for (const u of actualData) {
-        expect(u).toContain(value);
-      }
-    } else {
-      return "No data";
+    const actualData = await this.getAllUserText();
+    for (const u of actualData) {
+      expect(u.toLowerCase()).toContain(value.toLowerCase());
     }
   }
 
-  async getAllUser() {
+  async getAllUserText() {
+    await expect(this.DBL_ALL_USER_LOC.first()).toBeVisible();
     const allUser = await this.DBL_ALL_USER_LOC.allTextContents();
     return allUser;
   }
@@ -240,6 +269,14 @@ export class UserRoleManagementPage extends BasePage {
   async getPreviousButtonStatus() {
     const isEnable = await this.BTN_PREVIOUS_LOC.isEnabled();
     return isEnable;
+  }
+
+  async clickOnPreviousButton() {
+    await this.BTN_PREVIOUS_LOC.click();
+  }
+
+  async clickOnNextButton() {
+    await this.BTN_NEXT_LOC.click();
   }
 
   async getNextButtonStatus() {

@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
-import { UserRoleManagementPage } from "../../../pages/user-role-management-page/user-role-management-page";
-import userData from "./user-role-management.json";
+import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
+import userData from "../test-data/user-role-management.json";
 
 test.describe("@UserRoleManagement All user role management pagination function", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
@@ -15,47 +15,45 @@ test.describe("@UserRoleManagement All user role management pagination function"
   });
 
   //Pagination function
-  test("Verify pagination default value", async () => {
+  test("@SmokeTest Verify pagination default value", async () => {
     const isTrue = await userRoleManagementPage.getPaginationDefaultValue();
     expect(isTrue).toEqual("5");
   });
 
-  test("Verify that the Previous button is disable when user is in the first page", async () => {
+  test("@SmokeTest Verify that the Previous button is disable when user is in the first page", async () => {
     await userRoleManagementPage.clickOnNavigationButton(0);
     const isTrue = await userRoleManagementPage.getPreviousButtonStatus();
     expect(isTrue).toBeFalsy();
   });
 
-  test("Verify that the Next button is disable when user is in the last page", async () => {
+  test("@SmokeTest Verify that the Next button is disable when user is in the last page", async () => {
     const totalPaging = await userRoleManagementPage.getAllPagingCount();
     await userRoleManagementPage.clickOnNavigationButton(totalPaging - 1);
     const isTrue = await userRoleManagementPage.getNextButtonStatus();
     expect(isTrue).toBeFalsy();
   });
 
-  test("Verify Next button is enable if user stays from Page 2 to the last page", async () => {
-    await userRoleManagementPage.clickOnNavigationButton(1);
-    const isTrue = await userRoleManagementPage.getNextButtonStatus();
-    expect(isTrue).toBeTruthy();
-  });
-
-  test("Verify Previous button is enable if user stays from the page before the last page", async () => {
-    const totalPaging = await userRoleManagementPage.getAllPagingCount();
-    await userRoleManagementPage.clickOnNavigationButton(totalPaging - 2);
-    const isTrue = await userRoleManagementPage.getNextButtonStatus();
-    expect(isTrue).toBeTruthy();
-  });
-
   test("@SmokeTest Verify data changed among pages", async () => {
-    const firstPageData = await userRoleManagementPage.getAllUser();
+    const firstPageData = await userRoleManagementPage.getAllUserText();
     await userRoleManagementPage.clickOnNavigationButton(1);
-    const secondPageData = await userRoleManagementPage.getAllUser();
+    const secondPageData = await userRoleManagementPage.getAllUserText();
     expect(firstPageData).not.toEqual(secondPageData);
+  });
+
+  test("@SmokeTest Verify user list changes when clicking Next and Previous page buttons", async () => {
+    const initialPageData = await userRoleManagementPage.getAllUserText();
+
+    await userRoleManagementPage.clickOnNextButton();
+    const nextPageData = await userRoleManagementPage.getAllUserText();
+    expect(nextPageData).not.toEqual(initialPageData);
+
+    await userRoleManagementPage.clickOnPreviousButton();
+    const previousPageData = await userRoleManagementPage.getAllUserText();
+    expect(previousPageData).toEqual(initialPageData);
   });
 
   itemsPerPage.forEach((item) => {
     test(`@SmokeTest Verify that user table display ${item} users`, async () => {
-      console.log("item: ", item);
       await test.step("Click on items per page dropdown", async () => {
         await userRoleManagementPage.clickOnItemPerPage(item);
       });

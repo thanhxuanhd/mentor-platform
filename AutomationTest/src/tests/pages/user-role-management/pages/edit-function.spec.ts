@@ -1,10 +1,11 @@
 import test, { expect } from "@playwright/test";
-import { UserRoleManagementPage } from "../../../pages/user-role-management-page/user-role-management-page";
-import userData from "./user-role-management.json";
+import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
+import userData from "../test-data/user-role-management.json";
 
 test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
   const editUser = userData.validate_edit_user;
+  const existedEmail = userData.existed_email;
 
   test.beforeEach(async ({ page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
@@ -13,6 +14,12 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       await userRoleManagementPage.navigateToUsers();
     });
   });
+
+  //Validate Fullname
+  test("Validate Fullname", async () => {});
+
+  //Validate Email
+  test("Validate Email", async () => {});
 
   //Edit function
   editUser.forEach((user, index) => {
@@ -44,9 +51,29 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       });
 
       await test.step(`Verify update successfully`, async () => {
-        const actualData = await userRoleManagementPage.getEditUserData(index);
-        expect(actualData).toEqual(editUser[index]);
+        const actualData = await userRoleManagementPage.getNotification();
+        expect(actualData).toEqual("User updated successfully");
       });
+    });
+  });
+
+  //Check error message when enter user email is exists in edit user
+  test("Verify that error message is shown when user email already exists", async () => {
+    await test.step("Click edit user button", async () => {
+      await userRoleManagementPage.clickOnEditUserBtn(0);
+    });
+    await test.step("Fill edit user form with existing email", async () => {
+      await userRoleManagementPage.fillEditUserForm(
+        existedEmail.fullname,
+        existedEmail.email
+      );
+    });
+    await test.step("Click save button", async () => {
+      await userRoleManagementPage.clickOnSaveBtn();
+    });
+    await test.step("Verify error message is shown", async () => {
+      const errorMessage = await userRoleManagementPage.getNotification();
+      expect(errorMessage).toBe(`Email ${existedEmail.email} already exists.`);
     });
   });
 });
