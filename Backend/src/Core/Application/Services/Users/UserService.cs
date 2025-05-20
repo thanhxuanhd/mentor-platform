@@ -7,6 +7,7 @@ using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Constants;
+using Domain.Entities;
 using Domain.Enums;
 using System.Net;
 
