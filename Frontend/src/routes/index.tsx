@@ -10,6 +10,7 @@ import ResetPassword from '../pages/Auth/ResetPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
 import ProtectedRoute from './ProtectedRoute';
 import { applicationRole } from '../constants/role';
+import UserPreference from '../pages/Auth/UserPreference';
 
 const AppRoutes = () => {
   return (
@@ -30,6 +31,7 @@ const AppRoutes = () => {
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
+        <Route path='user-preference' element={<UserPreference />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

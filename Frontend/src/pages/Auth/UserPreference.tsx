@@ -1,36 +1,31 @@
 import { useState } from "react"
-import { Button, Checkbox, Select, Progress } from "antd"
+import { Button, Checkbox, Select, Tag } from "antd"
 import type { CheckboxChangeEvent } from "antd/es/checkbox"
 
 export default function UserPreference() {
-    // State for selected topics
+
     const [selectedTopics, setSelectedTopics] = useState<string[]>([])
 
-    // State for learning style
     const [learningStyle, setLearningStyle] = useState<string>("Visual")
 
-    // State for privacy settings
     const [privacySettings, setPrivacySettings] = useState({
         privateProfile: false,
         allowMessages: true,
         receiveNotifications: true,
     })
 
-    // Handle topic selection
-    const handleTopicClick = (topic: string) => {
-        if (selectedTopics.includes(topic)) {
-            setSelectedTopics(selectedTopics.filter((t) => t !== topic))
-        } else {
+    const handleTopicChange = (topic: string, checked: boolean) => {
+        if (checked) {
             setSelectedTopics([...selectedTopics, topic])
+        } else {
+            setSelectedTopics(selectedTopics.filter((t) => t !== topic))
         }
     }
 
-    // Handle learning style selection
     const handleLearningStyleClick = (style: string) => {
         setLearningStyle(style)
     }
 
-    // Handle privacy settings changes
     const handlePrivacyChange = (setting: keyof typeof privacySettings) => (e: CheckboxChangeEvent) => {
         setPrivacySettings({
             ...privacySettings,
@@ -38,50 +33,42 @@ export default function UserPreference() {
         })
     }
 
+    const topics = [
+        "Career Development",
+        "Technical Skills",
+        "Leadership",
+        "Communication",
+        "Work-Life Balance",
+        "Industry Insights",
+        "Networking",
+        "Entrepreneurship",
+    ]
+
     return (
         <div className="min-h-screen bg-[#111827] text-white">
-            {/* Header */}
-            <header className="flex justify-between items-center p-4 border-b border-gray-800">
-                <h1 className="text-2xl font-bold text-[#FF6B00]">MentorConnect</h1>
-                <div className="flex items-center">
-                    <Progress percent={100} showInfo={false} strokeColor="#FF6B00" trailColor="#2D3748" className="w-40 mr-4" />
-                    <span className="text-gray-300">Step 3 of 3</span>
-                </div>
-            </header>
 
-            {/* Main Content */}
-            <main className="max-w-3xl mx-auto p-8 mt-8 bg-[#1A2235] rounded-lg">
+            <div className="max-w-3xl mx-auto p-8 mt-8 bg-[#1A2235] rounded-lg">
                 <h2 className="text-2xl font-semibold mb-8">Set Your Preferences</h2>
 
-                {/* Topics Section */}
                 <div className="mb-8">
                     <h3 className="text-gray-400 mb-4">Topics you're interested in learning about</h3>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {[
-                            "Career Development",
-                            "Technical Skills",
-                            "Leadership",
-                            "Communication",
-                            "Work-Life Balance",
-                            "Industry Insights",
-                            "Networking",
-                            "Entrepreneurship",
-                        ].map((topic) => (
-                            <div
+                        {topics.map((topic) => (
+                            <Tag.CheckableTag
                                 key={topic}
-                                onClick={() => handleTopicClick(topic)}
+                                checked={selectedTopics.includes(topic)}
+                                onChange={(checked) => handleTopicChange(topic, checked)}
                                 className={`py-2 px-4 rounded cursor-pointer text-center transition-colors ${selectedTopics.includes(topic)
-                                    ? "bg-[#2D3748] text-white"
-                                    : "bg-[#1E293B] text-gray-300 hover:bg-[#2D3748]"
+                                    ? "!bg-[#2D3748] !text-white !border-[#2D3748]"
+                                    : "!bg-[#1E293B] !text-gray-300 hover:!bg-[#2D3748] !border-[#1E293B]"
                                     }`}
                             >
                                 {topic}
-                            </div>
+                            </Tag.CheckableTag>
                         ))}
                     </div>
                 </div>
 
-                {/* Session Preferences */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <div>
                         <h3 className="text-gray-400 mb-4">Preferred session frequency</h3>
@@ -93,7 +80,6 @@ export default function UserPreference() {
                                 { value: "Bi-weekly", label: "Bi-weekly" },
                                 { value: "Monthly", label: "Monthly" },
                             ]}
-                            dropdownStyle={{ background: "#1E293B", color: "white" }}
                         />
                     </div>
                     <div>
@@ -107,12 +93,10 @@ export default function UserPreference() {
                                 { value: "1.5 hours", label: "1.5 hours" },
                                 { value: "2 hours", label: "2 hours" },
                             ]}
-                            dropdownStyle={{ background: "#1E293B", color: "white" }}
                         />
                     </div>
                 </div>
 
-                {/* Learning Style */}
                 <div className="mb-8">
                     <h3 className="text-gray-400 mb-4">Your preferred learning style</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -129,7 +113,6 @@ export default function UserPreference() {
                     </div>
                 </div>
 
-                {/* Privacy Settings */}
                 <div className="mb-8">
                     <h3 className="text-xl font-semibold mb-4">Privacy settings</h3>
                     <div className="space-y-4">
@@ -168,14 +151,13 @@ export default function UserPreference() {
                     </div>
                 </div>
 
-                {/* Navigation Buttons */}
                 <div className="flex justify-between mt-8">
                     <Button className="bg-[#1E293B] text-white border-none hover:bg-[#2D3748] h-10 px-6">Back</Button>
                     <Button type="primary" className="bg-[#FF6B00] text-white border-none hover:bg-[#E05E00] h-10 px-6">
                         Complete Registration
                     </Button>
                 </div>
-            </main>
+            </div>
         </div>
     )
 }
