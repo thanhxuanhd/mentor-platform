@@ -11,11 +11,12 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import type { LoginReq } from "../../../models";
-import authService from "../../../services/auth/authService";
-import { redirectOAuthHandler } from "./oAuth";
+import { redirectOAuthHandler } from "../../../utils/oAuth";
+import { authService } from "../../../services/auth/authService";
+import { useAuth } from "../../../hooks";
 
 const encodePassword = (password: string): string => {
-  const salt = "SECURITY_SALT"; 
+  const salt = "SECURITY_SALT";
   const encodedString = btoa(password + salt);
   return encodedString;
 };
@@ -35,6 +36,7 @@ const LoginForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [fieldError, setFieldError] = useState<{ email?: string; password?: string }>({});
   const navigate = useNavigate();
+  const { setToken } = useAuth();
 
   useEffect(() => {
     try {
@@ -44,7 +46,7 @@ const LoginForm: React.FC = () => {
         const remembered = remembermeInfo.enabled || false;
         const savedEmail = remembered ? remembermeInfo.email || "" : "";
         const savedEncodedPassword = remembered ? remembermeInfo.password || "" : "";
-        
+
         setEmail(savedEmail);
         setPassword(savedEncodedPassword ? decodePassword(savedEncodedPassword) : "");
         setRememberMe(remembered);
@@ -106,6 +108,7 @@ const LoginForm: React.FC = () => {
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
+        setToken(res.value);
         navigate("/");
       }, 1000);
     } catch (err) {
@@ -189,7 +192,7 @@ const LoginForm: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
-              required           
+              required
               onInput={(e) => e.currentTarget.setCustomValidity("")}
             />
             <button

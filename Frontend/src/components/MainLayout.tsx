@@ -1,47 +1,29 @@
 import { Button, Layout, Menu, Tooltip } from "antd";
 import {
-  UserOutlined,
-  AppstoreOutlined,
-  BarChartOutlined,
-  BookOutlined,
   SettingFilled,
   LogoutOutlined,
 } from "@ant-design/icons";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks";
+import { menuItems } from "../constants/navigation";
+import type { MenuItemType } from "antd/es/menu/interface";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, removeToken } = useAuth();
 
-  const menuItems = [
-    {
-      key: "dashboard",
-      icon: <BarChartOutlined />,
-      label: "Dashboard",
-      onClick: () => navigate("dashboard"),
-    },
-    {
-      key: "users",
-      icon: <UserOutlined />,
-      label: "Users",
-      onClick: () => navigate("users"),
-    },
-    {
-      key: "categories",
-      icon: <AppstoreOutlined />,
-      label: "Categories",
-      onClick: () => navigate("categories"),
-    },
-    {
-      key: "courses",
-      icon: <BookOutlined />,
-      label: "Courses",
-      onClick: () => navigate("courses"),
-    },
-  ];
+  const roleMenuItems: MenuItemType[] = menuItems
+    .filter((item) => item.role.includes(user?.role || 'unauthorized'))
+    .map((item) => ({
+      key: item.key,
+      icon: item.icon,
+      label: item.label,
+      onClick: () => navigate(item.link)
+    }));
 
   return (
     <Layout>
@@ -54,13 +36,13 @@ const MainLayout = () => {
         className="border-r border-gray-700 h-screen top-0"
       >
         <div>
-          <div className="text-orange-500 text-center py-4 text-xl font-bold border-b border-gray-700">
+          <div className="text-orange-500 text-center h-16 py-4 text-xl font-bold border-b border-gray-700">
             Mentor Connect
           </div>
           <Menu
             theme="dark"
             mode="inline"
-            items={menuItems}
+            items={roleMenuItems}
             selectedKeys={[location.pathname.substring(1)]}
           />
         </div>
@@ -74,8 +56,8 @@ const MainLayout = () => {
             title="Logout"
             icon={<LogoutOutlined />}
             onClick={() => {
-              // Handle logout logic here
-              navigate("/login");
+              removeToken();
+              navigate('/login')
             }}
           >
             Logout
@@ -90,7 +72,7 @@ const MainLayout = () => {
           <Outlet />
         </Content>
 
-        <Footer className="text-center border-t border-gray-700">
+        <Footer className="text-center border-t border-gray-700 h-16">
           ©{new Date().getFullYear()} Mentor Connect. All rights reserved.
         </Footer>
       </Layout>
