@@ -213,6 +213,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         }
 
         request.ToUser(user);
+        user.Status = UserStatus.Active;
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
 
