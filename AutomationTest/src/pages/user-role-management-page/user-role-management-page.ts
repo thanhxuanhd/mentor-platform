@@ -304,6 +304,7 @@ export class UserRoleManagementPage extends BasePage {
 
   //Verify error message
   async getNotification(index: number) {
+    this.waitUntilVisible(this.LBL_NOTIFICATION_LOC.first());
     const notification = await this.LBL_NOTIFICATION_LOC.nth(
       index
     ).textContent();
