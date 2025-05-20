@@ -157,14 +157,14 @@ const LoginForm: React.FC = () => {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow mx-auto"
+        className="w-full max-w-md space-y-6 bg-[#1A1F2B] p-6 rounded shadow mx-auto"
       >
-        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
+        <h2 className="text-2xl font-bold text-center text-white-800 dark:text-white">
           Sign in to your account
         </h2>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label htmlFor="email" className="block text-sm font-medium text-white-700 dark:text-white">
             Email
           </label>
           <input
@@ -180,7 +180,7 @@ const LoginForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label htmlFor="password" className="block text-sm font-medium text-white-700 dark:text-white">
             Password
           </label>
           <div className="relative">
@@ -207,7 +207,7 @@ const LoginForm: React.FC = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <label className="flex items-center text-sm text-gray-700 dark:text-white">
+          <label className="flex items-center text-sm text-white-700 dark:text-white">
             <input
               type="checkbox"
               checked={rememberMe}
@@ -232,7 +232,7 @@ const LoginForm: React.FC = () => {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               <GoogleOutlined />
               Google
@@ -240,7 +240,7 @@ const LoginForm: React.FC = () => {
             <button
               type="button"
               onClick={handleGithubLogin}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-700"
             >
               <GithubOutlined />
               GitHub

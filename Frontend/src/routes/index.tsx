@@ -11,6 +11,8 @@ import ForgotPassword from '../pages/Auth/ForgotPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
 import ProtectedRoute from './ProtectedRoute';
 import { applicationRole } from '../constants/role';
+import Profile from '../pages/UserProfile/components/Profile'
+import EditProfile from '../pages/UserProfile/components/EditProfile'
 
 const AppRoutes = () => {
   return (
@@ -20,6 +22,8 @@ const AppRoutes = () => {
       <Route path="reset-password" element={<ResetPassword />} />
       <Route path="forgot-password" element={<ForgotPassword />} />
       <Route path="auth/callback/:provider" element={<OAuthCallback />} />
+      <Route path="profile" element={<Profile />} />
+      <Route path="profile/edit" element={<EditProfile />} />
       <Route
         element={
           <ProtectedRoute requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}>
@@ -32,6 +36,7 @@ const AppRoutes = () => {
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
+        
       </Route>
       <Route
         element={
