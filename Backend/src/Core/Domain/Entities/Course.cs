@@ -13,7 +13,8 @@ public class Course : BaseEntity<Guid>
     public Guid CategoryId { get; set; }
     public Category Category { get; set; } = null!;
     public Guid MentorId { get; set; }
-    public User Mentor { get; private set; } = null!;
+    public User Mentor { get; set; } = null!;
     public List<CourseTag> CourseTags { get; set; }
-    public List<Tag>? Tags { get; } = [];
+    public List<Tag> Tags { get; } = [];
+    public List<CourseItem> Items { get; } = [];
 }

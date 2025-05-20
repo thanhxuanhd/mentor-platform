@@ -7,15 +7,12 @@ using Infrastructure.Persistence.Settings;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
+using Infrastructure.Services.Authorization.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Domain.Enums;
-using Infrastructure.Services.Authorization;
-using Infrastructure.Services.Authorization.OAuth;
 
 namespace Infrastructure;
 
@@ -42,6 +39,7 @@ public static class ConfigureServices
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

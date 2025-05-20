@@ -11,10 +11,10 @@ namespace Application.Services.Courses;
 
 public class CourseService(ICourseRepository courseRepository) : ICourseService
 {
-    public async Task<Result<CourseListResponse>> GetAllAsync(CourseListRequest request)
+    public async Task<Result<PaginatedList<CourseSummary>>> GetAllAsync(CourseListRequest request)
     {
         if (request.PageIndex <= 0 || request.PageSize <= 0)
-            return Result.Failure<CourseListResponse>("Page index and page size must be greater than 0",
+            return Result.Failure<PaginatedList<CourseSummary>>("Page index and page size must be greater than 0",
                 HttpStatusCode.BadRequest);
 
         var courses = await courseRepository.GetPaginatedCoursesAsync(
@@ -26,23 +26,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             request.Status,
             request.Difficulty);
 
-        var items = courses.Items.Select(c => new CourseSummary
-        {
-            Id = c.Id,
-            Title = c.Title,
-            Description = c.Description,
-            CategoryId = c.CategoryId,
-            CategoryName = c.Category?.Name,
-            MentorId = c.MentorId,
-            MentorName = c.Mentor?.FullName,
-            Difficulty = c.Difficulty,
-            DueDate = c.DueDate,
-            Status = c.Status
-        }).ToList();
-
-        var response = new CourseListResponse(items, courses.TotalCount, courses.PageIndex, courses.PageSize);
-
-        return Result.Success(response, HttpStatusCode.OK);
+        return Result.Success(courses, HttpStatusCode.OK);
     }
 
     public async Task<Result<CourseSummary>> GetByIdAsync(Guid id)
@@ -50,18 +34,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
         var course = await courseRepository.GetCourseWithDetailsAsync(id);
         if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
-        var response = new CourseSummary
-        {
-            Id = course.Id,
-            Title = course.Title,
-            Description = course.Description,
-            CategoryId = course.CategoryId,
-            CategoryName = course.Category?.Name,
-            Difficulty = course.Difficulty,
-            DueDate = course.DueDate,
-            Status = course.Status
-        };
-
+        var response = course.ToCourseSummary();
         return Result.Success(response, HttpStatusCode.OK);
     }
 
@@ -72,6 +45,7 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
             Title = request.Title,
             Description = request.Description,
             CategoryId = request.CategoryId,
+            MentorId = request.MentorId,
             DueDate = request.DueDate,
             Status = CourseStatus.Draft,
             Difficulty = request.Difficulty
@@ -80,16 +54,12 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
         await courseRepository.AddAsync(course);
         await courseRepository.SaveChangesAsync();
 
-        var response = new CourseSummary
-        {
-            Id = course.Id,
-            Title = course.Title,
-            Description = course.Description,
-            CategoryId = course.CategoryId,
-            Difficulty = course.Difficulty,
-            DueDate = course.DueDate,
-            Status = course.Status
-        };
+        var createdCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
+        if (createdCourse == null)
+            return Result.Failure<CourseSummary>("Failed to retrieve created course",
+                HttpStatusCode.InternalServerError);
+
+        var response = createdCourse.ToCourseSummary();
 
         return Result.Success(response, HttpStatusCode.Created);
     }
@@ -107,16 +77,12 @@ public class CourseService(ICourseRepository courseRepository) : ICourseService
 
         await courseRepository.SaveChangesAsync();
 
-        var response = new CourseSummary
-        {
-            Id = course.Id,
-            Title = course.Title,
-            Description = course.Description,
-            CategoryId = course.CategoryId,
-            Difficulty = course.Difficulty,
-            DueDate = course.DueDate,
-            Status = course.Status
-        };
+        var updatedCourse = await courseRepository.GetCourseWithDetailsAsync(id);
+        if (updatedCourse == null)
+            return Result.Failure<CourseSummary>("Failed to retrieve updated course",
+                HttpStatusCode.InternalServerError);
+
+        var response = course.ToCourseSummary();
 
         return Result.Success(response, HttpStatusCode.OK);
     }

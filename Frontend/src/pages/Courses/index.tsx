@@ -163,7 +163,7 @@ const Page: React.FC = () => {
 
               <CourseResource
                 course={item}
-                onDownload={(material) => window.alert(material.url)}
+                onDownload={(material) => window.alert(material.webAddress)}
                 active={popoverTarget === CoursePopoverTarget.resource}
                 onClose={(targetAction) => setPopoverTarget(targetAction)}
               />

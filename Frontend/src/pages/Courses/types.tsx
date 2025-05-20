@@ -14,26 +14,21 @@ export type Course = {
   description: string;
   categoryId: string;
   categoryName: string;
-  createdAt: string;
-  updatedAt: string;
-  status: string;
-  enrolledStudents: number;
-  completionRate: number;
-  dueDate: string;
-  difficulty: string;
-  tags: string[];
-  materials: CourseMaterial[];
   mentorId: string;
-  mentorName?: string;
-  feedback: Feedback[];
+  mentorName: string;
+  difficulty: string;
+  dueDate: string;
+  items: CourseItem[];
+  tags: string[];
+  status: string;
 };
 
-export type CourseMaterial = {
+export type CourseItem = {
   id: string;
-  name: string;
+  title: string;
+  description: string;
   mediaType: string;
-  url: string;
-  uploadedAt: string;
+  webAddress: string;
 };
 
 export type Feedback = {

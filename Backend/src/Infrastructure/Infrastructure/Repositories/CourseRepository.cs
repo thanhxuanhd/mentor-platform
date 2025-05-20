@@ -1,3 +1,4 @@
+using Contract.Dtos.Courses.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
@@ -13,13 +14,15 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
     public async Task<Course?> GetCourseWithDetailsAsync(Guid id)
     {
         return await _context.Courses
+            .Include(c => c.Items)
             .Include(c => c.Category)
+            .Include(c => c.Mentor)
             .Include(c => c.CourseTags)
             .ThenInclude(ct => ct.Tag)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<PaginatedList<Course>> GetPaginatedCoursesAsync(
+    public async Task<PaginatedList<CourseSummary>> GetPaginatedCoursesAsync(
         int pageIndex,
         int pageSize,
         Guid? categoryId = null,
@@ -29,6 +32,8 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
         CourseDifficulty? difficulty = null)
     {
         var query = _context.Courses
+            .OrderBy(c => c.Id)
+            .Include(c => c.Items)
             .Include(c => c.Category)
             .Include(c => c.Mentor)
             .Include(c => c.CourseTags)
@@ -46,6 +51,8 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
 
         if (difficulty.HasValue) query = query.Where(c => c.Difficulty == difficulty);
 
-        return await ToPaginatedListAsync(query, pageSize, pageIndex);
+        var courseSummaries = await query.Select(c => c.ToCourseSummary()).ToListAsync();
+
+        return new PaginatedList<CourseSummary>(courseSummaries, courseSummaries.Count, pageIndex, pageSize);
     }
 }

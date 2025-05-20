@@ -1,9 +1,9 @@
 import { type FC } from "react";
-import type { Course, CourseMaterial } from "./types.tsx";
+import type { Course, CourseItem } from "./types.tsx";
 
 export type CourseResourceProps = {
   course?: Course;
-  onDownload: (material: CourseMaterial) => void;
+  onDownload: (material: CourseItem) => void;
   active: boolean;
   onClose: (targetAction?: string | undefined) => void;
 };
@@ -37,22 +37,22 @@ export const CourseResource: FC<CourseResourceProps> = ({
 
         <div className="mb-6">
           <p className="text-sm text-gray-400 mb-2">Course Materials</p>
-          {course.materials.length > 0 ? (
+          {course.items.length > 0 ? (
             <div className="space-y-2">
-              {course.materials.map((material) => (
+              {course.items.map((item) => (
                 <div
-                  key={material.id}
+                  key={item.id}
                   className="bg-gray-700 p-3 rounded-md flex justify-between items-center"
                 >
                   <div>
-                    <p className="font-medium">{material.name}</p>
+                    <p className="font-medium">{item.title}</p>
                     <p className="text-xs text-gray-400">
-                      Added: {material.uploadedAt}
+                      {item.description}
                     </p>
                   </div>
                   <div className="mt-4 flex space-x-2">
                     <button
-                      onClick={() => onDownload(material)}
+                      onClick={() => onDownload(item)}
                       className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm transition duration-200"
                     >
                       Download

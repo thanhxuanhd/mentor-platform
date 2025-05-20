@@ -1,5 +1,6 @@
 ﻿using Application.Services.Authentication;
 using Application.Services.Categories;
+using Application.Services.CourseItems;
 using Application.Services.Courses;
 using Application.Services.Users;
 using Contract.Services;
@@ -16,6 +17,7 @@ public static class ConfigureServices
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICourseService, CourseService>();
+        services.AddScoped<ICourseItemService, CourseItemService>();
 
         return services;
     }
