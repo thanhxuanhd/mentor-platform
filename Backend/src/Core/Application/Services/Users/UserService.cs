@@ -173,6 +173,7 @@ public class UserService(IUserRepository userRepository) : IUserService
         }
 
         request.ToUser(user);
+        user.Status = UserStatus.Active;
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
 
