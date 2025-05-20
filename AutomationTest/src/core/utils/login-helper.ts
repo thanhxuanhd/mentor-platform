@@ -17,6 +17,7 @@ export async function loginStep(page: any, user: LoginUser): Promise<LoginPage> 
 
     await test.step('Click Signin button', async () => {
         await loginPage.clickSignInButton();
+        await loginPage.expectLogoutButton();
     });
 
     return loginPage;

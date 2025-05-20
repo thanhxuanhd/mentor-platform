@@ -9,6 +9,7 @@ export class LoginPage extends BasePage {
     private BTN_SIGNIN_LOCATOR: Locator;
     private LBL_SUCCESSMESSAGE_LOCATOR: Locator;
     private LBL_FAILEDMESSAGE_LOCATOR: Locator;
+    private BTN_LOGOUT_LOCATOR: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -18,6 +19,7 @@ export class LoginPage extends BasePage {
         this.BTN_SIGNIN_LOCATOR = page.getByRole("button", { name: "Sign In" });
         this.LBL_SUCCESSMESSAGE_LOCATOR = page.getByText("Sign in successfully!");
         this.LBL_FAILEDMESSAGE_LOCATOR = page.getByText("Email or password is not correct");
+        this.BTN_LOGOUT_LOCATOR = page.getByText("Logout");
     }
 
     async navigateToHomePage(url = "") {
@@ -39,8 +41,13 @@ export class LoginPage extends BasePage {
     async clickSignInButton() {
         await this.click(this.BTN_SIGNIN_LOCATOR);
     }
+
     async expectSuccessLogin() {
         await this.isVisible(this.LBL_SUCCESSMESSAGE_LOCATOR);
+    }
+
+    async expectLogoutButton() {
+        await this.isVisible(this.BTN_LOGOUT_LOCATOR);
     }
 
     async expectFailedLogin() {

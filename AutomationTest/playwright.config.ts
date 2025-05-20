@@ -16,7 +16,8 @@ export default defineConfig({
     testIdAttribute: '',
     actionTimeout: 10000,
     extraHTTPHeaders: {
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
     }
   },
 
