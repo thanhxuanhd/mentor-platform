@@ -15,6 +15,6 @@ public class Course : BaseEntity<Guid>
     public Guid MentorId { get; set; }
     public User Mentor { get; set; } = null!;
     public List<CourseTag> CourseTags { get; set; }
-    public List<Tag> Tags { get; } = [];
+    public List<Tag> Tags { get; set; } = [];
     public List<CourseItem> Items { get; } = [];
 }

@@ -16,5 +16,7 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 
         builder.HasIndex(t => t.Name)
             .IsUnique();
+
+        builder.HasAlternateKey(t => t.Name);
     }
 }

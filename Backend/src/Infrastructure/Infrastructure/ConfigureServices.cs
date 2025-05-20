@@ -10,6 +10,7 @@ using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -40,11 +41,13 @@ public static class ConfigureServices
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<ICourseItemRepository, CourseItemRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            // options.EnableSensitiveDataLogging();
+            options.EnableSensitiveDataLogging();
+            options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
         });
 
         // Add JWT Authentication

@@ -11,14 +11,37 @@ namespace Infrastructure.Repositories;
 
 public class CourseRepository(ApplicationDbContext context) : BaseRepository<Course, Guid>(context), ICourseRepository
 {
+    public async Task UpdateTagsCollection(List<Tag> tags, Course course)
+    {
+        var tagIds = tags.Select(t => t.Id);
+
+        await _context.CourseTags
+            .Where(ct => ct.CourseId == course.Id && !tagIds.Contains(ct.TagId))
+            .ExecuteDeleteAsync();
+
+        foreach (var courseTag in tagIds.Select(tagId => new CourseTag
+                 {
+                     CourseId = course.Id,
+                     TagId = tagId
+                 }))
+        {
+            var trackedCourseTag = await _context.CourseTags.FindAsync(course.Id, courseTag.TagId);
+            if (trackedCourseTag == null)
+            {
+                _context.Attach(courseTag);
+                _context.Entry(courseTag).State = EntityState.Added;
+            }
+        }
+    }
+
     public async Task<Course?> GetCourseWithDetailsAsync(Guid id)
     {
         return await _context.Courses
-            .Include(c => c.Items)
             .Include(c => c.Category)
             .Include(c => c.Mentor)
             .Include(c => c.CourseTags)
-            .ThenInclude(ct => ct.Tag)
+            .ThenInclude(c => c.Tag)
+            // .Include(c => c.Tags)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
@@ -33,11 +56,9 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
     {
         var query = _context.Courses
             .OrderBy(c => c.Id)
-            .Include(c => c.Items)
             .Include(c => c.Category)
             .Include(c => c.Mentor)
-            .Include(c => c.CourseTags)
-            .ThenInclude(ct => ct.Tag)
+            .Include(c => c.Tags)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(keyword))
