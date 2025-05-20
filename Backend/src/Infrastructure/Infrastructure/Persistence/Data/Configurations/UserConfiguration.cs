@@ -26,24 +26,24 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(u => u.FullName)
             .IsRequired()
             .HasDefaultValue("")
-            .HasMaxLength(200);
+            .HasMaxLength(100);
 
         builder.Property(u => u.Bio)
-            .HasMaxLength(500);
+            .HasMaxLength(300);
 
         builder.Property(u => u.ProfilePhotoUrl)
-            .HasMaxLength(255);
+            .HasMaxLength(200);
 
         builder.Property(u => u.PhoneNumber)
             .IsRequired()
             .HasDefaultValue("")
-            .HasMaxLength(20);
+            .HasMaxLength(10);
 
         builder.Property(u => u.Skills)
-            .HasMaxLength(1000);
+            .HasMaxLength(200);
 
         builder.Property(u => u.Experiences)
-            .HasMaxLength(500);
+            .HasMaxLength(200);
 
         builder.Property(u => u.PreferredCommunicationMethod)
             .HasDefaultValue(CommunicationMethod.VideoCall)
