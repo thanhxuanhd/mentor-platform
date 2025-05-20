@@ -10,7 +10,8 @@ public class UserCategoryConfiguration : IEntityTypeConfiguration<UserCategory>
     {
         builder.HasKey(ue => ue.Id);
 
-        builder.HasIndex(ue => new { ue.UserId, ue.CategoryId });
+        builder.HasIndex(ue => new { ue.UserId, ue.CategoryId })
+            .IsUnique();
 
         builder.HasOne(ue => ue.User)
             .WithMany(u => u.UserCategories)
