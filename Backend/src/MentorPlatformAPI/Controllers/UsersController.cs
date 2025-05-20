@@ -1,4 +1,3 @@
-using Application.Services.Authentication;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
