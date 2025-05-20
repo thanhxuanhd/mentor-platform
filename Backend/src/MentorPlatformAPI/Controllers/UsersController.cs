@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController(IUserService userService) : ControllerBase
 {
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetUserById(Guid id)
     {
@@ -19,6 +19,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpGet]
     [Route("filter")]
     public async Task<IActionResult> FilterUser([FromQuery] UserFilterPagedRequest request)
@@ -27,6 +28,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpPut]
     [Route("{userId}")]
     public async Task<IActionResult> EditUser(Guid userId, [FromBody] EditUserRequest request)
@@ -35,6 +37,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpPut]
     [Route("status/{userId}")]
     public async Task<IActionResult> ChangeUserStatus(Guid userId)
@@ -43,7 +46,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
-
+    [Authorize]
     [HttpGet("email/{email}")]
     public async Task<IActionResult> GetUserByEmail(string email)
     {
@@ -52,4 +55,11 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [HttpPost("request-forgot-password/{email}")]
+    public async Task<IActionResult> ForgotPasswordRequest( string email)
+    {
+        var result = await userService.ForgotPasswordRequest(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
 }
