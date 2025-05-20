@@ -290,12 +290,11 @@ export const CourseForm: FC<CourseFormProp> = ({
               placeholder="Select due date"
               format="YYYY-MM-DD"
             />
-          </Form.Item><Form.Item
+          </Form.Item>          
+          <Form.Item
             name="tags"
             label="Tags"
-            rules={[
-              { required: true, message: "Please add at least one tag!" },
-            ]}
+            rules={[]}
           >
             <Space direction="vertical" style={{ width: "100%" }}>
               <Space.Compact style={{ width: "100%" }}>
