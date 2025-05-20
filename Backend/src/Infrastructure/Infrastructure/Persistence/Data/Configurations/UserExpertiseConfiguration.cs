@@ -10,11 +10,11 @@ public class UserExpertiseConfiguration : IEntityTypeConfiguration<UserExpertise
     {
         builder.HasKey(ue => ue.Id);
 
-        builder.HasIndex(ue => new { ue.UserDetailId, ue.ExpertiseId });
+        builder.HasIndex(ue => new { ue.UserId, ue.ExpertiseId });
 
-        builder.HasOne(ue => ue.UserDetail)
+        builder.HasOne(ue => ue.User)
             .WithMany(u => u.UserExpertises)
-            .HasForeignKey(ue => ue.UserDetailId)
+            .HasForeignKey(ue => ue.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(ue => ue.Expertise)
