@@ -1,6 +1,7 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Data;
+using Infrastructure.Persistence.Settings;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
 using MentorPlatformAPI.Filter;
@@ -27,6 +28,7 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<AutoValidateFilter>();
 });
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSetting"));
 
 builder.Services
     .AddApplicationServices()

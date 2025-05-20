@@ -7,10 +7,12 @@ import CoursesPage from "../pages/Courses";
 import NotFoundPage from "../pages/NotFound";
 import { Login, SignUp } from "../pages/Auth";
 import ResetPassword from "../pages/Auth/ResetPassword";
+import ForgotPassword from "../pages/Auth/ForgotPassword";
 import OAuthCallback from "../pages/Auth/OAuthCallback";
-import { AuthRequired } from "../components/AuthRequired";
 import AuthLayout from "../components/AuthLayout";
 import UserProfile from "../pages/Auth/UserProfile";
+import ProtectedRoute from "./ProtectedRoute";
+import { applicationRole } from "../constants/role";
 
 const AppRoutes = () => {
   return (
@@ -20,14 +22,17 @@ const AppRoutes = () => {
         <Route path="signup" element={<SignUp />} />
         <Route path="signup/step2" element={<UserProfile />} />
         <Route path="reset-password" element={<ResetPassword />} />
+        <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
       </Route>
 
       <Route
         element={
-          <AuthRequired>
+          <ProtectedRoute
+            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}
+          >
             <MainLayout />
-          </AuthRequired>
+          </ProtectedRoute>
         }
       >
         <Route path="/" element={<DashboardPage />} />
@@ -36,7 +41,9 @@ const AppRoutes = () => {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
       </Route>
-      <Route path="*" element={<NotFoundPage />} />
+      <Route element={<MainLayout />}>
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 };

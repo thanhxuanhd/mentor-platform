@@ -22,14 +22,14 @@ import { formatDate } from "../../utils/DateFormat";
 import EditUserModal from "./components/EditUserModal";
 import { userService } from "../../services/user/userService";
 import type { NotificationProps } from "../../types/Notification";
-import { normalizeName } from "../../utils/UserFullNameNormalization";
+import { normalizeName } from "../../utils/InputNormalizer";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
 const { Search } = Input;
 
 const roleOptions = [
-  { label: "All", value: "" },
+  { label: "All", value: null },
   { label: "Admin", value: "Admin" },
   { label: "Mentor", value: "Mentor" },
   { label: "Learner", value: "Learner" },
@@ -40,10 +40,10 @@ export default function UsersPage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedRoleSegment, setSelectedRoleSegment] = useState(
-    roleOptions[0].value,
+  const [selectedRoleSegment, setSelectedRoleSegment] = useState<string | null>(
+    null,
   );
-  const [searchValue, setSearchValue] = useState("");
+  const [searchValue, setSearchValue] = useState<string | null>(null);
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -134,7 +134,7 @@ export default function UsersPage() {
                 <CheckOutlined type="default" style={{ color: "lime" }} />
               )
             }
-            onClick={() => handleChangeStatus(record.id)}
+            onClick={() => handleChangeStatus(record)}
           />
           <Button color="cyan" icon={<MessageOutlined />} />
         </Space>
@@ -145,19 +145,22 @@ export default function UsersPage() {
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await userService.getUsers({
-        pageIndex: pageIndex,
-        pageSize: pageSize,
-        roleName: selectedRoleSegment,
-        fullName: searchValue,
-      });
-      setTotalCount(response.totalCount);
-      setUsersData(response.items);
-    } catch {
+      await userService
+        .getUsers({
+          pageIndex: pageIndex,
+          pageSize: pageSize,
+          roleName: selectedRoleSegment,
+          fullName: searchValue,
+        })
+        .then((response) => {
+          setTotalCount(response.totalCount);
+          setUsersData(response.items);
+        });
+    } catch (error: any) {
       setNotify({
         type: "error",
         message: "Failed to fetch users",
-        description: "An error occurred while fetching users.",
+        description: error?.response?.data?.error || "Error fetching users.",
       });
     } finally {
       setLoading(false);
@@ -174,6 +177,9 @@ export default function UsersPage() {
         message: notify.message,
         description: notify.description,
         placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
       });
       setNotify(null);
     }
@@ -190,7 +196,6 @@ export default function UsersPage() {
   };
 
   const handleCancel = () => setIsModalVisible(false);
-
   const handleSubmit = useCallback(
     async (updatedUser: EditUserRequest) => {
       try {
@@ -204,11 +209,11 @@ export default function UsersPage() {
           message: "Success",
           description: "User updated successfully.",
         });
-      } catch {
+      } catch (error: any) {
         setNotify({
           type: "error",
           message: "Error",
-          description: "An error occurred while updating user.",
+          description: error?.response?.data?.error || "Error updating user.",
         });
       } finally {
         setLoading(false);
@@ -219,8 +224,8 @@ export default function UsersPage() {
 
   const handleSearchInput: SearchProps["onSearch"] = useCallback(
     (value: string) => {
-      const alphaOnly = value.replace(/[^A-Za-z\s]/g, "");
-      setSearchValue(normalizeName(alphaOnly));
+      setSearchValue(normalizeName(value));
+      setPageIndex(1);
     },
     [],
   );
@@ -234,49 +239,43 @@ export default function UsersPage() {
     setPageIndex(1);
   }, []);
 
-  const handleFilterChange = useCallback((value: string) => {
+  const handleFilterChange = useCallback((value: string | null) => {
     setSelectedRoleSegment(value);
     setPageIndex(1);
   }, []);
 
-  const handleChangeStatus = useCallback(
-    async (userId: string) => {
-      try {
-        const user = usersData.find((user) => user.id === userId);
-        if (!user) return;
+  const handleChangeStatus = useCallback(async (user: GetUserResponse) => {
+    try {
+      const newStatus = user.status === "Active" ? "Deactivated" : "Active";
+      await userService.changeUserStatus(user.id);
 
-        const newStatus = user.status === "Active" ? "Deactivated" : "Active";
-        await userService.changeUserStatus(userId);
-
-        setUsersData((prev) =>
-          prev.map((u) =>
-            u.id === userId
-              ? { ...u, status: newStatus as GetUserResponse["status"] }
-              : u,
-          ),
-        );
-        setPageIndex(1);
-        setNotify({
-          type: "success",
-          message: "Success",
-          description: `User status updated to ${newStatus}.`,
-        });
-      } catch {
-        setNotify({
-          type: "error",
-          message: "Error",
-          description: "An error occurred while changing user status.",
-        });
-      }
-    },
-    [usersData],
-  );
+      setUsersData((prev) =>
+        prev.map((u) =>
+          u.id === user.id
+            ? { ...u, status: newStatus as GetUserResponse["status"] }
+            : u,
+        ),
+      );
+      setNotify({
+        type: "success",
+        message: "Success",
+        description: `User status updated to ${newStatus}.`,
+      });
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description:
+          error?.response?.data?.error || "Error changing user status.",
+      });
+    }
+  }, []);
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">User Management</h2>
-        <div className="relative w-64">
+        <div className="w-50 sm:w-75 lg:w-100">
           <Search
             placeholder="Search user..."
             allowClear
@@ -285,7 +284,7 @@ export default function UsersPage() {
             onSearch={handleSearchInput}
             onChange={(e) => {
               if (e.target.value === "") {
-                setSearchValue("");
+                setSearchValue(null);
               }
             }}
           />
@@ -293,12 +292,14 @@ export default function UsersPage() {
       </div>
 
       <div className="p-1 mb-6">
-        <Segmented<string>
+        <Segmented<string | null>
+          key={selectedRoleSegment}
           options={roleOptions}
           size="large"
           style={{ fontSize: "10px" }}
           value={selectedRoleSegment}
           onChange={handleFilterChange}
+          name="roleSegment"
         />
       </div>
 
