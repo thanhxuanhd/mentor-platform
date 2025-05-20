@@ -1,4 +1,4 @@
-﻿using Application.Services.Email;
+using Contract.Services;
 using Infrastructure.Persistence.Settings;
 using Microsoft.Extensions.Options;
 using System.Net.Mail;
