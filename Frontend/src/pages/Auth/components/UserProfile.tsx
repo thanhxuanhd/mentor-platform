@@ -1,5 +1,8 @@
 import {
+  AudioOutlined,
   CloseOutlined,
+  CommentOutlined,
+  PlaySquareOutlined,
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
@@ -19,14 +22,58 @@ const availabilityOptions = [
 ];
 
 const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
-  { label: "Video Call", value: "video" },
-  { label: "Audio Call", value: "audio" },
-  { label: "Text Chat", value: "text" },
+  {
+    label: (
+      <div className="flex justify-center gap-2">
+        <PlaySquareOutlined />
+        <span className="font-medium">Video Call</span>
+      </div>
+    ),
+    value: "video",
+  },
+  {
+    label: (
+      <div className="flex justify-center gap-2">
+        <AudioOutlined />
+        <span className="font-medium">Audio Call</span>
+      </div>
+    ),
+    value: "audio",
+  },
+  {
+    label: (
+      <div className="flex justify-center gap-2">
+        <CommentOutlined />
+        <span className="font-medium">Text Chat</span>
+      </div>
+    ),
+    value: "text",
+  },
 ];
 
 const roleOptions: CheckboxGroupProps<string>["options"] = [
-  { label: "Learner", value: "learner" },
-  { label: "Mentor", value: "mentor" },
+  {
+    label: (
+      <div className="flex-1 px-4 py-3 rounded-md flex flex-col items-center">
+        <span className="text-xl mb-1">👨‍🎓</span>
+        <span className="font-medium">Learner</span>
+        <span className="text-xs mt-1 opacity-80">I want to find mentors</span>
+      </div>
+    ),
+    value: "learner",
+    className: "h-full!",
+  },
+  {
+    label: (
+      <div className="flex-1 px-4 py-3 rounded-md flex flex-col items-center">
+        <span className="text-xl mb-1">👨‍🏫</span>
+        <span className="font-medium">Mentor</span>
+        <span className="text-xs mt-1 opacity-80">I want to mentor others</span>
+      </div>
+    ),
+    value: "mentor",
+    className: "h-full!",
+  },
 ];
 
 export default function UserProfile() {
@@ -150,14 +197,18 @@ export default function UserProfile() {
           </div>
         </div>
 
-        <Form.Item name="roleSelect" label="I am joining as" rules={[]}>
+        <Form.Item
+          name="roleSelect"
+          label="I am joining as"
+          initialValue={"learner"}
+          rules={[]}
+        >
           <Radio.Group
             block
             options={roleOptions}
             optionType="button"
             buttonStyle="solid"
-            defaultValue={"learner"}
-            size="large"
+            className="h-content! gap-2"
           />
         </Form.Item>
 
@@ -236,6 +287,7 @@ export default function UserProfile() {
         <Form.Item
           name="communicationMethod"
           label="Communication Method"
+          initialValue={"video"}
           rules={[]}
         >
           <Radio.Group
@@ -243,7 +295,6 @@ export default function UserProfile() {
             options={communicationMethodOptions}
             optionType="button"
             buttonStyle="solid"
-            defaultValue={"video"}
             size="large"
           />
         </Form.Item>
