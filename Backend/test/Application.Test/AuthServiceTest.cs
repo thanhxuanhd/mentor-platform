@@ -371,7 +371,7 @@ public class AuthServiceTests
     public async Task ResetPasswordAsync_UserExists_UpdatesPasswordAndReturnsSuccess()
     {
         // Arrange
-        var request = new ResetPasswordRequest(Email: "test@example.com",OldPassword: "oldPassword123", NewPassword: "newPassword123");
+        var request = new ResetPasswordRequest(Email: "test@example.com", NewPassword: "newPassword123");
         var user = new User { Id = Guid.NewGuid(), Email = request.Email, PasswordHash = "oldHash" };
 
         _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
@@ -401,7 +401,7 @@ public class AuthServiceTests
     public async Task ResetPasswordAsync_UserNotFound_ReturnsNotFound()
     {
         // Arrange
-        var request = new ResetPasswordRequest(Email: "nonexistent@example.com",OldPassword: "olePassword123", NewPassword: "newPassword123");
+        var request = new ResetPasswordRequest(Email: "nonexistent@example.com", NewPassword: "newPassword123");
 
         _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
             .ReturnsAsync((User)null!);
