@@ -2,7 +2,7 @@
 
 public enum CommunicationMethod
 {
-    VideoCall,
-    AudioCall,
-    TextChat
+    VideoCall = 0,
+    AudioCall = 1,
+    TextChat = 2
 }
