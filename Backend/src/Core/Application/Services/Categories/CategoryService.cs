@@ -9,18 +9,13 @@ namespace Application.Services.Categories;
 
 public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
 {
-    public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(int pageIndex, int pageSize, string keyword)
+    public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(FilterCategoryRequest request)
     {
-        if (pageIndex <= 0 || pageSize <= 0)
-        {
-            return Result.Failure<PaginatedList<GetCategoryResponse>>("Page index and page size must be greater than or equal to 0", HttpStatusCode.BadRequest);
-        }
-
         var categories = categoryRepository.GetAll();
 
-        if (!string.IsNullOrEmpty(keyword))
+        if (!string.IsNullOrEmpty(request.Keyword))
         {
-            categories = categories.Where(c => c.Name.Contains(keyword));
+            categories = categories.Where(c => c.Name.Contains(request.Keyword));
         }
 
         var categoryInfos = categories.Select(c => new GetCategoryResponse
@@ -32,18 +27,13 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Status = c.Status
         });
 
-        PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync(categoryInfos, pageSize, pageIndex);
+        PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync(categoryInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCategories, HttpStatusCode.OK);
     }
 
-    public async Task<Result<PaginatedList<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id, int pageIndex, int pageSize)
+    public async Task<Result<PaginatedList<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id, FilterCourseByCategoryRequest request)
     {
-        if (pageIndex <= 0 || pageSize <= 0)
-        {
-            return Result.Failure<PaginatedList<FilterCourseByCategoryResponse>>("Page index and page size must be greater than or equal to 0", HttpStatusCode.BadRequest);
-        }
-
         var category = await categoryRepository.GetByIdAsync(id);
 
         if (category == null)
@@ -65,7 +55,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
         });
 
-        PaginatedList<FilterCourseByCategoryResponse> paginatedCourses = await categoryRepository.ToPaginatedListAsync(courseInfos, pageSize, pageIndex);
+        PaginatedList<FilterCourseByCategoryResponse> paginatedCourses = await categoryRepository.ToPaginatedListAsync(courseInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCourses, HttpStatusCode.OK);
     }
