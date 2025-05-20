@@ -4,6 +4,7 @@ using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250520075834_ChangeTableUsers_AddNewFieldsAndJunctionTables")]
+    partial class ChangeTableUsers_AddNewFieldsAndJunctionTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -228,7 +231,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("TeachingApproaches");
+                    b.ToTable("TeachingApproach");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -260,15 +263,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Goal")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<bool>("IsAllowedMessage")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPrivate")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsReceiveNotification")
-                        .HasColumnType("bit");
 
                     b.Property<DateOnly>("JoinedDate")
                         .HasColumnType("date");
@@ -377,7 +371,7 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("UserId", "CategoryId");
 
-                    b.ToTable("UserCategories");
+                    b.ToTable("UserCategory");
                 });
 
             modelBuilder.Entity("Domain.Entities.UserExpertise", b =>
@@ -419,7 +413,7 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("UserId", "TeachingApproachId");
 
-                    b.ToTable("UserTeachingApproaches");
+                    b.ToTable("UserTeachingApproach");
                 });
 
             modelBuilder.Entity("Domain.Entities.Course", b =>
