@@ -1,9 +1,8 @@
-import { type FC, use, useEffect, useState } from "react";
+import { type FC, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "./types.tsx";
 import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import {CourseDifficultyEnumMember} from "./initial-values.tsx";
-// Import dayjs for proper date handling with Ant Design DatePicker
 import dayjs from 'dayjs';
 import { categoryList } from "./courseClient.tsx";
 
@@ -34,7 +33,6 @@ type CourseFormProp = {
 
 export const CourseForm: FC<CourseFormProp> = ({
   formData,
-  categories,
   states,
   active,
   onClose,
@@ -198,7 +196,6 @@ const fetchCategories = async () => {
         ...formData, 
         tags: Array.isArray(formData.tags) ? formData.tags : [],
         status: !formData.title ? "draft" : formData.status,
-        // Don't set dueDate in initialValues, we'll set it via form.setFieldsValue in useEffect
         dueDate: undefined
       }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
