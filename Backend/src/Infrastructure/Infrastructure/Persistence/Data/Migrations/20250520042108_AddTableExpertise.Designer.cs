@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250520033911_ChangeTableUsers_AddNewFields_AddTableExpertise")]
-    partial class ChangeTableUsers_AddNewFields_AddTableExpertise
+    [Migration("20250520042108_AddTableExpertise")]
+    partial class AddTableExpertise
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
