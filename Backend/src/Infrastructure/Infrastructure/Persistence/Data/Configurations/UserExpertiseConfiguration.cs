@@ -10,7 +10,8 @@ public class UserExpertiseConfiguration : IEntityTypeConfiguration<UserExpertise
     {
         builder.HasKey(ue => ue.Id);
 
-        builder.HasIndex(ue => new { ue.UserId, ue.ExpertiseId });
+        builder.HasIndex(ue => new { ue.UserId, ue.ExpertiseId })
+            .IsUnique();
 
         builder.HasOne(ue => ue.User)
             .WithMany(u => u.UserExpertises)

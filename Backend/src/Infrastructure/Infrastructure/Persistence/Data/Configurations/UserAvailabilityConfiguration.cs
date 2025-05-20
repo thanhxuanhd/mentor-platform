@@ -10,7 +10,8 @@ public class UserAvailabilityConfiguration : IEntityTypeConfiguration<UserAvaila
     {
         builder.HasKey(ue => ue.Id);
 
-        builder.HasIndex(ue => new { ue.UserId, ue.AvailabilityId });
+        builder.HasIndex(ue => new { ue.UserId, ue.AvailabilityId })
+            .IsUnique();
 
         builder.HasOne(ue => ue.User)
             .WithMany(u => u.UserAvailabilities)

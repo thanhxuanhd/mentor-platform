@@ -10,7 +10,8 @@ public class UserTeachingApproachConfiguration : IEntityTypeConfiguration<UserTe
     {
         builder.HasKey(ue => ue.Id);
 
-        builder.HasIndex(ue => new { ue.UserId, ue.TeachingApproachId });
+        builder.HasIndex(ue => new { ue.UserId, ue.TeachingApproachId })
+            .IsUnique();
 
         builder.HasOne(ue => ue.User)
             .WithMany(u => u.UserTeachingApproaches)
