@@ -21,6 +21,5 @@ export interface LoginReq {
 
 export interface ResetPasswordReq {
   email: string;
-  oldPassword: string;
   newPassword: string;
 }

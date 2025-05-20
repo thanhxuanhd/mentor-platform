@@ -27,8 +27,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             Id = c.Id,
             Name = c.Name,
-            Description = c.Description!,
-            Courses = c.Courses!.Count(),
+            Description = c.Description,
+            Courses = c.Courses.Count(),
             Status = c.Status
         });
 

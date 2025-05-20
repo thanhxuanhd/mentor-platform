@@ -1,18 +1,15 @@
-﻿using Application.Helpers;
-using Contract.Services;
-using Contract.Dtos.Users.Extensions;
+﻿using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Shared;
-using Domain.Constants;
 using Domain.Enums;
 using System.Net;
 
 namespace Application.Services.Users;
 
-public class UserService(IUserRepository userRepository, IEmailService emailService) : IUserService
+public class UserService(IUserRepository userRepository) : IUserService
 {
     public async Task<Result<GetUserResponse>> GetUserByEmailAsync(string email)
     {
@@ -115,42 +112,5 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
         return Result.Success(true, HttpStatusCode.OK);
-    }
-
-    public async Task<Result> ForgotPasswordRequest(string email)
-    {
-        var user = await userRepository.GetByEmailAsync(email, user => user.Role);
-        if (user == null)
-        {
-            return Result.Failure<GetUserResponse>("User not found", HttpStatusCode.NotFound);
-        }
-        var newPassword = GenerateRandomPassword(10);
-        var newHashedPassword = PasswordHelper.HashPassword(newPassword);
-        user.PasswordHash = newHashedPassword;
-
-        userRepository.Update(user);
-        await userRepository.SaveChangesAsync();
-
-        var subject = EmailConstants.SUBJECT_RESET_PASSWORD;
-        var body = EmailConstants.BodyResetPasswordEmail(user.Email, newPassword);
-
-        var isSuccess = await emailService.SendEmailAsync(user.Email, subject, body);
-        if (!isSuccess)
-        {
-            return Result.Failure("Failed to send email", HttpStatusCode.InternalServerError);
-        }
-
-        return Result.Success(new
-        {
-            message = "Password reset successful. Please check your email.",
-            newPassword = newPassword
-        }, HttpStatusCode.OK);
-    }
-    private string GenerateRandomPassword(int length)
-    {
-        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?";
-        var random = new Random();
-        return new string(Enumerable.Repeat(validChars, length)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }
