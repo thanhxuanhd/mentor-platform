@@ -1,8 +1,5 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
-using Domain.Models;
-using Contract.Shared;
-using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -14,7 +11,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("sign-in")]
     public async Task<IActionResult> SignInUser([FromBody] SignInRequest request)
     {
-        var result = await authService.LoginAsync(request);
+        var result = await authService.LoginWithStatusAsync(request);
 
         return StatusCode((int)result.StatusCode, result);
     }

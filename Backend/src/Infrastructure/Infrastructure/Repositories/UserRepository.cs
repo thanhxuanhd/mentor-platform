@@ -53,6 +53,7 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
     {
         var user = await _context.Users
             .Include(u => u.Role)
+            .Include(u => u.UserCategories)
             .Include(u => u.UserAvailabilities)
             .Include(u => u.UserExpertises)
             .Include(u => u.UserTeachingApproaches)

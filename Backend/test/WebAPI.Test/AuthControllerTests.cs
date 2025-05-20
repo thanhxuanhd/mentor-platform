@@ -5,6 +5,8 @@ using MentorPlatformAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Net;
+using Contract.Dtos.Authentication.Responses;
+using Domain.Enums;
 
 namespace WebAPI.Test;
 
@@ -93,7 +95,8 @@ public class AuthControllerTests
     {
         // Arrange
         var request = new OAuthSignInRequest(Token: "github_token");
-        var serviceResult = Result.Success("github_user_data", HttpStatusCode.OK);
+        var signInResponse = new SignInResponse("github_user_data", "Incomplete");
+        var serviceResult = Result.Success(signInResponse, HttpStatusCode.OK);
 
         _authServiceMock.Setup(s => s.LoginGithubAsync(request))
             .ReturnsAsync(serviceResult);
@@ -113,7 +116,8 @@ public class AuthControllerTests
     {
         // Arrange
         var request = new OAuthSignInRequest(Token: "google_token");
-        var serviceResult = Result.Success("google_user_data", HttpStatusCode.OK);
+        var signInResponse = new SignInResponse("google_user_data", "Incomplete");
+        var serviceResult = Result.Success(signInResponse, HttpStatusCode.OK);
 
         _authServiceMock.Setup(s => s.LoginGoogleAsync(request))
             .ReturnsAsync(serviceResult);

@@ -14,6 +14,7 @@ import type { LoginReq } from "../../../models";
 import { redirectOAuthHandler } from "../../../utils/oAuth";
 import { authService } from "../../../services/auth/authService";
 import { useAuth } from "../../../hooks";
+import { userStatus } from "../../../constants/userStatus";
 
 const encodePassword = (password: string): string => {
   const salt = "SECURITY_SALT";
@@ -108,8 +109,15 @@ const LoginForm: React.FC = () => {
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
-        setToken(res.value);
-        navigate("/");
+        switch (res.profileCompleteStatus) {
+          case userStatus.ACTIVE:
+            setToken(res.value);
+            navigate("/");
+            break;
+          default:
+            navigate("/step1")
+            break;
+        }
       }, 1000);
     } catch (err) {
       console.error("Login failed:", err);
