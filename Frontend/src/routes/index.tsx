@@ -6,11 +6,11 @@ import CategoriesPage from "../pages/Categories";
 import CoursesPage from "../pages/Courses";
 import NotFoundPage from "../pages/NotFound";
 import { Login, SignUp } from "../pages/Auth";
-import ResetPassword from "../pages/Auth/components/ResetPassword";
-import OAuthCallback from "../pages/Auth/components/OAuthCallback";
+import ResetPassword from "../pages/Auth/ResetPassword";
+import OAuthCallback from "../pages/Auth/OAuthCallback";
 import { AuthRequired } from "../components/AuthRequired";
 import AuthLayout from "../components/AuthLayout";
-import UserProfile from "../pages/Auth/components/UserProfile";
+import UserProfile from "../pages/Auth/UserProfile";
 
 const AppRoutes = () => {
   return (

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import authService from "../../../services/auth/authService";
+import authService from "../../services/auth/authService";
 import { useLocation } from "react-router";
 
 export default function OAuthCallback() {
