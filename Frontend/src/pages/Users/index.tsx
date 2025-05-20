@@ -224,8 +224,7 @@ export default function UsersPage() {
 
   const handleSearchInput: SearchProps["onSearch"] = useCallback(
     (value: string) => {
-      const alphaOnly = value.replace(/[^A-Za-z\s]/g, "");
-      setSearchValue(normalizeName(alphaOnly));
+      setSearchValue(normalizeName(value));
       setPageIndex(1);
     },
     [],
