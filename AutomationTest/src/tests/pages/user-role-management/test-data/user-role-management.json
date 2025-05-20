@@ -11,6 +11,16 @@
       "userRole": "Learner"
     }
   ],
+  "validate_edit_field": [
+    {
+      "input": " ",
+      "invalid_message": "Please enter Full Name"
+    },
+    {
+      "input": "",
+      "invalid_message": "Invalid email"
+    }
+  ],
   "search_user": {
     "valid_keywords": "Pham Hoang",
     "empty_keyword": " ",
@@ -43,15 +53,5 @@
     "active": "User status updated to Deactivated.",
     "pending": "User status updated to Active.",
     "deactivated": "User status updated to Active."
-  },
-  "validate_edit_field": {
-    "fullname": {
-      "input": " ",
-      "invalid_message": "Please enter Full Name"
-    },
-    "email": {
-      "input": "",
-      "invalid_message": "Invalid email"
-    }
   }
 }

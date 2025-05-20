@@ -6,6 +6,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   let userRoleManagementPage: UserRoleManagementPage;
   const editUser = userData.validate_edit_user;
   const existedEmail = userData.existed_email;
+  const validateEditField = userData.validate_edit_field;
 
   test.beforeEach(async ({ page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
@@ -15,11 +16,32 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
     });
   });
 
-  //Validate Fullname
-  test("Validate Fullname", async () => {});
+  //Validate Fullname and Email are mandatory
+  validateEditField.forEach((validate, index) => {
+    test(`Validate Fullname and Email are mandatory ${index}`, async () => {
+      await test.step("Click edit user button", async () => {
+        await userRoleManagementPage.clickOnEditUserBtn(0);
+      });
+      await test.step("Fill edit user form with empty field", async () => {
+        await userRoleManagementPage.fillEditUserForm("", "");
+      });
+      await test.step("Verify error message is shown", async () => {
+        const errorMessage = await userRoleManagementPage.getEditErrorMessage();
+        expect(validate.invalid_message).toContain(errorMessage[index]);
+      });
+    });
+  });
 
-  //Validate Email
-  test("Validate Email", async () => {});
+  //Validate Email and Fullname default value
+  test("Validate Email and Fullname default value", async () => {
+    await test.step("Click edit user button", async () => {
+      await userRoleManagementPage.clickOnEditUserBtn(0);
+    });
+    await test.step("Verify default value of Fullname and Email", async () => {
+      const actualData = await userRoleManagementPage.hasEditUserDefaultValue();
+      expect(actualData).toBeTruthy();
+    });
+  });
 
   //Edit function
   editUser.forEach((user, index) => {

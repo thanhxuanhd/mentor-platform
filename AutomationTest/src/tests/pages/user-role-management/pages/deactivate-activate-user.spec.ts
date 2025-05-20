@@ -16,7 +16,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
 
   //Activate/Deactivate user
 
-  test("@SmokeTest Verify that Activate user works correctly", async () => {
+  test("@SmokeTest Verify that Activate/ Deactivated user works correctly", async () => {
     const statusList = await userRoleManagementPage.getAllUserStatus();
 
     for (let i = 0; i < statusList.length; i++) {

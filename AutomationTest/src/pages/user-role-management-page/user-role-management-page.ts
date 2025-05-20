@@ -15,6 +15,7 @@ export class UserRoleManagementPage extends BasePage {
   private DDL_USER_ROLE_OPTIONS_LOC: (role: string) => Locator;
   private readonly BTN_EDIT_USER_LOC: Locator;
   private readonly BTN_CANCEL_USER_LOC: Locator;
+  private readonly LBL_EDIT_ERROR_MESSAGE_LOC: Locator;
 
   //Search user
   private TXT_SEARCH_USER_LOC: Locator;
@@ -114,6 +115,9 @@ export class UserRoleManagementPage extends BasePage {
     );
     this.LBL_LAST_ACTIVATE_DATE_LOC = page.locator(
       ".ant-table-row .ant-table-cell:nth-child(5) div"
+    );
+    this.LBL_EDIT_ERROR_MESSAGE_LOC = page.locator(
+      "div.ant-form-item-explain-error"
     );
   }
 
@@ -232,7 +236,7 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   async verifyInitialValueOfSearchUser() {
-    this.waitUntilVisible(this.TXT_SEARCH_USER_LOC);
+    await this.waitUntilVisible(this.TXT_SEARCH_USER_LOC);
     const actualData = await this.TXT_SEARCH_USER_LOC.inputValue();
     return actualData;
   }
@@ -304,12 +308,35 @@ export class UserRoleManagementPage extends BasePage {
 
   //Verify error message
   async getNotification(index: number) {
-    this.waitUntilVisible(this.LBL_NOTIFICATION_LOC.first());
+    await this.waitUntilVisible(this.LBL_NOTIFICATION_LOC.first());
     const notification = await this.LBL_NOTIFICATION_LOC.nth(
       index
     ).textContent();
     if (notification) {
       return notification;
     }
+  }
+
+  async getEditErrorMessage() {
+    const errorMessage =
+      await this.LBL_EDIT_ERROR_MESSAGE_LOC.allTextContents();
+    return errorMessage;
+  }
+
+  async hasEditUserDefaultValue() {
+    const userFullname = await this.LBL_USER_FULLNAME_LOC.first().textContent();
+    const userEmail = await this.LBL_USER_EMAIL_LOC.first().textContent();
+
+    const fullname = (
+      await this.TXT_EDIT_USER_FULLNAME_LOC.inputValue()
+    ).trim();
+    const email = (await this.TXT_EDIT_USER_EMAIL_LOC.inputValue()).trim();
+    console.log(
+      `fullname: ${fullname} - email: ${email} - userFullname: ${userFullname} - userEmail: ${userEmail}`
+    );
+    return Promise.all([
+      expect(fullname).toEqual(userFullname),
+      expect(email).toEqual(userEmail),
+    ]);
   }
 }

@@ -1,6 +1,6 @@
 import test, { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
-import { User } from "../../../../models/user/user";
+import { User } from "../../../../models/edi-tuser/edit-user";
 
 test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
