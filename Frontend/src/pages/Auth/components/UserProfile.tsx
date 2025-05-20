@@ -1,17 +1,11 @@
-import { PlusOutlined } from "@ant-design/icons/lib/icons";
 import {
-  Upload,
-  Image,
-  type GetProp,
-  type UploadProps,
-  Button,
-  Input,
-  Form,
-  Select,
-  Radio,
-} from "antd";
+  CloseOutlined,
+  PlusOutlined,
+  UserOutlined,
+} from "@ant-design/icons/lib/icons";
+import { Upload, Button, Input, Form, Select, Radio } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
-import type { UploadFile } from "antd/es/upload";
+import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import type { SelectProps } from "rc-select";
 const { TextArea } = Input;
 import { useEffect, useState } from "react";
@@ -30,19 +24,13 @@ const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   { label: "Text Chat", value: "text" },
 ];
 
-type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-
-const getBase64 = (file: FileType): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+const roleOptions: CheckboxGroupProps<string>["options"] = [
+  { label: "Learner", value: "learner" },
+  { label: "Mentor", value: "mentor" },
+];
 
 export default function UserProfile() {
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewImage, setPreviewImage] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>(
     [],
   );
@@ -61,20 +49,14 @@ export default function UserProfile() {
     setTags(options);
   }, []);
 
-  const handlePreview = async (file: UploadFile) => {
-    if (!file.url && !file.preview) {
-      await getBase64(file.originFileObj as FileType).then((imageUrl) => {
-        setPreviewImage(imageUrl);
-      });
-    }
-    setPreviewOpen(true);
-  };
-
-  const handleChange: UploadProps["onChange"] = (info) => {
-    if (info.file.status === "done") {
-      getBase64(info.file.originFileObj as FileType).then((imageUrl) => {
-        setPreviewImage(imageUrl);
-      });
+  const handleChange = (info: UploadChangeParam<UploadFile>) => {
+    if (info.file.status === "done" || info.file.status === "uploading") {
+      // Show preview
+      const reader = new FileReader();
+      reader.addEventListener("load", () =>
+        setImageUrl(reader.result as string),
+      );
+      reader.readAsDataURL(info.file.originFileObj as RcFile);
     }
   };
 
@@ -90,20 +72,13 @@ export default function UserProfile() {
     }
   };
 
-  const uploadButton = (
-    <Button style={{ border: 0, background: "none", boxShadow: "none" }}>
-      <PlusOutlined />
-      <div>Upload</div>
-    </Button>
-  );
-
   return (
     <div className="text-white p-6 rounded-xl max-w-3xl my-10 mx-auto shadow-lg bg-gray-800">
       <Form layout="vertical" name="user_profile_form" requiredMark={false}>
         <h1 className="text-2xl font-semibold mb-6">
           Tell us more about yourself
         </h1>
-        <div className="flex gap-4 items-start">
+        <div className="flex gap-6 items-start">
           <Form.Item
             name="avatar"
             label="Profile Picture"
@@ -116,28 +91,38 @@ export default function UserProfile() {
             }}
           >
             <Upload
-              name="avatar"
-              listType="picture-circle"
-              className="avatar-uploader"
-              beforeUpload={() => false}
-              //   showUploadList={false}
-              onPreview={handlePreview}
+              maxCount={1}
+              showUploadList={false}
+              beforeUpload={() => true}
               onChange={handleChange}
             >
-              {previewImage ? (
-                <Image
-                  wrapperStyle={{ display: "none" }}
-                  preview={{
-                    visible: previewOpen,
-                    onVisibleChange: (visible) => setPreviewOpen(visible),
-                    afterOpenChange: (visible) =>
-                      !visible && setPreviewImage(""),
-                  }}
-                  src={previewImage}
-                />
-              ) : (
-                uploadButton
-              )}
+              <div className="relative w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer">
+                {imageUrl ? (
+                  <>
+                    <img
+                      src={imageUrl}
+                      alt="avatar"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                    <div
+                      className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setImageUrl("");
+                      }}
+                    >
+                      <CloseOutlined />
+                    </div>
+                  </>
+                ) : (
+                  <span className="text-4xl">
+                    <UserOutlined />
+                  </span>
+                )}
+                <div className="absolute bottom-0 bg-orange-500 right-0 leading-none p-3 rounded-full">
+                  <PlusOutlined />
+                </div>
+              </div>
             </Upload>
           </Form.Item>
           <div className="flex-1">
@@ -164,6 +149,18 @@ export default function UserProfile() {
             </Form.Item>
           </div>
         </div>
+
+        <Form.Item name="roleSelect" label="I am joining as" rules={[]}>
+          <Radio.Group
+            block
+            options={roleOptions}
+            optionType="button"
+            buttonStyle="solid"
+            defaultValue={"learner"}
+            size="large"
+          />
+        </Form.Item>
+
         <div>
           <Form.Item
             name="expertise"
@@ -194,7 +191,7 @@ export default function UserProfile() {
           </div>
           <div className="flex-1">
             <Form.Item name="experience" label="Industry Experience">
-              <Input size="large" placeholder="Your skills" />
+              <Input size="large" placeholder="Your experience" />
             </Form.Item>
           </div>
         </div>
