@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -14,10 +15,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired()
             .HasMaxLength(128);
 
+        builder.Property(user => user.Status)
+            .HasDefaultValue(UserStatus.Pending);
+
         builder.HasIndex(user => user.Email)
             .IsUnique();
 
         builder.Property(user => user.FullName)
+            .IsRequired()
+            .HasDefaultValue("")
             .HasMaxLength(200);
 
         builder.Property(ud => ud.Bio)
@@ -28,6 +34,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(ud => ud.PhoneNumber)
             .IsRequired()
+            .HasDefaultValue("")
             .HasMaxLength(20);
 
         builder.Property(ud => ud.Skills)
