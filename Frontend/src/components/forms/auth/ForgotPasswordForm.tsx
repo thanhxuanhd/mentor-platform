@@ -1,37 +1,53 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { userService } from "../../../services/user/userService"
-import { HiExclamationCircle } from "react-icons/hi"
-import { useNavigate } from "react-router-dom"
+import type React from "react";
+import { useState } from "react";
+import { userService } from "../../../services/user/userService";
+import { HiExclamationCircle } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 const ForgotPasswordForm: React.FC = () => {
-  const [email, setEmail] = useState("")
-  const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const navigate = useNavigate()
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldError, setFieldError] = useState<{ email?: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (isLoading) return
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    if (isLoading) return;
+
+    const cleanedEmail = email.trim();
+    const errors: { email?: string } = {};
+
+    if (!cleanedEmail) {
+      errors.email = "Please enter your email";
+    } else if (!validateEmail(cleanedEmail)) {
+      errors.email = "Email must be in a correct format";
+    }
+
+    setFieldError(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    setIsLoading(true);
+    setError("");
 
     try {
-      await userService.forgotPassword(email)
-      setSubmitted(true)
+      await userService.forgotPassword(cleanedEmail);
+      setSubmitted(true);
       setTimeout(() => {
-        navigate("/reset-password", { replace: true })
-      }, 1000)
+        navigate("/reset-password", { replace: true });
+      }, 1000);
     } catch (err) {
-      console.error("Forgot password error:", err)
-      setError("Account does not exist. Please check your email.")
+      console.error("Forgot password error:", err);
+      setError("Account does not exist. Please check your email.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded shadow">
@@ -54,20 +70,22 @@ const ForgotPasswordForm: React.FC = () => {
           Password reset successful. Please check your email.
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
               Email
             </label>
             <input
               id="email"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+              className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
+                fieldError.email ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="you@example.com"
             />
+            {fieldError.email && <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>}
           </div>
 
           <button
@@ -79,7 +97,7 @@ const ForgotPasswordForm: React.FC = () => {
                 : "bg-orange-600 hover:bg-orange-700"
             }`}
           >
-            {isLoading ? "Sending..." : "Send Reset Link"}
+            {isLoading ? "Sending..." : "Send New Password"}
           </button>
         </form>
       )}
@@ -90,7 +108,7 @@ const ForgotPasswordForm: React.FC = () => {
         </a>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ForgotPasswordForm
+export default ForgotPasswordForm;

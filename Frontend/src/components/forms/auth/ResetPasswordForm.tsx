@@ -15,13 +15,26 @@ const ResetPasswordForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [fieldError, setFieldError] = useState<{ email?: string }>({});
   const navigate = useNavigate();
+
+  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (isLoading) return
     setIsLoading(true)
+    const trimmedEmail = email.trim();
+    const errors: { email?: string } = {};
 
+    if (!trimmedEmail) {
+      errors.email = "Please enter your email";
+    } else if (!validateEmail(trimmedEmail)) {
+      errors.email = "Email must be in a correct format";
+    }
+    setIsLoading(true);
+  setFieldError(errors);
+  if (Object.keys(errors).length > 0) return;
     const data: ResetPasswordReq = { email, oldPassword, newPassword } 
     try {
       await authService.resetPassword(data)
@@ -72,13 +85,13 @@ const ResetPasswordForm: React.FC = () => {
               </label>
               <input
                 id="email"
-                type="email"
+                type="rext"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
                 placeholder="you@example.com"
               />
+              {fieldError.email && <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>}
             </div>
 
             <div>
@@ -91,7 +104,6 @@ const ResetPasswordForm: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  required
                   className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
                   placeholder="Enter your current password"
                 />
@@ -108,7 +120,6 @@ const ResetPasswordForm: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  required
                   className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
                   placeholder="Enter your new password"
                 />
