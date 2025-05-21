@@ -81,4 +81,21 @@ public class UsersController(IUserService userService) : ControllerBase
 
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [HttpPost("avatar/{userId}")]
+    public async Task<IActionResult> UploadAvatar(Guid userId, IFormFile file)
+    {
+        var request = Request;
+        var result = await userService.UploadAvatarAsync(userId, request, file);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpDelete("avatar")]
+    public async Task<IActionResult> RemoveAvatar(string imageUrl)
+    {
+        var result = await userService.RemoveAvatarAsync(imageUrl);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
 }

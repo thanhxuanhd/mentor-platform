@@ -1,8 +1,15 @@
 import { Form, Input, Modal, Radio } from "antd";
 import { useEffect } from "react";
 import type { Category, EditCategory } from "../../../types/CategoryTypes";
+import type { Category, EditCategory } from "../../../types/CategoryTypes";
 
 interface EditCategoryModalProps {
+  visible: boolean;
+  initialValues: EditCategory;
+  onCancel: () => void;
+  onSubmit: (values: Category) => void;
+  title: string;
+  onText: string;
   visible: boolean;
   initialValues: EditCategory;
   onCancel: () => void;
@@ -18,9 +25,21 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
   onSubmit,
   title,
   onText,
+  visible,
+  initialValues,
+  onCancel,
+  onSubmit,
+  title,
+  onText,
 }) => {
   const [form] = Form.useForm();
+  const [form] = Form.useForm();
 
+  useEffect(() => {
+    if (visible) {
+      form.setFieldsValue(initialValues);
+    }
+  }, [visible, form, initialValues]);
   useEffect(() => {
     if (visible) {
       form.setFieldsValue(initialValues);
@@ -35,7 +54,19 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
       })
       .catch((err) => console.log("Validation failed:", err));
   };
+  const handleOk = () => {
+    form
+      .validateFields()
+      .then((values) => {
+        onSubmit({ ...initialValues, ...values });
+      })
+      .catch((err) => console.log("Validation failed:", err));
+  };
 
+  const handleCancel = () => {
+    form.resetFields();
+    onCancel();
+  };
   const handleCancel = () => {
     form.resetFields();
     onCancel();
@@ -81,3 +112,4 @@ const EditCategoryModal: React.FC<EditCategoryModalProps> = ({
   );
 }
 export default EditCategoryModal;
+
