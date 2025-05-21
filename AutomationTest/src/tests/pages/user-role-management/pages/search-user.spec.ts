@@ -1,6 +1,7 @@
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
 import userData from "../test-data/user-role-management.json";
+import { test } from "../../../../core/fixture/authFixture";
 
 test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
@@ -9,7 +10,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   const searchUserEmpty = userData.search_user.empty_keyword;
   const searchUserWithFilter = userData.search_with_filter;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ loggedInPage, page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();

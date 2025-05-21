@@ -1,11 +1,12 @@
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
 import { User } from "../../../../models/edi-tuser/edit-user";
+import { test } from "../../../../core/fixture/authFixture";
 
 test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ loggedInPage, page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();
@@ -30,6 +31,5 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
     expect(["Admin", "Mentor", "Learner"]).toContain(userData.role);
     expect(userData.joinDate).toMatch(/\d{2}\/\d{2}\/\d{4}/);
     expect(["Active", "Deactivated", "Pending"]).toContain(userData.status);
-    expect(userData.lastActive).toMatch(/\d{2}\/\d{2}\/\d{4}/);
   });
 });

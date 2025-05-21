@@ -1,6 +1,7 @@
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
 import userData from "../test-data/user-role-management.json";
+import { test } from "../../../../core/fixture/authFixture";
 
 test.describe("@UserRoleManagement All user role management testcase", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
@@ -8,7 +9,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   const existedEmail = userData.existed_email;
   const validateEditField = userData.validate_edit_field;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ loggedInPage,page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();
@@ -82,7 +83,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   //Check error message when enter user email is exists in edit user
   test("Verify that error message is shown when user email already exists", async () => {
     await test.step("Click edit user button", async () => {
-      await userRoleManagementPage.clickOnEditUserBtn(0);
+      await userRoleManagementPage.clickOnEditUserBtn(2);
     });
     await test.step("Fill edit user form with existing email", async () => {
       await userRoleManagementPage.fillEditUserForm(
