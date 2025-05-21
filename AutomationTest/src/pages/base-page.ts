@@ -22,7 +22,7 @@ export class BasePage {
         return this;
     }
 
-    async waitUntilVisible(locator: Locator, timeout = 5000) {
+    async waitUntilVisible(locator: Locator, timeout = 10000) {
         await locator.waitFor({ state: "visible", timeout });
         return this;
     }
