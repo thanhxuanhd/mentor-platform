@@ -6,6 +6,8 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using System.Net;
+using Contract.Dtos.Authentication.Responses;
+using FluentValidation;
 
 namespace Application.Services.Authentication;
 
@@ -30,15 +32,33 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         return Result.Success(token, HttpStatusCode.OK);
     }
 
-    public async Task<Result<string>> RegisterAsync(SignUpRequest request)
+    public async Task<Result<SignInResponse>> LoginWithStatusAsync(SignInRequest request)
     {
-        var user = await userRepository.GetUserByEmail(request.Email);
-        if (user != null)
+        var user = await userRepository.GetUserByEmailAsync(request.Email);
+        if (user == null)
         {
-            return Result.Failure<string>("Email already existed!", HttpStatusCode.BadRequest);
+            return Result.Failure<SignInResponse>("Null user", HttpStatusCode.NotFound);
+        }
+
+        var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash!);
+        if (!isVerified)
+        {
+            return Result.Failure<SignInResponse>("Invalid password", HttpStatusCode.Unauthorized);
+        }
+
+        var signInResponse = ToSignInResponse(user);
+
+        return Result.Success(signInResponse, HttpStatusCode.OK);
+    }
+
+    public async Task RegisterAsync(SignUpRequest request)
+    {
+        if (request.Password != request.ConfirmPassword)
+        {
+            throw new ArgumentException("Password and confirm password do not match.");
         }
         var passwordHash = PasswordHelper.HashPassword(request.Password);
-        var newUser = new User
+        var user = new User
         {
             FullName = "",
             PhoneNumber = "",
@@ -48,33 +68,28 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             JoinedDate = DateOnly.FromDateTime(DateTime.Now)
         };
 
-        await userRepository.AddAsync(newUser);
+        await userRepository.AddAsync(user);
         await userRepository.SaveChangesAsync();
-        newUser = await userRepository.GetUserByEmail(request.Email);
-
-        var token = jwtService.GenerateToken(newUser!);
-
-        return Result.Success(token, HttpStatusCode.OK);
     }
 
-    public async Task<Result<string>> LoginGithubAsync(OAuthSignInRequest request)
+    public async Task<Result<SignInResponse>> LoginGithubAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.GitHub);
         var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
         var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
-        var token = await LoginOrRegisterAsync(userEmail!);
+        var signInResponse = await LoginOrRegisterAsync(userEmail!);
 
-        return Result.Success(token, HttpStatusCode.OK);
+        return Result.Success(signInResponse, HttpStatusCode.OK);
     }
 
-    public async Task<Result<string>> LoginGoogleAsync(OAuthSignInRequest request)
+    public async Task<Result<SignInResponse>> LoginGoogleAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.Google);
         var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
         var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
-        var token = await LoginOrRegisterAsync(userEmail!);
+        var signInResponse = await LoginOrRegisterAsync(userEmail!);
 
-        return Result.Success(token, HttpStatusCode.OK);
+        return Result.Success(signInResponse, HttpStatusCode.OK);
     }
 
     public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
@@ -95,8 +110,6 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         userRepository.Update(user);
         await userRepository.SaveChangesAsync();
 
-        var token = jwtService.GenerateToken(user);
-
         return Result.Success("Password reset successful", HttpStatusCode.OK);
     }
 
@@ -107,7 +120,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         return Result.Success(exists, HttpStatusCode.OK);
     }
 
-    private async Task<string> LoginOrRegisterAsync(string email)
+    private async Task<SignInResponse> LoginOrRegisterAsync(string email)
     {
         var user = await userRepository.GetUserByEmail(email);
         if (user == null)
@@ -118,14 +131,23 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
                 PhoneNumber = "",
                 Email = email,
                 RoleId = (int)UserRole.Learner,
-                JoinedDate = DateOnly.FromDateTime(DateTime.Now)
             };
             await userRepository.AddAsync(user);
             await userRepository.SaveChangesAsync();
         }
-        user = await userRepository.GetUserByEmail(email);
-        var token = jwtService.GenerateToken(user!);
+        user = await userRepository.GetUserByEmailAsync(email);
 
-        return token;
+        return ToSignInResponse(user!);
+    }
+
+    private SignInResponse ToSignInResponse(User user)
+    {
+        var token = jwtService.GenerateToken(user);
+        var signInResponse = new SignInResponse(
+            Token: token,
+            UserStatus: user.Status.ToString()
+        );
+
+        return signInResponse;
     }
 }
