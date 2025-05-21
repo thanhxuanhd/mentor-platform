@@ -1,3 +1,4 @@
+using Application.Services.Authentication;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -43,6 +44,25 @@ public class UsersController(IUserService userService) : ControllerBase
     public async Task<IActionResult> ChangeUserStatus(Guid userId)
     {
         var result = await userService.ChangeUserStatusAsync(userId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut]
+    [Route("{userId}/detail")]
+    public async Task<IActionResult> EditUserDetailAsync(Guid userId, [FromBody] EditUserProfileRequest request)
+    {
+        var result = await userService.EditUserDetailAsync(userId, request);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [Authorize]
+    [HttpGet]
+    [Route("{userId}/detail")]
+    public async Task<IActionResult> GetUserDetailAsync(Guid userId)
+    {
+        var result = await userService.GetUserDetailAsync(userId);
+
         return StatusCode((int)result.StatusCode, result);
     }
 

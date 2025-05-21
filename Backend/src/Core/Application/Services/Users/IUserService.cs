@@ -13,7 +13,9 @@ public interface IUserService
     Task<Result<bool>> EditUserAsync(Guid id, EditUserRequest request);
     Task<Result<bool>> ChangeUserStatusAsync(Guid userId);
     Task<Result<GetUserResponse>> GetUserByEmailAsync(string email);
+    Task<Result> EditUserDetailAsync(Guid userId, EditUserProfileRequest request);
     Task<Result> ForgotPasswordRequest(string email);
+    Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId);
     Task<Result<string>> UploadAvatarAsync(Guid userId, HttpRequest request, IFormFile file);
     Task<Result<bool>> RemoveAvatarAsync(string imageUrl);
 }

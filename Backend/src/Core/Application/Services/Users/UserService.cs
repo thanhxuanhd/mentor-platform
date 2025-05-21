@@ -6,6 +6,7 @@ using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
+using Domain.Entities;
 using Domain.Constants;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
@@ -119,6 +120,71 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         return Result.Success(true, HttpStatusCode.OK);
     }
 
+    public async Task<Result> EditUserDetailAsync(Guid userId, EditUserProfileRequest request)
+    {
+        var user = await userRepository.GetUserDetailAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure($"User with ID {userId} not found.", HttpStatusCode.BadRequest);
+        }
+        if (request.AvailabilityIds is not null &&
+            !await userRepository.CheckEntityListExist<Availability, Guid>(request.AvailabilityIds))
+        {
+            return Result.Failure("Invalid Availability IDs", HttpStatusCode.BadRequest);
+        }
+        if (request.ExpertiseIds is not null &&
+            !await userRepository.CheckEntityListExist<Expertise, Guid>(request.ExpertiseIds))
+        {
+            return Result.Failure("Invalid Expertise IDs", HttpStatusCode.BadRequest);
+        }
+        if (request.TeachingApproachIds is not null &&
+            !await userRepository.CheckEntityListExist<TeachingApproach, Guid>(request.TeachingApproachIds))
+        {
+            return Result.Failure("Invalid Teaching Approach IDs", HttpStatusCode.BadRequest);
+        }
+        if (request.CategoryIds is not null &&
+            !await userRepository.CheckEntityListExist<Category, Guid>(request.CategoryIds))
+        {
+            return Result.Failure("Invalid Category IDs", HttpStatusCode.BadRequest);
+        }
+
+        if (request.AvailabilityIds != null)
+        {
+            user.UserAvailabilities.Clear();
+            user.UserAvailabilities = request.AvailabilityIds
+                .Select(id => new UserAvailability { UserId = user.Id, AvailabilityId = id })
+                .ToList();
+        }
+        if (request.ExpertiseIds != null)
+        {
+            user.UserExpertises.Clear();
+            user.UserExpertises = request.ExpertiseIds
+                .Select(id => new UserExpertise { UserId = user.Id, ExpertiseId = id })
+                .ToList();
+        }
+        if (request.CategoryIds != null)
+        {
+            user.UserCategories.Clear();
+            user.UserCategories = request.CategoryIds
+                .Select(id => new UserCategory { UserId = user.Id, CategoryId = id })
+                .ToList();
+        }
+        if (request.TeachingApproachIds != null)
+        {
+            user.UserTeachingApproaches.Clear();
+            user.UserTeachingApproaches = request.TeachingApproachIds
+                .Select(id => new UserTeachingApproach { UserId = user.Id, TeachingApproachId = id })
+                .ToList();
+        }
+
+        request.ToUser(user);
+        user.Status = UserStatus.Active;
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
+        return Result.Success(HttpStatusCode.OK);
+    }
+
     public async Task<Result> ForgotPasswordRequest(string email)
     {
         var user = await userRepository.GetByEmailAsync(email, user => user.Role);
@@ -148,6 +214,18 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             newPassword = newPassword
         }, HttpStatusCode.OK);
     }
+
+    public async Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId)
+    {
+        var user = await userRepository.GetUserDetailAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<GetUserDetailResponse>("User not found", HttpStatusCode.NotFound);
+        }
+
+        return Result.Success(user.ToGetUserDetailResponse(), HttpStatusCode.OK);
+    }
+
     private string GenerateRandomPassword(int length)
     {
         const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?";

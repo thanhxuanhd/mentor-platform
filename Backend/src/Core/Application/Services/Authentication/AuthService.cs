@@ -5,70 +5,76 @@ using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
-using Infrastructure.Services.Authorization;
 using System.Net;
+using Contract.Dtos.Authentication.Responses;
 
 namespace Application.Services.Authentication;
 
 public class AuthService(IUserRepository userRepository, IJwtService jwtService, IOAuthServiceFactory oAuthServiceFactory) : IAuthService
 {
-    public async Task<Result<string>> LoginAsync(SignInRequest request)
+    public async Task<Result<AuthResponse>> LoginAsync(SignInRequest request)
     {
         var user = await userRepository.GetUserByEmail(request.Email);
         if (user == null)
         {
-            return Result.Failure<string>("Null user", HttpStatusCode.NotFound);
+            return Result.Failure<AuthResponse>("Null user", HttpStatusCode.NotFound);
         }
 
         var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash!);
         if (!isVerified)
         {
-            return Result.Failure<string>("Invalid password", HttpStatusCode.Unauthorized);
+            return Result.Failure<AuthResponse>("Invalid password", HttpStatusCode.Unauthorized);
         }
 
-        var token = jwtService.GenerateToken(user);
+        var signInResponse = ToSignInResponse(user);
 
-        return Result.Success(token, HttpStatusCode.OK);
+        return Result.Success(signInResponse, HttpStatusCode.OK);
     }
 
-    public async Task RegisterAsync(SignUpRequest request)
+    public async Task<Result<AuthResponse>> RegisterAsync(SignUpRequest request)
     {
-        if (request.Password != request.ConfirmPassword)
+        var user = await userRepository.GetUserByEmail(request.Email);
+        if (user != null)
         {
-            throw new ArgumentException("Password and confirm password do not match.");
+            return Result.Failure<AuthResponse>("User email already existed", HttpStatusCode.BadRequest);
         }
+
         var passwordHash = PasswordHelper.HashPassword(request.Password);
-        var user = new User
+        var newUser = new User
         {
             FullName = "",
+            PhoneNumber = "",
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId,
             JoinedDate = DateOnly.FromDateTime(DateTime.Now)
         };
 
-        await userRepository.AddAsync(user);
+        await userRepository.AddAsync(newUser);
         await userRepository.SaveChangesAsync();
+        newUser = await userRepository.GetUserByEmail(request.Email);
+
+        return Result.Success(ToSignInResponse(newUser!), HttpStatusCode.OK);
     }
 
-    public async Task<Result> LoginGithubAsync(OAuthSignInRequest request)
+    public async Task<Result<AuthResponse>> LoginGithubAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.GitHub);
         var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
         var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
-        var token = await LoginOrRegisterAsync(userEmail!);
+        var authResponse = await LoginOrRegisterAsync(userEmail!);
 
-        return Result.Success(token, HttpStatusCode.OK);
+        return Result.Success(authResponse, HttpStatusCode.OK);
     }
 
-    public async Task<Result> LoginGoogleAsync(OAuthSignInRequest request)
+    public async Task<Result<AuthResponse>> LoginGoogleAsync(OAuthSignInRequest request)
     {
         var oAuthService = oAuthServiceFactory.Create(OAuthProvider.Google);
         var accessToken = await oAuthService.GetAccessTokenAsync(request.Token);
         var userEmail = await oAuthService.GetUserEmailDataAsync(accessToken!);
-        var token = await LoginOrRegisterAsync(userEmail!);
+        var authResponse = await LoginOrRegisterAsync(userEmail!);
 
-        return Result.Success(token, HttpStatusCode.OK);
+        return Result.Success(authResponse, HttpStatusCode.OK);
     }
 
     public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
@@ -99,7 +105,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         return Result.Success(exists, HttpStatusCode.OK);
     }
 
-    private async Task<string> LoginOrRegisterAsync(string email)
+    private async Task<AuthResponse> LoginOrRegisterAsync(string email)
     {
         var user = await userRepository.GetUserByEmail(email);
         if (user == null)
@@ -107,15 +113,27 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             user = new User
             {
                 FullName = "",
+                PhoneNumber = "",
                 Email = email,
-                RoleId = (int)UserRole.Learner
+                RoleId = (int)UserRole.Learner,
             };
             await userRepository.AddAsync(user);
             await userRepository.SaveChangesAsync();
         }
         user = await userRepository.GetUserByEmail(email);
 
-        return jwtService.GenerateToken(user!);
+        return ToSignInResponse(user!);
     }
 
+    private AuthResponse ToSignInResponse(User user)
+    {
+        var token = jwtService.GenerateToken(user);
+        var signInResponse = new AuthResponse(
+            Token: token,
+            UserId: user.Id,
+            UserStatus: user.Status.ToString()
+        );
+
+        return signInResponse;
+    }
 }
