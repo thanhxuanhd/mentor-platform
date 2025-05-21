@@ -76,7 +76,7 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPost("request-forgot-password/{email}")]
-    public async Task<IActionResult> ForgotPasswordRequest( string email)
+    public async Task<IActionResult> ForgotPasswordRequest(string email)
     {
         var result = await userService.ForgotPasswordRequest(email);
 

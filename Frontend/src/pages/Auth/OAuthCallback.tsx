@@ -10,14 +10,14 @@ export default function OAuthCallback() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { setToken } = useAuth();
-  const pathParts = pathname.split('/');
+  const pathParts = pathname.split("/");
   const provider = pathParts[pathParts.length - 1];
 
   useEffect(() => {
-    const code = searchParams.get('code');
+    const code = searchParams.get("code");
 
     if (!code) {
-      console.error('Missing authorization code');
+      console.error("Missing authorization code");
       return;
     }
 
@@ -35,8 +35,8 @@ export default function OAuthCallback() {
             break;
         }
       } catch (error) {
-        console.error('OAuth callback failed', error);
-        navigate('/login');
+        console.error("OAuth callback failed", error);
+        navigate("/login");
       }
     };
 
