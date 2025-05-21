@@ -1,23 +1,14 @@
-import { useState, useEffect } from "react";
-import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
-import Search from "antd/es/input/Search";
-import EditCategoryModal from "./components/EditCategoryModal";
-import type {
-  Category,
-  CategoryFilter,
-  CategoryRequest,
-} from "../../types/CategoryTypes";
-import {
-  createCategory,
-  deleteCategory,
-  editCategory,
-  getListCategories,
-} from "../../services/categoryServices";
-import type { NotificationProps } from "../../types/Notification";
-import type { PaginatedList } from "../../types/Pagination";
-import PaginationControls from "../../components/shared/Pagination";
+import { useState, useEffect } from 'react';
+import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from 'antd';
+import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
+import Search from 'antd/es/input/Search';
+import EditCategoryModal from './components/EditCategoryModal';
+import type { Category, CategoryFilter, CategoryRequest } from '../../types/CategoryTypes';
+import { createCategory, deleteCategory, editCategory, getCategoryById, getListCategories } from '../../services/category/categoryServices';
+import type { NotificationProps } from '../../types/Notification';
+import type { PaginatedList } from '../../types/Pagination';
+import PaginationControls from '../../components/shared/Pagination';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -105,8 +96,9 @@ export default function CategoriesPage() {
     }));
   };
 
-  const handleEditClick = (category: Category) => {
-    setSelectedCategory(category);
+  const handleEditClick = async (category: Category) => {
+    const apiResponse = await getCategoryById(category.id);
+    setSelectedCategory(apiResponse);
     setIsCreating(false);
     setIsModalVisible(true);
   };
@@ -171,10 +163,11 @@ export default function CategoriesPage() {
       setIsCreating(false);
     } catch (error: any) {
       setNotify({
-        type: "error",
-        message: "Validation Error",
-        description: error.response?.data?.error,
+        type: 'error',
+        message: 'Error',
+        description: error.response?.data?.error || 'An error occurred while processing your request.',
       });
+      console.log('Error:', error);
     }
   };
 
@@ -288,11 +281,11 @@ export default function CategoriesPage() {
             ? { id: "", name: "", description: "", status: true }
             : selectedCategory
               ? {
-                  id: selectedCategory.id,
-                  name: selectedCategory.name.trimEnd().trimStart(),
-                  description: selectedCategory.description?.trimEnd() || "",
-                  status: selectedCategory.status,
-                }
+                id: selectedCategory.id,
+                name: selectedCategory.name.trimEnd().trimStart(),
+                description: selectedCategory.description?.trimEnd() || "",
+                status: selectedCategory.status,
+              }
               : { id: "", name: "", description: "", status: false }
         }
         onCancel={handleModalCancel}

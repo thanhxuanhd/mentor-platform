@@ -8,6 +8,7 @@ using Domain.Enums;
 using Moq;
 using System.Net;
 using Application.Helpers;
+using Infrastructure.Services.Authorization;
 
 namespace Application.Test;
 

@@ -9,6 +9,23 @@ namespace Application.Services.Categories;
 
 public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
 {
+    public async Task<Result<GetCategoryResponse>> GetCategoryByIdAsync(Guid id)
+    {
+        var category = await categoryRepository.GetByIdAsync(id, category => category.Courses!);
+        if (category == null)
+        {
+            return Result.Failure<GetCategoryResponse>("Category not found", HttpStatusCode.NotFound);
+        }
+        var categoryInfo = new GetCategoryResponse
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Description = category.Description!,
+            Courses = category.Courses!.Count(),
+            Status = category.Status
+        };
+        return Result.Success(categoryInfo, HttpStatusCode.OK);
+    }
     public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(FilterCategoryRequest request)
     {
         var categories = categoryRepository.GetAll();
