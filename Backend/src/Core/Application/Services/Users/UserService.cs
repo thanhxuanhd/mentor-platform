@@ -212,6 +212,18 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             newPassword = newPassword
         }, HttpStatusCode.OK);
     }
+
+    public async Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId)
+    {
+        var user = await userRepository.GetUserDetailAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<GetUserDetailResponse>("User not found", HttpStatusCode.NotFound);
+        }
+
+        return Result.Success(user.ToGetUserDetailResponse(), HttpStatusCode.OK);
+    }
+
     private string GenerateRandomPassword(int length)
     {
         const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?";
