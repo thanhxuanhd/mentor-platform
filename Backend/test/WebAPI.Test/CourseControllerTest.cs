@@ -361,7 +361,7 @@ public class CourseControllerTest
     {
         // Arrange
         var courseId = Guid.NewGuid();
-        var serviceResult = Result.Success(HttpStatusCode.OK);
+        var serviceResult = Result.Success(true, HttpStatusCode.OK);
 
         _courseServiceMock.Setup(s => s.DeleteAsync(courseId))
             .ReturnsAsync(serviceResult);
@@ -385,7 +385,7 @@ public class CourseControllerTest
     {
         // Arrange
         var courseId = Guid.NewGuid();
-        var serviceResult = Result.Failure("Course not found", HttpStatusCode.NotFound);
+        var serviceResult = Result.Failure<bool>("Course not found", HttpStatusCode.NotFound);
 
         _courseServiceMock.Setup(s => s.DeleteAsync(courseId))
             .ReturnsAsync(serviceResult);

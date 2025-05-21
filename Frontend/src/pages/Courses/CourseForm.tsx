@@ -1,8 +1,29 @@
 import { type FC, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "./types.tsx";
-import { Button, Form, Input, Modal, Select, Space, Tag } from "antd";
+import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import {CourseDifficultyEnumMember} from "./initial-values.tsx";
+import dayjs from 'dayjs';
+import { courseService } from "../../services/course";
+import { categoryService } from "../../services/category";
+import { useAuth } from "../../hooks/useAuth";
+
+// Add a debounce utility
+const debounce = <F extends (...args: any[]) => any>(
+  func: F,
+  waitFor: number,
+) => {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+
+  const debounced = (...args: Parameters<F>) => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(() => func(...args), waitFor);
+  };
+
+  return debounced as (...args: Parameters<F>) => ReturnType<F>;
+};
 
 type CourseFormProp = {
   formData: CourseFormDataOptions;
@@ -14,25 +35,144 @@ type CourseFormProp = {
 
 export const CourseForm: FC<CourseFormProp> = ({
   formData,
-  categories,
-  states,
   active,
   onClose,
-}) => {
+}) => {  
+  const { user } = useAuth(); // Get current user from auth context
   const [form] = Form.useForm<CourseFormDataOptions>();
   const [newTag, setNewTag] = useState<string>("");
-
+  const [tags, setTags] = useState<string[]>([]);
+  const [myCategories, setMyCategories] = useState<Category[]>([]);
+  const [categoryKeyword, setCategoryKeyword] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);const fetchCategories = async () => {
+    try {
+      const response = await categoryService.list({
+        pageIndex: 1,
+        pageSize: 5,
+        keyword: categoryKeyword.trim(),
+      });
+      setMyCategories(response.items);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };useEffect(() => {
+    fetchCategories();
+  }, [categoryKeyword]);
+  
+  // Helper to get current tags
+  const getTags = () => tags;
   useEffect(() => {
     if (active) {
-      form.setFieldsValue(formData);
+      // Initial fetch of categories when the form becomes active
+      fetchCategories();
+      
+      const formValues = {...formData};
+      
+      if (formValues.dueDate && typeof formValues.dueDate === 'string') {
+        try {
+          // Convert string date to dayjs object - this is what Ant Design DatePicker expects
+          const dateValue = dayjs(formValues.dueDate);
+          // Use type assertion to bypass TypeScript's type checking
+          (formValues as any).dueDate = dateValue;
+        } catch (e) {
+          console.error("Error formatting date:", e);
+          (formValues as any).dueDate = undefined;
+        }
+      }
+      
+      form.setFieldsValue(formValues);
+      
+      const initialTags = Array.isArray(formData.tags) ? formData.tags : [];
+      setTags(initialTags);
     }
-  }, [active, form, formData]);
-
-  const handleSubmit = async () => {
+  }, [active, form, formData]);  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      console.log("Success:", values);
-      onClose();
+      
+      // Format the date for .NET DateTime compatibility
+      let formattedDueDate = values.dueDate;
+      
+      // Check if it's an object with a dayjs format method
+      if (values.dueDate && typeof values.dueDate === 'object') {
+        // Using type assertion to safely access the properties
+        const dateObj = values.dueDate as any;
+        if (dateObj.format && typeof dateObj.format === 'function') {
+          // Use dayjs format method to ensure consistent date format for .NET
+          formattedDueDate = dateObj.format('YYYY-MM-DDTHH:mm:ss');
+        } else if (dateObj.$d instanceof Date) {
+          // Convert the date to ISO string format which is compatible with .NET DateTime
+          formattedDueDate = dateObj.$d.toISOString();
+        } else if (dateObj instanceof Date) {
+          // If it's a simple Date object
+          formattedDueDate = dateObj.toISOString();
+        }
+      }
+        if (formData.id) {
+        // Edit mode - call update API
+        console.log("EDIT MODE - Sending update request for course ID:", formData.id);
+        
+        setSubmitting(true);
+        try {
+          // Make the API call to update the course
+          await courseService.update(formData.id, {
+            title: values.title,
+            description: values.description,
+            categoryId: values.categoryId,
+            dueDate: formattedDueDate as string,
+            difficulty: values.difficulty,
+            mentorId: user?.id || "", // Use current user's ID as mentorId
+            tags: getTags() // Include tags in the API call
+          });
+          
+          // Close the form and signal to refresh the course list
+          onClose("refresh");
+        } catch (error) {
+          console.error("Error updating course:", error);
+          // Show error message to user
+          Modal.error({
+            title: 'Failed to update course',
+            content: 'There was an error updating your course. Please try again.',
+          });
+        } finally {
+          setSubmitting(false);
+        }
+      } else {        // Create mode - call the POST /api/course endpoint
+        console.log("CREATE MODE - Data being sent to create API:", {
+          title: values.title,
+          description: values.description,
+          categoryId: values.categoryId,
+          dueDate: formattedDueDate, 
+          difficulty: values.difficulty,
+          tags: getTags(),
+          mentorId: user?.id || "" // Use current user's ID as mentorId
+        });
+        
+        setSubmitting(true);
+        try {          
+          // Make the API call to create a new course
+          await courseService.create({
+            title: values.title,
+            description: values.description,
+            categoryId: values.categoryId,
+            dueDate: formattedDueDate as string,
+            difficulty: values.difficulty,
+            mentorId: user?.id || "", // Use current user's ID as mentorId
+            tags: getTags() // Include tags in the API call
+          });
+          
+          // Close the form and signal to refresh the course list
+          onClose("refresh");
+        } catch (error) {
+          console.error("Error creating course:", error);
+          // Show error message to user
+          Modal.error({
+            title: 'Failed to create course',
+            content: 'There was an error creating your course. Please try again.',
+          });
+        } finally {
+          setSubmitting(false);
+        }
+      }
     } catch (errorInfo) {
       console.log("Failed:", errorInfo);
     }
@@ -43,29 +183,44 @@ export const CourseForm: FC<CourseFormProp> = ({
   }
 
   const handleAddTag = () => {
-    if (newTag && !formData.tags.includes(newTag)) {
-      const tags = [...(form.getFieldValue("tags") || []), newTag];
-      form.setFieldValue("tags", tags);
+    const trimmedTag = newTag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      const updatedTags = [...tags, trimmedTag];
+      setTags(updatedTags);
+      form.setFieldValue("tags", updatedTags);
       setNewTag("");
     }
   };
-
-  return (
-    <Modal
-      title={`Course: ${formData.title || "New Course"}`}
+  const handleRemoveTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter((t: string) => t !== tagToRemove);
+    setTags(updatedTags);
+    form.setFieldValue("tags", updatedTags);
+  };
+  return (    
+  <Modal
+      title={formData.id ? `Edit Course: ${formData.title}` : "Add New Course"}
       open={active}
       onCancel={() => onClose()}
-      width={800}
-      footer={[
+      width={800}footer={[
         <Button key="cancel" onClick={() => onClose()}>
           Cancel
-        </Button>,
-        <Button key="submit" type="primary" onClick={handleSubmit}>
-          Save Changes
+        </Button>,        
+        <Button 
+          key="submit" 
+          type="primary" 
+          onClick={handleSubmit}
+          loading={submitting}
+          disabled={submitting}
+        >
+          {formData.id ? "Save Changes" : "Create Course"}
         </Button>,
       ]}
-    >
-      <Form form={form} layout="vertical" initialValues={formData}>
+    >      
+    <Form form={form} layout="vertical" initialValues={{
+        ...formData, 
+        tags: Array.isArray(formData.tags) ? formData.tags : [],
+        dueDate: undefined
+      }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
             name="title"
@@ -80,27 +235,18 @@ export const CourseForm: FC<CourseFormProp> = ({
             label="Category"
             rules={[{ required: true, message: "Please select a category!" }]}
           >
-            <Select placeholder="Select a category">
-              {categories.map((category) => (
-                <Select.Option key={category.id} value={category.id}>
-                  {category.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            name="status"
-            label="Status"
-            rules={[{ required: true, message: "Please select a status!" }]}
-          >
-            <Select>
-              {Object.entries(states).map(([value, label]) => (
-                <Select.Option key={value} value={value}>
-                  {label}
-                </Select.Option>
-              ))}
-            </Select>
+            <Select
+              showSearch
+              placeholder="Select a category"
+              options={myCategories.map((category) => ({
+                label: category.name,
+                value: category.id
+              }))}
+              filterOption={false}
+              onSearch={debounce((input) => setCategoryKeyword(input), 100)}
+              notFoundContent={categoryKeyword ? "No matching categories" : "Type to search categories"}
+              loading={!myCategories.length && categoryKeyword !== ""}
+            />
           </Form.Item>
 
           <Form.Item
@@ -115,55 +261,54 @@ export const CourseForm: FC<CourseFormProp> = ({
                 </Select.Option>
               ))}
             </Select>
-          </Form.Item>
-
+          </Form.Item>          
           <Form.Item
             name="dueDate"
-            label="Duration"
-            rules={[{ required: true, message: "Please input the duration!" }]}
+            label="Due Date"
+            rules={[{ required: true, message: "Please select a due date!" }]}
           >
-            <Input placeholder="e.g. 6 weeks" />
-          </Form.Item>
-
+            <DatePicker 
+              style={{ width: '100%' }}
+              placeholder="Select due date"
+              format="YYYY-MM-DD"
+            />
+          </Form.Item>          
           <Form.Item
             name="tags"
             label="Tags"
-            rules={[
-              { required: true, message: "Please add at least one tag!" },
-            ]}
+            rules={[]}
           >
             <Space direction="vertical" style={{ width: "100%" }}>
-              <Space wrap>
-                {form.getFieldValue("tags")?.map((tag: string) => (
-                  <Tag
-                    key={tag}
-                    closable
-                    onClose={() => {
-                      const tags = form
-                        .getFieldValue("tags")
-                        .filter((t: string) => t !== tag);
-                      form.setFieldValue("tags", tags);
-                    }}
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-              </Space>
               <Space.Compact style={{ width: "100%" }}>
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a tag"
-                  onPressEnter={handleAddTag}
+                  onPressEnter={e => {
+                    e.preventDefault();
+                    handleAddTag();
+                  }}
                 />
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleAddTag}
+                  disabled={!newTag.trim() || getTags().includes(newTag.trim())}
                 >
                   Add
                 </Button>
               </Space.Compact>
+              <Space wrap style={{ marginTop: 8 }}>
+                {getTags().map((tag: string) => (
+                  <Tag
+                    key={tag}
+                    closable
+                    onClose={() => handleRemoveTag(tag)}
+                  >
+                    {tag}
+                  </Tag>
+                ))}
+              </Space>
             </Space>
           </Form.Item>
 

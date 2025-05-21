@@ -19,10 +19,6 @@ export const CourseDetail: FC<CourseDetailProp> = ({
     onClose();
   };
 
-  const modify = () => {
-    onClose(CoursePopoverTarget.edit);
-  };
-
   if (!course || !active) {
     return;
   }
@@ -96,12 +92,6 @@ export const CourseDetail: FC<CourseDetailProp> = ({
             className="px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-md transition duration-200"
           >
             Close
-          </button>
-          <button
-            onClick={() => modify()}
-            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
-          >
-            Edit Course
           </button>
         </div>
       </div>

@@ -82,7 +82,8 @@ public static class ConfigureServices
 
         services.AddScoped<CurrentUser>();
         services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
-
+        services.AddHttpContextAccessor();
+        
         return services;
     }
 }

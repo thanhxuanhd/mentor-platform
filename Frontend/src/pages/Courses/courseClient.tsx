@@ -25,6 +25,7 @@ interface CourseCreateParams {
   mentorId: string;
   dueDate: string;
   difficulty: string;
+  tags?: string[];
 }
 
 interface CourseUpdateParams {
@@ -105,7 +106,10 @@ export async function update(id: string, params: CourseUpdateParams) {
 }
 
 export async function create(params: CourseCreateParams) {
-  const response = await axiosClient.post("/Course", params);
+  const response = await axiosClient.post("/Course", {
+    ...params,
+    tags: params.tags || []
+  });
   return response.data;
 }
 

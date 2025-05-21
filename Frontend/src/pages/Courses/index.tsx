@@ -12,12 +12,14 @@ import { CourseTable } from "./CourseTable.tsx";
 import { CourseForm } from "./CourseForm.tsx";
 
 import { CourseResource } from "./CourseResource.tsx";
-import * as CourseClient from "./courseClient.tsx";
+import { courseService } from "../../services/course";
+import { categoryService } from "../../services/category";
+import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./CourseDetail.tsx";
 import { SearchBar } from "./SearchBar.tsx";
+import { App, Modal } from "antd";
 
-const Page: React.FC = () => {
-  const [pageIndex, setPageIndex] = useState<number>(0);
+const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -25,6 +27,8 @@ const Page: React.FC = () => {
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const [popoverTarget, setPopoverTarget] = useState<string | undefined>();
 
@@ -36,34 +40,88 @@ const Page: React.FC = () => {
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
+  const { modal } = App.useApp();
 
   useEffect(() => {
-    const fetchCourses = async () => {
+    if (refreshTrigger > 0) {
+      setIsRefreshing(true);
+      const refreshData = async () => {
+        try {
+          const courseResponse = await courseService.list({
+            pageIndex: 0, 
+            pageSize,
+            keyword,
+            difficulty,
+            categoryId,
+            mentorId,
+          });
+          
+          setCourses(courseResponse.items);
+          setTotalCount(courseResponse.totalPages);
+          console.log("Course list refreshed after create/update");
+        } catch (error) {
+          console.error("Error refreshing courses:", error);
+        } finally {
+          setIsRefreshing(false);
+        }
+      };
+      
+      refreshData();
+    }
+  }, [refreshTrigger]);
+
+  useEffect(() => {    const fetchCourses = async () => {
       setLoading(true);
 
-      const courseResponse = await CourseClient.list({
-        pageIndex,
-        pageSize,
-        keyword: keyword,
-        difficulty: difficulty,
-        categoryId: categoryId,
-        mentorId: mentorId,
-      });
+      try {
+        // Get courses
+        const courseResponse = await courseService.list({
+          pageIndex,
+          pageSize,
+          keyword: keyword,
+          difficulty: difficulty,
+          categoryId: categoryId,
+          mentorId: mentorId,
+        });
 
-      const categoryResponse = await CourseClient.categoryList();
+        const categoryResponse = await categoryService.list();
+        const mentorResponse = await mentorService.list();
 
-      const mentorResponse = await CourseClient.mentorList();
-
-      setTotalCount(courseResponse.totalPages);
-      setCategories(categoryResponse.items);
-      setMentors(mentorResponse.items);
-      setCourses(courseResponse.items);
-
-      setLoading(false);
+        setTotalCount(courseResponse.totalPages);
+        setCategories(categoryResponse.items);
+        setMentors(mentorResponse.items);
+        setCourses(courseResponse.items);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchCourses();
-  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId]);
+  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId, refreshTrigger]);
+
+  const handleDeleteCourse = async (course: Course) => {
+    modal.confirm({
+      title: "Are you sure delete this course?",
+      content: `Course: ${course.title}`,
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.delete(course.id);
+          setRefreshTrigger(prev => prev + 1); // Refresh the list after deletion
+        } catch (error) {
+          console.error("Error deleting course:", error);
+          Modal.error({
+            title: "Failed to delete course",
+            content: "There was an error deleting the course. Please try again.",
+          });
+        }
+      },
+    });
+  };
 
   return (
     <>
@@ -96,13 +154,12 @@ const Page: React.FC = () => {
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
                 }}
-              />
-
+              />              
               <CourseTable
                 courses={courses}
                 states={states}
                 tableProps={{
-                  loading: loading,
+                  loading: loading || isRefreshing,
                   pagination: {
                     pageSize: pageSize,
                     total: totalCount,
@@ -123,14 +180,10 @@ const Page: React.FC = () => {
                   setItem(course);
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
-                onDelete={(course) => {
-                  // TODO: handle within CourseTable
-                  setItem(course);
-                  setPopoverTarget(CoursePopoverTarget.remove);
-                }}
-                onEdit={(course) => {
+                onDelete={handleDeleteCourse}                onEdit={(course) => {
                   setItem(course);
                   setFormData({
+                    id: course.id,
                     categoryId: course.categoryId,
                     description: course.description,
                     difficulty: course.difficulty,
@@ -141,8 +194,7 @@ const Page: React.FC = () => {
                   });
                   setPopoverTarget(CoursePopoverTarget.edit);
                 }}
-              />
-
+              />              
               <CourseForm
                 formData={formData}
                 categories={categories}
@@ -151,21 +203,36 @@ const Page: React.FC = () => {
                   popoverTarget === CoursePopoverTarget.add ||
                   popoverTarget === CoursePopoverTarget.edit
                 }
-                onClose={(targetAction) => setPopoverTarget(targetAction)}
-              />
-
+                onClose={(targetAction) => {
+                  if (targetAction === "refresh") {
+                    // Trigger a refresh of the course list
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                  setPopoverTarget(targetAction);
+                }}
+              />              
               <CourseDetail
                 course={item}
                 states={states}
                 active={popoverTarget === CoursePopoverTarget.detail}
-                onClose={(targetAction) => setPopoverTarget(targetAction)}
-              />
-
+                onClose={(targetAction) => {
+                  if (targetAction === "refresh") {
+                    // Trigger a refresh of the course list
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                  setPopoverTarget(targetAction);
+                }}
+              />              
               <CourseResource
                 course={item}
                 onDownload={(material) => window.alert(material.webAddress)}
                 active={popoverTarget === CoursePopoverTarget.resource}
-                onClose={(targetAction) => setPopoverTarget(targetAction)}
+                onClose={(targetAction) => {
+                  if (targetAction === "refresh") {
+                    setRefreshTrigger(prev => prev + 1);
+                  }
+                  setPopoverTarget(targetAction);
+                }}
               />
             </div>
           </div>
