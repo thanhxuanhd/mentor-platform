@@ -1,0 +1,57 @@
+{
+  "validate_edit_user": [
+    {
+      "userFullname": "Nhat Thanh",
+      "userEmail": "cuonglkhe150595@gmail.com",
+      "userRole": "Mentor"
+    },
+    {
+      "userFullname": "Duong Lee",
+      "userEmail": "lan.nguyen@example.com",
+      "userRole": "Learner"
+    }
+  ],
+  "validate_edit_field": [
+    {
+      "input": " ",
+      "invalid_message": "Please enter Full Name"
+    },
+    {
+      "input": "",
+      "invalid_message": "Invalid email"
+    }
+  ],
+  "search_user": {
+    "valid_keywords": "Pham Hoang",
+    "empty_keyword": " ",
+    "invalid_keywords": {
+      "input": "Sempoi",
+      "message": "No data"
+    }
+  },
+
+  "search_with_filter": [
+    {
+      "multipleKeywords": "Nguyen Dao",
+      "filter": "Learner"
+    },
+    {
+      "multipleKeywords": "Bui Khoa",
+      "filter": "Mentor"
+    },
+    {
+      "multipleKeywords": "Dang Hung",
+      "filter": "Admin"
+    }
+  ],
+  "items_per_page": ["5", "10", "25"],
+  "existed_email": {
+    "fullname": "Pham Hoang Minh",
+    "email": "minh.dang@example.com"
+  },
+  "notification_message": {
+    "active": "User status updated to Deactivated.",
+    "pending": "User status updated to Active.",
+    "deactivated": "User status updated to Active."
+  }
+}
