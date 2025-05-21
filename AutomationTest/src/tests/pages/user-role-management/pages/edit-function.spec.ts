@@ -94,8 +94,20 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
     await test.step("Click save button", async () => {
       await userRoleManagementPage.clickOnSaveBtn();
     });
+    await test.step("Click edit user button", async () => {
+      await userRoleManagementPage.clickOnEditUserBtn(2); //TODO: need to make index dynamic after API is able to create fullname
+    });
+    await test.step("Fill edit user form with existing email", async () => {
+      await userRoleManagementPage.fillEditUserForm(
+        existedEmail.fullname,
+        existedEmail.email
+      );
+    });
+    await test.step("Click save button", async () => {
+      await userRoleManagementPage.clickOnSaveBtn();
+    });
     await test.step("Verify error message is shown", async () => {
-      const errorMessage = await userRoleManagementPage.getNotification(0);
+      const errorMessage = await userRoleManagementPage.getNotification(1);
       expect(errorMessage).toBe(`Email ${existedEmail.email} already exists.`);
     });
   });

@@ -9,12 +9,14 @@ export async function requestCreateNewUser(request: APIRequestContext) {
   const randomRole = generateRandomRole();
   const randomEmail = generateUniqueEmail();
 
-  await request.post(`${API_ENDPOINTS.CREATE_USER}`, {
-    data: {
-      password: "stringss",
-      confirmPassword: "stringss",
-      email: randomEmail,
-      roleId: randomRole,
-    },
-  });
+  // for (let i = 0; i < 30; i++) {
+    await request.post(`${API_ENDPOINTS.CREATE_USER}`, {
+      data: {
+        password: "stringss",
+        confirmPassword: "stringss",
+        email: randomEmail,
+        roleId: randomRole,
+      },
+    });
+  // }
 }
