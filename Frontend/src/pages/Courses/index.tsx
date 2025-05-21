@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 
-import {CourseDifficultyEnumMember, CourseStatesEnumMember, initialFormData} from "./initial-values.tsx";
+import {
+  CourseDifficultyEnumMember,
+  CourseStatesEnumMember,
+  initialFormData,
+} from "./initial-values.tsx";
 import type {
   Category,
   Course,
@@ -19,7 +23,8 @@ import { CourseDetail } from "./CourseDetail.tsx";
 import { SearchBar } from "./SearchBar.tsx";
 import { App, Modal } from "antd";
 
-const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<number>(0);
+const Page: React.FC = () => {
+  const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -35,7 +40,9 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
   const [categories, setCategories] = useState<Category[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [states] = useState<Record<string, string>>(CourseStatesEnumMember);
-  const [difficulties] = useState<Record<string, string>>(CourseDifficultyEnumMember);
+  const [difficulties] = useState<Record<string, string>>(
+    CourseDifficultyEnumMember,
+  );
   const [courses, setCourses] = useState<Course[]>([]);
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
@@ -48,14 +55,14 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
       const refreshData = async () => {
         try {
           const courseResponse = await courseService.list({
-            pageIndex: 0, 
+            pageIndex: 0,
             pageSize,
             keyword,
             difficulty,
             categoryId,
             mentorId,
           });
-          
+
           setCourses(courseResponse.items);
           setTotalCount(courseResponse.totalPages);
           console.log("Course list refreshed after create/update");
@@ -65,12 +72,13 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
           setIsRefreshing(false);
         }
       };
-      
+
       refreshData();
     }
   }, [refreshTrigger]);
 
-  useEffect(() => {    const fetchCourses = async () => {
+  useEffect(() => {
+    const fetchCourses = async () => {
       setLoading(true);
 
       try {
@@ -99,7 +107,15 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
     };
 
     fetchCourses();
-  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId, refreshTrigger]);
+  }, [
+    pageIndex,
+    pageSize,
+    keyword,
+    difficulty,
+    categoryId,
+    mentorId,
+    refreshTrigger,
+  ]);
 
   const handleDeleteCourse = async (course: Course) => {
     modal.confirm({
@@ -111,12 +127,13 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
       onOk: async () => {
         try {
           await courseService.delete(course.id);
-          setRefreshTrigger(prev => prev + 1); // Refresh the list after deletion
+          setRefreshTrigger((prev) => prev + 1); // Refresh the list after deletion
         } catch (error) {
           console.error("Error deleting course:", error);
           Modal.error({
             title: "Failed to delete course",
-            content: "There was an error deleting the course. Please try again.",
+            content:
+              "There was an error deleting the course. Please try again.",
           });
         }
       },
@@ -154,7 +171,7 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
                 }}
-              />              
+              />
               <CourseTable
                 courses={courses}
                 states={states}
@@ -180,7 +197,8 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   setItem(course);
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
-                onDelete={handleDeleteCourse}                onEdit={(course) => {
+                onDelete={handleDeleteCourse}
+                onEdit={(course) => {
                   setItem(course);
                   setFormData({
                     id: course.id,
@@ -194,7 +212,7 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                   });
                   setPopoverTarget(CoursePopoverTarget.edit);
                 }}
-              />              
+              />
               <CourseForm
                 formData={formData}
                 categories={categories}
@@ -206,11 +224,11 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                 onClose={(targetAction) => {
                   if (targetAction === "refresh") {
                     // Trigger a refresh of the course list
-                    setRefreshTrigger(prev => prev + 1);
+                    setRefreshTrigger((prev) => prev + 1);
                   }
                   setPopoverTarget(targetAction);
                 }}
-              />              
+              />
               <CourseDetail
                 course={item}
                 states={states}
@@ -218,18 +236,18 @@ const Page: React.FC = () => {  const [pageIndex, setPageIndex] = useState<numbe
                 onClose={(targetAction) => {
                   if (targetAction === "refresh") {
                     // Trigger a refresh of the course list
-                    setRefreshTrigger(prev => prev + 1);
+                    setRefreshTrigger((prev) => prev + 1);
                   }
                   setPopoverTarget(targetAction);
                 }}
-              />              
+              />
               <CourseResource
                 course={item}
                 onDownload={(material) => window.alert(material.webAddress)}
                 active={popoverTarget === CoursePopoverTarget.resource}
                 onClose={(targetAction) => {
                   if (targetAction === "refresh") {
-                    setRefreshTrigger(prev => prev + 1);
+                    setRefreshTrigger((prev) => prev + 1);
                   }
                   setPopoverTarget(targetAction);
                 }}

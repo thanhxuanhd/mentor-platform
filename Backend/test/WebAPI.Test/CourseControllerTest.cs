@@ -26,6 +26,13 @@ public class CourseControllerTest
         _authorizationServiceMock = new Mock<IAuthorizationService>();
         _controller = new CourseController(_courseServiceMock.Object, _courseItemServiceMock.Object,
             _authorizationServiceMock.Object);
+        
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([
+                new Claim(ClaimTypes.Role, nameof(UserRole.Admin))
+            ]))
+        };
     }
 
     private Mock<ICourseService> _courseServiceMock;
@@ -274,6 +281,13 @@ public class CourseControllerTest
 
         _courseServiceMock.Setup(s => s.UpdateAsync(courseId, request))
             .ReturnsAsync(serviceResult);
+        
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_controller.ControllerContext.HttpContext.User, serviceResult.Value, "CourseModifyAccess"))
+            .ReturnsAsync(AuthorizationResult.Success);
+
 
         // Act
         var result = await _controller.Update(courseId, request);
@@ -307,7 +321,13 @@ public class CourseControllerTest
 
         _courseServiceMock.Setup(s => s.UpdateAsync(courseId, request))
             .ReturnsAsync(serviceResult);
+        
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
+            .ReturnsAsync(serviceResult);
 
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_controller.ControllerContext.HttpContext.User, serviceResult.Value, "CourseModifyAccess"))
+            .ReturnsAsync(AuthorizationResult.Success);
+        
         // Act
         var result = await _controller.Update(courseId, request);
 
@@ -340,6 +360,13 @@ public class CourseControllerTest
 
         _courseServiceMock.Setup(s => s.UpdateAsync(courseId, request))
             .ReturnsAsync(serviceResult);
+        
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_controller.ControllerContext.HttpContext.User, serviceResult.Value, "CourseModifyAccess"))
+            .ReturnsAsync(AuthorizationResult.Success);
+
 
         // Act
         var result = await _controller.Update(courseId, request);
@@ -634,16 +661,15 @@ public class CourseControllerTest
             Status = CourseStatus.Archived
         };
         var serviceResult = Result.Success(courseResponse, HttpStatusCode.OK);
-
-        _controller.ControllerContext.HttpContext = new DefaultHttpContext
-        {
-            User = new ClaimsPrincipal(new ClaimsIdentity([
-                new Claim(ClaimTypes.Role, RequiredRole.Admin)
-            ]))
-        };
-
+        
         _courseServiceMock.Setup(s => s.ArchiveCourseAsync(courseId))
             .ReturnsAsync(serviceResult);
+        
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_controller.ControllerContext.HttpContext.User, serviceResult.Value, "CourseModifyAccess"))
+            .ReturnsAsync(AuthorizationResult.Success);
 
         // Act
         var result = await _controller.ArchiveCourse(courseId);
@@ -666,15 +692,15 @@ public class CourseControllerTest
         var courseId = Guid.NewGuid();
         var serviceResult = Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
-        _controller.ControllerContext.HttpContext = new DefaultHttpContext
-        {
-            User = new ClaimsPrincipal(new ClaimsIdentity([
-                new Claim(ClaimTypes.Role, RequiredRole.Admin)
-            ]))
-        };
-
         _courseServiceMock.Setup(s => s.ArchiveCourseAsync(courseId))
             .ReturnsAsync(serviceResult);
+        
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_controller.ControllerContext.HttpContext.User, serviceResult.Value, "CourseModifyAccess"))
+            .ReturnsAsync(AuthorizationResult.Success);
+
 
         // Act
         var result = await _controller.ArchiveCourse(courseId);

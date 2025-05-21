@@ -1,5 +1,4 @@
 import type { Course } from "./types.tsx";
-import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
 import type { FC } from "react";
 
 export type CourseDetailProp = {

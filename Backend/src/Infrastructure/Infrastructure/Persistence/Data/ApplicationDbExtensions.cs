@@ -19,15 +19,6 @@ public static class ApplicationDbExtensions
 
     public static async Task SeedAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken)
     {
-        var categories = new List<Category>();
-        var courses = new List<Course>();
-        var courseTags = new List<CourseTag>();
-        var tags = new List<Tag>();
-        var courseStatus = new[] { CourseStatus.Published, CourseStatus.Draft, CourseStatus.Archived };
-        var difficulties = new[]
-            { CourseDifficulty.Beginner, CourseDifficulty.Intermediate, CourseDifficulty.Advanced };
-        var random = new Random();
-
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(dbContext.Database.MigrateAsync, cancellationToken);
         
@@ -39,306 +30,237 @@ public static class ApplicationDbExtensions
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
-        if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-        var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
-        if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
-
         if (!dbContext.Users.Any())
         {
-            var users = new List<User>
-            {
-                new()
-                {
-                    FullName = "Dr. Sarah Chen", Email = "sarah.chen@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("Tech2025!"), RoleId = mentorRole.Id
-                },
-                new()
-                {
-                    FullName = "Prof. James Wilson", Email = "j.wilson@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("Edu2025#"), RoleId = mentorRole.Id
-                },
-                new()
-                {
-                    FullName = "Dr. Maria Garcia", Email = "m.garcia@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("Science2025@"), RoleId = mentorRole.Id
-                },
-                new()
-                {
-                    FullName = "Dr. David Kim", Email = "d.kim@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("Tech2025#"), RoleId = mentorRole.Id
-                },
-                new()
-                {
-                    FullName = "Prof. Emily Brown", Email = "e.brown@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("Edu2025$"), RoleId = mentorRole.Id
-                },
-                new()
-                {
-                    FullName = "Michael Chang", Email = "m.chang@learner.local",
-                    PasswordHash = PasswordHelper.HashPassword("Learn2025$"), RoleId = learnerRole.Id
-                },
-                new()
-                {
-                    FullName = "Sofia Rodriguez", Email = "s.rodriguez@learner.local",
-                    PasswordHash = PasswordHelper.HashPassword("Learn2025#"), RoleId = learnerRole.Id
-                },
-                new()
-                {
-                    FullName = "Alex Patel", Email = "a.patel@learner.local",
-                    PasswordHash = PasswordHelper.HashPassword("Learn2025@"), RoleId = learnerRole.Id
-                },
-                new()
-                {
-                    FullName = "Emma Johnson", Email = "e.johnson@learner.local",
-                    PasswordHash = PasswordHelper.HashPassword("Learn2025!"), RoleId = learnerRole.Id
-                },
-                new()
-                {
-                    FullName = "Lucas Zhang", Email = "l.zhang@learner.local",
-                    PasswordHash = PasswordHelper.HashPassword("Learn2025^"), RoleId = learnerRole.Id
-                },
-                new()
-                {
-                    FullName = "Olivia Thompson", Email = "o.thompson@learner.local",
-                    PasswordHash = PasswordHelper.HashPassword("Learn2025&"), RoleId = learnerRole.Id
-                }
-            };
+            var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
+            var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
+            var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
+            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
+            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
 
-            users.ForEach(u => u.Id = Guid.NewGuid());
-            dbContext.Users.AddRange(users);
+            dbContext.Users.AddRange(
+                new User
+                {
+                    Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                    FullName = "Alice Wonderland",
+                    Email = "alice.wonderland@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("password123"),
+                    RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                    FullName = "Bob Builder",
+                    Email = "bob.builder@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("securepassword"),
+                    RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                    FullName = "Charlie Chaplin",
+                    Email = "charlie.chaplin@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("anotherpassword"),
+                    RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
+                    FullName = "David Copperfield",
+                    Email = "david.copperfield@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("mypassword"),
+                    RoleId = learnerRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
+                    FullName = "The Administrator",
+                    Email = "mini@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
+                    RoleId = adminRole.Id
+                }
+            );
+
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         if (!dbContext.Categories.Any())
         {
-            categories = new List<Category>
+            dbContext.Categories.AddRange(new Category
             {
-                new()
-                {
-                    Name = "Full Stack Development",
-                    Description = "Master both front-end and back-end development with modern frameworks and tools",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "Data Science & Analytics",
-                    Description = "Learn data analysis, statistical modeling, and machine learning techniques",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "Cloud Architecture",
-                    Description = "Design and implement scalable cloud solutions using AWS, Azure, and GCP",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "DevOps & Infrastructure",
-                    Description = "Master CI/CD pipelines, containerization, and infrastructure automation",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "Cybersecurity",
-                    Description = "Learn ethical hacking, security protocols, and threat mitigation strategies",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "Mobile Development",
-                    Description = "Build native and cross-platform mobile applications for iOS and Android",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "AI & Machine Learning",
-                    Description = "Develop intelligent systems using modern AI frameworks and deep learning",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "Blockchain Technology",
-                    Description =
-                        "Create decentralized applications and smart contracts on popular blockchain platforms",
-                    Status = true
-                },
-                new()
-                {
-                    Name = "UI/UX Design",
-                    Description = "Design intuitive user interfaces and optimize user experiences", Status = true
-                },
-                new()
-                {
-                    Name = "Quality Assurance",
-                    Description = "Master software testing methodologies and automation frameworks", Status = true
-                },
-                new()
-                {
-                    Name = "System Architecture",
-                    Description = "Design scalable, maintainable, and efficient software systems", Status = true
-                }
-            };
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies", Status = true
+            }, new Category
+            {
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
+                Description = "Effective communication in professional settings", Status = true
+            }, new Category
+            {
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills", Status = true
+            }, new Category
+            {
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
+                Description = "Strategies for better time management and productivity", Status = false
+            }, new Category
+            {
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
+                Description = "Resources for career advancement and job hunting", Status = false
+            });
 
-            categories.ForEach(c => c.Id = Guid.NewGuid());
-            dbContext.Categories.AddRange(categories);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         if (!dbContext.Courses.Any())
         {
-            var mentorIds = await dbContext.Users.Where(u => u.RoleId == mentorRole.Id).Select(u => u.Id)
-                .ToListAsync(cancellationToken);
-
-            var courseTitles = new[]
+            dbContext.Courses.AddRange(new Course
             {
-                "Modern Web Development with React and Node.js",
-                "Machine Learning and Deep Neural Networks",
-                "Cloud Architecture and Deployment Strategies",
-                "DevOps Engineering and Automation",
-                "Advanced Cybersecurity and Penetration Testing",
-                "Cross-Platform Mobile App Development",
-                "AI-Powered Systems and Applications",
-                "Smart Contract Development with Solidity",
-                "User Experience Design Principles",
-                "Test Automation Best Practices",
-                "Microservices Architecture Patterns"
-            };
-
-            var courseDescriptions = new[]
+                Id = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"),
+                Title = "Foundations of Effective Leadership",
+                CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = CourseStatus.Published,
+                DueDate = DateTime.UtcNow.AddMonths(3),
+                Description = "Explore the fundamental principles and practices of effective leadership.",
+                Difficulty = CourseDifficulty.Beginner
+            }, new Course
             {
-                "Learn full-stack development using React and Node.js with real-world projects",
-                "Master machine learning algorithms and deep learning frameworks",
-                "Design and implement scalable cloud solutions across major platforms",
-                "Implement CI/CD pipelines and automate infrastructure deployment",
-                "Learn advanced security techniques and ethical hacking methodologies",
-                "Build native and hybrid mobile apps using modern frameworks",
-                "Create intelligent applications using cutting-edge AI technologies",
-                "Develop secure and efficient smart contracts for blockchain platforms",
-                "Master the art of creating intuitive and engaging user experiences",
-                "Learn automated testing strategies and tools for quality assurance",
-                "Design and implement scalable microservices architectures"
-            };
-
-            var staticCourseIds = new[]
+                Id = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f"),
+                Title = "Mastering Business Communication",
+                CategoryId = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                Status = CourseStatus.Draft,
+                DueDate = DateTime.UtcNow.AddMonths(2),
+                Description = "Develop advanced skills in professional communication for various business contexts.",
+                Difficulty = CourseDifficulty.Intermediate
+            }, new Course
             {
-                Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
-                Guid.Parse("7a52d0f1-4c64-4d34-9076-36884ac4bc2b"),
-                Guid.Parse("8e5b45c3-2f8d-4b5a-9a2e-77f2b3612f15"),
-                Guid.Parse("9d4c8054-6a1e-4d6f-8e1d-89f1b3c6a2d3"),
-                Guid.Parse("a3b7c9d8-e0f2-4a5b-9c6d-8f1e2d3b4a5c")
-            };
-
-            for (var i = 0; i < 11; i++)
+                Id = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a"),
+                Title = "Confident Public Speaking",
+                CategoryId = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = CourseStatus.Published,
+                DueDate = DateTime.UtcNow.AddMonths(1),
+                Description = "Build confidence and refine your techniques for impactful public speaking.",
+                Difficulty = CourseDifficulty.Advanced
+            }, new Course
             {
-                var course = new Course
-                {
-                    Id = i < 5 ? staticCourseIds[i] : Guid.NewGuid(),
-                    Title = courseTitles[i],
-                    CategoryId = categories[i].Id,
-                    MentorId = mentorIds[random.Next(mentorIds.Count)],
-                    Status = courseStatus[random.Next(courseStatus.Length)],
-                    DueDate = DateTime.UtcNow.AddMonths(random.Next(1, 7)),
-                    Description = courseDescriptions[i],
-                    Difficulty = difficulties[random.Next(difficulties.Length)]
-                };
-                courses.Add(course);
-            }
+                Id = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
+                Title = "Productivity with Time Management",
+                CategoryId = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = CourseStatus.Draft,
+                DueDate = DateTime.UtcNow.AddMonths(4),
+                Description = "Learn and apply proven strategies to manage your time effectively and increase productivity.",
+                Difficulty = CourseDifficulty.Beginner
+            }, new Course
+            {
+                Id = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a"),
+                Title = "Leading High-Performing Teams",
+                CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = CourseStatus.Archived,
+                DueDate = DateTime.UtcNow.AddMonths(5),
+                Description = "Discover how to build, motivate, and lead high-performing teams.",
+                Difficulty = CourseDifficulty.Advanced
+            });
 
-            dbContext.Courses.AddRange(courses);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         if (!dbContext.Tags.Any())
         {
-            tags = new List<Tag>
-            {
-                new() { Id = Guid.NewGuid(), Name = "Web Development" },
-                new() { Id = Guid.NewGuid(), Name = "Cloud Computing" },
-                new() { Id = Guid.NewGuid(), Name = "Machine Learning" },
-                new() { Id = Guid.NewGuid(), Name = "Cybersecurity" },
-                new() { Id = Guid.NewGuid(), Name = "DevOps" },
-                new() { Id = Guid.NewGuid(), Name = "Mobile Apps" },
-                new() { Id = Guid.NewGuid(), Name = "Databases" },
-                new() { Id = Guid.NewGuid(), Name = "Software Architecture" },
-                new() { Id = Guid.NewGuid(), Name = "UI/UX" },
-                new() { Id = Guid.NewGuid(), Name = "Testing" },
-                new() { Id = Guid.NewGuid(), Name = "Blockchain" }
-            };
+            dbContext.Tags.AddRange(
+                new Tag { Id = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2"), Name = "Leadership" },
+                new Tag { Id = Guid.Parse("c13eafac-c4d5-445c-87f1-393c40f90d08"), Name = "Communication" },
+                new Tag { Id = Guid.Parse("4e21ccd5-5b36-4f2b-9472-d1ab4cf95ab6"), Name = "Public Speaking" },
+                new Tag { Id = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce"), Name = "Time Management" },
+                new Tag { Id = Guid.Parse("3a6c27f3-1518-4575-8790-54764c2851a7"), Name = "Career Development" });
 
-            dbContext.Tags.AddRange(tags);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         if (!dbContext.CourseTags.Any())
         {
-            foreach (var course in courses)
+            dbContext.CourseTags.AddRange(new CourseTag
             {
-                var tagCount = random.Next(2, 4);
-                var courseTageSubset = tags.OrderBy(x => random.Next()).Take(tagCount);
-                courseTags.AddRange(courseTageSubset.Select(tag => new CourseTag
-                {
-                    CourseId = course.Id,
-                    TagId = tag.Id
-                }));
-            }
+                CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"),
+                TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
+            }, new CourseTag
+            {
+                CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"),
+                TagId = Guid.Parse("c13eafac-c4d5-445c-87f1-393c40f90d08")
+            }, new CourseTag
+            {
+                CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f"),
+                TagId = Guid.Parse("4e21ccd5-5b36-4f2b-9472-d1ab4cf95ab6")
+            }, new CourseTag
+            {
+                CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a"),
+                TagId = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce")
+            }, new CourseTag
+            {
+                CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
+                TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
+            });
 
-            dbContext.CourseTags.AddRange(courseTags);
             await dbContext.SaveChangesAsync(cancellationToken);
         }
 
         if (!dbContext.CourseItems.Any())
         {
-            var mediaTypes = Enum.GetValues(typeof(CourseMediaType)).Cast<CourseMediaType>().ToList();
-            var courseItems = new List<CourseItem>();
-
-            var staticItemIds = new[]
+            dbContext.CourseItems.Add(new CourseItem()
             {
-                new Guid("FFD36390-1CAA-4E4D-B507-7C21BD5903CD"),
-                new Guid("241A2CB4-B87D-47F9-96DC-5A0F7362F60F"),
-                new Guid("9D4DD0AD-8503-490D-9A9A-5916151863F4"),
-                new Guid("DCF42DA3-19F8-40B5-9A70-A79D7A2B9B01"),
-                new Guid("9B71977B-4050-4854-A269-474E4DB22C5A"),
-            };
-            var staticItemIndex = 0;
+                Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
+                Title = "Introduction to Leadership Concepts",
+                Description = "Understand the core principles and theories of leadership.",
+                MediaType = CourseMediaType.ExternalWebAddress,
+                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 1),
+                CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
+            });
 
-            foreach (var course in courses)
+            dbContext.CourseItems.Add(new CourseItem()
             {
-                var moduleNames = new[]
-                {
-                    "Introduction and Setup",
-                    "Core Concepts and Fundamentals",
-                    "Advanced Techniques",
-                    "Best Practices and Patterns",
-                    "Real-world Application",
-                    "Performance Optimization",
-                    "Security Considerations",
-                    "Testing and Quality Assurance",
-                    "Deployment Strategies",
-                    "Maintenance and Monitoring",
-                    "Final Project and Review"
-                };
+                Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
+                Title = "Non-Verbal Communication Essentials",
+                Description = "Learn about the importance of body language and other non-verbal cues in communication.",
+                MediaType = CourseMediaType.Pdf,
+                WebAddress = GetMediaUrl(CourseMediaType.Pdf, 1),
+                CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
+            });
 
-                for (var i = 0; i < 11; i++)
-                {
-                    var mediaType = mediaTypes[random.Next(mediaTypes.Count)];
-                    var item = new CourseItem
-                    {
-                        Id = staticItemIndex < staticItemIds.Length
-                            ? staticItemIds[staticItemIndex++]
-                            : Guid.NewGuid(),
-                        Title = $"Module {i + 1}: {moduleNames[i]}",
-                        Description =
-                            $"Learn {moduleNames[i].ToLower()} in the context of {course.Title}",
-                        MediaType = mediaType,
-                        WebAddress = GetMediaUrl(mediaType, i + 1),
-                        CourseId = course.Id
-                    };
-                    courseItems.Add(item);
-                }
-            }
+            dbContext.CourseItems.Add(new CourseItem()
+            {
+                Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
+                Title = "Structuring Your Speech",
+                Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
+                MediaType = CourseMediaType.Video,
+                WebAddress = GetMediaUrl(CourseMediaType.Video, 1),
+                CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
+            });
 
-            dbContext.CourseItems.AddRange(courseItems);
+             dbContext.CourseItems.Add(new CourseItem()
+            {
+                Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
+                Title = "Prioritization Techniques",
+                Description = "Effective methods for prioritizing tasks and managing workloads.",
+                MediaType = CourseMediaType.ExternalWebAddress,
+                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 2),
+                CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
+            });
+
+            dbContext.CourseItems.Add(new CourseItem()
+            {
+                Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
+                Title = "Building Trust and Rapport",
+                Description = "Strategies for establishing trust and positive relationships within a team.",
+                MediaType = CourseMediaType.Video,
+                WebAddress = GetMediaUrl(CourseMediaType.Video, 2),
+                CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
+            });
+
+
             await dbContext.SaveChangesAsync(cancellationToken);
         }
     }

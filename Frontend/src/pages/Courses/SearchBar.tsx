@@ -54,7 +54,7 @@ export const SearchBar: FC<SearchBarProps> = ({
   function handleDifficultyChange(event: ChangeEvent<HTMLSelectElement>) {
     setDifficulty(event.target.value);
     updateSearchBar({
-      state: event.target.value,
+      difficulty: event.target.value,
     });
   }
 

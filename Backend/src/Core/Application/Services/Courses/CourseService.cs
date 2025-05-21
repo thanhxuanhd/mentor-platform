@@ -44,7 +44,6 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         var tags = await tagRepository.UpsertAsync(caseSensitiveTagNames);
         await tagRepository.SaveChangesAsync();
 
-        // TODO: Not checking MentorId contains role: Mentor, Tags not being processed in stores
         var course = new Course
         {
             Title = request.Title,
@@ -87,6 +86,8 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         await courseRepository.UpdateTagsCollection(tags, course);
         await courseRepository.SaveChangesAsync();
 
+        var updatedCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
+        if (updatedCourse == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
         var response = course.ToCourseSummary();
 
         return Result.Success(response, HttpStatusCode.OK);

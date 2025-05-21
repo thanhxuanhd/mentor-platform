@@ -1,7 +1,7 @@
 ﻿@MentorConnectAPI_HostAddress = https://localhost:5000
-@courseId = 6d7910af-cd6c-48bc-8072-c03e79870e38
-@categoryId = c1df4156-1bfa-4310-8ee1-b07c3a6159fc
-@resourceId = 09d85232-fb4d-486a-a897-0710229a0318
+@courseId = b5ffe7dc-ead8-4072-84fc-2aa39908fffe
+@categoryId = 3144da58-deaa-4bf7-a777-cd96e7f1e3b1
+@resourceId = F6F4362D-233E-4188-8F31-63F108F67142
 
 ### Authorize
 POST {{MentorConnectAPI_HostAddress}}/api/Auth/sign-in
@@ -15,7 +15,9 @@ Content-Type: application/json
 
 > {%
 
+
  client.global.set("auth_token", response.body.value); 
+
 
 %}
 

@@ -1,6 +1,7 @@
 ﻿using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
 using Contract.Services;
+using Domain.Enums;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ public class CourseController(
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] CourseListRequest request)
     {
+        // TODO: ACL pagination: include draft courses for admin and course mentor
         var result = await courseService.GetAllAsync(request);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -27,6 +29,7 @@ public class CourseController(
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        // TODO: permit only admin and course mentor when state is draft
         var result = await courseService.GetByIdAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -34,29 +37,35 @@ public class CourseController(
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CourseCreateRequest request)
     {
-        var result = await courseService.CreateAsync(request.MentorId, request);
+        var mentorId = request.MentorId;
+        if (HttpContext.User.IsInRole(nameof(UserRole.Mentor)))
+        {
+            mentorId = request.MentorId;
+        }
+        else
+        {
+            if (!HttpContext.User.IsInRole(nameof(UserRole.Admin)))
+            {
+                return Forbid();
+            }
+        }
+
+        var result = await courseService.CreateAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CourseUpdateRequest request)
     {
-        var course = await courseService.GetByIdAsync(id);
-        var authorizationResult =
-            await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-
-        if (authorizationResult.Succeeded)
-        {
-            var result = await courseService.ArchiveCourseAsync(id);
-            return StatusCode((int)result.StatusCode, result);
-        }
-
-        return Forbid();
+        if (!await CanEdit(id)) return Forbid();
+        var result = await courseService.UpdateAsync(id, request);
+        return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
+        if (!await CanEdit(id)) return Forbid();
         var result = await courseService.DeleteAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -72,22 +81,15 @@ public class CourseController(
     [HttpPut("{id:guid}/archive")]
     public async Task<IActionResult> ArchiveCourse(Guid id)
     {
-        var course = await courseService.GetByIdAsync(id);
-        var authorizationResult =
-            await authorizationService.AuthorizeAsync(HttpContext.User, course, new CourseModifyAccessRequirement());
-
-        if (authorizationResult.Succeeded)
-        {
-            var result = await courseService.ArchiveCourseAsync(id);
-            return StatusCode((int)result.StatusCode, result);
-        }
-
-        return Forbid();
+        if (!await CanEdit(id)) return Forbid();
+        var result = await courseService.ArchiveCourseAsync(id);
+        return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpGet("{id:guid}/resource")]
     public async Task<IActionResult> GetAllCourseItem(Guid id)
     {
+        // TODO: permit only admin and course mentor when state is draft
         var result = await courseItemService.GetAllByCourseIdAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -95,6 +97,7 @@ public class CourseController(
     [HttpGet("{id:guid}/resource/{resourceId:guid}")]
     public async Task<IActionResult> GetCourseItemById(Guid id, Guid resourceId)
     {
+        // TODO: permit only admin and course mentor when state is draft
         var result = await courseItemService.GetByIdAsync(id, resourceId);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -102,6 +105,7 @@ public class CourseController(
     [HttpPost("{id:guid}/resource")]
     public async Task<IActionResult> CreateCourseItem(Guid id, [FromBody] CourseItemCreateRequest request)
     {
+        if (!await CanEdit(id)) return Forbid();
         var result = await courseItemService.CreateAsync(id, request);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -110,6 +114,7 @@ public class CourseController(
     public async Task<IActionResult> UpdateCourseItem(Guid id, Guid resourceId,
         [FromBody] CourseItemUpdateRequest request)
     {
+        if (!await CanEdit(id)) return Forbid();
         var result = await courseItemService.UpdateAsync(id, resourceId, request);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -117,7 +122,16 @@ public class CourseController(
     [HttpDelete("{id:guid}/resource/{resourceId:guid}")]
     public async Task<IActionResult> DeleteCourseItem(Guid id, Guid resourceId)
     {
+        if (!await CanEdit(id)) return Forbid();
         var result = await courseItemService.DeleteAsync(id, resourceId);
         return StatusCode((int)result.StatusCode, result);
+    }
+
+    private async Task<bool> CanEdit(Guid id)
+    {
+        var course = await courseService.GetByIdAsync(id);
+        var result = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+
+        return result.Succeeded;
     }
 }

@@ -1,4 +1,4 @@
-import { axiosClient } from "../apiClient";
+// import { axiosClient } from "../apiClient";
 import type { Mentor } from "../../pages/Courses/types";
 
 interface MentorListResponse {

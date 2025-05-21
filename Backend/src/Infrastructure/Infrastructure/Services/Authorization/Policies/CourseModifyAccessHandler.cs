@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using Contract.Dtos.Courses.Responses;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Infrastructure.Services.Authorization.Policies;
@@ -11,7 +12,7 @@ public class CourseModifyAccessHandler :
         CourseModifyAccessRequirement requirement,
         CourseSummary resource)
     {
-        if (context.User.IsInRole(RequiredRole.Admin))
+        if (context.User.IsInRole(nameof(UserRole.Admin)))
         {
             context.Succeed(requirement);
             return Task.CompletedTask;
