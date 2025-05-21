@@ -1,12 +1,18 @@
-import test, { expect } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../../pages/user-role-management-page/user-role-management-page";
-import userData from "../test-data/user-role-management.json";
+import userData from "../../../test-data/user-role-management.json";
+import { test } from "../../../../core/fixture/authFixture";
+import { requestCreateNewUser } from "../../../../core/utils/create-new-user-api";
 
 test.describe("@UserRoleManagement All user role management pagination function", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
   const itemsPerPage = userData.items_per_page;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeAll(async ({ request }) => {
+    await requestCreateNewUser(request);
+  });
+
+  test.beforeEach(async ({ loggedInPage, page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();

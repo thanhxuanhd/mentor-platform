@@ -4,7 +4,6 @@ export interface User {
   role: string;
   joinDate: string;
   status: string;
-  lastActive: string;
 }
 
 export interface CreateUser {

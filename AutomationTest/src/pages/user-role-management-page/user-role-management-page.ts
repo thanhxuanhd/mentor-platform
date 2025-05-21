@@ -62,8 +62,12 @@ export class UserRoleManagementPage extends BasePage {
     this.BTN_NAVIGATION_LOC = page.locator(
       "ul.ant-pagination .ant-pagination-item"
     );
-    this.BTN_NEXT_LOC = page.getByRole("img", { name: "right" });
-    this.BTN_PREVIOUS_LOC = page.getByRole("img", { name: "left" });
+    this.BTN_NEXT_LOC = page.locator(
+      ".ant-pagination-next button.ant-pagination-item-link"
+    );
+    this.BTN_PREVIOUS_LOC = page.locator(
+      ".ant-pagination-prev button.ant-pagination-item-link"
+    );
     this.TXT_SEARCH_USER_LOC = page.getByPlaceholder("Search user...");
     this.DDL_ROLE_FILTER_LOC = (role: string) => {
       return this.page.locator("div.ant-segmented-item-label", {
@@ -256,13 +260,12 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   async getAllUserText() {
-    await this.page.waitForTimeout(2000);
+    await this.waitUntilVisible(this.LBL_USER_EMAIL_LOC.first());
     const allUser = await this.DBL_ALL_USER_LOC.allTextContents();
     return allUser;
   }
 
   async getAllTableRowCount() {
-    await this.page.waitForTimeout(2000); // sleep for 2 seconds
     const allRow = await this.DGD_ROW_USER_LOC.count();
     return allRow;
   }
