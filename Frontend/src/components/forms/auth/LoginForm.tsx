@@ -104,17 +104,17 @@ const LoginForm: React.FC = () => {
       } else {
         localStorage.removeItem("RemembermeInfo");
       }
-      
+
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
-        switch (res.profileCompleteStatus) {
+        switch (res.userStatus) {
           case userStatus.ACTIVE:
-            setToken(res.value);
+            setToken(res.token);
             navigate("/");
             break;
           default:
-            navigate("/step1")
+            navigate("/step2", { state: { ...res } });
             break;
         }
       }, 1000);
@@ -257,10 +257,10 @@ const LoginForm: React.FC = () => {
         </div>
 
         <div className="text-center text-sm">
-            <p>
-              Don't have an account? <a href="/signup" className="text-orange-500 hover:underline">Sign up</a>
-            </p>
-          </div>
+          <p>
+            Don't have an account? <a href="/signup" className="text-orange-500 hover:underline">Sign up</a>
+          </p>
+        </div>
 
         <div className="text-center mt-4">
           <a

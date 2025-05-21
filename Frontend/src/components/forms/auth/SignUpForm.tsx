@@ -49,7 +49,7 @@ const SignUpForm: React.FC = () => {
 
       setTimeout(() => {
         setShowNotification(false);
-        navigate("/login", { replace: true });
+        navigate("/step2", { state: { ...res } });
       }, 1000);
     } catch (err) {
       console.error("Signup failed:", err);
@@ -59,7 +59,7 @@ const SignUpForm: React.FC = () => {
 
   return (
     <div className="min-h-[60vh] w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow mx-auto text-sm text-gray-300"
->
+    >
       {showNotification && (
         <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm text-sm">
           <CheckCircleOutlined className="text-green-500 text-lg mr-2" />

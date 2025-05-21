@@ -31,7 +31,7 @@ export default function OAuthCallback() {
             navigate("/");
             break;
           default:
-            navigate("/step1")
+            navigate("/step2", { state: { ...response } });
             break;
         }
       } catch (error) {

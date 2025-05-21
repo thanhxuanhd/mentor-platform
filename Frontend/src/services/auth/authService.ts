@@ -21,7 +21,7 @@ export const authService = {
         '/Auth/sign-up',
         signUpData
       );
-      return response.data;
+      return response.data.value;
     } catch (error) {
       console.error('Sign up failed:', error);
       throw error;
