@@ -54,8 +54,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseStaticFiles();
-
 app.SeedData();
 
 app.Run();

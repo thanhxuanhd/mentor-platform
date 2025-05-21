@@ -14,7 +14,6 @@ const { TextArea } = Input;
 import { useEffect, useState } from "react";
 import type { DefaultOptionType } from "antd/es/select";
 import type { NotificationProps } from "../../types/Notification";
-import { userService } from "../../services/user/userService";
 const availabilityOptions = [
   "Weekdays",
   "Weekends",
@@ -22,8 +21,6 @@ const availabilityOptions = [
   "Afternoons",
   "Evenings",
 ];
-
-const userId = "01047F62-6E87-442B-B1E8-2A54C9E17D7C";
 
 const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   {
@@ -83,6 +80,7 @@ const roleOptions: CheckboxGroupProps<string>["options"] = [
 export default function UserProfile() {
   const [imageUrl, setImageUrl] = useState("");
   const [notify, setNotify] = useState<NotificationProps | null>(null);
+
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>(
     [],
   );
@@ -132,18 +130,18 @@ export default function UserProfile() {
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 1MB!",
+        description: "Image must smaller than 2MB!",
       });
     }
     return isFormatAllowed && isLt1M;
   };
 
   const handleChange = (info: UploadChangeParam<UploadFile>) => {
-    if (info.file.status === "done") {
+    if (info.file.status === "done" || info.file.status === "uploading") {
       // Show preview
       const reader = new FileReader();
       reader.addEventListener("load", () =>
-        setImageUrl(info.file.response?.value),
+        setImageUrl(reader.result as string),
       );
       reader.readAsDataURL(info.file.originFileObj as RcFile);
     }
@@ -182,9 +180,6 @@ export default function UserProfile() {
             <Upload
               maxCount={1}
               showUploadList={false}
-              action={
-                import.meta.env.VITE_BASE_URL_BE + `/Users/avatar/${userId}`
-              }
               beforeUpload={beforeUpload}
               onChange={handleChange}
             >
@@ -200,7 +195,6 @@ export default function UserProfile() {
                       className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
                       onClick={(e) => {
                         e.stopPropagation();
-                        userService.removeAvatar(imageUrl);
                         setImageUrl("");
                       }}
                     >
@@ -227,7 +221,7 @@ export default function UserProfile() {
                   rules={[
                     { required: true, message: "Please enter your full name!" },
                     {
-                      max: 100,
+                      max: 50,
                       message: "Full name can not exceed 50 characters!",
                     },
                     {
@@ -236,7 +230,7 @@ export default function UserProfile() {
                     },
                   ]}
                 >
-                  <Input maxLength={100} size="large" placeholder="Full Name" />
+                  <Input maxLength={50} size="large" placeholder="Full Name" />
                 </Form.Item>
               </div>
               <div className="flex-1">
@@ -269,12 +263,12 @@ export default function UserProfile() {
               name="bio"
               label="Bio"
               rules={[
-                { max: 300, message: "Bio must be less than 300 characters!" },
+                { max: 200, message: "Bio must be less than 200 characters!" },
               ]}
             >
               <TextArea
                 placeholder="A brief introduction about yourself..."
-                maxLength={300}
+                maxLength={200}
               />
             </Form.Item>
           </div>

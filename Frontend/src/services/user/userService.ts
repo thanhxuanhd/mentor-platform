@@ -50,12 +50,4 @@ export const userService = {
     );
     return response.data.value;
   },
-
-  removeAvatar: async (imageUrl: string) => {
-    await axiosClient
-      .delete(`Users/avatar`, { params: { imageUrl } })
-      .then((response) => {
-        return response.data.value;
-      });
-  },
 };
