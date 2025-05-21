@@ -51,8 +51,18 @@ const ResetPasswordForm: React.FC = () => {
     if (!newPassword.trim()) {
       errors.newPassword = "Please enter your new password";
     }
-
-
+    if (!newPassword.trim()) {
+      errors.newPassword = "Please enter your new password";
+    } else if (newPassword.length < 8 || newPassword.length > 32) {
+      errors.newPassword = "Password must be between 8 and 32 characters";
+    } else if (
+      !/(?=.*[a-zA-Z])/.test(newPassword) ||   
+      !/(?=.*\d)/.test(newPassword) ||         
+      !/(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])/.test(newPassword)
+    ) {
+      errors.newPassword =
+        "Password must include letters, numbers, and special characters";
+    }
     setFieldError(errors);
 
     if (Object.keys(errors).length > 0) {
@@ -69,21 +79,30 @@ const ResetPasswordForm: React.FC = () => {
     };
 
     try {
-      await authService.resetPassword(data);
-      console.log("Reset password successful for:", email);
+        await authService.resetPassword(data);
+        console.log("Reset password successful for:", email);
+        setShowNotification(true);
+        setTimeout(() => {
+          setShowNotification(false);
+          navigate("/login", { replace: true });
+          setSubmitted(true);
+        }, 3000);
+      } catch (err: any) {
+        console.error("Reset password failed:", err);
+        const newErrors: typeof fieldError = {};
+        if (err?.response?.status === 400) {
+          newErrors.oldPassword = "Current password is incorrect.";
+        } else if (err?.response?.status === 404) {
+          newErrors.email = "Email not found.";
+        } else {
+          alert("Reset password failed: an unexpected error occurred.");
+        }
 
-      setShowNotification(true);
-      setTimeout(() => {
-        setShowNotification(false);
-        navigate("/login", { replace: true });
-        setSubmitted(true);
-      }, 3000);
-    } catch (err) {
-      console.error("Reset password failed:", err);
-      alert("Reset password failed: incorrect email or old password.");
-    } finally {
-      setIsLoading(false);
-    }
+        setFieldError(newErrors);
+      } finally {
+        setIsLoading(false);
+      }
+
   };
 
   const togglePasswordVisibility = () => {
