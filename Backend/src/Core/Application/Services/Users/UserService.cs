@@ -231,4 +231,25 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         return new string(Enumerable.Repeat(validChars, length)
             .Select(s => s[random.Next(s.Length)]).ToArray());
     }
+
+    public async Task<Result<bool>> IsProfileOwnerAsync(string? currentUserId, Guid userProfileId)
+    {
+        if (currentUserId == null)
+        {
+            return Result.Failure<bool>("Current user ID not found", HttpStatusCode.Unauthorized);
+        }
+
+        Guid userId = Guid.Parse(currentUserId);
+
+        var user = await userRepository.GetByIdAsync(userId);
+
+        if (user == null)
+        {
+            return Result.Failure<bool>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        var result = user.Id == userProfileId ? Result.Success(true, HttpStatusCode.OK) : Result.Success(false, HttpStatusCode.OK);
+        
+        return result;
+    }
 }

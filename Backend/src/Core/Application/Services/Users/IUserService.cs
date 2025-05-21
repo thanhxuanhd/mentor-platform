@@ -15,4 +15,5 @@ public interface IUserService
     Task<Result> EditUserDetailAsync(Guid userId, EditUserProfileRequest request);
     Task<Result> ForgotPasswordRequest(string email);
     Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId);
+    Task<Result<bool>> IsProfileOwnerAsync(string? currentUserId, Guid userProfileId);
 }

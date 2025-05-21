@@ -1,7 +1,10 @@
+using System.Net;
+using System.Security.Claims;
 using Application.Services.Authentication;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
+using Contract.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -76,9 +79,20 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPost("request-forgot-password/{email}")]
-    public async Task<IActionResult> ForgotPasswordRequest( string email)
+    public async Task<IActionResult> ForgotPasswordRequest(string email)
     {
         var result = await userService.ForgotPasswordRequest(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [Authorize]
+    [HttpGet("{userProfileId}/is-profile-owner")]
+    public async Task<IActionResult> IsProfileOwner(Guid userProfileId)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var result = await userService.IsProfileOwnerAsync(currentUserId, userProfileId);
 
         return StatusCode((int)result.StatusCode, result);
     }
