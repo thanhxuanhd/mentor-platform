@@ -1,4 +1,5 @@
 using Application.Services.Categories;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
@@ -43,11 +44,15 @@ public class CategoryServiceTest
 
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex))
-            .ReturnsAsync(paginatedList);
+            .ReturnsAsync(paginatedList);        // Act
+        var request = new FilterCategoryRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            Keyword = string.Empty
+        };
+        var result = await _categoryService.GetCategoriesAsync(request);
 
-        // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, string.Empty);        
-        
         // Assert
         Assert.Multiple(() =>
         {
@@ -74,21 +79,25 @@ public class CategoryServiceTest
         }.AsQueryable();
 
         var filteredCategoriesQuery = categories.Where(c => c.Name.Contains(keyword));
-        
+
         var paginatedList = new PaginatedList<GetCategoryResponse>(
             filteredCategoriesQuery.Select(c => new GetCategoryResponse { Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status }).ToList(),
             filteredCategoriesQuery.Count(),
             pageIndex,
             pageSize
         );
-        
+
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex))
-            .ReturnsAsync(paginatedList);
+            .ReturnsAsync(paginatedList);        // Act
+        var request = new FilterCategoryRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            Keyword = keyword
+        };
+        var result = await _categoryService.GetCategoriesAsync(request);
 
-        // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);        
-        
         // Assert
         Assert.Multiple(() =>
         {
@@ -102,41 +111,20 @@ public class CategoryServiceTest
         });
     }
 
-    [TestCase(0, 10)]
-    [TestCase(10, 0)]
-    [TestCase(-1, 10)]
-    [TestCase(10, -1)]
-    public async Task GetCategoriesAsync_InvalidPageIndexOrPageSize_ReturnsBadRequest(int pageIndex, int pageSize)
-    {
-        // Arrange
-        var keyword = string.Empty;
-
-        // Act
-        var result = await _categoryService.GetCategoriesAsync(pageIndex, pageSize, keyword);        
-        
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
-            _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
-        });
-    }
-
     [Test]
     public async Task FilterCourseByCategoryAsync_CategoryNotFound_ReturnsNotFound()
-    {
-        // Arrange
+    {        // Arrange
         var categoryId = Guid.NewGuid();
-        var pageIndex = 1;
-        var pageSize = 10;
+        var request = new FilterCourseByCategoryRequest
+        {
+            PageIndex = 1,
+            PageSize = 10
+        };
         _categoryRepositoryMock.Setup(repo => repo.GetByIdAsync(categoryId, null)).ReturnsAsync(default(Category));
 
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
-        
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, request);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -149,8 +137,7 @@ public class CategoryServiceTest
 
     [Test]
     public async Task FilterCourseByCategoryAsync_CategoryFound_ReturnsPaginatedCourses()
-    {
-        // Arrange
+    {        // Arrange
         var categoryId = Guid.NewGuid();
         var pageIndex = 1;
         var pageSize = 10;
@@ -172,10 +159,16 @@ public class CategoryServiceTest
         _categoryRepositoryMock.Setup(repo => repo.FilterCourseByCategory(categoryId)).Returns(coursesForCategory);
         _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.Is<IQueryable<FilterCourseByCategoryResponse>>(q => q.Count() == coursesForCategory.Count()), pageSize, pageIndex))
             .ReturnsAsync(paginatedList);
-        
+
+        var request = new FilterCourseByCategoryRequest
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize
+        };
+
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
-        
+        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, request);
+
         // Assert
         Assert.Multiple(() =>
         {
@@ -189,27 +182,69 @@ public class CategoryServiceTest
         });
     }
 
-    [TestCase(0, 10)]
-    [TestCase(10, 0)]
-    [TestCase(-1, 10)]
-    [TestCase(10, -1)]
-    public async Task FilterCourseByCategoryAsync_InvalidPageIndexOrPageSize_ReturnsBadRequest(int pageIndex, int pageSize)
+    [Test]
+    public async Task SoftDeleteCategoryAsync_WhenCategoryNotFound_ReturnsNotFound()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
 
+        _categoryRepositoryMock
+            .Setup(r => r.GetByIdAsync(categoryId, null))
+            .ReturnsAsync((Category)null);
+
         // Act
-        var result = await _categoryService.FilterCourseByCategoryAsync(categoryId, pageIndex, pageSize);        
-        
+        var result = await _categoryService.SoftDeleteCategoryAsync(categoryId);
+
         // Assert
         Assert.Multiple(() =>
         {
             Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Page index and page size must be greater than or equal to 0"));
-            _categoryRepositoryMock.Verify(repo => repo.GetByIdAsync(It.IsAny<Guid>(), null), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.FilterCourseByCategory(It.IsAny<Guid>()), Times.Never);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<FilterCourseByCategoryResponse>(It.IsAny<IQueryable<FilterCourseByCategoryResponse>>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            Assert.That(result.Error, Is.EqualTo("Categories is not found or is deleted"));
+
+            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
+            _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
         });
     }
+
+    [Test]
+    public async Task SoftDeleteCategoryAsync_WhenSuccessful_SetsIsDeletedAndReturnsSuccess()
+    {
+        // Arrange
+        var categoryId = Guid.NewGuid();
+        var category = new Category
+        {
+            Id = categoryId,
+            Name = "Test Category",
+            IsDeleted = false
+        };
+
+        _categoryRepositoryMock
+            .Setup(r => r.GetByIdAsync(categoryId, null))
+            .ReturnsAsync(category);
+
+        _categoryRepositoryMock
+            .Setup(r => r.SaveChangesAsync())
+            .ReturnsAsync(1);
+
+        // Act
+        var result = await _categoryService.SoftDeleteCategoryAsync(categoryId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.True);
+            Assert.That(category.IsDeleted, Is.True);
+
+            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.Update(category), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        });
+
+
+    }
+
 }

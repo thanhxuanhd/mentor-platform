@@ -23,4 +23,37 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return Created();
     }
+
+    [HttpPost("github")]
+    public async Task<IActionResult> SignInGithub([FromBody] OAuthSignInRequest request)
+    {
+        var result = await authService.LoginGithubAsync(request);
+
+        return Ok(result);
+    }
+
+    [HttpPost("google")]
+    public async Task<IActionResult> SignInGoogle([FromBody] OAuthSignInRequest request)
+    {
+        var result = await authService.LoginGoogleAsync(request);
+
+        return Ok(result);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await authService.ResetPasswordAsync(request);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("check-email")]
+    public async Task<IActionResult> CheckEmailExists([FromQuery] string email)
+    {
+        var result = await authService.CheckEmailExistsAsync(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
 }

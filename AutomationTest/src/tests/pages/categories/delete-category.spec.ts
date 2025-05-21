@@ -2,7 +2,6 @@ import { CategoryPage } from '../../../pages/categories/categories-page';
 import { test } from '../../../core/fixture/authFixture';
 
 test('@SmokeTest @Category Delete a valid category sucessful', async ({ loggedInPage, page }) => {
-    // await new Promise(resolve => setTimeout(resolve, 5000));
     const categoryPage = new CategoryPage(page);
 
     await test.step('Navigate to Delete Category Modal', async () => {

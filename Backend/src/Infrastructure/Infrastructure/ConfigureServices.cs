@@ -1,26 +1,35 @@
 ﻿using Contract.Repositories;
 using Contract.Services;
+using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Settings;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
+using Infrastructure.Services.Authorization;
+using Infrastructure.Services.Authorization.OAuth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Domain.Enums;
-using Infrastructure.Services.Authorization;
 
 namespace Infrastructure;
 
 public static class ConfigureServices
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
+        IConfiguration configuration)
     {
+        // Add HttpClient
+        services.AddHttpClient();
+
         // Add services
         services.AddScoped<IJwtService, JwtService>();
+        services.AddScoped<GitHubOAuthService>();
+        services.AddScoped<GoogleOAuthService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
@@ -29,14 +38,16 @@ public static class ConfigureServices
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-      
+        services.AddScoped<ICourseRepository, CourseRepository>();
+
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            // options.EnableSensitiveDataLogging();
         });
-
+        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
         // Add JWT Authentication
-        services.AddAuthentication((options) =>
+        services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;

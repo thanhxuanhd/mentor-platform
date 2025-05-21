@@ -6,6 +6,7 @@ namespace Domain.Entities
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public bool Status { get; set; } = true;
+        public bool IsDeleted { get; set; } = false;
         public virtual ICollection<Course>? Courses { get; set; }
     }
 }
