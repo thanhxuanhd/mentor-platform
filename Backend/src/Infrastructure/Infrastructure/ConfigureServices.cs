@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Contract.Repositories;
+﻿using Contract.Repositories;
 using Contract.Services;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
@@ -14,6 +13,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Infrastructure;
 
@@ -29,8 +29,8 @@ public static class ConfigureServices
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<GitHubOAuthService>();
         services.AddScoped<GoogleOAuthService>();
+        services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
-        
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
@@ -49,7 +49,7 @@ public static class ConfigureServices
             options.EnableSensitiveDataLogging();
             options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
         });
-
+        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
         // Add JWT Authentication
         services.AddAuthentication(options =>
         {

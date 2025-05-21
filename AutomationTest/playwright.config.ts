@@ -10,15 +10,15 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [['junit', { outputFile: 'test-results/e2e-junit-results.xml' }]],
   use: {
-    baseURL: process.env.BASE_LOCAL_URL,
+    baseURL: process.env.BASE_URL,
     trace: 'retain-on-failure',
     headless: false,
     testIdAttribute: '',
     actionTimeout: 10000,
     extraHTTPHeaders: {
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
     }
-
   },
 
   projects: [
@@ -27,5 +27,4 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-
 });

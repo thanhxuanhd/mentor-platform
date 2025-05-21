@@ -34,7 +34,10 @@ const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [fieldError, setFieldError] = useState<{ email?: string; password?: string }>({});
+  const [fieldError, setFieldError] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
   const navigate = useNavigate();
   const { setToken } = useAuth();
 
@@ -45,10 +48,14 @@ const LoginForm: React.FC = () => {
         const remembermeInfo = JSON.parse(remembermeInfoString);
         const remembered = remembermeInfo.enabled || false;
         const savedEmail = remembered ? remembermeInfo.email || "" : "";
-        const savedEncodedPassword = remembered ? remembermeInfo.password || "" : "";
+        const savedEncodedPassword = remembered
+          ? remembermeInfo.password || ""
+          : "";
 
         setEmail(savedEmail);
-        setPassword(savedEncodedPassword ? decodePassword(savedEncodedPassword) : "");
+        setPassword(
+          savedEncodedPassword ? decodePassword(savedEncodedPassword) : "",
+        );
         setRememberMe(remembered);
       }
     } catch (error) {
@@ -85,7 +92,6 @@ const LoginForm: React.FC = () => {
       errors.password = "Please enter your password";
       hasError = true;
     }
-
     setFieldError(errors);
     if (hasError) return;
 
@@ -158,14 +164,17 @@ const LoginForm: React.FC = () => {
       <form
         onSubmit={handleSubmit}
         noValidate
-        className="w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow mx-auto"
+        className="w-full max-w-md space-y-6 p-6 bg-gray-800 rounded shadow mx-auto"
       >
-        <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
+        <h2 className="text-2xl font-bold text-center text-white">
           Sign in to your account
         </h2>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-white"
+          >
             Email
           </label>
           <input
@@ -177,11 +186,16 @@ const LoginForm: React.FC = () => {
             className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
             required
           />
-          {fieldError.email && <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>}
+          {fieldError.email && (
+            <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-white">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-white"
+          >
             Password
           </label>
           <div className="relative">
@@ -204,11 +218,13 @@ const LoginForm: React.FC = () => {
               {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             </button>
           </div>
-          {fieldError.password && <p className="text-red-500 text-sm mt-1">{fieldError.password}</p>}
+          {fieldError.password && (
+            <p className="text-red-500 text-sm mt-1">{fieldError.password}</p>
+          )}
         </div>
 
         <div className="flex items-center justify-between">
-          <label className="flex items-center text-sm text-gray-700 dark:text-white">
+          <label className="flex items-center text-sm text-white">
             <input
               type="checkbox"
               checked={rememberMe}
@@ -217,25 +233,26 @@ const LoginForm: React.FC = () => {
             />
             Remember me
           </label>
-          <Link to="/reset-password" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+          >
             Forgot password?
           </Link>
         </div>
-
         <button
           type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded"
         >
           Sign In
         </button>
-
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-300">or continue with</p>
+          <p className="text-sm text-gray-300">or continue with</p>
           <div className="mt-3 flex justify-center gap-4">
             <button
               type="button"
               onClick={handleGoogleLogin}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-orange-500"
             >
               <GoogleOutlined />
               Google
@@ -243,7 +260,7 @@ const LoginForm: React.FC = () => {
             <button
               type="button"
               onClick={handleGithubLogin}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-orange-500"
             >
               <GithubOutlined />
               GitHub
@@ -251,10 +268,13 @@ const LoginForm: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-center">
-          <Link to="/signup" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
-            Don't have an account? Sign up
-          </Link>
+        <div className="text-center text-sm">
+          <p>
+            Don't have an account?{" "}
+            <a href="/signup" className="text-orange-500 hover:underline">
+              Sign up
+            </a>
+          </p>
         </div>
 
         <div className="text-center mt-4">

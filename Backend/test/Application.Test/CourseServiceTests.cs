@@ -760,4 +760,158 @@ public class CourseServiceTests
                     "Advanced", status, difficulty), Times.Once);
         });
     }
+
+    [Test]
+    public async Task PublishCourseAsync_WhenCourseExists_ReturnsPublishedCourse()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var course = new Course
+        {
+            Id = courseId,
+            Title = "Test Course",
+            Status = CourseStatus.Draft
+        };
+
+        _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
+            .ReturnsAsync(course);
+
+        // Act
+        var result = await _courseService.PublishCourseAsync(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value.Status, Is.EqualTo(CourseStatus.Published));
+            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task PublishCourseAsync_WhenCourseNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
+            .ReturnsAsync((Course)null);
+
+        // Act
+        var result = await _courseService.PublishCourseAsync(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            Assert.That(result.Error, Is.EqualTo("Course not found"));
+            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+        });
+    }
+
+    [Test]
+    public async Task PublishCourseAsync_WhenCourseAlreadyPublished_ReturnsBadRequest()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var course = new Course
+        {
+            Id = courseId,
+            Title = "Test Course",
+            Status = CourseStatus.Published
+        };
+
+        _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
+            .ReturnsAsync(course);
+
+        // Act
+        var result = await _courseService.PublishCourseAsync(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo("Course is already published"));
+            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+        });
+    }
+
+    [Test]
+    public async Task ArchiveCourseAsync_WhenCourseExists_ReturnsArchivedCourse()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var course = new Course
+        {
+            Id = courseId,
+            Title = "Test Course",
+            Status = CourseStatus.Published
+        };
+
+        _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
+            .ReturnsAsync(course);
+
+        // Act
+        var result = await _courseService.ArchiveCourseAsync(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value.Status, Is.EqualTo(CourseStatus.Archived));
+            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task ArchiveCourseAsync_WhenCourseNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
+            .ReturnsAsync((Course)null);
+
+        // Act
+        var result = await _courseService.ArchiveCourseAsync(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            Assert.That(result.Error, Is.EqualTo("Course not found"));
+            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+        });
+    }
+
+    [Test]
+    public async Task ArchiveCourseAsync_WhenCourseAlreadyArchived_ReturnsBadRequest()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var course = new Course
+        {
+            Id = courseId,
+            Title = "Test Course",
+            Status = CourseStatus.Archived
+        };
+
+        _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
+            .ReturnsAsync(course);
+
+        // Act
+        var result = await _courseService.ArchiveCourseAsync(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo("Course is already archived"));
+            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
+        });
+    }
 }

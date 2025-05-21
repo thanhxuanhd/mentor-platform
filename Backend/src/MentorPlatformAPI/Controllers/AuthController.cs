@@ -1,8 +1,5 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
-using Domain.Models;
-using Contract.Shared;
-using Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -58,4 +55,5 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         return StatusCode((int)result.StatusCode, result);
     }
+
 }
