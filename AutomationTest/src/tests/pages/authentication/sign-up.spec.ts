@@ -1,18 +1,19 @@
-import { RegistrationStep1Page } from './../../../pages/authentication/registration-step-1-page';
+import { SignUpPage } from '../../../pages/authentication/sign-up-page';
 import { test } from '../../../core/fixture/authFixture';
-import { User_Registration_Step_1 } from '../../../models/user/user';
-import testData from '../../test-data/user-registration-step-1-data.json'
+import { SignUpUser } from '../../../models/user/user';
+import testData from '../../test-data/sign-up-user-data.json'
 
-test.describe('@Registration Registration step 1 test', () => {
-    let registrationstep1Page: RegistrationStep1Page;
+test.describe('@Registration Sign Up test', () => {
+    let registrationstep1Page: SignUpPage;
 
     test.beforeEach(async ({ page }) => {
-        registrationstep1Page = new RegistrationStep1Page(page);
+        registrationstep1Page = new SignUpPage(page);
         await registrationstep1Page.goToRegistrationStep1Modal();
     });
 
-    const userData: { [label: string]: User_Registration_Step_1 } = {
-        '@SmokeTest Valid Case': testData.valid_case,
+    const userData: { [label: string]: SignUpUser } = {
+        //Todo: Uncomment when (User Story 165: User Profile Creation - Step 2) is done
+        // '@SmokeTest Valid Case': testData.valid_case,
         'Term is unchecked': testData.term_is_uncheck,
         'Empty Email': testData.empty_email,
         'Over length email': testData.over_length_email,

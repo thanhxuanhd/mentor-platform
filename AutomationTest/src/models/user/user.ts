@@ -10,7 +10,7 @@ export interface ResetPasswordUser {
   expectedMessage: string;
 }
 
-export interface User_Registration_Step_1 {
+export interface SignUpUser {
   email: string;
   password: string;
   confirmPassword: string;

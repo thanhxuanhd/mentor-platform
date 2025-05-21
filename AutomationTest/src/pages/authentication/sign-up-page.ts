@@ -2,7 +2,7 @@ import { Page, Locator } from "@playwright/test";
 import { BasePage } from "../base-page";
 import { PAGE_ENDPOINT_URL } from "../../core/constants/page-url";
 
-export class RegistrationStep1Page extends BasePage {
+export class SignUpPage extends BasePage {
     private LNK_REGISTRATION1_URL: string;
     private TXT_EMAIL_LOCATOR: Locator;
     private TXT_PASSWORD_LOCATOR: Locator;
