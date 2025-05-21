@@ -46,10 +46,10 @@ public record EditUserProfileRequest(
     }
 }
 
-public class UpdateUserDetailRequestValidator : AbstractValidator<EditUserProfileRequest>
+public class EditUserDetailRequestValidator : AbstractValidator<EditUserProfileRequest>
 {
     private static readonly List<int> _allowedDurations = new() { 30, 45, 60, 90, 120 };
-    public UpdateUserDetailRequestValidator()
+    public EditUserDetailRequestValidator()
     {
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("Full name is required")
@@ -82,6 +82,23 @@ public class UpdateUserDetailRequestValidator : AbstractValidator<EditUserProfil
         RuleFor(x => x.Goal)
             .MaximumLength(200).WithMessage("Goal must not exceed 200 characters")
             .When(x => x.Goal != null);
+
+        RuleFor(x => x.PreferredCommunicationMethod)
+            .IsInEnum()
+            .WithMessage("Invalid communication method selected.")
+            .When(x => x.PreferredCommunicationMethod != null);
+
+        RuleFor(x => x.PreferredSessionFrequency)
+            .IsInEnum()
+            .WithMessage("A valid session frequency must be selected.");
+
+        RuleFor(x => x.PreferredSessionDuration)
+            .Must(duration => _allowedDurations.Contains(duration))
+            .WithMessage($"Session duration must be one of the following: {string.Join(", ", _allowedDurations)} minutes.");
+
+        RuleFor(x => x.PreferredLearningStyle)
+            .IsInEnum()
+            .WithMessage("A valid learning style must be selected.");
 
         RuleFor(x => x.AvailabilityIds)
             .Must(ids => ids!.All(id => id != Guid.Empty))
