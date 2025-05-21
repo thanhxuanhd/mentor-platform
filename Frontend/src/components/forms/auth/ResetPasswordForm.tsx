@@ -5,35 +5,42 @@ import { useState } from "react"
 import { EyeOutlined, EyeInvisibleOutlined, CheckCircleOutlined } from "@ant-design/icons"
 import authService from "../../../services/auth/authService"
 import type { ResetPasswordReq } from "../../../models"
+import { useNavigate } from "react-router-dom";
 
 const ResetPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("")
+  const [oldPassword, setOldPassword] = useState("") 
   const [newPassword, setNewPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [showNotification, setShowNotification] = useState(false)
-  
+  const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const data: ResetPasswordReq = { email, newPassword }
+    if (isLoading) return
+    setIsLoading(true)
+
+    const data: ResetPasswordReq = { email, oldPassword, newPassword } 
     try {
       await authService.resetPassword(data)
       console.log("Reset password successful for:", email)
-      
+
       setShowNotification(true)
-      
       setTimeout(() => {
         setShowNotification(false)
+        navigate("/login", { replace: true });
         setSubmitted(true)
-      }, 1000)
+      }, 3000)
     } catch (err) {
       console.error("Reset password failed:", err)
-      alert("Account does not exist.");
+      alert("Reset password failed: incorrect email or old password.")
     }
   }
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    setShowPassword(!showPassword)
   }
 
   return (
@@ -43,11 +50,11 @@ const ResetPasswordForm: React.FC = () => {
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
             <p className="font-bold">Success!</p>
-            <p>Your password has been reset successfully.</p>
+            <p>Reset Password successfully!</p>
           </div>
         </div>
       )}
-      
+
       <div className="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded shadow">
         <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
           Reset your password
@@ -72,6 +79,23 @@ const ResetPasswordForm: React.FC = () => {
                 className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
                 placeholder="you@example.com"
               />
+            </div>
+
+            <div>
+              <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 dark:text-white">
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  id="oldPassword"
+                  type={showPassword ? "text" : "password"}
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                  required
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+                  placeholder="Enter your current password"
+                />
+              </div>
             </div>
 
             <div>
@@ -100,9 +124,12 @@ const ResetPasswordForm: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded"
+              disabled={isLoading}
+              className={`w-full text-white font-semibold py-2 rounded ${
+                isLoading ? "bg-orange-400 cursor-not-allowed" : "bg-orange-600 hover:bg-orange-700"
+              }`}
             >
-              Reset Password
+              {isLoading ? "Processing..." : "Reset Password"}
             </button>
 
             <div className="text-center">
@@ -113,7 +140,6 @@ const ResetPasswordForm: React.FC = () => {
           </form>
         )}
       </div>
-      
     </>
   )
 }

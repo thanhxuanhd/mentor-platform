@@ -5,38 +5,32 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import type {ReactNode} from "react";
+import type { ReactNode } from "react";
+
 interface User {
   id: string;
-  username: string;
-  dateOfBirth: string;
-  isFirstTimeLogin: boolean;
+  fullName: string;
+  email: string;
   role: string;
-  location: number;
 }
 
 export interface AuthContextProps {
-  token: string | null;
+  user: User | null;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
-  user: User;
   setUser: (value: User) => void;
+  setToken: (value: string) => void;
+  removeToken: () => void;
   loading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
-  token: null,
+  user: null,
   isAuthenticated: false,
-  setIsAuthenticated: () => {},
-  user: {
-    id: "",
-    username: "",
-    dateOfBirth: "",
-    isFirstTimeLogin: false,
-    role: "Admin",
-    location: 1,
-  },
-  setUser: () => {},
+  setIsAuthenticated: () => { },
+  setUser: () => { },
+  setToken: () => { },
+  removeToken: () => { },
   loading: true,
 });
 
@@ -45,78 +39,79 @@ interface AuthProviderProps {
 }
 
 interface Token {
-  UserId: string;
+  sub: string;
+  exp: any;
+  userId: string;
+  email: string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
-  IsFirstTimeLogin: string;
-  DateOfBirth: string;
-  Location: string;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token"),
-  );
-  const [user, setUser] = useState<User>({
-    id: "",
-    username: "",
-    dateOfBirth: "",
-    isFirstTimeLogin: false,
-    role: "Staff",
-    location: 1,
-  });
-
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  const setToken = (token: string) => {
+    window.localStorage.setItem('token', token);
+    fetchUserFromToken();
+  };
+
+  const removeToken = () => {
+    window.localStorage.removeItem('token');
+    setUser(null);
+    setIsAuthenticated(false);
+    setLoading(false);
+  };
+
+  const getToken = () => {
+    return window.localStorage.getItem('token');
+  }
 
   const fetchUserFromToken = () => {
-    const storedToken = localStorage.getItem("token");
-
-    if (storedToken) {
-      setIsAuthenticated(true);
-      setToken(storedToken);
-      const decodedToken = jwtDecode<Token>(storedToken);
-      setUser({
-        id: decodedToken.UserId,
-        username:
-          decodedToken[
-            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
-          ],
-        dateOfBirth: decodedToken.DateOfBirth,
-        isFirstTimeLogin: decodedToken.IsFirstTimeLogin === "true",
-        role: decodedToken[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        ],
-        location: parseInt(decodedToken.Location),
-      });
-    } else {
-      setUser({
-        id: "",
-        username: "",
-        dateOfBirth: "",
-        isFirstTimeLogin: false,
-        role: "Staff",
-        location: 1,
-      });
+    const storedToken = getToken();
+    if (!storedToken) {
+      setUser(null);
       setIsAuthenticated(false);
+      setLoading(false);
+      return;
     }
+
+    const decodedToken = jwtDecode<Token>(storedToken);
+    // Check token expiration
+    if (decodedToken.exp && decodedToken.exp * 1000 < Date.now()) {
+      removeToken();
+      setUser(null);
+      setIsAuthenticated(false);
+      setLoading(false);
+      return;
+    }
+
+    setUser({
+      id: decodedToken.sub,
+      email: decodedToken.email,
+      fullName: decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
+      role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
+    })
+    setIsAuthenticated(true);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchUserFromToken();
-  }, [token, isAuthenticated]);
+  }, []);
 
   const authContextValue: AuthContextProps = useMemo(
     () => ({
-      token,
+      user,
       isAuthenticated,
       setIsAuthenticated,
-      user,
       setUser,
+      setToken,
+      removeToken,
       loading,
     }),
-    [token, user, isAuthenticated, loading],
+    [user, isAuthenticated, loading],
   );
 
   return (
