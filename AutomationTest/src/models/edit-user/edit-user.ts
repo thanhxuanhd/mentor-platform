@@ -6,3 +6,10 @@ export interface User {
   status: string;
   lastActive: string;
 }
+
+export interface CreateUser {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: number;
+}
