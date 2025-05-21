@@ -38,7 +38,7 @@ const SignUpForm: React.FC = () => {
       email,
       password,
       confirmpassword: confirmPassword,
-      roleId: 3
+      roleId: 3,
     };
 
     try {
@@ -58,8 +58,7 @@ const SignUpForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[60vh] w-full max-w-md space-y-6 bg-white dark:bg-gray-800 p-6 rounded shadow mx-auto text-sm text-gray-300"
->
+    <div className="w-full max-w-md space-y-6 p-6 bg-gray-800 rounded shadow mx-auto text-sm text-gray-300">
       {showNotification && (
         <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm text-sm">
           <CheckCircleOutlined className="text-green-500 text-lg mr-2" />
@@ -80,7 +79,9 @@ const SignUpForm: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-1">
-            <label htmlFor="email" className="block text-base">Email Address</label>
+            <label htmlFor="email" className="block text-base">
+              Email Address
+            </label>
             <input
               id="email"
               type="email"
@@ -92,7 +93,9 @@ const SignUpForm: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="password" className="block text-base">Password</label>
+            <label htmlFor="password" className="block text-base">
+              Password
+            </label>
             <input
               id="password"
               type="password"
@@ -104,7 +107,9 @@ const SignUpForm: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label htmlFor="confirmPassword" className="block text-base">Confirm Password</label>
+            <label htmlFor="confirmPassword" className="block text-base">
+              Confirm Password
+            </label>
             <input
               id="confirmPassword"
               type="password"
@@ -124,7 +129,14 @@ const SignUpForm: React.FC = () => {
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-500 rounded"
             />
             <label htmlFor="terms" className="ml-2 block text-xs">
-              I agree to the <a href="/terms" className="text-orange-500 hover:underline">Terms of Service</a> and <a href="/privacy" className="text-orange-500 hover:underline">Privacy Policy</a>
+              I agree to the{" "}
+              <a href="/terms" className="text-orange-500 hover:underline">
+                Terms of Service
+              </a>{" "}
+              and{" "}
+              <a href="/privacy" className="text-orange-500 hover:underline">
+                Privacy Policy
+              </a>
             </label>
           </div>
 
@@ -139,7 +151,10 @@ const SignUpForm: React.FC = () => {
 
           <div className="text-center text-sm">
             <p>
-              Already have an account? <a href="/login" className="text-orange-500 hover:underline">Sign in</a>
+              Already have an account?{" "}
+              <a href="/login" className="text-orange-500 hover:underline">
+                Sign in
+              </a>
             </p>
           </div>
         </form>

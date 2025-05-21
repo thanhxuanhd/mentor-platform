@@ -28,7 +28,6 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       .validateFields()
       .then((values) => {
         onSubmit({ ...initialValues, ...values });
-        form.resetFields();
       })
       .catch((err) => console.log("Validation failed:", err));
   };

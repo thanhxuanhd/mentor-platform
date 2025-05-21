@@ -1,9 +1,9 @@
-import ForgotPasswordForm from "../../components/forms/auth/ForgotPasswordForm"
+import ForgotPasswordForm from "../../components/forms/auth/ForgotPasswordForm";
 
 export default function ResetPasswordPage() {
   return (
-    <main className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+    <main className="h-screen flex flex-col items-center justify-center">
       <ForgotPasswordForm />
     </main>
-  )
+  );
 }
