@@ -7,30 +7,19 @@ import CoursesPage from '../pages/Courses';
 import NotFoundPage from '../pages/NotFound';
 import { Login, SignUp } from '../pages/Auth';
 import ResetPassword from '../pages/Auth/ResetPassword';
+import ForgotPassword from '../pages/Auth/ForgotPassword';
 import OAuthCallback from '../pages/Auth/OAuthCallback';
 import ProtectedRoute from './ProtectedRoute';
 import { applicationRole } from '../constants/role';
-import UserPreference from '../pages/Auth/components/UserPreference';
-import UserProfile from '../pages/Auth/components/UserProfile';
-import AuthLayout from '../components/AuthLayout';
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route
-        element={
-          <AuthLayout />
-        }
-      >
-        <Route path="login" element={<Login />} />
-        <Route path="signup" element={<SignUp />} />
-        <Route path="reset-password" element={<ResetPassword />} />
-        <Route path="auth/callback/:provider" element={<OAuthCallback />} />
-
-        <Route path='user-preference' element={<UserPreference />} />
-        <Route path='user-profile' element={<UserProfile />} />
-      </Route>
-
+      <Route path="login" element={<Login />} />
+      <Route path="signup" element={<SignUp />} />
+      <Route path="reset-password" element={<ResetPassword />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
+      <Route path="auth/callback/:provider" element={<OAuthCallback />} />
       <Route
         element={
           <ProtectedRoute requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}>
@@ -44,7 +33,13 @@ const AppRoutes = () => {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
       </Route>
-      <Route path="*" element={<NotFoundPage />} />
+      <Route
+        element={
+          <MainLayout />
+        }
+      >
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 };

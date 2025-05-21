@@ -1,9 +1,5 @@
 import { Button, Layout, Menu, Tooltip } from "antd";
 import {
-  UserOutlined,
-  AppstoreOutlined,
-  BarChartOutlined,
-  BookOutlined,
   SettingFilled,
   LogoutOutlined,
 } from "@ant-design/icons";

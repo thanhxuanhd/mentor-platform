@@ -1,4 +1,5 @@
-﻿using Application.Services.Users;
+﻿using Contract.Services;
+using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
@@ -16,13 +17,15 @@ namespace Application.Test
     public class UserServiceTests
     {
         private Mock<IUserRepository> _mockUserRepository;
+        private Mock<IEmailService> _emailServiceMock;
         private UserService _userService;
 
         [SetUp]
         public void Setup()
         {
             _mockUserRepository = new Mock<IUserRepository>();
-            _userService = new UserService(_mockUserRepository.Object);
+            _emailServiceMock = new Mock<IEmailService>();
+            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object);
         }
 
         [Test]
