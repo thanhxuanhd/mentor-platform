@@ -4,7 +4,7 @@
     "password": "Bqt2112.",
     "confirmPassword": "Bqt2112.",
     "isTermCheck": true,
-    "expectedMessage": ""
+    "expectedMessage": "Tell us more about yourself"
   },
   "term_is_uncheck": {
     "email": "championlc97@gmail.com",
