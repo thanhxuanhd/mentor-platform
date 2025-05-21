@@ -405,7 +405,7 @@ public class CourseServiceTests
             });
 
         // Act
-        var result = await _courseService.CreateAsync(request);
+        var result = await _courseService.CreateAsync(request.MentorId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -474,7 +474,7 @@ public class CourseServiceTests
             Assert.That(result.Value.Description, Is.EqualTo(request.Description));
             Assert.That(result.Value.CategoryId, Is.EqualTo(request.CategoryId));
             Assert.That(result.Value.Difficulty, Is.EqualTo(request.Difficulty));
-            _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
+            _courseRepositoryMock.Verify(repo => repo.GetCourseWithDetailsAsync(courseId), Times.Once);
             _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         });
     }
@@ -505,7 +505,7 @@ public class CourseServiceTests
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             Assert.That(result.Error, Is.EqualTo("Course not found"));
-            _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
+            _courseRepositoryMock.Verify(repo => repo.GetCourseWithDetailsAsync(courseId), Times.Once);
             _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
         });
     }

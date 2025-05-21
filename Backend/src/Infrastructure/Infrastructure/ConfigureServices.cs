@@ -78,6 +78,8 @@ public static class ConfigureServices
             options.AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(UserRole.Learner.ToString()));
         });
 
+        services.AddScoped<CurrentUser>();
+
         return services;
     }
 }

@@ -38,10 +38,10 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         return Result.Success(response, HttpStatusCode.OK);
     }
 
-    public async Task<Result<CourseSummary>> CreateAsync(CourseCreateRequest request)
+    public async Task<Result<CourseSummary>> CreateAsync(Guid mentorId, CourseCreateRequest request)
     {
-        var normalizedTagNames = request.Tags.Select(t => char.ToUpper(t[0]) + t[1..].ToLower()).ToHashSet();
-        var tags = await tagRepository.UpsertAsync(normalizedTagNames);
+        var caseSensitiveTagNames = request.Tags.ToHashSet();
+        var tags = await tagRepository.UpsertAsync(caseSensitiveTagNames);
         await tagRepository.SaveChangesAsync();
 
         // TODO: Not checking MentorId contains role: Mentor, Tags not being processed in stores
@@ -50,7 +50,7 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
             Title = request.Title,
             Description = request.Description,
             CategoryId = request.CategoryId,
-            MentorId = request.MentorId,
+            MentorId = mentorId,
             DueDate = request.DueDate,
             Status = CourseStatus.Draft,
             Difficulty = request.Difficulty
@@ -58,26 +58,26 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
 
         await courseRepository.AddAsync(course);
         await courseRepository.UpdateTagsCollection(tags, course);
-
         await courseRepository.SaveChangesAsync();
 
         var createdCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
         if (createdCourse == null)
+        {
             return Result.Failure<CourseSummary>("Failed to retrieve created course",
                 HttpStatusCode.InternalServerError);
+        }
 
         var response = createdCourse.ToCourseSummary();
-
         return Result.Success(response, HttpStatusCode.Created);
     }
 
     public async Task<Result<CourseSummary>> UpdateAsync(Guid id, CourseUpdateRequest request)
     {
-        var course = await courseRepository.GetByIdAsync(id);
+        var course = await courseRepository.GetCourseWithDetailsAsync(id);
         if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
-        var normalizedTagNames = request.Tags.Select(t => char.ToUpper(t[0]) + t[1..].ToLower()).ToHashSet();
-        var tags = await tagRepository.UpsertAsync(normalizedTagNames);
+        var caseSensitiveTagNames = request.Tags.ToHashSet();
+        var tags = await tagRepository.UpsertAsync(caseSensitiveTagNames);
         await tagRepository.SaveChangesAsync();
 
         course.Title = request.Title;
@@ -88,11 +88,6 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
 
         await courseRepository.UpdateTagsCollection(tags, course);
         await courseRepository.SaveChangesAsync();
-
-        var updatedCourse = await courseRepository.GetCourseWithDetailsAsync(id);
-        if (updatedCourse == null)
-            return Result.Failure<CourseSummary>("Failed to retrieve updated course",
-                HttpStatusCode.InternalServerError);
 
         var response = course.ToCourseSummary();
 

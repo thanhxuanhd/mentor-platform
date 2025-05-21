@@ -193,7 +193,7 @@ public class CourseControllerTest
         };
         var serviceResult = Result.Success(courseResponse, HttpStatusCode.Created);
 
-        _courseServiceMock.Setup(s => s.CreateAsync(request))
+        _courseServiceMock.Setup(s => s.CreateAsync(request.MentorId, request))
             .ReturnsAsync(serviceResult);
 
         // Act
@@ -206,7 +206,7 @@ public class CourseControllerTest
             var objectResult = result as ObjectResult;
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.Created));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
-            _courseServiceMock.Verify(s => s.CreateAsync(request), Times.Once);
+            _courseServiceMock.Verify(s => s.CreateAsync(request.MentorId, request), Times.Once);
         });
     }
 
@@ -226,7 +226,7 @@ public class CourseControllerTest
 
         var serviceResult = Result.Failure<CourseSummary>("Invalid request", HttpStatusCode.BadRequest);
 
-        _courseServiceMock.Setup(s => s.CreateAsync(request))
+        _courseServiceMock.Setup(s => s.CreateAsync(request.MentorId, request))
             .ReturnsAsync(serviceResult);
 
         // Act
@@ -239,7 +239,7 @@ public class CourseControllerTest
             var objectResult = result as ObjectResult;
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
-            _courseServiceMock.Verify(s => s.CreateAsync(request), Times.Once);
+            _courseServiceMock.Verify(s => s.CreateAsync(request.MentorId, request), Times.Once);
         });
     }
 
@@ -560,6 +560,112 @@ public class CourseControllerTest
             var objectResult = result as ObjectResult;
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NoContent));
             Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
+        });
+    }
+
+    [Test]
+    public async Task PublishCourse_WhenCourseExists_ReturnsOkResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var courseResponse = new CourseSummary
+        {
+            Id = courseId,
+            Status = CourseStatus.Published
+        };
+        var serviceResult = Result.Success(courseResponse, HttpStatusCode.OK);
+
+        _courseServiceMock.Setup(s => s.PublishCourseAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.PublishCourse(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
+            _courseServiceMock.Verify(s => s.PublishCourseAsync(courseId), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task PublishCourse_WhenCourseNotFound_ReturnsNotFoundResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var serviceResult = Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+
+        _courseServiceMock.Setup(s => s.PublishCourseAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.PublishCourse(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
+            _courseServiceMock.Verify(s => s.PublishCourseAsync(courseId), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task ArchiveCourse_WhenCourseExists_ReturnsOkResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var courseResponse = new CourseSummary
+        {
+            Id = courseId,
+            Status = CourseStatus.Archived
+        };
+        var serviceResult = Result.Success(courseResponse, HttpStatusCode.OK);
+
+        _courseServiceMock.Setup(s => s.ArchiveCourseAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.ArchiveCourse(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
+            _courseServiceMock.Verify(s => s.ArchiveCourseAsync(courseId), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task ArchiveCourse_WhenCourseNotFound_ReturnsNotFoundResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var serviceResult = Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+
+        _courseServiceMock.Setup(s => s.ArchiveCourseAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.ArchiveCourse(courseId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.InstanceOf<ObjectResult>());
+            var objectResult = result as ObjectResult;
+            Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(objectResult?.Value, Is.EqualTo(serviceResult));
+            _courseServiceMock.Verify(s => s.ArchiveCourseAsync(courseId), Times.Once);
         });
     }
 }

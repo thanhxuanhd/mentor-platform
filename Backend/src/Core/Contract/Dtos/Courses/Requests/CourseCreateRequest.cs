@@ -10,5 +10,5 @@ public record CourseCreateRequest
     public required CourseDifficulty Difficulty { get; init; }
     public List<string> Tags { get; init; } = [];
     public required DateTime DueDate { get; init; }
-    public required Guid MentorId { get; init; }
+    public required Guid MentorId { get; init; } // TODO: remove from dto
 }

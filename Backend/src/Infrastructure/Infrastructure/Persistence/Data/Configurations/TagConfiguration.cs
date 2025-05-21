@@ -12,11 +12,10 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 
         builder.Property(t => t.Name)
             .IsRequired()
-            .HasMaxLength(50);
-
+            .HasMaxLength(50)
+            .UseCollation("SQL_Latin1_General_CP1_CS_AS");
+        
         builder.HasIndex(t => t.Name)
             .IsUnique();
-
-        builder.HasAlternateKey(t => t.Name);
     }
 }

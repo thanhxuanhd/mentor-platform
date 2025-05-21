@@ -13,11 +13,13 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
 {
     public async Task UpdateTagsCollection(List<Tag> tags, Course course)
     {
-        var tagIds = tags.Select(t => t.Id);
+        if (!_context.Entry(course).Collection(c => c.Tags).IsLoaded)
+        {
+            throw new Exception("Course.Tags collection is not loaded");
+        }
 
-        await _context.CourseTags
-            .Where(ct => ct.CourseId == course.Id && !tagIds.Contains(ct.TagId))
-            .ExecuteDeleteAsync();
+        var tagIds = tags.Select(t => t.Id);
+        course.Tags.RemoveAll(t => !tagIds.Contains(t.Id));
 
         foreach (var courseTag in tagIds.Select(tagId => new CourseTag
                  {
@@ -39,10 +41,10 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
         return await _context.Courses
             .Include(c => c.Category)
             .Include(c => c.Mentor)
-            .Include(c => c.CourseTags)
-            .ThenInclude(c => c.Tag)
-            // .Include(c => c.Tags)
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .Include(c => c.Tags)
+            .Include(c => c.Items)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync();
     }
 
     public async Task<PaginatedList<CourseSummary>> GetPaginatedCoursesAsync(
@@ -59,6 +61,8 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
             .Include(c => c.Category)
             .Include(c => c.Mentor)
             .Include(c => c.Tags)
+            .Include(c => c.Items)
+            .AsSplitQuery()
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(keyword))

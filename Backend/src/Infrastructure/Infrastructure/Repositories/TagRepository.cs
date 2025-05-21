@@ -10,10 +10,9 @@ public class TagRepository(ApplicationDbContext context) : BaseRepository<Tag, G
 {
     public async Task<List<Tag>> UpsertAsync(HashSet<string> tagNames)
     {
-        // TODO: Id, Display Name, Normalized Name
         var tags = await _context.Tags.Where(t => tagNames.Contains(t.Name)).ToListAsync();
-        var existingTagNames = tags.Select(t => t.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        
+        var existingTagNames = tags.Select(t => t.Name).ToHashSet();
+
         foreach (var tagName in tagNames)
         {
             if (!existingTagNames.Contains(tagName))
@@ -23,7 +22,7 @@ public class TagRepository(ApplicationDbContext context) : BaseRepository<Tag, G
                 tags.Add(tag);
             }
         }
-        
+
         return tags;
     }
 }

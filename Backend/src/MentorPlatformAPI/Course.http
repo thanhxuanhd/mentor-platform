@@ -61,7 +61,7 @@ Authorization: Bearer {{auth_token}}
   "description": "An updated description",
   "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
   "dueDate": "{{$isoTimestamp}}",
-  "tags": ["thrilling", "adventure", "{{$random.hacker.adjective}}"],
+  "tags": ["thrilling", "Adventure", "{{$random.hacker.adjective}}"],
   "difficulty": "Beginner"
 }
 

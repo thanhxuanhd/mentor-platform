@@ -1,6 +1,7 @@
 ﻿using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
 using Contract.Services;
+using Infrastructure.Services.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,7 @@ public class CourseController(ICourseService courseService, ICourseItemService c
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CourseCreateRequest request)
     {
-        var result = await courseService.CreateAsync(request);
+        var result = await courseService.CreateAsync(request.MentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -45,6 +46,24 @@ public class CourseController(ICourseService courseService, ICourseItemService c
     {
         var result = await courseService.DeleteAsync(id);
         return StatusCode((int)result.StatusCode, result);
+    }
+    
+    [HttpPut("{id:guid}/publish")]
+    [Authorize(policy: RequiredRole.Admin)]
+    public async Task<IActionResult> PublishCourse(Guid id)
+    {
+        throw new NotImplementedException();
+        // var result = await courseService.PublishCourse(id);
+        // return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut("{id:guid}/publish")]
+    public async Task<IActionResult> ArchiveCourse(Guid id)
+    {
+        throw new NotImplementedException();
+        // ACL: Allow course owner and admin
+        // var result = await courseService.ArchiveCourse(id);
+        // return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpGet("{id:guid}/resource")]
