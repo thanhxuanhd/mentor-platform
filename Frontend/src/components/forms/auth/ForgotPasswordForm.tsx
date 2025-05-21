@@ -10,7 +10,6 @@ const ForgotPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
-  const [fieldError, setFieldError] = useState<{ email?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -19,24 +18,11 @@ const ForgotPasswordForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isLoading) return;
-
-    const cleanedEmail = email.trim();
-    const errors: { email?: string } = {};
-
-    if (!cleanedEmail) {
-      errors.email = "Please enter your email";
-    } else if (!validateEmail(cleanedEmail)) {
-      errors.email = "Email must be in a correct format";
-    }
-
-    setFieldError(errors);
-    if (Object.keys(errors).length > 0) return;
-
     setIsLoading(true);
     setError("");
 
     try {
-      await userService.forgotPassword(cleanedEmail);
+      await userService.forgotPassword(email);
       setSubmitted(true);
       setTimeout(() => {
         navigate("/reset-password", { replace: true });
@@ -50,8 +36,8 @@ const ForgotPasswordForm: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto mt-10 bg-white dark:bg-gray-800 p-6 rounded shadow">
-      <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">
+    <div className="w-full max-w-md mx-auto mt-10 bg-gray-800 p-6 rounded shadow">
+      <h2 className="text-2xl font-bold text-center text-white">
         Forgot Password
       </h2>
 
@@ -72,7 +58,10 @@ const ForgotPasswordForm: React.FC = () => {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-white">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-white"
+            >
               Email
             </label>
             <input
@@ -80,9 +69,8 @@ const ForgotPasswordForm: React.FC = () => {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
-                fieldError.email ? "border-red-500" : "border-gray-300"
-              }`}
+              required
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded bg-gray-700 text-white"
               placeholder="you@example.com"
             />
             {fieldError.email && <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>}
@@ -103,7 +91,10 @@ const ForgotPasswordForm: React.FC = () => {
       )}
 
       <div className="text-center mt-4">
-        <a href="/login" className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400">
+        <a
+          href="/login"
+          className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400"
+        >
           Back to Sign In
         </a>
       </div>
