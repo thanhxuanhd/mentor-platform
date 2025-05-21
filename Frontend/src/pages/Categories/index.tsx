@@ -22,17 +22,23 @@ export default function CategoriesPage() {
   const [filters, setFilters] = useState<CategoryFilter>({
     pageIndex: 1,
     pageSize: 5,
-    keyword: '',
+    keyword: "",
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+    null,
+  );
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [isCreating, setIsCreating] = useState(true);
   const { notification } = App.useApp();
 
   const fetchData = async () => {
     try {
-      const apiResponse = await getListCategories(filters.pageIndex, filters.pageSize, filters.keyword);
+      const apiResponse = await getListCategories(
+        filters.pageIndex,
+        filters.pageSize,
+        filters.keyword,
+      );
       const items = apiResponse.items;
       setPagination({
         items: apiResponse.items || [],
@@ -42,7 +48,7 @@ export default function CategoriesPage() {
         pageSize: apiResponse.pageSize || filters.pageSize,
       });
       setCategories(items || []);
-    } catch (error: any) {
+    } catch {
       setNotify({
         type: "error",
         message: "Error",
@@ -95,7 +101,7 @@ export default function CategoriesPage() {
     setSelectedCategory(apiResponse);
     setIsCreating(false);
     setIsModalVisible(true);
-  }
+  };
 
   const handleCreateClick = () => {
     setSelectedCategory(null);
@@ -113,41 +119,41 @@ export default function CategoriesPage() {
     try {
       await deleteCategory(categoryId);
       setNotify({
-        type: 'success',
-        message: 'Category deleted successfully',
-        description: 'The category has been deleted successfully.',
+        type: "success",
+        message: "Category deleted successfully",
+        description: "The category has been deleted successfully.",
       });
       await fetchData();
-    } catch (error) {
+    } catch {
       setNotify({
-        type: 'error',
-        message: 'Error',
-        description: 'An error occurred while deleting the category.',
+        type: "error",
+        message: "Error",
+        description: "An error occurred while deleting the category.",
       });
     }
-  }
+  };
 
   const handleModalSubmit = async (values: CategoryRequest) => {
     try {
       const payload = {
         name: values.name,
-        description: values.description || '',
+        description: values.description || "",
         status: values.status,
       };
-      console.log('payload', payload);
+      console.log("payload", payload);
       if (isCreating) {
         await createCategory(payload);
         setNotify({
-          type: 'success',
-          message: 'Category created successfully',
-          description: 'The category has been created successfully.',
+          type: "success",
+          message: "Category created successfully",
+          description: "The category has been created successfully.",
         });
       } else if (selectedCategory) {
         await editCategory(selectedCategory.id, payload);
         setNotify({
-          type: 'success',
-          message: 'Category updated successfully',
-          description: 'The category has been updated successfully.',
+          type: "success",
+          message: "Category updated successfully",
+          description: "The category has been updated successfully.",
         });
       }
 
@@ -167,41 +173,41 @@ export default function CategoriesPage() {
 
   const columns: ColumnsType<Category> = [
     {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
       width: 200,
       render: (text: string) => <span className="font-medium">{text}</span>,
     },
     {
-      title: 'Description',
-      dataIndex: 'description',
-      key: 'description',
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
       ellipsis: true,
     },
     {
-      title: 'Courses',
-      dataIndex: 'courses',
-      key: 'courses',
-      align: 'center',
+      title: "Courses",
+      dataIndex: "courses",
+      key: "courses",
+      align: "center",
       width: 100,
     },
     {
-      title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      align: 'center',
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
       width: 100,
       render: (status: boolean) => (
-        <Tag color={status ? 'green' : 'red'}>
-          {status ? 'Active' : 'Inactive'}
+        <Tag color={status ? "green" : "red"}>
+          {status ? "Active" : "Inactive"}
         </Tag>
       ),
     },
     {
-      title: 'Actions',
-      key: 'actions',
-      align: 'center',
+      title: "Actions",
+      key: "actions",
+      align: "center",
       width: 120,
       render: (_: any, record: Category) => (
         <Space size="small">
@@ -241,7 +247,7 @@ export default function CategoriesPage() {
           type="primary"
           icon={<PlusOutlined />}
           onClick={() => handleCreateClick()}
-          name=''
+          name=""
         >
           Add Category
         </Button>
@@ -272,20 +278,20 @@ export default function CategoriesPage() {
         visible={isModalVisible}
         initialValues={
           isCreating
-            ? { id: '', name: '', description: '', status: true }
+            ? { id: "", name: "", description: "", status: true }
             : selectedCategory
               ? {
                 id: selectedCategory.id,
                 name: selectedCategory.name.trimEnd().trimStart(),
-                description: selectedCategory.description?.trimEnd() || '',
+                description: selectedCategory.description?.trimEnd() || "",
                 status: selectedCategory.status,
               }
-              : { id: '', name: '', description: '', status: false }
+              : { id: "", name: "", description: "", status: false }
         }
         onCancel={handleModalCancel}
         onSubmit={handleModalSubmit}
-        title={isCreating ? 'Add Category' : 'Edit Category'}
-        onText={isCreating ? 'Add' : 'Update'}
+        title={isCreating ? "Add Category" : "Edit Category"}
+        onText={isCreating ? "Add" : "Update"}
       />
     </div>
   );

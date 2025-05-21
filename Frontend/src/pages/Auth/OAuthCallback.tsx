@@ -1,22 +1,22 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import authService from '../../services/auth/authService';
-import { useLocation } from 'react-router';
-import { useAuth } from '../../hooks';
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import authService from "../../services/auth/authService";
+import { useLocation } from "react-router";
+import { useAuth } from "../../hooks";
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { setToken } = useAuth();
-  const pathParts = pathname.split('/');
+  const pathParts = pathname.split("/");
   const provider = pathParts[pathParts.length - 1];
 
   useEffect(() => {
-    const code = searchParams.get('code');
+    const code = searchParams.get("code");
 
     if (!code) {
-      console.error('Missing authorization code');
+      console.error("Missing authorization code");
       return;
     }
 
@@ -25,10 +25,10 @@ export default function OAuthCallback() {
         console.log(provider);
         const response = await authService.loginWithOAuth(code, provider);
         setToken(response.value);
-        navigate('/');
+        navigate("/");
       } catch (error) {
-        console.error('OAuth callback failed', error);
-        navigate('/login');
+        console.error("OAuth callback failed", error);
+        navigate("/login");
       }
     };
 
