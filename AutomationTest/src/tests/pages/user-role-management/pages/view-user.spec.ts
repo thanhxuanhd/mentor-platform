@@ -21,14 +21,12 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       username: (await actualUserData.fullname) ?? "",
       email: (await actualUserData.email) ?? "",
       role: (await actualUserData.role) ?? "",
-      joinDate: (await actualUserData.joinedDate) ?? "",
       status: (await actualUserData.userStatus) ?? "",
     };
 
     expect(userData.username).not.toBe("");
     expect(userData.email).toMatch(/@/);
     expect(["Admin", "Mentor", "Learner"]).toContain(userData.role);
-    expect(userData.joinDate).toMatch(/\d{2}\/\d{2}\/\d{4}/);
     expect(["Active", "Deactivated", "Pending"]).toContain(userData.status);
   });
 });

@@ -261,7 +261,7 @@ export class UserRoleManagementPage extends BasePage {
 
   async getAllUserText() {
     await this.waitUntilVisible(this.LBL_USER_EMAIL_LOC.first());
-    const allUser = await this.DBL_ALL_USER_LOC.allTextContents();
+    const allUser = await this.LBL_USER_EMAIL_LOC.allTextContents();
     return allUser;
   }
 
@@ -334,9 +334,6 @@ export class UserRoleManagementPage extends BasePage {
       await this.TXT_EDIT_USER_FULLNAME_LOC.inputValue()
     ).trim();
     const email = (await this.TXT_EDIT_USER_EMAIL_LOC.inputValue()).trim();
-    console.log(
-      `fullname: ${fullname} - email: ${email} - userFullname: ${userFullname} - userEmail: ${userEmail}`
-    );
     return Promise.all([
       expect(fullname).toEqual(userFullname),
       expect(email).toEqual(userEmail),

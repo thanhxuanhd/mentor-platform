@@ -81,9 +81,9 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   });
 
   //Check error message when enter user email is exists in edit user
-  test("Verify that error message is shown when user email already exists", async () => {
+  test("@Flaky Verify that error message is shown when user email already exists", async () => {
     await test.step("Click edit user button", async () => {
-      await userRoleManagementPage.clickOnEditUserBtn(0);
+      await userRoleManagementPage.clickOnEditUserBtn(1); //TODO: need to make index dynamic after API is able to create fullname
     });
     await test.step("Fill edit user form with existing email", async () => {
       await userRoleManagementPage.fillEditUserForm(
