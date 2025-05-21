@@ -163,6 +163,11 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
         }
 
+        if (await userRepository.GetByIdAsync(userId) == null)
+        {
+            return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.BadRequest);
+        }
+
         var imagesPath = Path.Combine(env.WebRootPath, "images");
 
         if (!Directory.Exists(imagesPath))
