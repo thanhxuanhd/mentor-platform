@@ -35,7 +35,6 @@ type CourseFormProp = {
 
 export const CourseForm: FC<CourseFormProp> = ({
   formData,
-  states,
   active,
   onClose,
 }) => {  
@@ -69,10 +68,6 @@ export const CourseForm: FC<CourseFormProp> = ({
       
       const formValues = {...formData};
       
-      // Set status to "draft" for new courses
-      if (!formData.title) {
-        formValues.status = "draft";
-      }      // Format the dueDate if it exists to be compatible with DatePicker
       if (formValues.dueDate && typeof formValues.dueDate === 'string') {
         try {
           // Convert string date to dayjs object - this is what Ant Design DatePicker expects
@@ -81,14 +76,12 @@ export const CourseForm: FC<CourseFormProp> = ({
           (formValues as any).dueDate = dateValue;
         } catch (e) {
           console.error("Error formatting date:", e);
-          // If conversion fails, set to undefined to avoid the isValid error
           (formValues as any).dueDate = undefined;
         }
       }
       
       form.setFieldsValue(formValues);
       
-      // Initialize tags from formData
       const initialTags = Array.isArray(formData.tags) ? formData.tags : [];
       setTags(initialTags);
     }
@@ -203,14 +196,16 @@ export const CourseForm: FC<CourseFormProp> = ({
     setTags(updatedTags);
     form.setFieldValue("tags", updatedTags);
   };
-  return (    <Modal
+  return (    
+  <Modal
       title={formData.id ? `Edit Course: ${formData.title}` : "Add New Course"}
       open={active}
       onCancel={() => onClose()}
       width={800}footer={[
         <Button key="cancel" onClick={() => onClose()}>
           Cancel
-        </Button>,        <Button 
+        </Button>,        
+        <Button 
           key="submit" 
           type="primary" 
           onClick={handleSubmit}
@@ -220,10 +215,10 @@ export const CourseForm: FC<CourseFormProp> = ({
           {formData.id ? "Save Changes" : "Create Course"}
         </Button>,
       ]}
-    >      <Form form={form} layout="vertical" initialValues={{
+    >      
+    <Form form={form} layout="vertical" initialValues={{
         ...formData, 
         tags: Array.isArray(formData.tags) ? formData.tags : [],
-        status: !formData.id ? "draft" : formData.status,
         dueDate: undefined
       }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -252,31 +247,6 @@ export const CourseForm: FC<CourseFormProp> = ({
               notFoundContent={categoryKeyword ? "No matching categories" : "Type to search categories"}
               loading={!myCategories.length && categoryKeyword !== ""}
             />
-          </Form.Item>
-          <Form.Item
-            name="status"
-            label="Status"
-            initialValue="draft"
-            rules={[{ required: true, message: "Please select a status!" }]}
-          >
-            {!formData.title ? (
-              <>
-                <Input 
-                  value={states["draft"]} 
-                  readOnly 
-                  className="ant-select-selector" // Match Select styling
-                />
-                <div className="text-xs text-gray-500 mt-1">New courses are created with Draft status only</div>
-              </>
-            ) : (
-              <Select>
-                {Object.entries(states).map(([value, label]) => (
-                  <Select.Option key={value} value={value}>
-                    {label}
-                  </Select.Option>
-                ))}
-              </Select>
-            )}
           </Form.Item>
 
           <Form.Item
