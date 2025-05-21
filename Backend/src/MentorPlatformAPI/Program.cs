@@ -40,7 +40,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerWithUI();
-    app.ApplyMigrations();
+    //app.ApplyMigrations();
 }
 
 app.UseExceptionHandler();

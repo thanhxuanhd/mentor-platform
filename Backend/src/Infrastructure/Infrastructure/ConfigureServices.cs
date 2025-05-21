@@ -31,6 +31,7 @@ public static class ConfigureServices
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
 
+
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
 
@@ -42,8 +43,9 @@ public static class ConfigureServices
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            // options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             // options.EnableSensitiveDataLogging();
+            options.UseInMemoryDatabase("MentorPlatformDb");
         });
         services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
         // Add JWT Authentication
