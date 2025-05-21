@@ -48,13 +48,23 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPut]
-    [Route("user-detail/{userId}")]
+    [Route("{userId}/detail")]
     public async Task<IActionResult> EditUserDetailAsync(Guid userId, [FromBody] EditUserProfileRequest request)
     {
         var result = await userService.EditUserDetailAsync(userId, request);
 
         return StatusCode((int)result.StatusCode, result);
     }
+    [Authorize]
+    [HttpGet]
+    [Route("{userId}/detail")]
+    public async Task<IActionResult> GetUserDetailAsync(Guid userId)
+    {
+        var result = await userService.GetUserDetailAsync(userId);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
     [Authorize]
     [HttpGet("email/{email}")]
     public async Task<IActionResult> GetUserByEmail(string email)

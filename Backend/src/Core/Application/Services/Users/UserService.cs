@@ -118,43 +118,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         return Result.Success(true, HttpStatusCode.OK);
     }
 
-    public async Task<Result> ForgotPasswordRequest(string email)
-    {
-        var user = await userRepository.GetByEmailAsync(email, user => user.Role);
-        if (user == null)
-        {
-            return Result.Failure<GetUserResponse>("User not found", HttpStatusCode.NotFound);
-        }
-        var newPassword = GenerateRandomPassword(10);
-        var newHashedPassword = PasswordHelper.HashPassword(newPassword);
-        user.PasswordHash = newHashedPassword;
-
-        userRepository.Update(user);
-        await userRepository.SaveChangesAsync();
-
-        var subject = EmailConstants.SUBJECT_RESET_PASSWORD;
-        var body = EmailConstants.BodyResetPasswordEmail(user.Email, newPassword);
-
-        var isSuccess = await emailService.SendEmailAsync(user.Email, subject, body);
-        if (!isSuccess)
-        {
-            return Result.Failure("Failed to send email", HttpStatusCode.InternalServerError);
-        }
-
-        return Result.Success(new
-        {
-            message = "Password reset successful. Please check your email.",
-            newPassword = newPassword
-        }, HttpStatusCode.OK);
-    }
-    private string GenerateRandomPassword(int length)
-    {
-        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?";
-        var random = new Random();
-        return new string(Enumerable.Repeat(validChars, length)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
-    }
-
     public async Task<Result> EditUserDetailAsync(Guid userId, EditUserProfileRequest request)
     {
         var user = await userRepository.GetUserDetailAsync(userId);
@@ -218,5 +181,54 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         await userRepository.SaveChangesAsync();
 
         return Result.Success(HttpStatusCode.OK);
+    }
+
+    public async Task<Result> ForgotPasswordRequest(string email)
+    {
+        var user = await userRepository.GetByEmailAsync(email, user => user.Role);
+        if (user == null)
+        {
+            return Result.Failure<GetUserResponse>("User not found", HttpStatusCode.NotFound);
+        }
+        var newPassword = GenerateRandomPassword(10);
+        var newHashedPassword = PasswordHelper.HashPassword(newPassword);
+        user.PasswordHash = newHashedPassword;
+
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
+        var subject = EmailConstants.SUBJECT_RESET_PASSWORD;
+        var body = EmailConstants.BodyResetPasswordEmail(user.Email, newPassword);
+
+        var isSuccess = await emailService.SendEmailAsync(user.Email, subject, body);
+        if (!isSuccess)
+        {
+            return Result.Failure("Failed to send email", HttpStatusCode.InternalServerError);
+        }
+
+        return Result.Success(new
+        {
+            message = "Password reset successful. Please check your email.",
+            newPassword = newPassword
+        }, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId)
+    {
+        var user = await userRepository.GetUserDetailAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<GetUserDetailResponse>("User not found", HttpStatusCode.NotFound);
+        }
+
+        return Result.Success(user.ToGetUserDetailResponse(), HttpStatusCode.OK);
+    }
+
+    private string GenerateRandomPassword(int length)
+    {
+        const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?";
+        var random = new Random();
+        return new string(Enumerable.Repeat(validChars, length)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
     }
 }
