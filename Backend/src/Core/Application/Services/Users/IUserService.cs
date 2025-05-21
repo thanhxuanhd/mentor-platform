@@ -1,5 +1,4 @@
-﻿using Application.Services.Authentication;
-using Contract.Dtos.Users.Paginations;
+﻿using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Shared;
@@ -15,4 +14,5 @@ public interface IUserService
     Task<Result<GetUserResponse>> GetUserByEmailAsync(string email);
     Task<Result> EditUserDetailAsync(Guid userId, EditUserProfileRequest request);
     Task<Result> ForgotPasswordRequest(string email);
+    Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId);
 }
