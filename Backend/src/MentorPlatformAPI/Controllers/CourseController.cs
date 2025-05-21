@@ -1,8 +1,8 @@
-﻿using Application.Services.Users;
-using Contract.Dtos.CourseItems.Requests;
+﻿using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
 using Contract.Services;
 using Infrastructure.Services.Authorization;
+using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,8 +14,7 @@ namespace MentorPlatformAPI.Controllers;
 public class CourseController(
     ICourseService courseService,
     ICourseItemService courseItemService,
-    IUserService userService,
-    CurrentUser currentUser)
+    IAuthorizationService authorizationService)
     : ControllerBase
 {
     [HttpGet]
@@ -42,8 +41,17 @@ public class CourseController(
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CourseUpdateRequest request)
     {
-        var result = await courseService.UpdateAsync(id, request);
-        return StatusCode((int)result.StatusCode, result);
+        var course = await courseService.GetByIdAsync(id);
+        var authorizationResult =
+            await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+
+        if (authorizationResult.Succeeded)
+        {
+            var result = await courseService.ArchiveCourseAsync(id);
+            return StatusCode((int)result.StatusCode, result);
+        }
+
+        return Forbid();
     }
 
     [HttpDelete("{id:guid}")]
@@ -65,12 +73,16 @@ public class CourseController(
     public async Task<IActionResult> ArchiveCourse(Guid id)
     {
         var course = await courseService.GetByIdAsync(id);
-        var user = await userService.GetUserByEmailAsync(currentUser.Email);
+        var authorizationResult =
+            await authorizationService.AuthorizeAsync(HttpContext.User, course, new CourseModifyAccessRequirement());
 
-        if (!currentUser.IsInRole(RequiredRole.Admin) && course.Value!.MentorId != user.Value!.Id) return Forbid();
+        if (authorizationResult.Succeeded)
+        {
+            var result = await courseService.ArchiveCourseAsync(id);
+            return StatusCode((int)result.StatusCode, result);
+        }
 
-        var result = await courseService.ArchiveCourseAsync(id);
-        return StatusCode((int)result.StatusCode, result);
+        return Forbid();
     }
 
     [HttpGet("{id:guid}/resource")]

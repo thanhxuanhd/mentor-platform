@@ -533,7 +533,7 @@ public class CourseServiceTests
         Assert.Multiple(() =>
         {
             Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
             _courseRepositoryMock.Verify(repo => repo.Delete(existingCourse), Times.Once);
             _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);

@@ -6,11 +6,11 @@ using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Settings;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
-using Infrastructure.Services;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
-using Microsoft.AspNetCore.Authentication;
+using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -78,12 +78,12 @@ public static class ConfigureServices
             options.AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(UserRole.Admin.ToString()));
             options.AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(UserRole.Mentor.ToString()));
             options.AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(UserRole.Learner.ToString()));
+            options.AddPolicy("CourseModifyAccess",
+                policy => policy.Requirements.Add(new CourseModifyAccessRequirement()));
         });
 
-        services.AddScoped<CurrentUser>();
-        services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
-        services.AddHttpContextAccessor();
-        
+        services.AddTransient<IAuthorizationHandler, CourseModifyAccessHandler>();
+
         return services;
     }
 }

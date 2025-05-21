@@ -1,6 +1,7 @@
 ﻿@MentorConnectAPI_HostAddress = https://localhost:5000
-@courseId = 2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6
-@resourceId = f6f4362d-233e-4188-8f31-63f108f67142
+@courseId = 6d7910af-cd6c-48bc-8072-c03e79870e38
+@categoryId = c1df4156-1bfa-4310-8ee1-b07c3a6159fc
+@resourceId = 09d85232-fb4d-486a-a897-0710229a0318
 
 ### Authorize
 POST {{MentorConnectAPI_HostAddress}}/api/Auth/sign-in
@@ -13,7 +14,9 @@ Content-Type: application/json
 }
 
 > {%
+
  client.global.set("auth_token", response.body.value); 
+
 %}
 
 ### GetAllCourse
@@ -35,7 +38,7 @@ Authorization: Bearer {{auth_token}}
 {
   "title": "{{$random.book.title}}",
   "description": "{{$random.lorem.sentence}}",
-  "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
+  "categoryId": "{{categoryId}}",
   "mentorId": "01047f62-6e87-442b-b1e8-2a54c9e17d7c",
   "dueDate": "{{$isoTimestamp}}",
   "tags": ["thrilling", "adventure"],
@@ -57,7 +60,7 @@ Authorization: Bearer {{auth_token}}
   "id": "{{courseId}}", 
   "title": "Updated Course Title",
   "description": "An updated description",
-  "categoryId": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
+  "categoryId": "{{categoryId}}",
   "dueDate": "{{$isoTimestamp}}",
   "tags": ["thrilling", "Adventure", "{{$random.hacker.adjective}}"],
   "difficulty": "Beginner"

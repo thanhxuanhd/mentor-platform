@@ -1,6 +1,5 @@
 using System.Net;
 using System.Security.Claims;
-using Application.Services.Users;
 using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
@@ -9,6 +8,8 @@ using Contract.Shared;
 using Domain.Enums;
 using Infrastructure.Services.Authorization;
 using MentorPlatformAPI.Controllers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -22,16 +23,14 @@ public class CourseControllerTest
     {
         _courseServiceMock = new Mock<ICourseService>();
         _courseItemServiceMock = new Mock<ICourseItemService>();
-        _userServiceMock = new Mock<IUserService>();
-        _currentUserMock = new Mock<CurrentUser>();
+        _authorizationServiceMock = new Mock<IAuthorizationService>();
         _controller = new CourseController(_courseServiceMock.Object, _courseItemServiceMock.Object,
-            _userServiceMock.Object, _currentUserMock.Object);
+            _authorizationServiceMock.Object);
     }
 
     private Mock<ICourseService> _courseServiceMock;
     private Mock<ICourseItemService> _courseItemServiceMock;
-    private Mock<IUserService> _userServiceMock;
-    private Mock<CurrentUser> _currentUserMock;
+    private Mock<IAuthorizationService> _authorizationServiceMock;
     private CourseController _controller;
 
     [Test]
@@ -586,12 +585,6 @@ public class CourseControllerTest
         _courseServiceMock.Setup(s => s.PublishCourseAsync(courseId))
             .ReturnsAsync(serviceResult);
 
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.Role, RequiredRole.Admin)
-        }));
-        _currentUserMock.Setup(s => s.Principal).Returns(principal);
-
         // Act
         var result = await _controller.PublishCourse(courseId);
 
@@ -642,13 +635,15 @@ public class CourseControllerTest
         };
         var serviceResult = Result.Success(courseResponse, HttpStatusCode.OK);
 
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([
+                new Claim(ClaimTypes.Role, RequiredRole.Admin)
+            ]))
+        };
+
         _courseServiceMock.Setup(s => s.ArchiveCourseAsync(courseId))
             .ReturnsAsync(serviceResult);
-
-        var principal = new ClaimsPrincipal(new ClaimsIdentity([
-            new Claim(ClaimTypes.Role, RequiredRole.Admin)
-        ]));
-        _currentUserMock.Setup(s => s.Principal).Returns(principal);
 
         // Act
         var result = await _controller.ArchiveCourse(courseId);
@@ -671,10 +666,12 @@ public class CourseControllerTest
         var courseId = Guid.NewGuid();
         var serviceResult = Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
 
-        var principal = new ClaimsPrincipal(new ClaimsIdentity([
-            new Claim(ClaimTypes.Role, RequiredRole.Admin)
-        ]));
-        _currentUserMock.Setup(s => s.Principal).Returns(principal);
+        _controller.ControllerContext.HttpContext = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity([
+                new Claim(ClaimTypes.Role, RequiredRole.Admin)
+            ]))
+        };
 
         _courseServiceMock.Setup(s => s.ArchiveCourseAsync(courseId))
             .ReturnsAsync(serviceResult);
