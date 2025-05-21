@@ -387,6 +387,26 @@ export default function UserProfile() {
             maxLength={200}
           />
         </Form.Item>
+
+        <div className="flex justify-between mt-6 border-t border-gray-700 pt-4 gap-4">
+          <Button
+            type="primary"
+            size="large"
+            security=""
+            // onClick={() => navigate("/profile")}
+            className="bg-gray-500! hover:bg-gray-400!"
+          >
+            Back
+          </Button>
+          <Button
+            type="primary"
+            size="large"
+            className="flex-1"
+            onClick={() => console.log("???")}
+          >
+            Next Step
+          </Button>
+        </div>
       </Form>
     </div>
   );

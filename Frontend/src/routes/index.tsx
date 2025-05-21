@@ -13,6 +13,7 @@ import AuthLayout from "../components/AuthLayout";
 import UserProfile from "../pages/Auth/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import { applicationRole } from "../constants/role";
+import ForbiddenPage from "../pages/Forbidden";
 
 const AppRoutes = () => {
   return (
@@ -24,6 +25,8 @@ const AppRoutes = () => {
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
+        <Route path="*" element={<NotFoundPage />} />
+        <Route path="forbidden" element={<ForbiddenPage />} />
       </Route>
 
       <Route
@@ -40,9 +43,6 @@ const AppRoutes = () => {
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="courses" element={<CoursesPage />} />
-      </Route>
-      <Route element={<MainLayout />}>
-        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

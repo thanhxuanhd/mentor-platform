@@ -7,6 +7,17 @@ import { axiosClient } from "../apiClient";
 import type { PaginatedList } from "../../types/Pagination";
 
 export const userService = {
+  getUserById: async (userId: string): Promise<GetUserResponse> => {
+    return await axiosClient
+      .get(`Users/${userId}`)
+      .then((response) => {
+        return response.data.value;
+      })
+      .catch((error) => {
+        throw error;
+      });
+  },
+
   getUsers: async (
     request: UserFilterPagedRequest,
   ): Promise<PaginatedList<GetUserResponse>> => {
@@ -31,6 +42,7 @@ export const userService = {
       return response.data.value;
     });
   },
+
   forgotPassword: async (email: string) => {
     const encodedEmail = encodeURIComponent(email);
     const response = await axiosClient.post(

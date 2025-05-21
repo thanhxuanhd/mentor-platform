@@ -124,7 +124,7 @@ export default function UsersPage() {
           <Button
             type="primary"
             icon={<EditFilled />}
-            onClick={() => handleEditClick(record)}
+            onClick={() => handleEditClick(record.id)}
           />
           <Button
             icon={
@@ -185,14 +185,19 @@ export default function UsersPage() {
     }
   }, [notify, notification]);
 
-  const handleEditClick = (user: GetUserResponse) => {
-    setEditingUser({
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-    });
-    setIsModalVisible(true);
+  const handleEditClick = async (userId: string) => {
+    try {
+      await userService.getUserById(userId).then((response) => {
+        setEditingUser(response);
+        setIsModalVisible(true);
+      });
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Failed to get user",
+        description: error?.response?.data?.error || "Error getting user.",
+      });
+    }
   };
 
   const handleCancel = () => setIsModalVisible(false);
