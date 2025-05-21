@@ -5,11 +5,10 @@ import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/es/input/Search';
 import EditCategoryModal from './components/EditCategoryModal';
 import type { Category, CategoryFilter, CategoryRequest } from '../../types/CategoryTypes';
-import { createCategory, deleteCategory, editCategory, getListCategories } from '../../services/categoryServices';
+import { createCategory, deleteCategory, editCategory, getCategoryById, getListCategories } from '../../services/category/categoryServices';
 import type { NotificationProps } from '../../types/Notification';
 import type { PaginatedList } from '../../types/Pagination';
 import PaginationControls from '../../components/shared/Pagination';
-
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -91,8 +90,9 @@ export default function CategoriesPage() {
     }));
   };
 
-  const handleEditClick = (category: Category) => {
-    setSelectedCategory(category);
+  const handleEditClick = async (category: Category) => {
+    const apiResponse = await getCategoryById(category.id);
+    setSelectedCategory(apiResponse);
     setIsCreating(false);
     setIsModalVisible(true);
   }

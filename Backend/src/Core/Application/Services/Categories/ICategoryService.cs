@@ -7,6 +7,7 @@ namespace Application.Services.Categories;
 
 public interface ICategoryService
 {
+    Task<Result<GetCategoryResponse>> GetCategoryByIdAsync(Guid id);
     Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(FilterCategoryRequest request);
     Task<Result<PaginatedList<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id, FilterCourseByCategoryRequest request);
     Task<Result<GetCategoryResponse>> CreateCategoryAsync(CategoryRequest request);

@@ -10,6 +10,12 @@ namespace MentorPlatformAPI.Controllers;
 [ApiController]
 public class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCategoryById(Guid id)
+    {
+        var result = await categoryService.GetCategoryByIdAsync(id);
+        return StatusCode((int)result.StatusCode, result);
+    }
     [HttpGet]
     public async Task<IActionResult> GetCategories([FromQuery] FilterCategoryRequest request)
     {
