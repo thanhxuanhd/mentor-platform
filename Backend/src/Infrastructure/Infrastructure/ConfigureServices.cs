@@ -30,7 +30,7 @@ public static class ConfigureServices
         services.AddScoped<GitHubOAuthService>();
         services.AddScoped<GoogleOAuthService>();
         services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
-        
+
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
@@ -45,9 +45,10 @@ public static class ConfigureServices
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            options.EnableSensitiveDataLogging();
-            options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+            // options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            // options.EnableSensitiveDataLogging();
+            // options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+            options.UseInMemoryDatabase("MentorPlatformDb");
         });
 
         // Add JWT Authentication

@@ -10,8 +10,8 @@ export class LoginPage extends BasePage {
     constructor(page: Page) {
         super(page);
         this.LNK_LOGINPAGE_URL = "/login";
-        this.TXT_EMAIL_LOCATOR = page.getByPlaceholder('Enter your email');
-        this.TXT_PASSWORD_LOCATOR = page.getByPlaceholder('Enter your password');
+        this.TXT_EMAIL_LOCATOR = page.getByPlaceholder('Email');
+        this.TXT_PASSWORD_LOCATOR = page.getByPlaceholder('Password');
         this.BTN_SIGNIN_LOCATOR = page.getByRole("button", { name: "Sign In" });
     }
 

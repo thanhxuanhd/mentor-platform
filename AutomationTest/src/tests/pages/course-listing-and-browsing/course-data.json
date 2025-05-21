@@ -1,0 +1,29 @@
+{
+    "search_course": [
+    {
+      "fullname": "Public Speaking Mastery"
+    },
+    {
+      "empty": ""
+    },
+    {
+      "oneKeyword": "Public"
+    },
+    {
+      "multipleKeywords": "Become a confident public speaker."
+    },
+    {
+      "invalidKeyword": "Sempoi"
+    },
+    {
+      "wildCard": "Pu"
+    }
+  ],
+  "search_with_filter": {
+    "course_filter": ["Mentor", "Difficulty", "Category"],
+    "search_filters": {
+      "oneKeyword": "Public",
+      "multipleKeywords": "Cuong kc"
+    }
+  }
+}
