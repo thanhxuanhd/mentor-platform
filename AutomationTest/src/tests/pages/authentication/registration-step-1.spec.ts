@@ -2,7 +2,6 @@ import { RegistrationStep1Page } from './../../../pages/authentication/registrat
 import { test } from '../../../core/fixture/authFixture';
 import { User_Registration_Step_1 } from '../../../models/user/user';
 import testData from '../../test-data/user-registration-step-1-data.json'
-import { buildTestCases } from '../../../core/utils/testcase-data-builder';
 
 test.describe('@Registration Registration step 1 test', () => {
     let registrationstep1Page: RegistrationStep1Page;
@@ -12,7 +11,7 @@ test.describe('@Registration Registration step 1 test', () => {
         await registrationstep1Page.goToRegistrationStep1Modal();
     });
 
-    const userData = buildTestCases<User_Registration_Step_1>({
+    const userData: { [label: string]: User_Registration_Step_1 } = {
         '@SmokeTest Valid Case': testData.valid_case,
         'Term is unchecked': testData.term_is_uncheck,
         'Empty Email': testData.empty_email,
@@ -24,9 +23,9 @@ test.describe('@Registration Registration step 1 test', () => {
         'Over length password': testData.over_length_password,
         'Password include space characters': testData.space_password,
         'Password is not mix': testData.not_mix_password
-    });
+    };
 
-    for (const { label, data } of userData) {
+    for (const [label, data] of Object.entries(userData)) {
         test(`${label} - Registration Step 1`, async ({ request }) => {
             await test.step('Input details data and submit', async () => {
                 await registrationstep1Page.inputEmail(data.email);

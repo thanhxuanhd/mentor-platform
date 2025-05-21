@@ -3,7 +3,6 @@ import { requestNewPasswordFromEmail } from '../../../core/utils/get-new-passwor
 import { ResetPasswordUser } from '../../../models/user/user';
 import { ResetPasswordPage } from '../../../pages/authentication/reset-password-page';
 import testData from '../../test-data/reset-password-data.json'
-import { buildTestCases } from '../../../core/utils/testcase-data-builder';
 
 test.describe('@ResetPassword Reset Password Test', () => {
     let resetPasswordPage: ResetPasswordPage;
@@ -13,7 +12,7 @@ test.describe('@ResetPassword Reset Password Test', () => {
         await resetPasswordPage.goToForgotPasswordModal();
     });
 
-    const userData = buildTestCases<ResetPasswordUser>({
+    const userData: { [label: string]: ResetPasswordUser } = {
         '@SmokeTest Valid Case': testData.valid_case,
         'Empty Email': testData.empty_email,
         'Disable/Deleted Email': testData.disabled_deleted_notexist_email,
@@ -21,9 +20,9 @@ test.describe('@ResetPassword Reset Password Test', () => {
         '@InvalidCase Empty current password': testData.empty_current_password,
         'Empty new password': testData.empty_new_password,
         'Over max length new password': testData.over_max_length_new_password
-    });
+    };
 
-    for (const { label, data } of userData) {
+    for (const [label, data] of Object.entries(userData)) {
         test(`${label} - Reset Password`, async ({ request }) => {
             let currentPassword: string;
             let isSuccess: boolean;

@@ -3,7 +3,6 @@ import { test } from '../../../core/fixture/authFixture';
 import { CategoryPage } from '../../../pages/categories/categories-page';
 import { withTimestamp } from '../../../core/utils/generate-unique-data';
 import { CUCategory } from '../../../models/categories/create-category';
-import { buildTestCases } from '../../../core/utils/testcase-data-builder';
 
 test.describe('@Category Update category tests', () => {
     let categoryPage: CategoryPage;
@@ -14,14 +13,14 @@ test.describe('@Category Update category tests', () => {
         await categoryPage.clickUpdateCategoryButton();
     });
 
-    const categories = buildTestCases<CUCategory>({
+    const categories: { [label: string]: CUCategory } = {
         '@SmokeTest Valid Category': withTimestamp(categoryData.update_valid_category),
         'Duplicate Category': categoryData.update_duplicate_category,
         'Empty Category Name': categoryData.update_empty_category_name,
         '@Boundary Over length Category Name': categoryData.update_over_length_category_name
-    });
+    };
 
-    for (const { label, data } of categories) {
+    for (const [label, data] of Object.entries(categories)) {
         test(`${label} - Update a Category`, async () => {
             await test.step('Input category details and submit', async () => {
                 await categoryPage.inputName(data.name);
