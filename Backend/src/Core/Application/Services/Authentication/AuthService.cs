@@ -36,7 +36,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         var user = await userRepository.GetUserByEmail(request.Email);
         if (user != null)
         {
-            return Result.Failure<AuthResponse>("User email already existed", HttpStatusCode.NotFound);
+            return Result.Failure<AuthResponse>("User email already existed", HttpStatusCode.BadRequest);
         }
 
         var passwordHash = PasswordHelper.HashPassword(request.Password);
