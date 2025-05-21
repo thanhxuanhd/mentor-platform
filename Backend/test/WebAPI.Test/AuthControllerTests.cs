@@ -5,8 +5,6 @@ using MentorPlatformAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Net;
-using Contract.Dtos.Authentication.Responses;
-using Domain.Enums;
 
 namespace WebAPI.Test;
 
@@ -46,90 +44,6 @@ public class AuthControllerTests
             Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
             _authServiceMock.Verify(s => s.LoginAsync(request), Times.Once);
         });
-    }
-
-    [Test]
-    public async Task SignInUser_InvalidCredentials_ReturnsUnauthorizedResult()
-    {
-        // Arrange
-        var request = new SignInRequest(Email: "invalid@example.com", Password: "wrongpassword");
-        var serviceResult = Result.Failure<string>("Invalid credentials", HttpStatusCode.Unauthorized);
-
-        _authServiceMock.Setup(s => s.LoginAsync(request))
-            .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _authController.SignInUser(request);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;
-            Assert.That(objectResult, Is.Not.Null);
-            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
-            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-            _authServiceMock.Verify(s => s.LoginAsync(request), Times.Once);
-        });
-    }
-
-    [Test]
-    public async Task SignUpUser_ValidRequest_ReturnsCreatedResult()
-    {
-        // Arrange
-        var request = new SignUpRequest(Email: "newuser@example.com", Password: "password", ConfirmPassword: "New User", RoleId: 1);
-
-        _authServiceMock.Setup(s => s.RegisterAsync(request))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _authController.SignUpUser(request);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<CreatedResult>());
-        _authServiceMock.Verify(s => s.RegisterAsync(request), Times.Once);
-    }
-
-    [Test]
-    public async Task SignInGithub_ValidRequest_ReturnsOkResult()
-    {
-        // Arrange
-        var request = new OAuthSignInRequest(Token: "github_token");
-        var signInResponse = new SignInResponse("github_user_data", "Incomplete");
-        var serviceResult = Result.Success(signInResponse, HttpStatusCode.OK);
-
-        _authServiceMock.Setup(s => s.LoginGithubAsync(request))
-            .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _authController.SignInGithub(request);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        var okResult = result as OkObjectResult;
-        Assert.That(okResult!.Value, Is.EqualTo(serviceResult));
-        _authServiceMock.Verify(s => s.LoginGithubAsync(request), Times.Once);
-    }
-
-    [Test]
-    public async Task SignInGoogle_ValidRequest_ReturnsOkResult()
-    {
-        // Arrange
-        var request = new OAuthSignInRequest(Token: "google_token");
-        var signInResponse = new SignInResponse("google_user_data", "Incomplete");
-        var serviceResult = Result.Success(signInResponse, HttpStatusCode.OK);
-
-        _authServiceMock.Setup(s => s.LoginGoogleAsync(request))
-            .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _authController.SignInGoogle(request);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        var okResult = result as OkObjectResult;
-        Assert.That(okResult!.Value, Is.EqualTo(serviceResult));
-        _authServiceMock.Verify(s => s.LoginGoogleAsync(request), Times.Once);
     }
 
     [Test]

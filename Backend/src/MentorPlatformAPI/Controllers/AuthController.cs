@@ -1,5 +1,6 @@
 ﻿using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
+using Contract.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -11,7 +12,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("sign-in")]
     public async Task<IActionResult> SignInUser([FromBody] SignInRequest request)
     {
-        var result = await authService.LoginWithStatusAsync(request);
+        var result = await authService.LoginAsync(request);
 
         return StatusCode((int)result.StatusCode, result);
     }
@@ -19,9 +20,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("sign-up")]
     public async Task<IActionResult> SignUpUser([FromBody] SignUpRequest request)
     {
-        await authService.RegisterAsync(request);
+        var result = await authService.RegisterAsync(request);
 
-        return Created();
+        return StatusCode((int)result.StatusCode, result);
     }   
 
     [HttpPost("github")]
