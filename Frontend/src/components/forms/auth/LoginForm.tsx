@@ -115,6 +115,8 @@ const LoginForm: React.FC = () => {
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
+        setToken(res.token);
+        navigate("/");
         switch (res.userStatus) {
           case userStatus.ACTIVE:
             setToken(res.token);

@@ -1,6 +1,7 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Data;
+using Infrastructure.Persistence.Settings;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
 using MentorPlatformAPI.Filter;

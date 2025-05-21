@@ -25,6 +25,8 @@ export default function OAuthCallback() {
       try {
         console.log(provider);
         const response = await authService.loginWithOAuth(code, provider);
+        // setToken(response.token);
+        // navigate("/");
         switch (response.userStatus) {
           case userStatus.ACTIVE:
             setToken(response.token);
