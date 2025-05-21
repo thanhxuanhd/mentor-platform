@@ -51,6 +51,18 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        if (!dbContext.TeachingApproaches.Any())
+        {
+            dbContext.TeachingApproaches.AddRange(
+                new TeachingApproach { Name = "Hands-on Practice" },
+                new TeachingApproach { Name = "Discussion Based" },
+                new TeachingApproach { Name = "Project Based" },
+                new TeachingApproach { Name = "Lecture Style" }
+            );
+
+            dbContext.SaveChanges();
+        }
+
         if (!dbContext.Users.Any())
         {
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
