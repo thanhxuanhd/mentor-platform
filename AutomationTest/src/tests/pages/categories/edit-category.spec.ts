@@ -3,6 +3,7 @@ import { test } from '../../../core/fixture/authFixture';
 import { CategoryPage } from '../../../pages/categories/categories-page';
 import { withTimestamp } from '../../../core/utils/generate-unique-data';
 import { CUCategory } from '../../../models/categories/create-category';
+import { buildTestCases } from '../../../core/utils/testcase-data-builder';
 
 test.describe('@Category Update category tests', () => {
     let categoryPage: CategoryPage;
@@ -13,24 +14,12 @@ test.describe('@Category Update category tests', () => {
         await categoryPage.clickUpdateCategoryButton();
     });
 
-    const categories = [
-        {
-            label: '@SmokeTest Valid Category',
-            data: withTimestamp(categoryData.update_valid_category) as CUCategory,
-        },
-        {
-            label: 'Duplicate Category',
-            data: categoryData.update_duplicate_category as CUCategory,
-        },
-        {
-            label: 'Empty Category Name',
-            data: categoryData.update_empty_category_name as CUCategory,
-        },
-        {
-            label: '@Boundary Over length Category Name',
-            data: categoryData.update_over_length_category_name as CUCategory,
-        }
-    ];
+    const categories = buildTestCases<CUCategory>({
+        '@SmokeTest Valid Category': withTimestamp(categoryData.update_valid_category),
+        'Duplicate Category': categoryData.update_duplicate_category,
+        'Empty Category Name': categoryData.update_empty_category_name,
+        '@Boundary Over length Category Name': categoryData.update_over_length_category_name
+    });
 
     for (const { label, data } of categories) {
         test(`${label} - Update a Category`, async () => {

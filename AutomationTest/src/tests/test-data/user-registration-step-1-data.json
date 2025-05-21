@@ -1,0 +1,79 @@
+{
+  "valid_case": {
+    "email": "championlc97@gmail.com",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": ""
+  },
+  "term_is_uncheck": {
+    "email": "championlc97@gmail.com",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": false,
+    "expectedMessage": "Please agree with Terms of Service and Privacy Policy"
+  },
+  "empty_email": {
+    "email": "",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Please enter your email"
+  },
+  "over_length_email": {
+    "email": "truongmlop1231231231231truongmlop23123131231231231231truongmlop23123123123132123@gmail.com",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Email should not exceed 50 characters"
+  },
+  "incorrect_format_email": {
+    "email": "truongmlop",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Email must be in a correct format"
+  },
+  "already_registered_email": {
+    "email": "truongmlop@gmail.com",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Already have this email"
+  },
+  "incorrect_confirm_password": {
+    "email": "championlc97@gmail.com",
+    "password": "Bqt2112.",
+    "confirmPassword": "Bqt2112.123",
+    "isTermCheck": true,
+    "expectedMessage": "Confirm password is incorrect"
+  },
+  "empty_password": {
+    "email": "championlc97@gmail.com",
+    "password": "",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Please enter your password"
+  },
+  "over_length_password": {
+    "email": "championlc97@gmail.com",
+    "password": "Bqt2112.12312312312312313213123123123123123123123123123123123123123",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Password should be in 8-32 characters"
+  },
+  "space_password": {
+    "email": "championlc97@gmail.com",
+    "password": "Bqt21  12.123 12",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Password should not include space characters"
+  },
+  "not_mix_password": {
+    "email": "championlc97@gmail.com",
+    "password": "Bqt2112123",
+    "confirmPassword": "Bqt2112.",
+    "isTermCheck": true,
+    "expectedMessage": "Password must include a mix of letters, numbers, symbols"
+  }
+}

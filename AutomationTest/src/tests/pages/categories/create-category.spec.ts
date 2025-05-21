@@ -3,6 +3,7 @@ import { test } from '../../../core/fixture/authFixture';
 import { CategoryPage } from '../../../pages/categories/categories-page';
 import { withTimestamp } from '../../../core/utils/generate-unique-data';
 import { CUCategory } from '../../../models/categories/create-category';
+import { buildTestCases } from '../../../core/utils/testcase-data-builder';
 
 test.describe('@Category Create category tests', () => {
     let categoryPage: CategoryPage;
@@ -13,24 +14,12 @@ test.describe('@Category Create category tests', () => {
         await categoryPage.clickAddCategoryButton();
     });
 
-    const categories = [
-        {
-            label: '@SmokeTest Valid Category',
-            data: withTimestamp(categoryData.create_valid_category) as CUCategory,
-        },
-        {
-            label: 'Duplicate Category',
-            data: categoryData.create_duplicate_category as CUCategory,
-        },
-        {
-            label: 'Empty Category Name',
-            data: categoryData.create_empty_category_name as CUCategory,
-        },
-        {
-            label: '@Boundary Over length Category Name',
-            data: categoryData.create_over_length_category_name as CUCategory,
-        }
-    ];
+    const categories = buildTestCases<CUCategory>({
+        '@SmokeTest Valid Category': withTimestamp(categoryData.create_valid_category),
+        'Duplicate Category': categoryData.create_duplicate_category,
+        'Empty Category Name': categoryData.create_empty_category_name,
+        '@Boundary Over length Category Name': categoryData.create_over_length_category_name
+    });
 
     for (const { label, data } of categories) {
         test(`${label} - Create a Category`, async () => {
