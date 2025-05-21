@@ -1,18 +1,20 @@
 using Application.Helpers;
-using Contract.Services;
 using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
 using Domain.Constants;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 
 namespace Application.Services.Users;
 
-public class UserService(IUserRepository userRepository, IEmailService emailService) : IUserService
+public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env) : IUserService
 {
     public async Task<Result<GetUserResponse>> GetUserByEmailAsync(string email)
     {
@@ -152,5 +154,64 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         var random = new Random();
         return new string(Enumerable.Repeat(validChars, length)
             .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    public async Task<Result<string>> UploadAvatarAsync(Guid userId, HttpRequest request, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
+        }
+
+        var imagesPath = Path.Combine(env.WebRootPath, "images");
+
+        if (!Directory.Exists(imagesPath))
+        {
+            Directory.CreateDirectory(imagesPath);
+        }
+
+        var fileName = userId.ToString() + Path.GetExtension(file.FileName);
+
+        var filePath = Path.Combine(imagesPath, fileName);
+
+        using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream);
+
+        var baseUrl = $"{request?.Scheme}://{request?.Host}";
+
+        var fileUrl = $"{baseUrl}/images/{fileName}";
+
+        return Result.Success(fileUrl, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<bool>> RemoveAvatarAsync(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return Result.Failure<bool>("Image URL is required.", HttpStatusCode.BadRequest);
+        }
+
+        try
+        {
+            // Extract the file name from the URL
+            var uri = new Uri(imageUrl);
+            var fileName = Path.GetFileName(uri.LocalPath);
+
+            var imagesPath = Path.Combine(env.WebRootPath, "images");
+            var filePath = Path.Combine(imagesPath, fileName);
+
+            if (!File.Exists(filePath))
+            {
+                return Result.Failure<bool>("Avatar file not found.", HttpStatusCode.NotFound);
+            }
+
+            File.Delete(filePath);
+
+            return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>($"Failed to remove avatar: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
     }
 }

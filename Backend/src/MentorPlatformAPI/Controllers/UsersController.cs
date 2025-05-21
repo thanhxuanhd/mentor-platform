@@ -1,4 +1,3 @@
-using Application.Services.Authentication;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -60,6 +59,23 @@ public class UsersController(IUserService userService) : ControllerBase
     public async Task<IActionResult> ForgotPasswordRequest(string email)
     {
         var result = await userService.ForgotPasswordRequest(email);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPost("avatar/{userId}")]
+    public async Task<IActionResult> UploadAvatar(Guid userId, IFormFile file)
+    {
+        var request = Request;
+        var result = await userService.UploadAvatarAsync(userId, request, file);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpDelete("avatar")]
+    public async Task<IActionResult> RemoveAvatar(string imageUrl)
+    {
+        var result = await userService.RemoveAvatarAsync(imageUrl);
 
         return StatusCode((int)result.StatusCode, result);
     }

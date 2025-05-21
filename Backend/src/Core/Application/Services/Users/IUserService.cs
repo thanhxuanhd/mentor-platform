@@ -2,6 +2,7 @@
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Shared;
+using Microsoft.AspNetCore.Http;
 
 namespace Application.Services.Users;
 
@@ -13,4 +14,6 @@ public interface IUserService
     Task<Result<bool>> ChangeUserStatusAsync(Guid userId);
     Task<Result<GetUserResponse>> GetUserByEmailAsync(string email);
     Task<Result> ForgotPasswordRequest(string email);
+    Task<Result<string>> UploadAvatarAsync(Guid userId, HttpRequest request, IFormFile file);
+    Task<Result<bool>> RemoveAvatarAsync(string imageUrl);
 }
