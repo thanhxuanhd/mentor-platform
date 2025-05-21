@@ -14,7 +14,8 @@ namespace MentorPlatformAPI.Controllers;
 public class CourseController(
     ICourseService courseService,
     ICourseItemService courseItemService,
-    IUserService userService)
+    IUserService userService,
+    CurrentUser currentUser)
     : ControllerBase
 {
     [HttpGet]
@@ -61,7 +62,7 @@ public class CourseController(
     }
 
     [HttpPut("{id:guid}/archive")]
-    public async Task<IActionResult> ArchiveCourse(CurrentUser currentUser, Guid id)
+    public async Task<IActionResult> ArchiveCourse(Guid id)
     {
         var course = await courseService.GetByIdAsync(id);
         var user = await userService.GetUserByEmailAsync(currentUser.Email);

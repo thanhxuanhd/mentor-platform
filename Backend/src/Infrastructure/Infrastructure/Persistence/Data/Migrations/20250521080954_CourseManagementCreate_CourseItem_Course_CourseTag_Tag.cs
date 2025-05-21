@@ -5,11 +5,22 @@
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class CourseResource : Migration
+    public partial class CourseManagementCreate_CourseItem_Course_CourseTag_Tag : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "Tags",
+                type: "nvarchar(50)",
+                maxLength: 50,
+                nullable: false,
+                collation: "SQL_Latin1_General_CP1_CS_AS",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(50)",
+                oldMaxLength: 50);
+
             migrationBuilder.AlterColumn<string>(
                 name: "WebAddress",
                 table: "CourseItems",
@@ -29,6 +40,14 @@ namespace Infrastructure.Persistence.Data.Migrations
                 oldType: "nvarchar(max)");
 
             migrationBuilder.AlterColumn<string>(
+                name: "MediaType",
+                table: "CourseItems",
+                type: "nvarchar(max)",
+                nullable: false,
+                oldClrType: typeof(int),
+                oldType: "int");
+
+            migrationBuilder.AlterColumn<string>(
                 name: "Description",
                 table: "CourseItems",
                 type: "nvarchar(1024)",
@@ -41,6 +60,17 @@ namespace Infrastructure.Persistence.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "Tags",
+                type: "nvarchar(50)",
+                maxLength: 50,
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(50)",
+                oldMaxLength: 50,
+                oldCollation: "SQL_Latin1_General_CP1_CS_AS");
+
             migrationBuilder.AlterColumn<string>(
                 name: "WebAddress",
                 table: "CourseItems",
@@ -58,6 +88,14 @@ namespace Infrastructure.Persistence.Data.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(256)",
                 oldMaxLength: 256);
+
+            migrationBuilder.AlterColumn<int>(
+                name: "MediaType",
+                table: "CourseItems",
+                type: "int",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Description",

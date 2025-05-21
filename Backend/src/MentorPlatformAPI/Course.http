@@ -13,9 +13,7 @@ Content-Type: application/json
 }
 
 > {%
-
  client.global.set("auth_token", response.body.value); 
-
 %}
 
 ### GetAllCourse
@@ -67,6 +65,16 @@ Authorization: Bearer {{auth_token}}
 
 ### DeleteCourse
 DELETE {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### PublishCourse
+PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/publish
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### ArchiveCourse
+PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/archive
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 

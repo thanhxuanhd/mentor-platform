@@ -1,19 +1,21 @@
-﻿using Contract.Repositories;
+﻿using System.Text;
+using Contract.Repositories;
 using Contract.Services;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Settings;
 using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
+using Infrastructure.Services;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace Infrastructure;
 
@@ -79,6 +81,7 @@ public static class ConfigureServices
         });
 
         services.AddScoped<CurrentUser>();
+        services.AddScoped<IClaimsTransformation, ClaimsTransformation>();
 
         return services;
     }
