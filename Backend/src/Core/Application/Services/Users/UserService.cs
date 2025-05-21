@@ -182,7 +182,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         return Result.Success(HttpStatusCode.OK);
     }
-}
 
     public async Task<Result> ForgotPasswordRequest(string email)
     {
