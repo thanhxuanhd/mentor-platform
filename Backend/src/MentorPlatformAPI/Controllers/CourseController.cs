@@ -1,4 +1,5 @@
-﻿using Contract.Dtos.CourseItems.Requests;
+﻿using Application.Services.Users;
+using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
 using Contract.Services;
 using Infrastructure.Services.Authorization;
@@ -10,7 +11,10 @@ namespace MentorPlatformAPI.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class CourseController(ICourseService courseService, ICourseItemService courseItemService)
+public class CourseController(
+    ICourseService courseService,
+    ICourseItemService courseItemService,
+    IUserService userService)
     : ControllerBase
 {
     [HttpGet]
@@ -47,23 +51,25 @@ public class CourseController(ICourseService courseService, ICourseItemService c
         var result = await courseService.DeleteAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
-    
-    [HttpPut("{id:guid}/publish")]
-    [Authorize(policy: RequiredRole.Admin)]
-    public async Task<IActionResult> PublishCourse(Guid id)
-    {
-        throw new NotImplementedException();
-        // var result = await courseService.PublishCourse(id);
-        // return StatusCode((int)result.StatusCode, result);
-    }
 
     [HttpPut("{id:guid}/publish")]
-    public async Task<IActionResult> ArchiveCourse(Guid id)
+    [Authorize(Policy = RequiredRole.Admin)]
+    public async Task<IActionResult> PublishCourse(Guid id)
     {
-        throw new NotImplementedException();
-        // ACL: Allow course owner and admin
-        // var result = await courseService.ArchiveCourse(id);
-        // return StatusCode((int)result.StatusCode, result);
+        var result = await courseService.PublishCourseAsync(id);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut("{id:guid}/archive")]
+    public async Task<IActionResult> ArchiveCourse(CurrentUser currentUser, Guid id)
+    {
+        var course = await courseService.GetByIdAsync(id);
+        var user = await userService.GetUserByEmailAsync(currentUser.Email);
+
+        if (!currentUser.IsInRole(RequiredRole.Admin) && course.Value!.MentorId != user.Value!.Id) return Forbid();
+
+        var result = await courseService.ArchiveCourseAsync(id);
+        return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpGet("{id:guid}/resource")]

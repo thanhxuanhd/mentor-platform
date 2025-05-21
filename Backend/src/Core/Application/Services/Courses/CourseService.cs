@@ -62,10 +62,8 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
 
         var createdCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
         if (createdCourse == null)
-        {
             return Result.Failure<CourseSummary>("Failed to retrieve created course",
                 HttpStatusCode.InternalServerError);
-        }
 
         var response = createdCourse.ToCourseSummary();
         return Result.Success(response, HttpStatusCode.Created);
@@ -103,5 +101,37 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         await courseRepository.SaveChangesAsync();
 
         return Result.Success(HttpStatusCode.NoContent);
+    }
+
+    public async Task<Result<CourseSummary>> PublishCourseAsync(Guid id)
+    {
+        var course = await courseRepository.GetCourseWithDetailsAsync(id);
+        if (course == null)
+            return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+
+        if (course.Status == CourseStatus.Published)
+            return Result.Failure<CourseSummary>("Course is already published", HttpStatusCode.BadRequest);
+
+        course.Status = CourseStatus.Published;
+        await courseRepository.SaveChangesAsync();
+
+        var response = course.ToCourseSummary();
+        return Result.Success(response, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<CourseSummary>> ArchiveCourseAsync(Guid id)
+    {
+        var course = await courseRepository.GetCourseWithDetailsAsync(id);
+        if (course == null)
+            return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+
+        if (course.Status == CourseStatus.Archived)
+            return Result.Failure<CourseSummary>("Course is already archived", HttpStatusCode.BadRequest);
+
+        course.Status = CourseStatus.Archived;
+        await courseRepository.SaveChangesAsync();
+
+        var response = course.ToCourseSummary();
+        return Result.Success(response, HttpStatusCode.OK);
     }
 }

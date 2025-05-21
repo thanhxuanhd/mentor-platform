@@ -770,7 +770,9 @@ public class CourseServiceTests
         {
             Id = courseId,
             Title = "Test Course",
-            Status = CourseStatus.Draft
+            Status = CourseStatus.Draft,
+            Mentor = new User(),
+            Category = new Category { Id = Guid.NewGuid(), Name = "Category" }
         };
 
         _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))
@@ -847,7 +849,9 @@ public class CourseServiceTests
         {
             Id = courseId,
             Title = "Test Course",
-            Status = CourseStatus.Published
+            Status = CourseStatus.Published,
+            Mentor = new User(),
+            Category = new Category { Id = Guid.NewGuid(), Name = "Category" }
         };
 
         _courseRepositoryMock.Setup(repo => repo.GetCourseWithDetailsAsync(courseId))

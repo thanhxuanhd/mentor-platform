@@ -11,4 +11,6 @@ public interface ICourseService
     Task<Result<CourseSummary>> CreateAsync(Guid mentorId, CourseCreateRequest request);
     Task<Result<CourseSummary>> UpdateAsync(Guid id, CourseUpdateRequest request);
     Task<Result> DeleteAsync(Guid id);
+    Task<Result<CourseSummary>> PublishCourseAsync(Guid id);
+    Task<Result<CourseSummary>> ArchiveCourseAsync(Guid id);
 }
