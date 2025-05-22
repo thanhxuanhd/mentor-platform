@@ -3,12 +3,13 @@ import type { UserDetail } from "../../types/UserTypes";
 import { CommunicationMethod } from "../../types/enums/CommunicationMethod";
 import { SessionFrequency } from "../../types/enums/SessionFrequency";
 import { LearningStyle } from "../../types/enums/LearningStyle";
-import { Button, Steps, type FormInstance } from "antd";
+import { App, Button, Steps, type FormInstance } from "antd";
 import UserProfile from "./components/UserProfile";
 import UserPreference from "./components/UserPreference";
 import { useLocation, useNavigate } from "react-router-dom";
 import { userService } from "../../services/user/userService";
 import { axiosClient } from "../../services/apiClient";
+import type { NotificationProps } from "../../types/Notification";
 
 const stepItems: {
   status?: "finish" | "process" | "wait" | "error";
@@ -33,7 +34,7 @@ export default function ProfileSetup() {
   const { userId } = state;
   const formRef = useRef<FormInstance<UserDetail>>(null);
   const navigate = useNavigate();
-
+  const { notification } = App.useApp();
   const [userDetail, setUserDetail] = useState<UserDetail>({
     fullName: "",
     roleId: 0,
@@ -55,6 +56,7 @@ export default function ProfileSetup() {
     teachingApproachIds: [],
     categoryIds: [],
   });
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
 
   const fetchUserDetail = useCallback(async () => {
     await userService.getUserDetail(userId).then((response) => {
@@ -66,6 +68,20 @@ export default function ProfileSetup() {
     fetchUserDetail();
   }, [fetchUserDetail]);
 
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
   const [currentStep, setCurrentStep] = useState(1);
 
   const nextStep = async () => {
@@ -73,8 +89,12 @@ export default function ProfileSetup() {
       try {
         await formRef.current?.validateFields();
         setCurrentStep(currentStep + 1);
-      } catch (error) {
-        console.log("Validation failed:", error);
+      } catch {
+        setNotify({
+          type: "warning",
+          message: "Error",
+          description: "Fill all the required fields first.",
+        });
       }
     } else {
       setCurrentStep(currentStep + 1);
@@ -92,15 +112,23 @@ export default function ProfileSetup() {
     try {
       await axiosClient.put(`/Users/${userId}/detail`, userDetail);
       navigate("/login");
+      setNotify({
+        type: "success",
+        message: "Success",
+        description: "Your profile has been created successfully.",
+      });
     } catch {
-      console.log("error");
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "Failed to create new profile",
+      });
     }
   };
 
   return (
     <div className="mih-h-content">
       <Steps
-        type="navigation"
         current={currentStep}
         className="site-steps p-6!"
         items={stepItems}

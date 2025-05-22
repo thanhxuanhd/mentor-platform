@@ -15,9 +15,15 @@ import {
   Radio,
   App,
   type FormInstance,
+  type GetProp,
 } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
-import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
+import type {
+  RcFile,
+  UploadChangeParam,
+  UploadFile,
+  UploadProps,
+} from "antd/es/upload";
 const { TextArea } = Input;
 import { useCallback, useEffect, useState } from "react";
 import type { NotificationProps } from "../../../types/Notification";
@@ -58,6 +64,12 @@ const communicationMethodOptions: CheckboxGroupProps<CommunicationMethod>["optio
       value: CommunicationMethod.TextChat,
     },
   ];
+type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
+const getBase64 = (img: FileType, callback: (url: string) => void) => {
+  const reader = new FileReader();
+  reader.addEventListener("load", () => callback(reader.result as string));
+  reader.readAsDataURL(img);
+};
 
 const roleOptions: CheckboxGroupProps<number>["options"] = [
   {
@@ -69,7 +81,7 @@ const roleOptions: CheckboxGroupProps<number>["options"] = [
       </div>
     ),
     value: 3,
-    className: "h-full!",
+    className: "h-full! rounded-md",
   },
   {
     label: (
@@ -80,7 +92,7 @@ const roleOptions: CheckboxGroupProps<number>["options"] = [
       </div>
     ),
     value: 2,
-    className: "h-full!",
+    className: "h-full! rounded-md",
   },
 ];
 
@@ -151,23 +163,11 @@ const UserProfile: React.FC<UserProfileProps> = ({
     form.setFieldsValue({
       expertiseIds: userExpertises.map((item) => item.id),
     });
-  }, [expertises, userDetail.expertiseIds]);
+  }, [expertises, form, userDetail.expertiseIds]);
 
   useEffect(() => {
     form.setFieldsValue(userDetail);
   }, [form, userDetail]);
-
-  useEffect(() => {
-    setImageUrl(userDetail.profilePhotoUrl);
-  }, []);
-
-  useEffect(() => {
-    updateUserDetail((prev) => ({
-      ...prev,
-      profilePhotoUrl: imageUrl,
-    }));
-    form.setFieldsValue({ profilePhotoUrl: imageUrl });
-  }, [imageUrl]);
 
   useEffect(() => {
     setSelectedAvailabilities(userDetail.availabilityIds);
@@ -212,9 +212,17 @@ const UserProfile: React.FC<UserProfileProps> = ({
   };
 
   const handleUpload = (info: UploadChangeParam<UploadFile>) => {
+    setImageUrl("");
     if (info.file.status === "done") {
-      const newImageUrl = info.file.response?.value;
-      setImageUrl(newImageUrl);
+      getBase64(info.file.originFileObj as FileType, (url) => {
+        setImageUrl(url);
+        console.log(info.file.response?.value);
+        updateUserDetail((prev) => ({
+          ...prev,
+          profilePhotoUrl: info.file.response?.value,
+        }));
+        form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
+      });
     }
   };
 
@@ -264,22 +272,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
           <Form.Item
             name="profilePhotoUrl"
             label="Profile Photo"
-            valuePropName="string"
+            valuePropName="file"
             getValueFromEvent={(e) => {
-              if (Array.isArray(e)) {
-                return e;
-              }
-
-              return e?.fileList || [];
+              return e?.fileList[0];
             }}
-            initialValue={[
-              {
-                uid: userId,
-                name: userDetail.fullName,
-                status: "done",
-                url: imageUrl,
-              },
-            ]}
           >
             <Upload
               maxCount={1}
@@ -300,7 +296,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                       className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
                       onClick={(e) => {
                         e.stopPropagation();
-                        userService.removeAvatar(imageUrl);
+                        userService.removeAvatar(userDetail.profilePhotoUrl);
                         setImageUrl("");
                         updateUserDetail((prev) => ({
                           ...prev,
@@ -417,6 +413,9 @@ const UserProfile: React.FC<UserProfileProps> = ({
             className="w-full"
             size="large"
             options={expertises}
+            filterOption={(input, option) =>
+              (option?.name ?? "").toLowerCase().includes(input.toLowerCase())
+            }
             fieldNames={{ label: "name", value: "id" }}
           />
         </Form.Item>
