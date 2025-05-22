@@ -84,6 +84,9 @@ export default function ProfileSetup() {
   };
 
   const prevStep = () => {
+    if (currentStep === 1) {
+      navigate("/login");
+    }
     setCurrentStep(currentStep - 1);
   };
 
@@ -120,7 +123,7 @@ export default function ProfileSetup() {
         />
       )}
       <div className="flex justify-center mb-12 gap-4 max-w-3xl m-auto">
-        {currentStep > 1 && (
+        {currentStep > 0 && (
           <Button size="large" onClick={() => prevStep()}>
             Back
           </Button>
