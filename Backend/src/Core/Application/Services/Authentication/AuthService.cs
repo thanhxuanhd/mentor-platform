@@ -26,7 +26,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             return Result.Failure<AuthResponse>("Invalid password", HttpStatusCode.Unauthorized);
         }
 
-        var signInResponse = ToSignInResponse(user);
+        var signInResponse = ToAuthResponse(user);
 
         return Result.Success(signInResponse, HttpStatusCode.OK);
     }
@@ -54,7 +54,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         await userRepository.SaveChangesAsync();
         newUser = await userRepository.GetUserByEmail(request.Email);
 
-        return Result.Success(ToSignInResponse(newUser!), HttpStatusCode.OK);
+        return Result.Success(ToAuthResponse(newUser!), HttpStatusCode.OK);
     }
 
     public async Task<Result<AuthResponse>> LoginGithubAsync(OAuthSignInRequest request)
@@ -116,16 +116,17 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
                 PhoneNumber = "",
                 Email = email,
                 RoleId = (int)UserRole.Learner,
+                JoinedDate = DateOnly.FromDateTime(DateTime.Now)
             };
             await userRepository.AddAsync(user);
             await userRepository.SaveChangesAsync();
         }
         user = await userRepository.GetUserByEmail(email);
 
-        return ToSignInResponse(user!);
+        return ToAuthResponse(user!);
     }
 
-    private AuthResponse ToSignInResponse(User user)
+    private AuthResponse ToAuthResponse(User user)
     {
         var token = jwtService.GenerateToken(user);
         var signInResponse = new AuthResponse(

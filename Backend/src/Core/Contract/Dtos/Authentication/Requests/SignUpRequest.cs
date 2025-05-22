@@ -14,11 +14,11 @@ public class SignUpRequestValidator : AbstractValidator<SignUpRequest>
             .Matches(@"^[^ ]*$").WithMessage("Password should not include space characters")
             .Matches(@"[A-Za-z]").WithMessage("Password must include letters")
             .Matches(@"[0-9]").WithMessage("Password must include numbers")
-            .Matches(@"[\p{P}\p{S}]").WithMessage("Password must include at least one symbol.");
+            .Matches(@"[!@#$%^&*]").WithMessage("Password must include symbols");
 
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty().WithMessage("Please confirm your new password")
-            .Equal(x => x.ConfirmPassword).WithMessage("Passwords do not match");
+            .Equal(x => x.Password).WithMessage("Passwords do not match");
 
         RuleFor(x => x.Email)
             .NotEmpty().WithMessage("Please enter your email")

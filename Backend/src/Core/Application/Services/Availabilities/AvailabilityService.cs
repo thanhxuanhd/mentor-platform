@@ -9,7 +9,9 @@ public class AvailabilityService(IAvailabilityRepository availabilityRepository)
 {
     public async Task<Result<List<GetAvailabilityResponse>>> GetAllAvailabilitiesAsync()
     {
-        var availabilities = availabilityRepository.GetAll().Select(a => new GetAvailabilityResponse(a.Id, a.Name));
+        var availabilities = availabilityRepository.GetAll()
+            .Select(a => new GetAvailabilityResponse(a.Id, a.Name));
+
         var result = await availabilityRepository.ToListAsync(availabilities);
 
         return Result.Success(result, HttpStatusCode.OK);
