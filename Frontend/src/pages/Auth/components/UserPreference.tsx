@@ -2,10 +2,46 @@ import { useEffect, useState } from "react"
 import { Button, Checkbox, Form, Select, Tag, type SelectProps } from "antd"
 import type { CheckboxChangeEvent } from "antd/es/checkbox"
 import { getListCategories } from "../../../services/category/categoryServices";
+import type { TeachingApproach } from "../../../types/UserTypes";
+import { getAllTeachingApproaches } from "../../../services/user/userService";
+import { learningStyleDisplayMap, learningStyleValues } from "../../../types/enums/LearningStyle";
 
 export default function UserPreference() {
-  const [categories, setCategories] = useState([]);
-  const [learningStyle, setLearningStyle] = useState<string>("Visual")
+  const [learningStyle, setLearningStyle] = useState<number>(0);
+  const [tags, setTags] = useState<SelectProps['options']>([]);
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [teachingApproaches, setTeachingApproaches] = useState<string[]>([]);
+  const [approaches, setApproaches] = useState<TeachingApproach[]>([]);
+  const [selectedFrequency, setSelectedFrequency] = useState(0);
+  const [selectedDuration, setSelectedDuration] = useState(30);
+
+  useEffect(() => {
+    const fetchApproaches = async () => {
+      try {
+        const data = await getAllTeachingApproaches();
+        setApproaches(data);
+        setTeachingApproaches([]);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCategories();
+    fetchApproaches();
+  }, []);
+
+  const fetchCategories = async (keyword: string = '') => {
+    try {
+      const response = await getListCategories(1, 5, keyword);
+      setTags(
+        response.items.map((category: { name: any; id: any }) => ({
+          label: category.name,
+          value: category.id,
+        }))
+      );
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
 
   const [privacySettings, setPrivacySettings] = useState({
     privateProfile: false,
@@ -13,9 +49,7 @@ export default function UserPreference() {
     receiveNotifications: true,
   })
 
-  const [teachingApproaches, setTeachingApproaches] = useState<string[]>(["Hands-on Practice", "Discussion Based"])
-
-  const handleLearningStyleClick = (style: string) => {
+  const handleLearningStyleClick = (style: number) => {
     setLearningStyle(style)
   }
 
@@ -34,31 +68,17 @@ export default function UserPreference() {
     }
   }
 
-  const [tags, setTags] = useState<SelectProps['options']>([]);
-  const [selectedTags, setSelectedTags] = useState([]);
-
-  const fetchCategories = async (keyword: string = '') => {
-    try {
-      const response = await getListCategories(1, 5, keyword); // Gọi API với từ khóa
-      setTags(
-        response.items.map((category: { name: any; id: any }) => ({
-          label: category.name,
-          value: category.id,
-        }))
-      );
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
   const handleSearch = (value: string) => {
     fetchCategories(value);
   };
 
+  const handleFrequencyChange = (value: number) => {
+    setSelectedFrequency(value);
+  }
+
+  const handleDurationChange = (value: number) => {
+    setSelectedDuration(value);
+  }
   return (
     <div className="text-white p-8 rounded-xl max-w-3xl my-12 mx-auto shadow-2xl bg-gradient-to-b from-gray-800 to-gray-900">
       <Form layout="vertical" name="user_profile_form" requiredMark={false}>
@@ -74,7 +94,7 @@ export default function UserPreference() {
               {
                 required: true,
                 message: "Please select your field of topics!",
-              },
+              }
             ]}
           >
             <Select
@@ -89,6 +109,8 @@ export default function UserPreference() {
               filterOption={false}
               onSearch={handleSearch}
               onChange={(value) => setSelectedTags(value)}
+              value={selectedTags}
+              maxCount={5}
             />
           </Form.Item>
         </div>
@@ -97,31 +119,35 @@ export default function UserPreference() {
           <div className="rounded-lg transition-all duration-300">
             <h3 className="text-gray-300 mb-4 text-lg">Preferred session frequency</h3>
             <Select
-              defaultValue="Weekly"
+              defaultValue={0}
               className="w-full"
               size="large"
               style={{ background: '#1E293B' }}
+              onChange={handleFrequencyChange}
               options={[
-                { value: "Weekly", label: "Weekly" },
-                { value: "Every two week", label: "Every two week" },
-                { value: "Monthly", label: "Monthly" },
-                { value: "As needed", label: "As needed" },
+                { value: 0, label: 'Weekly' },
+                { value: 1, label: 'Every two weeks' },
+                { value: 2, label: 'Monthly' },
+                { value: 3, label: 'As needed' },
               ]}
+              value={selectedFrequency}
             />
           </div>
           <div className="rounded-lg transition-all duration-300">
             <h3 className="text-gray-300 mb-4 text-lg">Preferred session duration</h3>
             <Select
-              defaultValue="1 hour"
+              defaultValue={30}
               className="w-full"
               size="large"
               style={{ background: '#1E293B' }}
+              onChange={handleDurationChange}
               options={[
-                { value: "30 minutes", label: "30 minutes" },
-                { value: "1 hour", label: "1 hour" },
-                { value: "1.5 hours", label: "1.5 hours" },
-                { value: "2 hours", label: "2 hours" },
+                { value: 30, label: "30 minutes" },
+                { value: 60, label: "1 hour" },
+                { value: 90, label: "1.5 hours" },
+                { value: 120, label: "2 hours" },
               ]}
+              value={selectedDuration}
             />
           </div>
         </div>
@@ -129,7 +155,7 @@ export default function UserPreference() {
         <div className="mb-8 rounded-lg">
           <h3 className="text-gray-300 mb-4 text-lg">Your preferred learning style</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["Visual", "Auditory", "Reading/Writing", "Kinesthetic"].map((style) => (
+            {learningStyleValues.map((style) => (
               <div
                 key={style}
                 onClick={() => handleLearningStyleClick(style)}
@@ -138,42 +164,27 @@ export default function UserPreference() {
                   : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
                   }`}
               >
-                {style}
+                {learningStyleDisplayMap[style]}
               </div>
             ))}
           </div>
         </div>
 
         <div className="mb-8 rounded-lg">
-          <h3 className="text-lg mb-2">
-            Your Teaching Approach
-          </h3>
+          <h3 className="text-lg mb-2">Your Teaching Approach</h3>
           <p className="text-gray-400 mb-4">Select all teaching methods that match your style</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { id: "hands-on", label: "Hands-on Practice", icon: "⚒️", description: "Learn by doing" },
-              { id: "discussion", label: "Discussion Based", icon: "💬", description: "Interactive dialogues" },
-              { id: "project", label: "Project Based", icon: "📋", description: "Real-world applications" },
-              { id: "lecture", label: "Lecture Style", icon: "📝", description: "Structured learning" },
-            ].map((approach) => (
+            {approaches.map((approach) => (
               <Tag.CheckableTag
                 key={approach.id}
-                checked={teachingApproaches.includes(approach.label)}
-                onChange={(checked) => handleTeachingApproachChange(approach.label, checked)}
-                className={`group p-4 rounded-xl cursor-pointer text-left transition-all duration-300 transform ${teachingApproaches.includes(approach.label)
-                  ? "!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg"
-                  : "!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]"
+                checked={teachingApproaches.includes(approach.name)}
+                onChange={(checked) => handleTeachingApproachChange(approach.name, checked)}
+                className={`group p-8 rounded-2xl cursor-pointer text-left transition-all duration-300 transform ${teachingApproaches.includes(approach.name)
+                  ? '!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg'
+                  : '!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]'
                   }`}
               >
-                <div className="flex items-center py-2 space-x-3">
-                  <span className="text-xl">
-                    {approach.icon}
-                  </span>
-                  <div>
-                    <div className="font-semibold text-lg">{approach.label}</div>
-                    <div className="text-sm text-gray-400">{approach.description}</div>
-                  </div>
-                </div>
+                <div className="text-lg m-4">{approach.name}</div>
               </Tag.CheckableTag>
             ))}
           </div>

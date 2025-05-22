@@ -14,6 +14,7 @@ import UserProfile from "../pages/Auth/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import { applicationRole } from "../constants/role";
 import ForbiddenPage from "../pages/Forbidden";
+import UserPreference from "../pages/Auth/components/UserPreference";
 
 const AppRoutes = () => {
   return (
@@ -27,6 +28,8 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
+        <Route path="user-preferences" element={<UserPreference />} />
+        <Route path="user-profile" element={<UserProfile />} />
       </Route>
 
       <Route

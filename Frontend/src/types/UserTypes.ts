@@ -21,3 +21,8 @@ export interface UserFilterPagedRequest {
   roleName: string | null;
   fullName: string | null;
 }
+
+export interface TeachingApproach {
+  id: string,
+  name: string
+}
