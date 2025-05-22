@@ -160,7 +160,7 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //Save button
-  async verifySaveButtonIsEnabled() {
+  async getSaveButtonIsEnabled() {
     const isEnable = await this.BTN_SAVE_LOC.isEnabled();
     return isEnable;
   }
@@ -188,7 +188,7 @@ export class UserRoleManagementPage extends BasePage {
     await this.BTN_CANCEL_USER_LOC.click();
   }
 
-  async verifyCancelButtonIsEnabled() {
+  async getCancelButtonIsEnabled() {
     const isEnable = await this.BTN_CANCEL_USER_LOC.isEnabled();
     return isEnable;
   }
@@ -328,7 +328,7 @@ export class UserRoleManagementPage extends BasePage {
     return errorMessage;
   }
 
-  async hasEditUserDefaultValue() {
+  async verifyEditUserDefaultValue() {
     const userFullname = await this.LBL_USER_FULLNAME_LOC.first().textContent();
     const userEmail = await this.LBL_USER_EMAIL_LOC.first().textContent();
 
