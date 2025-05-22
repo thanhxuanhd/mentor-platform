@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { App, Checkbox, Form, Select, Tag, type FormInstance, type SelectProps } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
-import { getListCategories } from "../../../services/category/categoryServices";
+import { getActiveCategories, getListCategories } from "../../../services/category/categoryServices";
 import type { TeachingApproach, UserDetail } from "../../../types/UserTypes";
 import { getAllTeachingApproaches } from "../../../services/user/userService";
 import { LearningStyle } from "../../../types/enums/LearningStyle";
@@ -41,9 +41,14 @@ const UserPreference: React.FC<UserProfileProps> = ({
 
   const fetchCategories = useCallback(async (keyword: string = "") => {
     try {
-      const response = await getListCategories(1, 5, keyword);
+      const response = await getActiveCategories();
+      const filteredCategories = keyword
+        ? response.filter((category: { name: string }) =>
+          category.name.toLowerCase().includes(keyword.toLowerCase()),
+        )
+        : response;
       setTags(
-        response.items.map((category: { name: any; id: any }) => ({
+        filteredCategories.map((category: { name: any; id: any }) => ({
           label: category.name,
           value: category.id,
         })),

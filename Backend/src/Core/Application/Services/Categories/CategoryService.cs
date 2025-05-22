@@ -26,6 +26,21 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         };
         return Result.Success(categoryInfo, HttpStatusCode.OK);
     }
+
+    public async Task<Result<List<GetActiveCategoryResponse>>> GetActiveCategoriesAsync()
+    {
+        var activeCategories = categoryRepository.GetAll()
+            .Where(c => c.Status == true)
+            .Select(c => new GetActiveCategoryResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+            });
+
+        var listActiveCategories = await categoryRepository.ToListAsync(activeCategories);
+
+        return Result.Success(listActiveCategories, HttpStatusCode.OK);
+    }
     public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(FilterCategoryRequest request)
     {
         var categories = categoryRepository.GetAll();

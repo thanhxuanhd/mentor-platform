@@ -16,6 +16,11 @@ export const getListCategories = async (
   return response.data.value;
 };
 
+export const getActiveCategories = async () => {
+  const response = await axiosClient.get(`categories/active-categories`);
+  return response.data.value;
+}
+
 export const getCategoryById = async (categoryId: string) => {
   const response = await axiosClient.get(`categories/${categoryId}`);
   return response.data.value;

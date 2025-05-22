@@ -17,12 +17,21 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         var result = await categoryService.GetCategoryByIdAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
+
     [HttpGet]
     public async Task<IActionResult> GetCategories([FromQuery] FilterCategoryRequest request)
     {
         request.Keyword = string.IsNullOrEmpty(request.Keyword) ? string.Empty : request.Keyword.Trim();
 
         var result = await categoryService.GetCategoriesAsync(request);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("active-categories")]
+    public async Task<IActionResult> GetActiveCategories()
+    {
+        var result = await categoryService.GetActiveCategoriesAsync();
 
         return StatusCode((int)result.StatusCode, result);
     }
