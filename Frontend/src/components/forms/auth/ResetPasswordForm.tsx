@@ -56,9 +56,9 @@ const ResetPasswordForm: React.FC = () => {
     } else if (newPassword.length < 8 || newPassword.length > 32) {
       errors.newPassword = "Password must be between 8 and 32 characters";
     } else if (
-      !/(?=.*[a-zA-Z])/.test(newPassword) ||
-      !/(?=.*\d)/.test(newPassword) ||
-      !/(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])/.test(newPassword)
+      !/(?=.*[a-zA-Z])/.test(newPassword) || // letters
+      !/(?=.*\d)/.test(newPassword) || // digits
+      !/(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\/-])/.test(newPassword) // special chars
     ) {
       errors.newPassword =
         "Password must include letters, numbers, and special characters";

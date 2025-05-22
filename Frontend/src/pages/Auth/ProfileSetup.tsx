@@ -87,10 +87,6 @@ export default function ProfileSetup() {
     setCurrentStep(currentStep - 1);
   };
 
-  const onStepChange = (value: number) => {
-    setCurrentStep(value);
-  };
-
   const handleSubmit = async () => {
     try {
       await axiosClient.put(`/Users/${userId}/detail`, userDetail);
@@ -106,7 +102,6 @@ export default function ProfileSetup() {
       <Steps
         type="navigation"
         current={currentStep}
-        onChange={onStepChange}
         className="site-steps p-6!"
         items={stepItems}
       />
