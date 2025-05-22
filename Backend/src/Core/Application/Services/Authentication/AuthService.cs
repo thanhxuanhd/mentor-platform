@@ -23,7 +23,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash!);
         if (!isVerified)
         {
-            return Result.Failure<string>("Invalid password", HttpStatusCode.Unauthorized);
+            return Result.Failure<string>("Invalid password", HttpStatusCode.NotFound);
         }
 
         var token = jwtService.GenerateToken(user);

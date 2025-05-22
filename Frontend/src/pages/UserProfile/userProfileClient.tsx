@@ -17,10 +17,10 @@ export interface UserProfile {
   isPrivate: boolean;
   isAllowedMessage: boolean;
   isReceiveNotification: boolean;
-  availabilityIds: number[];
-  expertiseIds: number[];
-  teachingApproachIds: number[];
-  categoryIds: number[];
+  availabilityIds: string[];     
+  expertiseIds: string[];        
+  teachingApproachIds: string[]; 
+  categoryIds: string[]; 
 }
 
 export interface UpdateProfileRequest {

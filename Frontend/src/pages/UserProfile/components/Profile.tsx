@@ -11,6 +11,32 @@ interface ProfileProps {
   userId?: string
 }
 
+const expertiseMap: Record<string, string> = {
+  "ecbea5a8-62a1-48d8-fb6d-08dd9819fec3": "Business",
+  "9ea17990-b9b6-4041-fb6f-08dd9819fec3": "Communication",
+  "2b7ac1a6-29c6-4b74-fb6c-08dd9819fec3": "Data Science",
+  "02d3db0e-0ce1-493e-fb6a-08dd9819fec3": "Design",
+  "8f0585c6-6b78-46dc-fb68-08dd9819fec3": "Leadership",
+  "5a1f1d05-8e7c-4dce-fb6b-08dd9819fec3": "Marketing",
+  "5c9dd8a1-a6f3-4fdd-fb69-08dd9819fec3": "Programming",
+  "a36ffa6c-b908-4b70-fb6e-08dd9819fec3": "Project Management",
+};
+
+const availabilityMap: Record<string, string> = {
+  "67eb556e-d860-498d-212a-08dd9819fea6": "Weekdays",
+  "3eab46db-9a91-4ab7-212b-08dd9819fea6": "Weekends",
+  "eec61c62-5198-4e1d-212c-08dd9819fea6": "Mornings",
+  "9574cf95-2df0-4982-212d-08dd9819fea6": "Afternoons",
+  "25cfac78-2bc0-46bf-212e-08dd9819fea6": "Evenings",
+};
+
+
+const communicationMethodMap: Record<number, string> = {
+  0: "Video Call",
+  1: "Audio Call",
+  2: "Text Chat",
+};
+
 export default function UserProfile({ userId: propUserId }: ProfileProps) {
   const [userData, setUserData] = useState<UserProfileType | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
@@ -34,7 +60,6 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
         if (!token) {
           throw new Error("Token not found")
         }
-
         const userProfileData = await UserProfileClient.getProfile(currentUserId, token)
         setUserData(userProfileData)
         setLoading(false)
@@ -60,31 +85,16 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
     )
   }
 
-  const getExpertiseNames = (ids: number[] = []) => {
-    const expertiseMap: Record<number, string> = {
-      1: "Programming",
-      2: "Project Management",
-      3: "Data Science",
-      4: "UX Design",
-      5: "Digital Marketing",
-    }
-    return ids.map((id) => expertiseMap[id as keyof typeof expertiseMap] || `Expertise ${id}`)
+  const getExpertiseNames = (ids: string[] = []) => {
+    return ids.map((id) => expertiseMap[id] || `Expertise ${id}`);
   }
 
-  const getAvailabilityNames = (ids: number[] = []) => {
-    const availabilityMap: Record<number, string> = {
-      1: "Weekdays",
-      2: "Weekends",
-      3: "Mornings",
-      4: "Afternoons",
-      5: "Evenings",
-    }
-    return ids.map((id) => availabilityMap[id as keyof typeof availabilityMap] || `Availability ${id}`)
+  const getAvailabilityNames = (ids: string[] = []) => {
+    return ids.map((id) => availabilityMap[id] || `Availability ${id}`);
   }
 
   const getCommunicationMethod = (id = 0) => {
-    const methods = ["Video Call", "Audio Call", "Text Chat"]
-    return methods[id] || "Not specified"
+    return communicationMethodMap[id] || "Not specified";
   }
 
   return (

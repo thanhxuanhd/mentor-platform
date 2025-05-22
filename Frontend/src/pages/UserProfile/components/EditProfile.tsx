@@ -17,22 +17,65 @@ import type { NotificationProps } from "../../../types/Notification";
 import UserProfileClient, { type UpdateProfileRequest } from "../userProfileClient";
 import { AuthContext } from "../../../contexts/AuthContext";
 
+const availabilityMap: Record<string, string> = {
+  "67eb556e-d860-498d-212a-08dd9819fea6": "Weekdays",
+  "3eab46db-9a91-4ab7-212b-08dd9819fea6": "Weekends",
+  "eec61c62-5198-4e1d-212c-08dd9819fea6": "Mornings",
+  "9574cf95-2df0-4982-212d-08dd9819fea6": "Afternoons",
+  "25cfac78-2bc0-46bf-212e-08dd9819fea6": "Evenings",
+};
+
+const reverseAvailabilityMap: Record<string, string> = Object.fromEntries(
+  Object.entries(availabilityMap).map(([guid, value]) => [value, guid])
+);
+
+const expertiseMap: Record<string, string> = {
+  "ecbea5a8-62a1-48d8-fb6d-08dd9819fec3": "Business",
+  "9ea17990-b9b6-4041-fb6f-08dd9819fec3": "Communication",
+  "2b7ac1a6-29c6-4b74-fb6c-08dd9819fec3": "Data Science",
+  "02d3db0e-0ce1-493e-fb6a-08dd9819fec3": "Design",
+  "8f0585c6-6b78-46dc-fb68-08dd9819fec3": "Leadership",
+  "5a1f1d05-8e7c-4dce-fb6b-08dd9819fec3": "Marketing",
+  "5c9dd8a1-a6f3-4fdd-fb69-08dd9819fec3": "Programming",
+  "a36ffa6c-b908-4b70-fb6e-08dd9819fec3": "Project Management",
+};
+
+const teachingApproachMap: Record<string, string> = {
+  "9178c57a-b963-469b-06aa-08dd9819fec9": "Discussion Based",
+  "b9a50969-32e1-40b7-06a9-08dd9819fec9": "Hands-on Practice",
+  "75e450d4-3928-46e1-06ac-08dd9819fec9": "Lecture Style",
+  "3c916553-b282-48cf-06ab-08dd9819fec9": "Project Based",
+};
+
+const reverseTeachingApproachMap: Record<string, string> = Object.fromEntries(
+  Object.entries(teachingApproachMap).map(([guid, value]) => [value, guid])
+);
+
+const categoryMap: Record<string, string> = {
+  "Time Management": "4b896130-3727-46c7-98d1-214107bd4709",
+  "Communication Skills": "07e80bb4-5fbb-4016-979d-847878ab81d5",
+  "Public Speaking": "4aa8eb25-7bb0-4bdc-b391-9924bc218eb2",
+  "Leadership Coaching": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
+  "Career Development": "ead230f7-76ff-4c10-b025-d1f80fcdd277",
+};
+
+const communicationMethodMap: Record<string, number> = {
+  "video": 0,
+  "audio": 1,
+  "text": 2,
+};
+
+const reverseCommunicationMethodMap: Record<number, string> = Object.fromEntries(
+  Object.entries(communicationMethodMap).map(([key, value]) => [value, key])
+);
+
 const availabilityOptions = [
   "Weekdays",
-  "Weekends", 
+  "Weekends",
   "Mornings",
   "Afternoons",
   "Evenings",
 ];
-
-
-const availabilityMap: Record<string, string> = {
-  "Weekdays": "3fa85f64-5717-4562-b3fc-2c963f66afa1",
-  "Weekends": "3fa85f64-5717-4562-b3fc-2c963f66afa2", 
-  "Mornings": "3fa85f64-5717-4562-b3fc-2c963f66afa3",
-  "Afternoons": "3fa85f64-5717-4562-b3fc-2c963f66afa4",
-  "Evenings": "3fa85f64-5717-4562-b3fc-2c963f66afa5",
-};
 
 const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   {
@@ -64,12 +107,6 @@ const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   },
 ];
 
-const communicationMethodMap: Record<string, number> = {
-  "video": 0,
-  "audio": 1,
-  "text": 2,
-};
-
 const roleOptions: CheckboxGroupProps<string>["options"] = [
   {
     label: (
@@ -100,14 +137,6 @@ const roleMap: Record<string, number> = {
   "mentor": 2,
 };
 
-const expertiseMap: Record<string, string> = {
-  "Programming": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "Project Management": "3fa85f64-5717-4562-b3fc-2c963f66afa7",
-  "Data Science": "3fa85f64-5717-4562-b3fc-2c963f66afa8",
-  "UX Design": "3fa85f64-5717-4562-b3fc-2c963f66afa9",
-  "Digital Marketing": "3fa85f64-5717-4562-b3fc-2c963f66afaa",
-};
-
 export default function EditProfile() {
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState("");
@@ -136,30 +165,31 @@ export default function EditProfile() {
         
         const userProfileData = await UserProfileClient.getProfile(currentUserId, token);
         
-        const expertiseOptions = Object.entries(expertiseMap).map(([label, value]) => ({
+        const expertiseOptions = Object.entries(expertiseMap).map(([guid, label]) => ({
           label,
-          value: value 
+          value: guid, 
         }));
         setTags(expertiseOptions);
+
+        const mappedExpertise = userProfileData.expertiseIds || [];
+
         
+        const mappedAvailability = userProfileData.availabilityIds?.map(id => availabilityMap[id] || "").filter(Boolean) || [];
+
         form.setFieldsValue({
           fullname: userProfileData.fullName,
           phone: userProfileData.phoneNumber,
           bio: userProfileData.bio,
           roleSelect: userProfileData.roleId === 3 ? "learner" : userProfileData.roleId === 2 ? "mentor" : "learner",
-          expertise: userProfileData.expertiseIds?.map(id => String(id)),
+          expertise: mappedExpertise,
           skills: userProfileData.skills,
           experience: userProfileData.experiences,
           objective: userProfileData.goal,
-          communicationMethod: Object.keys(communicationMethodMap)[userProfileData.preferredCommunicationMethod] || "video",
-          availability: userProfileData.availabilityIds?.map(id => Object.keys(availabilityMap).find(key => availabilityMap[key] === String(id)) || "").filter(Boolean) || [],
+          communicationMethod: reverseCommunicationMethodMap[userProfileData.preferredCommunicationMethod] || "video",
+          availability: mappedAvailability,
         });
 
-        const mappedAvailability = userProfileData.availabilityIds?.map(id => {
-          return Object.keys(availabilityMap).find(key => availabilityMap[key] === String(id)) || "";
-        }).filter(Boolean);
-        
-        setSelectedAvailability(mappedAvailability || []);
+        setSelectedAvailability(mappedAvailability);
         
         if (userProfileData.profilePhotoUrl) {
           setImageUrl(userProfileData.profilePhotoUrl);
@@ -270,26 +300,33 @@ export default function EditProfile() {
       if (!currentUserId) {
         throw new Error("User ID not found");
       }
+
+      // Ánh xạ các giá trị hiển thị về GUID
+      const availabilityIds = values.availability.map((item: string) => reverseAvailabilityMap[item]).filter(Boolean);
+      const expertiseIds = values.expertise;
+      const teachingApproachIds = values.availability.map((item: string) => reverseTeachingApproachMap[item]).filter(Boolean);
+      const categoryIds = values.availability.map((item: string) => categoryMap[item]).filter(Boolean);
+
       const updateData: UpdateProfileRequest = {
         fullName: values.fullname,
         phoneNumber: values.phone,
-        roleId: roleMap[values.roleSelect] || 3, 
+        roleId: roleMap[values.roleSelect] || 3,
         bio: values.bio || "",
         skills: values.skills || "",
         experiences: values.experience || "",
         goal: values.objective || "",
         preferredCommunicationMethod: communicationMethodMap[values.communicationMethod] || 0,
-        preferredSessionFrequency: 0, // Default value - you may want to add this to the form
-        preferredSessionDuration: 60, // Default 60 minutes - you may want to add this to the form  
-        preferredLearningStyle: 0, // Default value - you may want to add this to the form
-        isPrivate: false, // Default value - you may want to add this to the form
-        isAllowedMessage: true, // Default value - you may want to add this to the form
-        isReceiveNotification: true, // Default value - you may want to add this to the form
-        expertiseIds: values.expertise?.filter(Boolean) || ["ECBEA5A8-62A1-48D8-FB6D-08DD9819FEC3"],
-        availabilityIds: selectedAvailability.map(item => availabilityMap[item]).filter(Boolean),
-        teachingApproachIds: ["9178C57A-B963-469B-06AA-08DD9819FEC9"], // Empty array as default - you may want to add this to the form
-        categoryIds: ["4B896130-3727-46C7-98D1-214107BD4709"], // Empty array as default - you may want to add this to the form
-        profilePhotoUrl: imageUrl || undefined
+        preferredSessionFrequency: 0,
+        preferredSessionDuration: 60,
+        preferredLearningStyle: 0,
+        isPrivate: false,
+        isAllowedMessage: true,
+        isReceiveNotification: true,
+        expertiseIds,
+        availabilityIds,
+        teachingApproachIds,
+        categoryIds,
+        profilePhotoUrl: imageUrl || undefined,
       };
       
       console.log("Sending update to API:", JSON.stringify(updateData, null, 2));
