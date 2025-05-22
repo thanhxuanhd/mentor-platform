@@ -2,6 +2,7 @@ import { SignUpPage } from '../../../pages/authentication/sign-up-page';
 import { test } from '../../../core/fixture/authFixture';
 import { SignUpUser } from '../../../models/user/user';
 import testData from '../../test-data/sign-up-user-data.json'
+import { withTimestampEmail } from '../../../core/utils/generate-unique-data';
 
 test.describe('@Registration Sign Up test', () => {
     let registrationstep1Page: SignUpPage;
@@ -12,8 +13,7 @@ test.describe('@Registration Sign Up test', () => {
     });
 
     const userData: { [label: string]: SignUpUser } = {
-        //Todo: Uncomment when (User Story 165: User Profile Creation - Step 2) is done
-        // '@SmokeTest Valid Case': testData.valid_case,
+        '@SmokeTest Valid Case': withTimestampEmail(testData.valid_case),
         'Term is unchecked': testData.term_is_uncheck,
         'Empty Email': testData.empty_email,
         'Over length email': testData.over_length_email,
@@ -27,7 +27,7 @@ test.describe('@Registration Sign Up test', () => {
     };
 
     for (const [label, data] of Object.entries(userData)) {
-        test(`${label} - Registration Step 1`, async ({ request }) => {
+        test(`${label} - Registration Step 1`, async ({}) => {
             await test.step('Input details data and submit', async () => {
                 await registrationstep1Page.inputEmail(data.email);
                 await registrationstep1Page.inputPassword(data.password);

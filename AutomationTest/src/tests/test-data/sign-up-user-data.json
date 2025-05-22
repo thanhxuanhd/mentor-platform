@@ -1,8 +1,8 @@
 {
   "valid_case": {
     "email": "championlc97@gmail.com",
-    "password": "Bqt2112.",
-    "confirmPassword": "Bqt2112.",
+    "password": "Bqt2112.@",
+    "confirmPassword": "Bqt2112.@",
     "isTermCheck": true,
     "expectedMessage": "Tell us more about yourself"
   },
