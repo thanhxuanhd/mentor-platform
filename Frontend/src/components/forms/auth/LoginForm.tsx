@@ -115,16 +115,16 @@ const LoginForm: React.FC = () => {
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
+        switch (res.userStatus) {
+          case userStatus.ACTIVE:
+            setToken(res.token);
+            navigate("/");
+            break;
+          case userStatus.PENDING:
+            navigate("/profile-setup", { state: { ...res } });
+            break;
+        }
       }, 1000);
-      switch (res.userStatus) {
-        case userStatus.ACTIVE:
-          setToken(res.token);
-          navigate("/");
-          break;
-        case userStatus.PENDING:
-          navigate("/profile-setup", { state: { ...res } });
-          break;
-      }
     } catch (err) {
       console.error("Login failed:", err);
       setErrorMessage("Email or password is not correct");

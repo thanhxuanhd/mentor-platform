@@ -37,7 +37,7 @@ const UserPreference: React.FC<UserProfileProps> = ({
     try {
       const response = await getListCategories(1, 5, keyword);
       setTags(
-        response.items.map((category: { name: any; id: any }) => ({
+        response.items.map((category: { name: string; id: string }) => ({
           label: category.name,
           value: category.id,
         })),

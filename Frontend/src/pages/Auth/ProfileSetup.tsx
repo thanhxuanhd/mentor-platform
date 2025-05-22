@@ -9,7 +9,6 @@ import UserPreference from "./components/UserPreference";
 import { useLocation, useNavigate } from "react-router-dom";
 import { userService } from "../../services/user/userService";
 import { axiosClient } from "../../services/apiClient";
-import { useAuth } from "../../hooks";
 
 const stepItems: {
   status?: "finish" | "process" | "wait" | "error";
@@ -31,8 +30,7 @@ const stepItems: {
 
 export default function ProfileSetup() {
   const { state } = useLocation();
-  const { userId, token } = state;
-  const { setToken } = useAuth();
+  const { userId } = state;
   const formRef = useRef<FormInstance<UserDetail>>(null);
   const navigate = useNavigate();
 
@@ -93,8 +91,7 @@ export default function ProfileSetup() {
   const handleSubmit = async () => {
     try {
       await axiosClient.put(`/Users/${userId}/detail`, userDetail);
-      setToken(token);
-      navigate("/");
+      navigate("/login");
     } catch {
       console.log("error");
     }
