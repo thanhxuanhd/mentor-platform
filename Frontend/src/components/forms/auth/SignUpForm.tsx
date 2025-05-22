@@ -101,8 +101,12 @@ const SignUpForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-gray-800 rounded shadow mx-auto text-sm text-gray-300">
       {showNotification && (
-        <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm text-sm">
-          <CheckCircleOutlined className="text-green-500 text-lg mr-2" />
+        <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm">
+          <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
+          <div>
+            <p className="font-bold">Success!</p>
+            <p>Your account has been created successfully.</p>
+          </div>
         </div>
       )}
 
