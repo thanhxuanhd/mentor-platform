@@ -151,13 +151,27 @@ const UserProfile: React.FC<UserProfileProps> = ({
     form.setFieldsValue({
       expertiseIds: userExpertises.map((item) => item.id),
     });
-  }, [expertises, userDetail.expertiseIds, form]);
+  }, [expertises, userDetail.expertiseIds]);
 
   useEffect(() => {
     form.setFieldsValue(userDetail);
-    setImageUrl(userDetail.profilePhotoUrl);
-    setSelectedAvailabilities(userDetail.availabilityIds);
   }, [form, userDetail]);
+
+  useEffect(() => {
+    setImageUrl(userDetail.profilePhotoUrl);
+  }, []);
+
+  useEffect(() => {
+    updateUserDetail((prev) => ({
+      ...prev,
+      profilePhotoUrl: imageUrl,
+    }));
+    form.setFieldsValue({ profilePhotoUrl: imageUrl });
+  }, [imageUrl]);
+
+  useEffect(() => {
+    setSelectedAvailabilities(userDetail.availabilityIds);
+  }, [userDetail.availabilityIds]);
 
   useEffect(() => {
     if (notify) {
@@ -193,6 +207,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
         description: "Image must smaller than 1MB!",
       });
     }
+
     return isFormatAllowed && isLt1M;
   };
 
@@ -200,11 +215,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
     if (info.file.status === "done") {
       const newImageUrl = info.file.response?.value;
       setImageUrl(newImageUrl);
-      updateUserDetail((prev) => ({
-        ...prev,
-        profilePhotoUrl: newImageUrl,
-      }));
-      form.setFieldsValue({ profilePhotoUrl: newImageUrl });
     }
   };
 
@@ -254,13 +264,22 @@ const UserProfile: React.FC<UserProfileProps> = ({
           <Form.Item
             name="profilePhotoUrl"
             label="Profile Photo"
-            valuePropName="fileList"
+            valuePropName="string"
             getValueFromEvent={(e) => {
               if (Array.isArray(e)) {
                 return e;
               }
-              return e && e.fileList;
+
+              return e?.fileList || [];
             }}
+            initialValue={[
+              {
+                uid: userId,
+                name: userDetail.fullName,
+                status: "done",
+                url: imageUrl,
+              },
+            ]}
           >
             <Upload
               maxCount={1}
