@@ -22,6 +22,20 @@ export class BasePage {
         return this;
     }
 
+    async isHidden(locator: Locator) {
+        await expect(locator).toBeHidden();
+        return this;
+    }
+
+    async isLocatorVisible(locator: Locator): Promise<boolean> {
+        try {
+            await locator.waitFor({ state: 'visible', timeout: 5000 });
+            return true;
+        } catch {
+            return false;
+        }
+    }
+
     async waitUntilVisible(locator: Locator, timeout = 10000) {
         await locator.waitFor({ state: "visible", timeout });
         return this;

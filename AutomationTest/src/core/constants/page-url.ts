@@ -2,5 +2,6 @@ export const PAGE_ENDPOINT_URL = {
   LOGIN: '/login',
   CATEGORIES: '/categories',
   FORGOT_PASSWORD: '/forgot-password',
-  RESET_PASSWORD: '/reset-password'
+  RESET_PASSWORD: '/reset-password',
+  REGISTRATION_STEP_1: '/signup'
 };
