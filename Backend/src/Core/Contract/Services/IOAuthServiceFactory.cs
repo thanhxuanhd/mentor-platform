@@ -1,7 +1,6 @@
-﻿using Contract.Services;
-using Contract.Shared;
+﻿using Contract.Shared;
 
-namespace Infrastructure.Services.Authorization;
+namespace Contract.Services;
 
 public interface IOAuthServiceFactory
 {

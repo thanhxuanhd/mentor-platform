@@ -19,10 +19,10 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("sign-up")]
     public async Task<IActionResult> SignUpUser([FromBody] SignUpRequest request)
     {
-        await authService.RegisterAsync(request);
+        var result = await authService.RegisterAsync(request);
 
-        return Created();
-    }
+        return StatusCode((int)result.StatusCode, result);
+    }   
 
     [HttpPost("github")]
     public async Task<IActionResult> SignInGithub([FromBody] OAuthSignInRequest request)
