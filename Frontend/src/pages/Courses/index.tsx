@@ -189,17 +189,20 @@ const Page: React.FC = () => {
                     },
                   },
                 }}
-                onResourceView={(course) => {
-                  setItem(course);
+                onResourceView={async (course) => {
+                  const resource = await courseService.get(course.id);
+                  setItem(resource);
                   setPopoverTarget(CoursePopoverTarget.resource);
                 }}
-                onView={(course) => {
-                  setItem(course);
+                onView={async (course) => {
+                  const resource = await courseService.get(course.id);
+                  setItem(resource);
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
                 onDelete={handleDeleteCourse}
-                onEdit={(course) => {
-                  setItem(course);
+                onEdit={async (course) => {
+                  const resource = await courseService.get(course.id);
+                  setItem(resource);
                   setFormData({
                     id: course.id,
                     categoryId: course.categoryId,

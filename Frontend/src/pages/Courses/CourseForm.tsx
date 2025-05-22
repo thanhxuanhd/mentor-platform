@@ -1,6 +1,6 @@
 import { type FC, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "./types.tsx";
-import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag } from "antd";
+import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import {CourseDifficultyEnumMember} from "./initial-values.tsx";
 import dayjs from 'dayjs';
@@ -225,7 +225,10 @@ export const CourseForm: FC<CourseFormProp> = ({
           <Form.Item
             name="title"
             label="Title"
-            rules={[{ required: true, message: "Please input the title!" }]}
+            rules={[
+              { required: true, message: "Please enter course title" },
+              { max: 256, message: "Course title should not exceed 256 characters" }
+            ]}
           >
             <Input placeholder="Course title" />
           </Form.Item>
@@ -233,7 +236,7 @@ export const CourseForm: FC<CourseFormProp> = ({
           <Form.Item
             name="categoryId"
             label="Category"
-            rules={[{ required: true, message: "Please select a category!" }]}
+            rules={[{ required: true, message: "Category is required" }]}
           >
             <Select
               showSearch
@@ -265,7 +268,9 @@ export const CourseForm: FC<CourseFormProp> = ({
           <Form.Item
             name="dueDate"
             label="Due Date"
-            rules={[{ required: true, message: "Please select a due date!" }]}
+            rules={[
+              { required: true, message: "Please select a due date!" },
+            ]}
           >
             <DatePicker 
               style={{ width: '100%' }}
@@ -276,7 +281,15 @@ export const CourseForm: FC<CourseFormProp> = ({
           <Form.Item
             name="tags"
             label="Tags"
-            rules={[]}
+            rules={[              {
+                validator: async () => {
+                  if (getTags().length > 5) {
+                    throw new Error('You can choose maximum 5 tags');
+                  }
+                  return Promise.resolve();
+                }
+              }
+            ]}
           >
             <Space direction="vertical" style={{ width: "100%" }}>
               <Space.Compact style={{ width: "100%" }}>
@@ -286,6 +299,10 @@ export const CourseForm: FC<CourseFormProp> = ({
                   placeholder="Add a tag"
                   onPressEnter={e => {
                     e.preventDefault();
+                    if (getTags().length >= 5) {
+                      message.error('You can choose maximum 5 tags');
+                      return;
+                    }
                     handleAddTag();
                   }}
                 />
@@ -293,7 +310,7 @@ export const CourseForm: FC<CourseFormProp> = ({
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleAddTag}
-                  disabled={!newTag.trim() || getTags().includes(newTag.trim())}
+                  disabled={!newTag.trim() || getTags().includes(newTag.trim()) || getTags().length >= 5}
                 >
                   Add
                 </Button>
@@ -317,7 +334,8 @@ export const CourseForm: FC<CourseFormProp> = ({
             label="Description"
             className="md:col-span-2"
             rules={[
-              { required: true, message: "Please input the description!" },
+              { required: true, message: "Description is required" },
+              { max: 256, message: "Description must not exceed 256 characters" }
             ]}
           >
             <Input.TextArea rows={4} placeholder="Course description" />

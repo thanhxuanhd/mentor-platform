@@ -1,6 +1,7 @@
 export type Mentor = {
   id: string;
-  name: string;
+  fullName: string;
+  email: string;
 };
 
 export type Category = {

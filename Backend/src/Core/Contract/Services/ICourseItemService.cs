@@ -10,5 +10,5 @@ public interface ICourseItemService
     Task<Result<CourseItemDto>> GetByIdAsync(Guid courseId, Guid resourceId);
     Task<Result<CourseItemDto>> CreateAsync(Guid courseId, CourseItemCreateRequest request);
     Task<Result<CourseItemDto>> UpdateAsync(Guid courseId, Guid resourceId, CourseItemUpdateRequest request);
-    Task<Result> DeleteAsync(Guid courseId, Guid resourceId);
+    Task<Result<bool>> DeleteAsync(Guid courseId, Guid resourceId);
 }

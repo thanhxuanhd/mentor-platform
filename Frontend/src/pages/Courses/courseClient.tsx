@@ -1,5 +1,5 @@
 import { axiosClient } from "../../services/apiClient";
-import type { Course, Mentor } from "./types.tsx";
+import type { Course } from "./types.tsx";
 
 interface CourseListParams {
   keyword?: string;
@@ -50,37 +50,6 @@ export const categoryList = async (
   return response.data.value;
 };
 
-export const mentorList = async () => {
-  function delay(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  // TODO: Api not implemented
-  await delay(100);
-
-  const mentors: Mentor[] = [
-    {
-      id: "BC7CB279-B292-4CA3-A994-9EE579770DBE",
-      name: "MySuperKawawiiMentorXxX@at.local",
-    },
-    {
-      id: "B5095B17-D0FE-47CC-95B8-FD7E560926F8",
-      name: "DuongSenpai@at.local",
-    },
-    {
-      id: "01047F62-6E87-442B-B1E8-2A54C9E17D7C",
-      name: "AnhDoSkibidi@at.local",
-    },
-  ];
-
-  return {
-    items: mentors,
-    pageSize: null,
-    pageIndex: null,
-    totalPages: null,
-    totalCount: null,
-  };
-};
 
 export async function list(
   params: CourseListParams,

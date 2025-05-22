@@ -19,7 +19,7 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
 
         var items = await courseItemRepository.GetAllByCourseIdAsync(courseId);
         var itemDtos = items.Select(i => i.ToCourseItemDto()).ToList();
-        
+
         return Result.Success(itemDtos, HttpStatusCode.OK);
     }
 
@@ -57,7 +57,8 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
         return Result.Success(item.ToCourseItemDto(), HttpStatusCode.Created);
     }
 
-    public async Task<Result<CourseItemDto>> UpdateAsync(Guid courseId, Guid resourceId, CourseItemUpdateRequest request)
+    public async Task<Result<CourseItemDto>> UpdateAsync(Guid courseId, Guid resourceId,
+        CourseItemUpdateRequest request)
     {
         var course = await courseRepository.GetByIdAsync(courseId);
         if (course == null)
@@ -77,19 +78,19 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
         return Result.Success(item.ToCourseItemDto(), HttpStatusCode.OK);
     }
 
-    public async Task<Result> DeleteAsync(Guid courseId, Guid resourceId)
+    public async Task<Result<bool>> DeleteAsync(Guid courseId, Guid resourceId)
     {
         var course = await courseRepository.GetByIdAsync(courseId);
         if (course == null)
-            return Result.Failure("Course not found", HttpStatusCode.NotFound);
+            return Result.Failure<bool>("Course not found", HttpStatusCode.NotFound);
 
         var item = await courseItemRepository.GetByIdAsync(courseId, resourceId);
         if (item == null)
-            return Result.Failure("Resource not found", HttpStatusCode.NotFound);
+            return Result.Failure<bool>("Resource not found", HttpStatusCode.NotFound);
 
         courseItemRepository.Delete(item);
         await courseItemRepository.SaveChangesAsync();
 
-        return Result.Success(HttpStatusCode.NoContent);
+        return Result.Success(true, HttpStatusCode.OK);
     }
 }

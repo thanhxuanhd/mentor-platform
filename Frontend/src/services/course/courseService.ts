@@ -38,6 +38,20 @@ interface CourseUpdateParams {
   tags?: string[];
 }
 
+interface CourseItemCreateParams {
+  title: string;
+  description: string;
+  mediaType: string;
+  webAddress: string;
+}
+
+interface CourseItemUpdateParams {
+  title: string;
+  description: string;
+  mediaType: string;
+  webAddress: string;
+}
+
 export const courseService = {
   /**
    * Get a list of courses based on filter parameters
@@ -56,13 +70,18 @@ export const courseService = {
     };
   },
 
+  get: async (id: string): Promise<Course> => {
+    const response = await axiosClient.get(`/Course/${id}`);
+    return response.data.value as Course;
+  },
+
   /**
    * Create a new course
    */
   create: async (params: CourseCreateParams) => {
     const response = await axiosClient.post("/Course", {
       ...params,
-      tags: params.tags || []
+      tags: params.tags || [],
     });
     return response.data;
   },
@@ -72,7 +91,7 @@ export const courseService = {
   update: async (id: string, params: CourseUpdateParams) => {
     const response = await axiosClient.put(`/Course/${id}`, {
       ...params,
-      tags: params.tags || []
+      tags: params.tags || [],
     });
     return response.data;
   },
@@ -83,7 +102,43 @@ export const courseService = {
   delete: async (id: string) => {
     await axiosClient.delete(`/Course/${id}`);
     return true;
-  }
+  },
+
+  /**
+   * Create a new course resource
+   */
+  createResource: async (courseId: string, params: CourseItemCreateParams) => {
+    const response = await axiosClient.post(
+      `/Course/${courseId}/resource`,
+      params,
+    );
+    return response.data;
+  },
+
+  /**
+   * Update a course resource
+   */
+  updateResource: async (
+    courseId: string,
+    resourceId: string,
+    params: CourseItemUpdateParams,
+  ) => {
+    const response = await axiosClient.put(
+      `/Course/${courseId}/resource/${resourceId}`,
+      params,
+    );
+    return response.data;
+  },
+  /**
+   * Delete a course resource
+   * @returns void - API returns 204 No Content on success
+   */
+  deleteResource: async (
+    courseId: string,
+    resourceId: string,
+  ): Promise<void> => {
+    await axiosClient.delete(`/Course/${courseId}/resource/${resourceId}`);
+  },
 };
 
 export default courseService;

@@ -1,5 +1,9 @@
-import { type FC } from "react";
+import { type FC, useState } from "react";
+import { Button, App } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import type { Course, CourseItem } from "./types.tsx";
+import AddMaterialForm from "./AddMaterialForm";
+import { courseService } from "../../services/course";
 
 export type CourseResourceProps = {
   course?: Course;
@@ -14,12 +18,37 @@ export const CourseResource: FC<CourseResourceProps> = ({
   active,
   onClose,
 }) => {
+  const [materialModalVisible, setMaterialModalVisible] = useState(false);
+  const { message, modal } = App.useApp();
+  const handleDeleteMaterial = async (materialId: string) => {
+    if (!course) return;
+
+    modal.confirm({
+      title: "Delete Material",
+      content: "Are you sure you want to delete this material?",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.deleteResource(course.id, materialId);
+          // Since a successful deletion returns 204 No Content, we don't need to check the response
+          message.success("Material deleted successfully");
+          onClose("refresh");
+        } catch (error) {
+          console.error("Failed to delete material:", error);
+          message.error("Failed to delete material");
+        }
+      }
+    });
+  };
+
   const close = () => {
     onClose();
   };
 
   if (!course || !active) {
-    return;
+    return null;
   }
 
   return (
@@ -36,7 +65,17 @@ export const CourseResource: FC<CourseResourceProps> = ({
         </div>
 
         <div className="mb-6">
-          <p className="text-sm text-gray-400 mb-2">Course Materials</p>
+          <div className="flex justify-between items-center mb-2">
+            <p className="text-sm text-gray-400">Course Materials</p>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setMaterialModalVisible(true)}
+              className="bg-orange-500"
+            >
+              Add Material
+            </Button>
+          </div>
           {course.items.length > 0 ? (
             <div className="space-y-2">
               {course.items.map((item) => (
@@ -44,41 +83,44 @@ export const CourseResource: FC<CourseResourceProps> = ({
                   key={item.id}
                   className="bg-gray-700 p-3 rounded-md flex justify-between items-center"
                 >
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium">{item.title}</p>
-                    <p className="text-xs text-gray-400">
-                      {item.description}
-                    </p>
+                    <p className="text-xs text-gray-400">{item.description}</p>
+                    <p className="text-xs text-gray-500 mt-1">Type: {item.mediaType}</p>
                   </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button
+                  <div className="flex space-x-2">
+                    <Button
+                      type="primary"
                       onClick={() => onDownload(item)}
-                      className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-sm transition duration-200"
+                      className="bg-orange-500"
                     >
                       Download
-                    </button>
-                    {/*<button*/}
-                    {/*  onClick={() => close()}*/}
-                    {/*  className="bg-gray-600 hover:bg-gray-500 text-white px-3 py-1 rounded text-sm transition duration-200"*/}
-                    {/*>*/}
-                    {/*  Edit*/}
-                    {/*</button>*/}
-                    {/*<button*/}
-                    {/*  onClick={() => close()}*/}
-                    {/*  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition duration-200"*/}
-                    {/*>*/}
-                    {/*  Delete*/}
-                    {/*</button>*/}
+                    </Button>
+                    <Button 
+                      danger
+                      onClick={() => handleDeleteMaterial(item.id)}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-400">
-              No materials available for this course.
-            </p>
+            <p className="text-gray-400">No materials available for this course.</p>
           )}
         </div>
+
+        <AddMaterialForm
+          visible={materialModalVisible}
+          courseId={course.id}
+          onCancel={() => setMaterialModalVisible(false)}
+          onSuccess={() => {
+            setMaterialModalVisible(false);
+            message.success("Material added successfully");
+            onClose("refresh");
+          }}
+        />
       </div>
     </div>
   );
