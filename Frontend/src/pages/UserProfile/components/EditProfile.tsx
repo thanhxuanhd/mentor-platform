@@ -172,7 +172,6 @@ export default function EditProfile() {
         setTags(expertiseOptions);
 
         const mappedExpertise = userProfileData.expertiseIds || [];
-
         
         const mappedAvailability = userProfileData.availabilityIds?.map(id => availabilityMap[id] || "").filter(Boolean) || [];
 
@@ -242,31 +241,17 @@ export default function EditProfile() {
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 2MB!",
+        description: "Image must smaller than 1MB!", // Đồng bộ với UserProfile.tsx
       });
     }
     return isFormatAllowed && isLt1M;
   };
 
   const handleChange = (info: UploadChangeParam<UploadFile>) => {
-    if (info.file.status === "done" || info.file.status === "uploading") {
-      const reader = new FileReader();
-      reader.addEventListener("load", () =>
-        setImageUrl(reader.result as string),
-      );
-      reader.readAsDataURL(info.file.originFileObj as RcFile);
-    }
-  };
-
-  const handleUploadPhoto = async (file: RcFile): Promise<void> => {
-    if (!token || !userId) return;
-    
-    try {
-      const photoUrl = await UserProfileClient.uploadProfilePhoto(userId, file, token);
-      setImageUrl(photoUrl);
-      return;
-    } catch (error) {
-      console.error("Error uploading photo:", error);
+    if (info.file.status === "done") {
+      // Cập nhật imageUrl từ phản hồi của API
+      setImageUrl(info.file.response?.value);
+    } else if (info.file.status === "error") {
       setNotify({
         type: "error",
         message: "Error",
@@ -387,13 +372,12 @@ export default function EditProfile() {
                 <Upload
                   maxCount={1}
                   showUploadList={false}
+                  action={`${import.meta.env.VITE_BASE_URL_BE}/Users/avatar/${userId || user?.id}`}
+                  headers={{
+                    Authorization: `Bearer ${token}`, // Gửi token trong header
+                  }}
                   beforeUpload={beforeUpload}
                   onChange={handleChange}
-                  customRequest={async ({ file, onSuccess }) => {
-                    const uploadFile = file as RcFile;
-                    await handleUploadPhoto(uploadFile);
-                    onSuccess?.("ok");
-                  }}
                 >
                   <div className="relative w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer">
                     {imageUrl ? (
@@ -407,7 +391,7 @@ export default function EditProfile() {
                           className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setImageUrl("");
+                            setImageUrl(""); // Xóa ảnh (có thể thêm logic gọi API để xóa ảnh nếu cần)
                           }}
                         >
                           <CloseOutlined />
@@ -456,8 +440,7 @@ export default function EditProfile() {
                         },
                         {
                           pattern: /^\d{10}$/,
-                          message:
-                            "Phone number must consist of exactly 10 digits!",
+                          message: "Phone number must consist of exactly 10 digits!",
                         },
                       ]}
                     >
