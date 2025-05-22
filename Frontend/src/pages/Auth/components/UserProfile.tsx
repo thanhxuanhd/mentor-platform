@@ -6,7 +6,16 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
-import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
+import {
+  Upload,
+  Button,
+  Input,
+  Form,
+  Select,
+  Radio,
+  App,
+  type FormInstance,
+} from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 const { TextArea } = Input;
@@ -79,12 +88,14 @@ interface UserProfileProps {
   userId: string;
   userDetail: UserDetail;
   updateUserDetail: React.Dispatch<React.SetStateAction<UserDetail>>;
+  formRef: React.RefObject<FormInstance<UserDetail> | null>; // Add formRef prop
 }
 
 const UserProfile: React.FC<UserProfileProps> = ({
   userId,
   userDetail,
   updateUserDetail,
+  formRef,
 }) => {
   const [form] = Form.useForm<UserDetail>();
   const [imageUrl, setImageUrl] = useState(userDetail.profilePhotoUrl || "");
@@ -121,6 +132,12 @@ const UserProfile: React.FC<UserProfileProps> = ({
       });
     }
   }, []);
+
+  useEffect(() => {
+    if (formRef) {
+      formRef.current = form;
+    }
+  }, [form, formRef]);
 
   useEffect(() => {
     fetchAvalabilities();
@@ -221,24 +238,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
     }));
   };
 
-  const handleSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      await axiosClient.put(`/Users/${userId}`, values);
-      setNotify({
-        type: "success",
-        message: "Success",
-        description: "Profile updated successfully!",
-      });
-    } catch {
-      setNotify({
-        type: "error",
-        message: "Error",
-        description: "Failed to update profile",
-      });
-    }
-  };
-
   return (
     <div className="text-white p-6 rounded-xl max-w-3xl my-6 mx-auto shadow-lg bg-gray-800">
       <Form
@@ -247,7 +246,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
         name="user_profile_form"
         requiredMark={false}
         onValuesChange={handleFormChange}
-        onFinish={handleSubmit}
       >
         <h1 className="text-2xl font-semibold mb-6">
           Tell us more about yourself

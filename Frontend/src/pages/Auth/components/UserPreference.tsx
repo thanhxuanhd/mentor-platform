@@ -1,62 +1,41 @@
 import { useEffect, useState } from "react";
-import { Button, Checkbox, Form, Select, Tag, type SelectProps } from "antd";
+import { Checkbox, Form, Select, Tag, type SelectProps } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { getListCategories } from "../../../services/category/categoryServices";
-import type { UserDetail } from "../../../types/UserTypes";
+import type { TeachingApproach, UserDetail } from "../../../types/UserTypes";
+import { getAllTeachingApproaches } from "../../../services/user/userService";
+import { LearningStyle } from "../../../types/enums/LearningStyle";
+import { SessionFrequency } from "../../../types/enums/SessionFrequency"; // Import the SessionFrequency enum
 
-interface UserPreferenceProps {
-  userId: any;
-  token: any;
+interface UserProfileProps {
+  userId: string;
   userDetail: UserDetail;
   updateUserDetail: React.Dispatch<React.SetStateAction<UserDetail>>;
 }
 
-const UserPreference: React.FC<UserPreferenceProps> = ({
-  userId,
-  token,
+const UserPreference: React.FC<UserProfileProps> = ({
   userDetail,
   updateUserDetail,
 }) => {
-  const [categories, setCategories] = useState([]);
-  const [learningStyle, setLearningStyle] = useState<string>("Visual");
-
-  const [privacySettings, setPrivacySettings] = useState({
-    privateProfile: false,
-    allowMessages: true,
-    receiveNotifications: true,
-  });
-
-  const [teachingApproaches, setTeachingApproaches] = useState<string[]>([
-    "Hands-on Practice",
-    "Discussion Based",
-  ]);
-
-  const handleLearningStyleClick = (style: string) => {
-    setLearningStyle(style);
-  };
-
-  const handlePrivacyChange =
-    (setting: keyof typeof privacySettings) => (e: CheckboxChangeEvent) => {
-      setPrivacySettings({
-        ...privacySettings,
-        [setting]: e.target.checked,
-      });
-    };
-
-  const handleTeachingApproachChange = (approach: string, checked: boolean) => {
-    if (checked) {
-      setTeachingApproaches([...teachingApproaches, approach]);
-    } else {
-      setTeachingApproaches(teachingApproaches.filter((a) => a !== approach));
-    }
-  };
-
   const [tags, setTags] = useState<SelectProps["options"]>([]);
-  const [selectedTags, setSelectedTags] = useState([]);
+  const [approaches, setApproaches] = useState<TeachingApproach[]>([]);
+
+  useEffect(() => {
+    const fetchApproaches = async () => {
+      try {
+        const data = await getAllTeachingApproaches();
+        setApproaches(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCategories();
+    fetchApproaches();
+  }, []);
 
   const fetchCategories = async (keyword: string = "") => {
     try {
-      const response = await getListCategories(1, 5, keyword); // Gọi API với từ khóa
+      const response = await getListCategories(1, 5, keyword);
       setTags(
         response.items.map((category: { name: any; id: any }) => ({
           label: category.name,
@@ -67,14 +46,70 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
       console.error("Error fetching categories:", error);
     }
   };
+  const learningStyleOptions = Object.entries(LearningStyle).map(
+    ([key, value]) => ({
+      value: value,
+      label: key.replace(/([A-Z])/g, " $1").trim(),
+    }),
+  );
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  const handleLearningStyleClick = (style: LearningStyle) => {
+    updateUserDetail((prev) => ({
+      ...prev,
+      preferredLearningStyle: style,
+    }));
+  };
+
+  const handlePrivacyChange =
+    (
+      setting: keyof Pick<
+        UserDetail,
+        "isPrivate" | "isAllowedMessage" | "isReceiveNotification"
+      >,
+    ) =>
+    (e: CheckboxChangeEvent) => {
+      updateUserDetail((prev) => ({
+        ...prev,
+        [setting]: e.target.checked,
+      }));
+    };
+
+  const handleTeachingApproachChange = (
+    approachId: string,
+    checked: boolean,
+  ) => {
+    updateUserDetail((prev) => ({
+      ...prev,
+      teachingApproachIds: checked
+        ? [...prev.teachingApproachIds, approachId]
+        : prev.teachingApproachIds.filter((id) => id !== approachId),
+    }));
+  };
 
   const handleSearch = (value: string) => {
     fetchCategories(value);
   };
+
+  const handleFrequencyChange = (value: SessionFrequency) => {
+    updateUserDetail((prev) => ({
+      ...prev,
+      preferredSessionFrequency: value,
+    }));
+  };
+
+  const handleDurationChange = (value: number) => {
+    updateUserDetail((prev) => ({
+      ...prev,
+      preferredSessionDuration: value,
+    }));
+  };
+
+  const frequencyOptions = Object.entries(SessionFrequency).map(
+    ([key, value]) => ({
+      value: value,
+      label: key.replace(/([A-Z])/g, " $1").trim(),
+    }),
+  );
 
   return (
     <div className="text-white p-8 rounded-xl max-w-3xl my-6 mx-auto shadow-2xl bg-gray-800">
@@ -107,7 +142,11 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
               style={{ background: "#1E293B" }}
               filterOption={false}
               onSearch={handleSearch}
-              onChange={(value) => setSelectedTags(value)}
+              onChange={(value) =>
+                updateUserDetail((prev) => ({ ...prev, categoryIds: value }))
+              }
+              value={userDetail.categoryIds}
+              maxCount={5}
             />
           </Form.Item>
         </div>
@@ -118,16 +157,12 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
               Preferred session frequency
             </h3>
             <Select
-              defaultValue="Weekly"
               className="w-full"
               size="large"
               style={{ background: "#1E293B" }}
-              options={[
-                { value: "Weekly", label: "Weekly" },
-                { value: "Every two week", label: "Every two week" },
-                { value: "Monthly", label: "Monthly" },
-                { value: "As needed", label: "As needed" },
-              ]}
+              onChange={handleFrequencyChange}
+              options={frequencyOptions}
+              value={userDetail.preferredSessionFrequency}
             />
           </div>
           <div className="rounded-lg transition-all duration-300">
@@ -135,16 +170,17 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
               Preferred session duration
             </h3>
             <Select
-              defaultValue="1 hour"
               className="w-full"
               size="large"
               style={{ background: "#1E293B" }}
+              onChange={handleDurationChange}
               options={[
-                { value: "30 minutes", label: "30 minutes" },
-                { value: "1 hour", label: "1 hour" },
-                { value: "1.5 hours", label: "1.5 hours" },
-                { value: "2 hours", label: "2 hours" },
+                { value: 30, label: "30 minutes" },
+                { value: 60, label: "1 hour" },
+                { value: 90, label: "1.5 hours" },
+                { value: 120, label: "2 hours" },
               ]}
+              value={userDetail.preferredSessionDuration}
             />
           </div>
         </div>
@@ -154,90 +190,54 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
             Your preferred learning style
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {["Visual", "Auditory", "Reading/Writing", "Kinesthetic"].map(
-              (style) => (
-                <div
-                  key={style}
-                  onClick={() => handleLearningStyleClick(style)}
-                  className={`py-4 px-6 rounded-lg cursor-pointer text-center transition-all duration-300 transform ${
-                    learningStyle === style
-                      ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8533] text-white shadow-lg"
-                      : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
-                  }`}
-                >
-                  {style}
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-
-        <div className="mb-8 rounded-lg">
-          <h3 className="text-lg mb-2">Your Teaching Approach</h3>
-          <p className="text-gray-400 mb-4">
-            Select all teaching methods that match your style
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              {
-                id: "hands-on",
-                label: "Hands-on Practice",
-                icon: "⚒️",
-                description: "Learn by doing",
-              },
-              {
-                id: "discussion",
-                label: "Discussion Based",
-                icon: "💬",
-                description: "Interactive dialogues",
-              },
-              {
-                id: "project",
-                label: "Project Based",
-                icon: "📋",
-                description: "Real-world applications",
-              },
-              {
-                id: "lecture",
-                label: "Lecture Style",
-                icon: "📝",
-                description: "Structured learning",
-              },
-            ].map((approach) => (
-              <Tag.CheckableTag
-                key={approach.id}
-                checked={teachingApproaches.includes(approach.label)}
-                onChange={(checked) =>
-                  handleTeachingApproachChange(approach.label, checked)
-                }
-                className={`group p-4 rounded-xl cursor-pointer text-left transition-all duration-300 transform ${
-                  teachingApproaches.includes(approach.label)
-                    ? "!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg"
-                    : "!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]"
+            {learningStyleOptions.map((style) => (
+              <div
+                key={style.label}
+                onClick={() => handleLearningStyleClick(style.value)}
+                className={`py-4 px-6 rounded-lg cursor-pointer text-center transition-all duration-300 transform ${
+                  userDetail.preferredLearningStyle === style.value
+                    ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8533] text-white shadow-lg"
+                    : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
                 }`}
               >
-                <div className="flex items-center py-2 space-x-3">
-                  <span className="text-xl">{approach.icon}</span>
-                  <div>
-                    <div className="font-semibold text-lg">
-                      {approach.label}
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      {approach.description}
-                    </div>
-                  </div>
-                </div>
-              </Tag.CheckableTag>
+                {style.label}
+              </div>
             ))}
           </div>
         </div>
+        {userDetail.roleId === 2 && (
+          <div className="mb-8 rounded-lg">
+            <h3 className="text-lg mb-2">Your Teaching Approach</h3>
+            <p className="text-gray-400 mb-4">
+              Select all teaching methods that match your style
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {approaches.map((approach) => (
+                <Tag.CheckableTag
+                  key={approach.id}
+                  checked={userDetail.teachingApproachIds.includes(approach.id)}
+                  onChange={(checked) =>
+                    handleTeachingApproachChange(approach.id, checked)
+                  }
+                  className={`group p-8 rounded-2xl cursor-pointer text-left transition-all duration-300 transform ${
+                    userDetail.teachingApproachIds.includes(approach.id)
+                      ? "!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg"
+                      : "!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]"
+                  }`}
+                >
+                  <div className="text-lg m-4">{approach.name}</div>
+                </Tag.CheckableTag>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mb-8 rounded-xl">
           <h3 className="text-xl mb-4">Privacy Settings</h3>
           <div className="space-y-6">
             <Checkbox
-              checked={privacySettings.privateProfile}
-              onChange={handlePrivacyChange("privateProfile")}
+              checked={userDetail.isPrivate}
+              onChange={handlePrivacyChange("isPrivate")}
               className="text-white scale-110"
             >
               <span className="text-white text-md">Private Profile</span>
@@ -246,8 +246,8 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
               Only approved connections can view your full profile details
             </p>
             <Checkbox
-              checked={privacySettings.allowMessages}
-              onChange={handlePrivacyChange("allowMessages")}
+              checked={userDetail.isAllowedMessage}
+              onChange={handlePrivacyChange("isAllowedMessage")}
               className="text-white scale-110"
             >
               <span className="text-white text-md">Allow Messages</span>
@@ -256,8 +256,8 @@ const UserPreference: React.FC<UserPreferenceProps> = ({
               Let others initiate contact with you through messages
             </p>
             <Checkbox
-              checked={privacySettings.receiveNotifications}
-              onChange={handlePrivacyChange("receiveNotifications")}
+              checked={userDetail.isReceiveNotification}
+              onChange={handlePrivacyChange("isReceiveNotification")}
               className="text-white scale-110"
             >
               <span className="text-white text-md">Receive Notifications</span>

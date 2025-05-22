@@ -47,3 +47,8 @@ export interface UserDetail {
   teachingApproachIds: string[];
   categoryIds: string[];
 }
+
+export interface TeachingApproach {
+  id: string;
+  name: string;
+}

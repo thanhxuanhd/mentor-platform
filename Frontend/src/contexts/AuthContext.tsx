@@ -1,10 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import React, {
-  createContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { createContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 
 interface User {
@@ -27,10 +22,10 @@ export interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
-  setIsAuthenticated: () => { },
-  setUser: () => { },
-  setToken: () => { },
-  removeToken: () => { },
+  setIsAuthenticated: () => {},
+  setUser: () => {},
+  setToken: () => {},
+  removeToken: () => {},
   loading: true,
 });
 
@@ -53,20 +48,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
   const setToken = (token: string) => {
-    window.localStorage.setItem('token', token);
+    window.localStorage.setItem("token", token);
     fetchUserFromToken();
   };
 
   const removeToken = () => {
-    window.localStorage.removeItem('token');
+    window.localStorage.removeItem("token");
     setUser(null);
     setIsAuthenticated(false);
     setLoading(false);
   };
 
   const getToken = () => {
-    return window.localStorage.getItem('token');
-  }
+    return window.localStorage.getItem("token");
+  };
 
   const fetchUserFromToken = () => {
     const storedToken = getToken();
@@ -90,9 +85,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser({
       id: decodedToken.sub,
       email: decodedToken.email,
-      fullName: decodedToken["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"],
-      role: decodedToken["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"]
-    })
+      fullName:
+        decodedToken[
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        ],
+      role: decodedToken[
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+      ],
+    });
     setIsAuthenticated(true);
     setLoading(false);
   };

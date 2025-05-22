@@ -1,13 +1,15 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { UserDetail } from "../../types/UserTypes";
 import { CommunicationMethod } from "../../types/enums/CommunicationMethod";
 import { SessionFrequency } from "../../types/enums/SessionFrequency";
 import { LearningStyle } from "../../types/enums/LearningStyle";
-import { Button, Steps } from "antd";
+import { Button, Steps, type FormInstance } from "antd";
 import UserProfile from "./components/UserProfile";
 import UserPreference from "./components/UserPreference";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { userService } from "../../services/user/userService";
+import { axiosClient } from "../../services/apiClient";
+import { useAuth } from "../../hooks";
 
 const stepItems: {
   status?: "finish" | "process" | "wait" | "error";
@@ -30,6 +32,9 @@ const stepItems: {
 export default function ProfileSetup() {
   const { state } = useLocation();
   const { userId, token } = state;
+  const { setToken } = useAuth();
+  const formRef = useRef<FormInstance<UserDetail>>(null);
+  const navigate = useNavigate();
 
   const [userDetail, setUserDetail] = useState<UserDetail>({
     fullName: "",
@@ -65,8 +70,17 @@ export default function ProfileSetup() {
 
   const [currentStep, setCurrentStep] = useState(1);
 
-  const nextStep = () => {
-    setCurrentStep(currentStep + 1);
+  const nextStep = async () => {
+    if (currentStep === 1) {
+      try {
+        await formRef.current?.validateFields();
+        setCurrentStep(currentStep + 1);
+      } catch (error) {
+        console.log("Validation failed:", error);
+      }
+    } else {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
   const prevStep = () => {
@@ -75,6 +89,16 @@ export default function ProfileSetup() {
 
   const onStepChange = (value: number) => {
     setCurrentStep(value);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await axiosClient.put(`/Users/${userId}/detail`, userDetail);
+      setToken(token);
+      navigate("/");
+    } catch {
+      console.log("error");
+    }
   };
 
   return (
@@ -91,11 +115,11 @@ export default function ProfileSetup() {
           userId={userId}
           userDetail={userDetail}
           updateUserDetail={setUserDetail}
+          formRef={formRef}
         />
       ) : (
         <UserPreference
           userId={userId}
-          token={token}
           userDetail={userDetail}
           updateUserDetail={setUserDetail}
         />
@@ -121,7 +145,7 @@ export default function ProfileSetup() {
             type="primary"
             size="large"
             className="flex-1"
-            onClick={() => console.log(userDetail)}
+            onClick={handleSubmit}
           >
             Done
           </Button>

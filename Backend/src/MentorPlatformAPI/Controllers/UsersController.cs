@@ -1,4 +1,3 @@
-using Application.Services.Authentication;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -56,7 +55,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [Authorize]
+    //[Authorize]
     [HttpGet]
     [Route("{userId}/detail")]
     public async Task<IActionResult> GetUserDetailAsync(Guid userId)
