@@ -9,6 +9,7 @@ import UserPreference from "./components/UserPreference";
 import { useLocation, useNavigate } from "react-router-dom";
 import { userService } from "../../services/user/userService";
 import { axiosClient } from "../../services/apiClient";
+import { useAuth } from "../../hooks";
 import type { NotificationProps } from "../../types/Notification";
 
 const stepItems: {
@@ -110,6 +111,7 @@ export default function ProfileSetup() {
 
   const handleSubmit = async () => {
     try {
+      await formRef.current?.validateFields();
       await axiosClient.put(`/Users/${userId}/detail`, userDetail);
       navigate("/login");
       setNotify({
@@ -145,6 +147,7 @@ export default function ProfileSetup() {
           userId={userId}
           userDetail={userDetail}
           updateUserDetail={setUserDetail}
+          formRef={formRef}
         />
       )}
       <div className="flex justify-center mb-12 gap-4 max-w-3xl m-auto">
@@ -170,7 +173,7 @@ export default function ProfileSetup() {
             className="flex-1"
             onClick={handleSubmit}
           >
-            Done
+            Complete Registration
           </Button>
         )}
       </div>
