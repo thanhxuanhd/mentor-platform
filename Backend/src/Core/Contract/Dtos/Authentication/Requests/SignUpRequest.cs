@@ -14,7 +14,7 @@ public class SignUpRequestValidator : AbstractValidator<SignUpRequest>
             .Matches(@"^[^ ]*$").WithMessage("Password should not include space characters")
             .Matches(@"[A-Za-z]").WithMessage("Password must include letters")
             .Matches(@"[0-9]").WithMessage("Password must include numbers")
-            .Matches(@"[!@#$%^&*]").WithMessage("Password must include symbols");
+            .Matches(@"[\p{P}\p{S}]").WithMessage("Password must include at least one symbol.");
 
         RuleFor(x => x.ConfirmPassword)
             .NotEmpty().WithMessage("Please confirm your new password")
