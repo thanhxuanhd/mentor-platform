@@ -3,13 +3,14 @@ import type { UserDetail } from "../../types/UserTypes";
 import { CommunicationMethod } from "../../types/enums/CommunicationMethod";
 import { SessionFrequency } from "../../types/enums/SessionFrequency";
 import { LearningStyle } from "../../types/enums/LearningStyle";
-import { Button, Steps, type FormInstance } from "antd";
+import { App, Button, Steps, type FormInstance } from "antd";
 import UserProfile from "./components/UserProfile";
 import UserPreference from "./components/UserPreference";
 import { useLocation, useNavigate } from "react-router-dom";
 import { userService } from "../../services/user/userService";
 import { axiosClient } from "../../services/apiClient";
 import { useAuth } from "../../hooks";
+import type { NotificationProps } from "../../types/Notification";
 
 const stepItems: {
   status?: "finish" | "process" | "wait" | "error";
@@ -35,6 +36,8 @@ export default function ProfileSetup() {
   const { setToken } = useAuth();
   const formRef = useRef<FormInstance<UserDetail>>(null);
   const navigate = useNavigate();
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const { notification } = App.useApp();
 
   const [userDetail, setUserDetail] = useState<UserDetail>({
     fullName: "",
@@ -68,6 +71,20 @@ export default function ProfileSetup() {
     fetchUserDetail();
   }, [fetchUserDetail]);
 
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
   const [currentStep, setCurrentStep] = useState(1);
 
   const nextStep = async () => {
@@ -93,6 +110,11 @@ export default function ProfileSetup() {
       await axiosClient.put(`/Users/${userId}/detail`, userDetail);
       setToken(token);
       navigate("/");
+      setNotify({
+        type: "success",
+        message: "Success",
+        description: "User Preferences Setup successfully!",
+      });
     } catch {
       console.log("error");
     }
