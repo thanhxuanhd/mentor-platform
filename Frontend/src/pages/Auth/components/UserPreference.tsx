@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { App, Checkbox, Form, Select, Tag, type FormInstance, type SelectProps } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
-import { getActiveCategories, getListCategories } from "../../../services/category/categoryServices";
+import { getActiveCategories } from "../../../services/category/categoryServices";
 import type { TeachingApproach, UserDetail } from "../../../types/UserTypes";
 import { getAllTeachingApproaches } from "../../../services/user/userService";
 import { LearningStyle } from "../../../types/enums/LearningStyle";
