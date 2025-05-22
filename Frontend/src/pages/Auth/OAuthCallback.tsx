@@ -33,7 +33,7 @@ export default function OAuthCallback() {
             navigate("/");
             break;
           default:
-            navigate("/step2", { state: { ...response } });
+            navigate("/signup/step2", { state: { ...response } });
             break;
         }
       } catch (error) {
