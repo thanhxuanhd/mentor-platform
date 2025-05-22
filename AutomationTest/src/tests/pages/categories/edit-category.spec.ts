@@ -13,26 +13,14 @@ test.describe('@Category Update category tests', () => {
         await categoryPage.clickUpdateCategoryButton();
     });
 
-    const categories = [
-        {
-            label: '@SmokeTest Valid Category',
-            data: withTimestamp(categoryData.update_valid_category) as CUCategory,
-        },
-        {
-            label: 'Duplicate Category',
-            data: categoryData.update_duplicate_category as CUCategory,
-        },
-        {
-            label: 'Empty Category Name',
-            data: categoryData.update_empty_category_name as CUCategory,
-        },
-        {
-            label: '@Boundary Over length Category Name',
-            data: categoryData.update_over_length_category_name as CUCategory,
-        }
-    ];
+    const categories: { [label: string]: CUCategory } = {
+        '@SmokeTest Valid Category': withTimestamp(categoryData.update_valid_category),
+        'Duplicate Category': categoryData.update_duplicate_category,
+        'Empty Category Name': categoryData.update_empty_category_name,
+        '@Boundary Over length Category Name': categoryData.update_over_length_category_name
+    };
 
-    for (const { label, data } of categories) {
+    for (const [label, data] of Object.entries(categories)) {
         test(`${label} - Update a Category`, async () => {
             await test.step('Input category details and submit', async () => {
                 await categoryPage.inputName(data.name);
