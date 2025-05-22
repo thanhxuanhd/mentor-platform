@@ -5,7 +5,6 @@ using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
-using Infrastructure.Services.Authorization;
 using Moq;
 using System.Net;
 using Application.Helpers;
@@ -35,225 +34,74 @@ public class AuthServiceTests
         _authService = new AuthService(
             _mockUserRepository.Object,
             _mockJwtService.Object,
-            _mockOAuthServiceFactory.Object
-        );
+            _mockOAuthServiceFactory.Object);
+    }
+
+    private User CreateTestUser(string email, string? password = null, int roleId = (int)UserRole.Learner, UserStatus status = UserStatus.Active)
+    {
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Email = email,
+            PasswordHash = password != null ? PasswordHelper.HashPassword(password) : null,
+            RoleId = roleId,
+            Status = status,
+            JoinedDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            FullName = "Test User",
+            PhoneNumber = "1234567890"
+        };
     }
 
     [Test]
-    public async Task LoginGithubAsync_UserExists_ReturnsSuccessWithToken()
+    public async Task LoginAsync_UserNotFound_ReturnsFailureNotFound()
     {
         // Arrange
-        var oauthRequest = new OAuthSignInRequest(Token: "github_oauth_token");
-        const string githubAccessToken = "github_access_token";
-        const string userEmail = "githubuser@example.com";
-        const string expectedJwtToken = "jwt_token_for_github_user";
-        var existingUser = new User { Id = Guid.NewGuid(), Email = userEmail, RoleId = (int)UserRole.Learner };
-
-        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token))
-            .ReturnsAsync(githubAccessToken);
-        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(githubAccessToken))
-            .ReturnsAsync(userEmail);
-        _mockUserRepository.Setup(repo => repo.GetUserByEmail(userEmail))
-            .ReturnsAsync(existingUser);
-        _mockJwtService.Setup(service => service.GenerateToken(existingUser))
-            .Returns(expectedJwtToken);
+        var request = new SignInRequest("nonexistent@example.com", "password");
+        _mockUserRepository.Setup(r => r.GetUserByEmail(request.Email)).ReturnsAsync((User)null!);
 
         // Act
-        var result = await _authService.LoginGithubAsync(oauthRequest);
+        var result = await _authService.LoginAsync(request);
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result.IsSuccess, Is.True, "Result should be successful.");
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Status code should be OK.");
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.EqualTo("Null user"));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         });
-
-        _mockOAuthServiceFactory.Verify(f => f.Create(OAuthProvider.GitHub), Times.Once);
-        _mockOAuthService.Verify(s => s.GetAccessTokenAsync(oauthRequest.Token), Times.Once);
-        _mockOAuthService.Verify(s => s.GetUserEmailDataAsync(githubAccessToken), Times.Once);
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(userEmail), Times.Exactly(2));
-        _mockUserRepository.Verify(repo => repo.AddAsync(It.IsAny<User>()), Times.Never);
-        _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Never);
-        _mockJwtService.Verify(service => service.GenerateToken(existingUser), Times.Once);
     }
 
     [Test]
-    public async Task LoginGithubAsync_NewUser_RegistersAndReturnsSuccessWithToken()
+    public async Task LoginAsync_InvalidPassword_ReturnsFailureUnauthorized()
     {
         // Arrange
-        var oauthRequest = new OAuthSignInRequest(Token: "github_oauth_token_new");
-        const string githubAccessToken = "github_access_token_new";
-        const string userEmail = "newgithubuser@example.com";
-        const string expectedJwtToken = "jwt_token_for_new_github_user";
-        User? capturedUserForAdd = null;
-        User? capturedUserForToken = null;
-
-
-        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token))
-            .ReturnsAsync(githubAccessToken);
-        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(githubAccessToken))
-            .ReturnsAsync(userEmail);
-
-        _mockUserRepository.SetupSequence(repo => repo.GetUserByEmail(userEmail))
-            .ReturnsAsync((User)null!)
-            .ReturnsAsync(() => capturedUserForAdd);
-
-        _mockUserRepository.Setup(repo => repo.AddAsync(It.IsAny<User>()))
-            .Callback<User>(u =>
-            {
-                capturedUserForAdd = u;
-                capturedUserForAdd.Id = Guid.NewGuid();
-            })
-            .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(repo => repo.SaveChangesAsync())
-            .ReturnsAsync(1);
-        _mockJwtService.Setup(service => service.GenerateToken(It.Is<User>(u => u.Email == userEmail)))
-            .Callback<User>(u => capturedUserForToken = u)
-            .Returns(expectedJwtToken);
+        var request = new SignInRequest("test@example.com", "wrongpassword");
+        var user = CreateTestUser(request.Email, "correctpassword");
+        _mockUserRepository.Setup(r => r.GetUserByEmail(request.Email)).ReturnsAsync(user);
 
         // Act
-        var result = await _authService.LoginGithubAsync(oauthRequest);
+        var result = await _authService.LoginAsync(request);
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result.IsSuccess, Is.True, "Result should be successful.");
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Status code should be OK.");
-
-            Assert.That(capturedUserForAdd, Is.Not.Null, "A user should have been captured for AddAsync.");
-            Assert.That(capturedUserForAdd?.Email, Is.EqualTo(userEmail));
-            Assert.That(capturedUserForAdd?.FullName, Is.EqualTo(""));
-            Assert.That(capturedUserForAdd?.RoleId, Is.EqualTo((int)UserRole.Learner));
-            Assert.That(capturedUserForAdd?.PasswordHash,
-                Is.Null.Or.Empty); // OAuth users might not have a password hash initially
-
-            Assert.That(capturedUserForToken, Is.Not.Null, "A user should have been passed to GenerateToken.");
-            Assert.That(capturedUserForToken?.Email, Is.EqualTo(userEmail));
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.EqualTo("Invalid password"));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         });
-
-        _mockOAuthServiceFactory.Verify(f => f.Create(OAuthProvider.GitHub), Times.Once);
-        _mockUserRepository.Verify(repo => repo.AddAsync(It.Is<User>(u =>
-            u.Email == userEmail &&
-            u.FullName == "" &&
-            u.RoleId == (int)UserRole.Learner
-        )), Times.Once);
-        _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(userEmail), Times.Exactly(2));
-        _mockJwtService.Verify(service => service.GenerateToken(It.Is<User>(u => u.Email == userEmail)), Times.Once);
     }
 
     [Test]
-    public async Task LoginGoogleAsync_UserExists_ReturnsSuccessWithToken()
+    public async Task LoginAsync_ValidCredentials_ReturnsSuccessWithAuthResponse()
     {
         // Arrange
-        var oauthRequest = new OAuthSignInRequest(Token: "google_oauth_token");
-        const string googleAccessToken = "google_access_token";
-        const string userEmail = "googleuser@example.com";
-        const string expectedJwtToken = "jwt_token_for_google_user";
-        var existingUser = new User { Id = Guid.NewGuid(), Email = userEmail, RoleId = (int)UserRole.Learner };
-
-        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token))
-            .ReturnsAsync(googleAccessToken);
-        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(googleAccessToken))
-            .ReturnsAsync(userEmail);
-        _mockUserRepository.Setup(repo => repo.GetUserByEmail(userEmail))
-            .ReturnsAsync(existingUser);
-        _mockJwtService.Setup(service => service.GenerateToken(existingUser))
-            .Returns(expectedJwtToken);
-
-        // Act
-        var result = await _authService.LoginGoogleAsync(oauthRequest);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-        });
-
-        _mockOAuthServiceFactory.Verify(f => f.Create(OAuthProvider.Google), Times.Once);
-        _mockOAuthService.Verify(s => s.GetAccessTokenAsync(oauthRequest.Token), Times.Once);
-        _mockOAuthService.Verify(s => s.GetUserEmailDataAsync(googleAccessToken), Times.Once);
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(userEmail), Times.Exactly(2));
-        _mockUserRepository.Verify(repo => repo.AddAsync(It.IsAny<User>()), Times.Never);
-        _mockJwtService.Verify(service => service.GenerateToken(existingUser), Times.Once);
-    }
-
-
-    [Test]
-    public async Task LoginGoogleAsync_NewUser_RegistersAndReturnsSuccessWithToken()
-    {
-        // Arrange
-        var oauthRequest = new OAuthSignInRequest(Token: "google_oauth_token_new");
-        const string googleAccessToken = "google_access_token_new";
-        const string userEmail = "newgoogleuser@example.com";
-        const string expectedJwtToken = "jwt_token_for_new_google_user";
-        User? capturedUserForAdd = null;
-        User? capturedUserForToken = null;
-
-
-        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token))
-            .ReturnsAsync(googleAccessToken);
-        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(googleAccessToken))
-            .ReturnsAsync(userEmail);
-        _mockUserRepository.SetupSequence(repo => repo.GetUserByEmail(userEmail))
-            .ReturnsAsync((User)null!)
-            .ReturnsAsync(() => capturedUserForAdd);
-
-        _mockUserRepository.Setup(repo => repo.AddAsync(It.IsAny<User>()))
-            .Callback<User>(u =>
-            {
-                capturedUserForAdd = u;
-                capturedUserForAdd.Id = Guid.NewGuid();
-            })
-            .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(repo => repo.SaveChangesAsync())
-            .ReturnsAsync(1);
-        _mockJwtService.Setup(service => service.GenerateToken(It.Is<User>(u => u.Email == userEmail)))
-            .Callback<User>(u => capturedUserForToken = u)
-            .Returns(expectedJwtToken);
-
-        // Act
-        var result = await _authService.LoginGoogleAsync(oauthRequest);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-            Assert.That(capturedUserForAdd, Is.Not.Null);
-            Assert.That(capturedUserForAdd?.Email, Is.EqualTo(userEmail));
-            Assert.That(capturedUserForAdd?.RoleId, Is.EqualTo((int)UserRole.Learner));
-            Assert.That(capturedUserForAdd?.FullName, Is.EqualTo(""));
-            Assert.That(capturedUserForAdd?.PasswordHash, Is.Null.Or.Empty);
-
-            Assert.That(capturedUserForToken, Is.Not.Null);
-            Assert.That(capturedUserForToken?.Email, Is.EqualTo(userEmail));
-        });
-
-        _mockOAuthServiceFactory.Verify(f => f.Create(OAuthProvider.Google), Times.Once);
-        _mockUserRepository.Verify(repo => repo.AddAsync(It.Is<User>(u =>
-            u.Email == userEmail && u.RoleId == (int)UserRole.Learner
-        )), Times.Once);
-        _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(userEmail), Times.Exactly(2));
-        _mockJwtService.Verify(service => service.GenerateToken(It.Is<User>(u => u.Email == userEmail)), Times.Once);
-    }
-
-    [Test]
-    public async Task LoginAsync_ValidCredentials_ReturnsSuccessWithToken()
-    {
-        // Arrange
-        var request = new SignInRequest(Email: "test@example.com", Password: "password123");
-        var userPasswordHash = PasswordHelper.HashPassword(request.Password);
-        var user = new User { Id = Guid.NewGuid(), Email = request.Email, PasswordHash = userPasswordHash };
+        const string password = "correctpassword";
+        var request = new SignInRequest("test@example.com", password);
+        var user = CreateTestUser(request.Email, password, (int)UserRole.Admin, UserStatus.Active);
         const string expectedToken = "generated_jwt_token";
 
-        _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
-            .ReturnsAsync(user);
-        _mockJwtService.Setup(service => service.GenerateToken(user))
-            .Returns(expectedToken);
+        _mockUserRepository.Setup(r => r.GetUserByEmail(request.Email)).ReturnsAsync(user);
+        _mockJwtService.Setup(s => s.GenerateToken(user)).Returns(expectedToken);
 
         // Act
         var result = await _authService.LoginAsync(request);
@@ -261,122 +109,309 @@ public class AuthServiceTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result.IsSuccess, Is.True, "Result should be successful.");
-            Assert.That(result.Value, Is.EqualTo(expectedToken), "Token should match the expected token.");
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK), "Status code should be OK.");
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Token, Is.EqualTo(expectedToken));
+            Assert.That(result.Value.UserId, Is.EqualTo(user.Id));
+            Assert.That(result.Value.UserStatus, Is.EqualTo(user.Status.ToString()));
         });
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(request.Email), Times.Once);
-        _mockJwtService.Verify(service => service.GenerateToken(user), Times.Once);
     }
 
     [Test]
-    public async Task LoginAsync_UserNotFound_ReturnsNotFound()
+    public async Task RegisterAsync_EmailAlreadyExists_ReturnsFailureBadRequest()
     {
         // Arrange
-        var request = new SignInRequest(Email: "nonexistent@example.com", Password: "password123");
-
-        _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
-            .ReturnsAsync((User)null!);
+        var request = new SignUpRequest("Password123!", "Password123!", "test@example.com", (int)UserRole.Learner);
+        var existingUser = CreateTestUser(request.Email);
+        _mockUserRepository.Setup(r => r.GetUserByEmail(request.Email)).ReturnsAsync(existingUser);
 
         // Act
-        var result = await _authService.LoginAsync(request);
+        var result = await _authService.RegisterAsync(request);
 
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(result.IsSuccess, Is.False, "Result should indicate failure.");
-            Assert.That(result.Error, Is.EqualTo("Null user"), "Error message should indicate null user.");
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound), "Status code should be NotFound.");
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.EqualTo("User email already existed"));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Value, Is.Null);
         });
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(request.Email), Times.Once);
-        _mockJwtService.Verify(service => service.GenerateToken(It.IsAny<User>()), Times.Never);
+
+        _mockUserRepository.Verify(r => r.GetUserByEmail(request.Email), Times.Once());
+        _mockUserRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never());
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Never());
     }
 
     [Test]
-    public async Task LoginAsync_InvalidPassword_ReturnsUnauthorized()
+    public async Task RegisterAsync_ValidRequest_CreatesUserAndReturnsSuccess()
     {
         // Arrange
-        var request = new SignInRequest(Email: "test@example.com", Password: "wrongpassword");
-        var correctPasswordHash = PasswordHelper.HashPassword("correctpassword"); // Hash the correct password
-        var user = new User { Id = Guid.NewGuid(), Email = request.Email, PasswordHash = correctPasswordHash };
-
-        _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
-            .ReturnsAsync(user);
-
-        // Act
-        var result = await _authService.LoginAsync(request);
-
-        // Assert
-        Assert.Multiple(() =>
+        var request = new SignUpRequest("Password123!", "Password123!", "newuser@example.com", (int)UserRole.Learner);
+        User? existingUser = null;
+        User? createdUser = null;
+        var newUser = new User
         {
-            Assert.That(result.IsSuccess, Is.False, "Result should indicate failure.");
-            Assert.That(result.Error, Is.EqualTo("Invalid password"),
-                "Error message should indicate invalid password.");
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized),
-                "Status code should be Unauthorized.");
-        });
-        _mockUserRepository.Verify(repo => repo.GetUserByEmail(request.Email), Times.Once);
-        _mockJwtService.Verify(service => service.GenerateToken(It.IsAny<User>()), Times.Never);
-    }
-
-    [Test]
-    public async Task RegisterAsync_ValidRequest_CallsAddAndSaveChanges()
-    {
-        // Arrange
-        var request = new SignUpRequest(
-            Email: "newuser@example.com",
-            Password: "password123",
-            ConfirmPassword: "password123",
-            RoleId: (int)UserRole.Learner
-        );
-
-        _mockUserRepository.Setup(repo => repo.AddAsync(It.IsAny<User>()))
+            Id = Guid.NewGuid(),
+            Email = request.Email,
+            RoleId = request.RoleId,
+            Status = UserStatus.Active,
+            FullName = "",
+            PhoneNumber = ""
+        };
+        _mockUserRepository.SetupSequence(r => r.GetUserByEmail(request.Email))
+            .ReturnsAsync(existingUser)
+            .ReturnsAsync(newUser);
+        _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
+            .Callback<User>(u => createdUser = u)
             .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(repo => repo.SaveChangesAsync())
-            .ReturnsAsync(1);
+        _mockUserRepository.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        const string expectedToken = "jwt-token";
+        _mockJwtService.Setup(j => j.GenerateToken(newUser)).Returns(expectedToken);
 
         // Act
-        await _authService.RegisterAsync(request);
+        var result = await _authService.RegisterAsync(request);
 
         // Assert
-        _mockUserRepository.Verify(repo => repo.AddAsync(It.Is<User>(u =>
-                u.Email == request.Email &&
-                PasswordHelper.VerifyPassword(request.Password, u.PasswordHash!) &&
-                u.RoleId == request.RoleId &&
-                u.FullName == "" // As per original logic
-        )), Times.Once);
-        _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Token, Is.EqualTo(expectedToken));
+            Assert.That(result.Value.UserId, Is.EqualTo(newUser.Id));
+            Assert.That(result.Value.UserStatus, Is.EqualTo(newUser.Status.ToString()));
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(createdUser, Is.Not.Null);
+            Assert.That(createdUser!.Email, Is.EqualTo(request.Email));
+            Assert.That(createdUser.RoleId, Is.EqualTo(request.RoleId));
+            Assert.That(createdUser.FullName, Is.Empty);
+            Assert.That(createdUser.PhoneNumber, Is.Empty);
+            Assert.That(createdUser.PasswordHash, Is.Not.Null);
+            Assert.That(PasswordHelper.VerifyPassword(request.Password, createdUser.PasswordHash!), Is.True);
+        });
+
+        _mockUserRepository.Verify(r => r.GetUserByEmail(request.Email), Times.Exactly(2));
+        _mockUserRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once());
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Once());
+        _mockJwtService.Verify(j => j.GenerateToken(newUser), Times.Once());
     }
 
     [Test]
-    public void RegisterAsync_PasswordsDoNotMatch_ThrowsArgumentException()
+    public void RegisterAsync_RepositoryFailsToSave_ReturnsSuccessWithUpdatedUser()
     {
         // Arrange
-        var request = new SignUpRequest(
-            Email: "newuser@example.com",
-            Password: "password123",
-            ConfirmPassword: "password456",
-            RoleId: (int)UserRole.Learner
-        );
+        var request = new SignUpRequest("Password123!", "Password123!", "newuser@example.com", (int)UserRole.Learner);
+        _mockUserRepository.Setup(r => r.GetUserByEmail(request.Email)).ReturnsAsync((User)null!);
+        _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.SaveChangesAsync()).ThrowsAsync(new Exception("Database failure"));
+        _mockJwtService.Setup(j => j.GenerateToken(It.IsAny<User>())).Returns("jwt-token");
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<ArgumentException>(async () => await _authService.RegisterAsync(request));
-        Assert.That(ex.Message, Is.EqualTo("Password and confirm password do not match."));
-        _mockUserRepository.Verify(repo => repo.AddAsync(It.IsAny<User>()), Times.Never);
+        Assert.ThrowsAsync<Exception>(async () => await _authService.RegisterAsync(request), "Database failure");
+
+        _mockUserRepository.Verify(r => r.GetUserByEmail(request.Email), Times.Once());
+        _mockUserRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Once());
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Once());
+        _mockJwtService.Verify(j => j.GenerateToken(It.IsAny<User>()), Times.Never());
+    }
+
+    [Test]
+    public async Task LoginGithubAsync_UserExists_ReturnsSuccessWithAuthResponse()
+    {
+        // Arrange
+        var oauthRequest = new OAuthSignInRequest("github_token");
+        const string userEmail = "githubuser@example.com";
+        const string accessToken = "github_access_token";
+        var existingUser = CreateTestUser(userEmail, roleId: (int)UserRole.Learner, status: UserStatus.Active);
+        const string expectedJwtToken = "jwt_for_github_user";
+
+        _mockOAuthServiceFactory.Setup(f => f.Create(OAuthProvider.GitHub)).Returns(_mockOAuthService.Object);
+        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token)).ReturnsAsync(accessToken);
+        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(accessToken)).ReturnsAsync(userEmail);
+        _mockUserRepository.Setup(r => r.GetUserByEmail(userEmail)).ReturnsAsync(existingUser);
+        _mockJwtService.Setup(s => s.GenerateToken(existingUser)).Returns(expectedJwtToken);
+
+        // Act
+        var result = await _authService.LoginGithubAsync(oauthRequest);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Token, Is.EqualTo(expectedJwtToken));
+            Assert.That(result.Value.UserId, Is.EqualTo(existingUser.Id));
+            Assert.That(result.Value.UserStatus, Is.EqualTo(existingUser.Status.ToString()));
+        });
+        _mockUserRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
+    }
+
+    [Test]
+    public async Task LoginGithubAsync_NewUser_RegistersAndReturnsSuccessWithAuthResponse()
+    {
+        // Arrange
+        var oauthRequest = new OAuthSignInRequest("github_new_user_token");
+        const string userEmail = "newgithubuser@example.com";
+        const string accessToken = "github_new_access_token";
+        var expectedJwtToken = "jwt_for_new_github_user";
+        User? addedUser = null;
+
+        _mockOAuthServiceFactory.Setup(f => f.Create(OAuthProvider.GitHub)).Returns(_mockOAuthService.Object);
+        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token)).ReturnsAsync(accessToken);
+        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(accessToken)).ReturnsAsync(userEmail);
+        _mockUserRepository.SetupSequence(r => r.GetUserByEmail(userEmail))
+            .ReturnsAsync((User)null!)
+            .ReturnsAsync(() => addedUser);
+        _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
+            .Callback<User>(u =>
+            {
+                u.Id = Guid.NewGuid();
+                u.Status = UserStatus.Active;
+                addedUser = u;
+            })
+            .Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        _mockJwtService.Setup(s => s.GenerateToken(It.Is<User>(u => u.Email == userEmail)))
+                       .Returns(expectedJwtToken);
+
+        // Act
+        var result = await _authService.LoginGithubAsync(oauthRequest);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Token, Is.EqualTo(expectedJwtToken));
+            Assert.That(addedUser, Is.Not.Null);
+            Assert.That(addedUser!.Email, Is.EqualTo(userEmail));
+            Assert.That(addedUser.RoleId, Is.EqualTo((int)UserRole.Learner));
+            Assert.That(result.Value.UserStatus, Is.EqualTo(UserStatus.Active.ToString()));
+        });
+        _mockUserRepository.Verify(r => r.AddAsync(It.Is<User>(u => u.Email == userEmail && u.RoleId == (int)UserRole.Learner)), Times.Once);
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task LoginGoogleAsync_UserExists_ReturnsSuccessWithAuthResponse()
+    {
+        // Arrange
+        var oauthRequest = new OAuthSignInRequest("google_token");
+        const string userEmail = "googleuser@example.com";
+        const string accessToken = "google_access_token";
+        var existingUser = CreateTestUser(userEmail, roleId: (int)UserRole.Admin, status: UserStatus.Pending);
+        const string expectedJwtToken = "jwt_for_google_user";
+
+        _mockOAuthServiceFactory.Setup(f => f.Create(OAuthProvider.Google)).Returns(_mockOAuthService.Object);
+        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token)).ReturnsAsync(accessToken);
+        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(accessToken)).ReturnsAsync(userEmail);
+        _mockUserRepository.Setup(r => r.GetUserByEmail(userEmail)).ReturnsAsync(existingUser);
+        _mockJwtService.Setup(s => s.GenerateToken(existingUser)).Returns(expectedJwtToken);
+
+        // Act
+        var result = await _authService.LoginGoogleAsync(oauthRequest);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Token, Is.EqualTo(expectedJwtToken));
+            Assert.That(result.Value.UserId, Is.EqualTo(existingUser.Id));
+            Assert.That(result.Value.UserStatus, Is.EqualTo(existingUser.Status.ToString()));
+        });
+        _mockUserRepository.Verify(r => r.AddAsync(It.IsAny<User>()), Times.Never);
+    }
+
+    [Test]
+    public async Task LoginGoogleAsync_NewUser_RegistersAndReturnsSuccessWithAuthResponse()
+    {
+        // Arrange
+        var oauthRequest = new OAuthSignInRequest("google_new_user_token");
+        const string userEmail = "newgoogleuser@example.com";
+        const string accessToken = "google_new_access_token";
+        const string expectedJwtToken = "jwt_for_new_google_user";
+        User? addedUser = null;
+
+        _mockOAuthServiceFactory.Setup(f => f.Create(OAuthProvider.Google)).Returns(_mockOAuthService.Object);
+        _mockOAuthService.Setup(s => s.GetAccessTokenAsync(oauthRequest.Token)).ReturnsAsync(accessToken);
+        _mockOAuthService.Setup(s => s.GetUserEmailDataAsync(accessToken)).ReturnsAsync(userEmail);
+        _mockUserRepository.SetupSequence(r => r.GetUserByEmail(userEmail))
+           .ReturnsAsync((User)null!)
+           .ReturnsAsync(() => addedUser);
+        _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
+           .Callback<User>(u =>
+           {
+               u.Id = Guid.NewGuid();
+               u.Status = UserStatus.Active;
+               addedUser = u;
+           })
+           .Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+        _mockJwtService.Setup(s => s.GenerateToken(It.Is<User>(u => u.Email == userEmail)))
+                      .Returns(expectedJwtToken);
+
+        // Act
+        var result = await _authService.LoginGoogleAsync(oauthRequest);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Is.Not.Null);
+            Assert.That(result.Value!.Token, Is.EqualTo(expectedJwtToken));
+            Assert.That(addedUser, Is.Not.Null);
+            Assert.That(addedUser!.Email, Is.EqualTo(userEmail));
+            Assert.That(addedUser.RoleId, Is.EqualTo((int)UserRole.Learner));
+            Assert.That(result.Value.UserStatus, Is.EqualTo(UserStatus.Active.ToString()));
+        });
+        _mockUserRepository.Verify(r => r.AddAsync(It.Is<User>(u => u.Email == userEmail && u.RoleId == (int)UserRole.Learner)), Times.Once);
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
+    [Test]
+    public async Task ResetPasswordAsync_IncorrectOldPassword_ReturnsUnauthorized()
+    {
+        // Arrange
+        var request = new ResetPasswordRequest("test@example.com", "wrongPassword123", "newPassword123");
+        var user = CreateTestUser(request.Email, "oldPassword123");
+        _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
+            .ReturnsAsync(user);
+
+        // Act
+        var result = await _authService.ResetPasswordAsync(request);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.Error, Is.EqualTo("Old password is incorrect"));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        });
+
+        _mockUserRepository.Verify(repo => repo.GetUserByEmail(request.Email), Times.Once);
+        _mockUserRepository.Verify(repo => repo.Update(It.IsAny<User>()), Times.Never);
         _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Never);
     }
 
-
     [Test]
-    public async Task ResetPasswordAsync_UserExists_UpdatesPasswordAndReturnsSuccess()
+    public async Task ResetPasswordAsync_ValidCredentials_UpdatesPasswordAndReturnsSuccess()
     {
         // Arrange
-        var request = new ResetPasswordRequest(Email: "test@example.com",OldPassword: "oldPassword123", NewPassword: "newPassword123");
-        var user = new User { Id = Guid.NewGuid(), Email = request.Email, PasswordHash = "oldHash" };
-
+        var request = new ResetPasswordRequest("test@example.com", "oldPassword123", "newPassword123");
+        var user = CreateTestUser(request.Email, "oldPassword123");
         _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
             .ReturnsAsync(user);
-        _mockUserRepository.Setup(repo => repo.Update(It.IsAny<User>()));
+        _mockUserRepository.Setup(repo => repo.Update(user))
+            .Callback(() => user.PasswordHash = PasswordHelper.HashPassword(request.NewPassword));
         _mockUserRepository.Setup(repo => repo.SaveChangesAsync())
             .ReturnsAsync(1);
 
@@ -388,14 +423,14 @@ public class AuthServiceTests
         {
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(PasswordHelper.VerifyPassword(request.NewPassword, user.PasswordHash!), Is.True,
-                "Password hash should be updated to the new password.");
+            Assert.That(PasswordHelper.VerifyPassword(request.NewPassword, user.PasswordHash!), Is.True, "New password should be hashed and verified correctly.");
         });
 
         _mockUserRepository.Verify(repo => repo.GetUserByEmail(request.Email), Times.Once);
         _mockUserRepository.Verify(repo => repo.Update(user), Times.Once);
         _mockUserRepository.Verify(repo => repo.SaveChangesAsync(), Times.Once);
     }
+
 
     [Test]
     public async Task ResetPasswordAsync_UserNotFound_ReturnsNotFound()

@@ -28,3 +28,11 @@ export function generateRandomRole(): number {
   const randomNumber = Math.floor(Math.random() * 3) + 1;
   return randomNumber;
 }
+
+export function withTimestampEmail(data: any) {
+    const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
+    return {
+        ...data,
+        email: `${timestamp}${data.email}`
+    };
+}
