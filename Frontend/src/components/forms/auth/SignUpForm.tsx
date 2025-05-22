@@ -138,7 +138,7 @@ const SignUpForm: React.FC = () => {
             </label>
             <input
               id="password"
-              type="text"
+              type="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
