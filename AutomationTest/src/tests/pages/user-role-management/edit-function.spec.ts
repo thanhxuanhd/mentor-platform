@@ -39,7 +39,8 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       await userRoleManagementPage.clickOnEditUserBtn(0);
     });
     await test.step("Verify default value of Fullname and Email", async () => {
-      const actualData = await userRoleManagementPage.hasEditUserDefaultValue();
+      const actualData =
+        await userRoleManagementPage.verifyEditUserDefaultValue();
       expect(actualData).toBeTruthy();
     });
   });
@@ -59,21 +60,21 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
         );
       });
 
-      await test.step(`Click save button`, async () => {
+      await test.step(`Click on save button`, async () => {
         await test.step("Verify save button is enable", async () => {
           const isEnable =
-            await userRoleManagementPage.verifySaveButtonIsEnabled();
+            await userRoleManagementPage.getSaveButtonIsEnabled();
           expect(isEnable).toBeTruthy();
         });
         await test.step("Verify cancel button is enabled", async () => {
           const isEnable =
-            await userRoleManagementPage.verifyCancelButtonIsEnabled();
+            await userRoleManagementPage.getCancelButtonIsEnabled();
           expect(isEnable).toBeTruthy();
         });
         await userRoleManagementPage.clickOnSaveBtn();
       });
 
-      await test.step(`Verify update successfully`, async () => {
+      await test.step(`Verify update user successfully`, async () => {
         const actualData = await userRoleManagementPage.getNotification();
         expect(actualData).toEqual("User updated successfully.");
       });

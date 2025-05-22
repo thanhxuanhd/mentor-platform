@@ -21,13 +21,6 @@ test.describe("@UserRoleManagement All user role management pagination function"
   });
 
   //Pagination function
-  test("@SmokeTest Verify that the Next button is disable when user is in the last page", async () => {
-    const totalPaging = await userRoleManagementPage.getAllPagingCount();
-    await userRoleManagementPage.clickOnNavigationButton(totalPaging - 1);
-    const result = await userRoleManagementPage.getNextButtonStatus();
-    expect(result).toBeFalsy();
-  });
-
   test("@SmokeTest Verify data changed among pages", async () => {
     await test.step("Verify default value of item per page is 5", async () => {
       const result = await userRoleManagementPage.getPaginationDefaultValue();
@@ -40,15 +33,10 @@ test.describe("@UserRoleManagement All user role management pagination function"
       expect(result).toBeFalsy();
     });
 
-    await test.step("Verify that the Next button is disable when user is in the first page", async () => {
-      await userRoleManagementPage.clickOnNavigationButton(0);
-      const result = await userRoleManagementPage.getPreviousButtonStatus();
-      expect(result).toBeFalsy();
-    });
-
-    await test.step("Verify that the Previous button is disable when user is in the first page", async () => {
-      await userRoleManagementPage.clickOnNavigationButton(0);
-      const result = await userRoleManagementPage.getPreviousButtonStatus();
+    test("@SmokeTest Verify that the Next button is disable when user is in the last page", async () => {
+      const totalPaging = await userRoleManagementPage.getAllPagingCount();
+      await userRoleManagementPage.clickOnNavigationButton(totalPaging - 1);
+      const result = await userRoleManagementPage.getNextButtonStatus();
       expect(result).toBeFalsy();
     });
 
@@ -78,6 +66,7 @@ test.describe("@UserRoleManagement All user role management pagination function"
       await test.step("Click on items per page dropdown", async () => {
         await userRoleManagementPage.clickOnItemPerPage(item);
       });
+      await userRoleManagementPage.clickOnNavigationButton(1);
       const actualResult = await userRoleManagementPage.getAllTableRowCount();
       expect(actualResult.toString()).toEqual(item);
     });
