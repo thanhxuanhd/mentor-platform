@@ -13,10 +13,7 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
 {
     public async Task UpdateTagsCollection(List<Tag> tags, Course course)
     {
-        if (!_context.Entry(course).Collection(c => c.Tags).IsLoaded)
-        {
-            throw new Exception("Course.Tags collection is not loaded");
-        }
+        await _context.Entry(course).Collection(c => c.Tags).LoadAsync();
 
         var tagIds = tags.Select(t => t.Id);
         course.Tags.RemoveAll(t => !tagIds.Contains(t.Id));
@@ -79,5 +76,14 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
         var courseSummaries = await query.Select(c => c.ToCourseSummary()).ToListAsync();
 
         return new PaginatedList<CourseSummary>(courseSummaries, courseSummaries.Count, pageIndex, pageSize);
+    }
+
+    public async Task<Course?> GetCourseByTitleAsync(string title)
+    {
+        return await _context.Courses
+            .Where(c => c.Title == title)
+            .Include(c => c.Category)
+            .AsSplitQuery()
+            .FirstOrDefaultAsync();
     }
 }

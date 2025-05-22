@@ -37,7 +37,7 @@ public class CourseController(
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CourseCreateRequest request)
     {
-        var mentorId = request.MentorId;
+        Guid mentorId;
         if (HttpContext.User.IsInRole(nameof(UserRole.Mentor)))
         {
             mentorId = request.MentorId;
@@ -48,6 +48,7 @@ public class CourseController(
             {
                 return Forbid();
             }
+            mentorId = request.MentorId;
         }
 
         var result = await courseService.CreateAsync(mentorId, request);
@@ -57,7 +58,18 @@ public class CourseController(
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, [FromBody] CourseUpdateRequest request)
     {
-        if (!await CanEdit(id)) return Forbid();
+        var course = await courseService.GetByIdAsync(id);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+        if (!authorizationResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await courseService.UpdateAsync(id, request);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -65,7 +77,18 @@ public class CourseController(
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        if (!await CanEdit(id)) return Forbid();
+        var course = await courseService.GetByIdAsync(id);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+        if (!authorizationResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await courseService.DeleteAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -81,7 +104,18 @@ public class CourseController(
     [HttpPut("{id:guid}/archive")]
     public async Task<IActionResult> ArchiveCourse(Guid id)
     {
-        if (!await CanEdit(id)) return Forbid();
+        var course = await courseService.GetByIdAsync(id);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+        if (!authorizationResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await courseService.ArchiveCourseAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -105,7 +139,18 @@ public class CourseController(
     [HttpPost("{id:guid}/resource")]
     public async Task<IActionResult> CreateCourseItem(Guid id, [FromBody] CourseItemCreateRequest request)
     {
-        if (!await CanEdit(id)) return Forbid();
+        var course = await courseService.GetByIdAsync(id);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+        if (!authorizationResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await courseItemService.CreateAsync(id, request);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -114,7 +159,18 @@ public class CourseController(
     public async Task<IActionResult> UpdateCourseItem(Guid id, Guid resourceId,
         [FromBody] CourseItemUpdateRequest request)
     {
-        if (!await CanEdit(id)) return Forbid();
+        var course = await courseService.GetByIdAsync(id);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+        if (!authorizationResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await courseItemService.UpdateAsync(id, resourceId, request);
         return StatusCode((int)result.StatusCode, result);
     }
@@ -122,16 +178,19 @@ public class CourseController(
     [HttpDelete("{id:guid}/resource/{resourceId:guid}")]
     public async Task<IActionResult> DeleteCourseItem(Guid id, Guid resourceId)
     {
-        if (!await CanEdit(id)) return Forbid();
+        var course = await courseService.GetByIdAsync(id);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
+
+        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
+        if (!authorizationResult.Succeeded)
+        {
+            return Forbid();
+        }
+
         var result = await courseItemService.DeleteAsync(id, resourceId);
         return StatusCode((int)result.StatusCode, result);
-    }
-
-    private async Task<bool> CanEdit(Guid id)
-    {
-        var course = await courseService.GetByIdAsync(id);
-        var result = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-
-        return result.Succeeded;
     }
 }

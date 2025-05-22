@@ -8,7 +8,7 @@ namespace Contract.Repositories;
 public interface ICourseRepository : IBaseRepository<Course, Guid>
 {
     Task UpdateTagsCollection(List<Tag> tags, Course course);
-    
+
     Task<Course?> GetCourseWithDetailsAsync(Guid id);
 
     Task<PaginatedList<CourseSummary>> GetPaginatedCoursesAsync(int pageIndex,
@@ -18,4 +18,6 @@ public interface ICourseRepository : IBaseRepository<Course, Guid>
         string? keyword = null,
         CourseStatus? status = null,
         CourseDifficulty? difficulty = null);
+
+    Task<Course?> GetCourseByTitleAsync(string title);
 }

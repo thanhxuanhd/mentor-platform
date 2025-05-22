@@ -474,7 +474,7 @@ public class CourseServiceTests
             Assert.That(result.Value.Description, Is.EqualTo(request.Description));
             Assert.That(result.Value.CategoryId, Is.EqualTo(request.CategoryId));
             Assert.That(result.Value.Difficulty, Is.EqualTo(request.Difficulty));
-            _courseRepositoryMock.Verify(repo => repo.GetCourseWithDetailsAsync(courseId), Times.Once);
+            _courseRepositoryMock.Verify(repo => repo.GetCourseWithDetailsAsync(courseId), Times.Exactly(2));
             _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         });
     }

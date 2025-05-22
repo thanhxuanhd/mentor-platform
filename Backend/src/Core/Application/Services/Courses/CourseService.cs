@@ -40,6 +40,12 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
 
     public async Task<Result<CourseSummary>> CreateAsync(Guid mentorId, CourseCreateRequest request)
     {
+        // Suggestion from test team: Course with same name and category -> reject
+        // TODO: Unique constraints at stores
+        var existingCourse = await courseRepository.GetCourseByTitleAsync(request.Title);
+        if (existingCourse?.CategoryId == request.CategoryId)
+            return Result.Failure<CourseSummary>("Already have this course", HttpStatusCode.BadRequest);
+
         var caseSensitiveTagNames = request.Tags.ToHashSet();
         var tags = await tagRepository.UpsertAsync(caseSensitiveTagNames);
         await tagRepository.SaveChangesAsync();
