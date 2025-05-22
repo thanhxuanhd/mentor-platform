@@ -1,4 +1,5 @@
 using Application.Helpers;
+using Contract.Services;
 using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -8,6 +9,7 @@ using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Constants;
+using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

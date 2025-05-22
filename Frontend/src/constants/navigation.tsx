@@ -1,4 +1,4 @@
-import { BarChartOutlined, UserOutlined, AppstoreOutlined, BookOutlined } from '@ant-design/icons';
+import { BarChartOutlined, UserOutlined, AppstoreOutlined, BookOutlined, ProfileOutlined } from '@ant-design/icons';
 import { applicationRole } from './role';
 
 interface MenuItemProps {
@@ -37,6 +37,13 @@ export const menuItems: MenuItemProps[] = [
     label: "Courses",
     link: "courses",
     role: [applicationRole.LEARNER, applicationRole.ADMIN, applicationRole.MENTOR],
+  },
+  {
+    key: "profile",
+    icon: <ProfileOutlined />,
+    label: "Profile",
+    link: "profile",
+    role: [applicationRole.LEARNER, applicationRole.MENTOR],
   },
 ];
 

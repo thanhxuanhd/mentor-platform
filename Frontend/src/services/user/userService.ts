@@ -83,4 +83,9 @@ export const userService = {
 export const getAllTeachingApproaches = async () => {
   const response = await axiosClient.get(`TeachingApproaches`);
   return response.data.value;
-}
+};
+
+export const getAllTeachingApproaches = async () => {
+  const response = await axiosClient.get(`TeachingApproaches`);
+  return response.data.value;
+};
