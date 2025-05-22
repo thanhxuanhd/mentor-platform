@@ -50,4 +50,8 @@ export const userService = {
     );
     return response.data.value;
   },
+  updateUserDetails: async (userId: string) => {
+    const response = await axiosClient.put(`Users/${userId}/detail`);
+    return response.data.value;
+  }
 };

@@ -10,6 +10,13 @@ import {
 import authService from "../../../services/auth/authService";
 import type { ResetPasswordReq } from "../../../models";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+type FieldError = {
+  email?: string;
+  oldPassword?: string;
+  newPassword?: string;
+};
 
 const ResetPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -19,11 +26,7 @@ const ResetPasswordForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldError, setFieldError] = useState<{
-    email?: string;
-    oldPassword?: string;
-    newPassword?: string;
-  }>({});
+  const [fieldError, setFieldError] = useState<FieldError>({});
 
   const navigate = useNavigate();
   const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
@@ -32,11 +35,7 @@ const ResetPasswordForm: React.FC = () => {
     e.preventDefault();
 
     const trimmedEmail = email.trim();
-    const errors: {
-      email?: string;
-      oldPassword?: string;
-      newPassword?: string;
-    } = {};
+    const errors: FieldError = {};
 
     if (!trimmedEmail) {
       errors.email = "Please enter your email";
@@ -50,19 +49,17 @@ const ResetPasswordForm: React.FC = () => {
 
     if (!newPassword.trim()) {
       errors.newPassword = "Please enter your new password";
-    }
-    if (!newPassword.trim()) {
-      errors.newPassword = "Please enter your new password";
     } else if (newPassword.length < 8 || newPassword.length > 32) {
       errors.newPassword = "Password must be between 8 and 32 characters";
     } else if (
-      !/(?=.*[a-zA-Z])/.test(newPassword) ||   
-      !/(?=.*\d)/.test(newPassword) ||         
-      !/(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-])/.test(newPassword)
+      !/(?=.*[a-zA-Z])/.test(newPassword) || // letters
+      !/(?=.*\d)/.test(newPassword) ||       // digits
+      !/(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\/-])/.test(newPassword) // special chars
     ) {
       errors.newPassword =
         "Password must include letters, numbers, and special characters";
     }
+
     setFieldError(errors);
 
     if (Object.keys(errors).length > 0) {
@@ -79,30 +76,35 @@ const ResetPasswordForm: React.FC = () => {
     };
 
     try {
-        await authService.resetPassword(data);
-        console.log("Reset password successful for:", email);
-        setShowNotification(true);
-        setTimeout(() => {
-          setShowNotification(false);
-          navigate("/login", { replace: true });
-          setSubmitted(true);
-        }, 3000);
-      } catch (err: any) {
-        console.error("Reset password failed:", err);
-        const newErrors: typeof fieldError = {};
-        if (err?.response?.status === 400) {
+      await authService.resetPassword(data);
+      console.log("Reset password successful for:", email);
+      setShowNotification(true);
+      setTimeout(() => {
+        setShowNotification(false);
+        navigate("/login", { replace: true });
+        setSubmitted(true);
+      }, 3000);
+    } catch (err) {
+      console.error("Reset password failed:", err);
+      const newErrors: FieldError = {};
+
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 400) {
           newErrors.oldPassword = "Current password is incorrect.";
-        } else if (err?.response?.status === 404) {
+        } else if (status === 404) {
           newErrors.email = "Email not found.";
         } else {
           alert("Reset password failed: an unexpected error occurred.");
         }
-
-        setFieldError(newErrors);
-      } finally {
-        setIsLoading(false);
+      } else {
+        alert("An unknown error occurred.");
       }
 
+      setFieldError(newErrors);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -116,7 +118,7 @@ const ResetPasswordForm: React.FC = () => {
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
             <p className="font-bold">Success!</p>
-            <p>Reset password sucessfully, please sign in again!</p>
+            <p>Reset password successfully, please sign in again!</p>
           </div>
         </div>
       )}
@@ -133,10 +135,7 @@ const ResetPasswordForm: React.FC = () => {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-white"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-white">
                 Email
               </label>
               <input
@@ -155,10 +154,7 @@ const ResetPasswordForm: React.FC = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="oldPassword"
-                className="block text-sm font-medium text-white"
-              >
+              <label htmlFor="oldPassword" className="block text-sm font-medium text-white">
                 Current Password
               </label>
               <div className="relative">
@@ -168,9 +164,7 @@ const ResetPasswordForm: React.FC = () => {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
-                    fieldError.oldPassword
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    fieldError.oldPassword ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter your current password"
                 />
@@ -183,10 +177,7 @@ const ResetPasswordForm: React.FC = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="newPassword"
-                className="block text-sm font-medium text-white"
-              >
+              <label htmlFor="newPassword" className="block text-sm font-medium text-white">
                 New Password
               </label>
               <div className="relative">
@@ -196,9 +187,7 @@ const ResetPasswordForm: React.FC = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
-                    fieldError.newPassword
-                      ? "border-red-500"
-                      : "border-gray-300"
+                    fieldError.newPassword ? "border-red-500" : "border-gray-300"
                   }`}
                   placeholder="Enter your new password"
                 />
@@ -207,11 +196,7 @@ const ResetPasswordForm: React.FC = () => {
                   onClick={togglePasswordVisibility}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-300"
                 >
-                  {showPassword ? (
-                    <EyeInvisibleOutlined />
-                  ) : (
-                    <EyeOutlined />
-                  )}
+                  {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 </button>
               </div>
               {fieldError.newPassword && (

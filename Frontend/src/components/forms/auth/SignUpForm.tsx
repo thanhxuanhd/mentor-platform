@@ -34,10 +34,7 @@ const SignUpForm: React.FC = () => {
       newErrors.email = "Please enter your email";
     } else if (!validateEmail(trimmedEmail)) {
       newErrors.email = "Email must be in a correct format";
-    } else if (trimmedEmail.length > 50) {
-      newErrors.email = "Email should not exceed 50 characters";
-    }
-
+    } 
     if (!password) {
       newErrors.password = "Please enter your password";
     } else {
