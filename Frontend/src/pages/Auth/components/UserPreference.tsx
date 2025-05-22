@@ -1,39 +1,45 @@
-import { useEffect, useState } from "react";
-import { Checkbox, Form, Select, Tag, type SelectProps } from "antd";
+import { useCallback, useEffect, useState } from "react";
+import { App, Checkbox, Form, Select, Tag, type FormInstance, type SelectProps } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import { getListCategories } from "../../../services/category/categoryServices";
 import type { TeachingApproach, UserDetail } from "../../../types/UserTypes";
 import { getAllTeachingApproaches } from "../../../services/user/userService";
 import { LearningStyle } from "../../../types/enums/LearningStyle";
 import { SessionFrequency } from "../../../types/enums/SessionFrequency"; // Import the SessionFrequency enum
+import type { NotificationProps } from "../../../types/Notification";
 
 interface UserProfileProps {
   userId: string;
   userDetail: UserDetail;
   updateUserDetail: React.Dispatch<React.SetStateAction<UserDetail>>;
+  formRef: React.RefObject<FormInstance<UserDetail> | null>;
 }
 
 const UserPreference: React.FC<UserProfileProps> = ({
   userDetail,
   updateUserDetail,
+  formRef,
 }) => {
+  const [form] = Form.useForm<UserDetail>();
   const [tags, setTags] = useState<SelectProps["options"]>([]);
   const [approaches, setApproaches] = useState<TeachingApproach[]>([]);
+  const { notification } = App.useApp();
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
 
-  useEffect(() => {
-    const fetchApproaches = async () => {
-      try {
-        const data = await getAllTeachingApproaches();
-        setApproaches(data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchCategories();
-    fetchApproaches();
+  const fetchApproaches = useCallback(async () => {
+    try {
+      const data = await getAllTeachingApproaches();
+      setApproaches(data);
+    } catch (err) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "Failed to fetch approaches",
+      });
+    }
   }, []);
 
-  const fetchCategories = async (keyword: string = "") => {
+  const fetchCategories = useCallback(async (keyword: string = "") => {
     try {
       const response = await getListCategories(1, 5, keyword);
       setTags(
@@ -42,10 +48,40 @@ const UserPreference: React.FC<UserProfileProps> = ({
           value: category.id,
         })),
       );
-    } catch (error) {
-      console.error("Error fetching categories:", error);
+    } catch {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "Failed to fetch categories",
+      });
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+    fetchApproaches();
+  }, [fetchCategories, fetchApproaches]);
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
+  useEffect(() => {
+    if (formRef) {
+      formRef.current = form;
+    }
+  }, [form, formRef]);
+
   const learningStyleOptions = Object.entries(LearningStyle).map(
     ([key, value]) => ({
       value: value,
@@ -110,15 +146,26 @@ const UserPreference: React.FC<UserProfileProps> = ({
       label: key.replace(/([A-Z])/g, " $1").trim(),
     }),
   );
-
+  const handleFormChange = (changedValues: Partial<UserDetail>) => {
+    updateUserDetail((prev) => ({
+      ...prev,
+      ...changedValues,
+    }));
+  };
   return (
     <div className="text-white p-8 rounded-xl max-w-3xl my-6 mx-auto shadow-2xl bg-gray-800">
-      <Form layout="vertical" name="user_profile_form" requiredMark={false}>
+      <Form
+        form={form}
+        layout="vertical"
+        name="user_profile_form"
+        requiredMark={false}
+        onValuesChange={handleFormChange}
+      >
         <h2 className="text-2xl font-bold mb-8">Set Your Preferences</h2>
 
         <div className="mb-6">
           <Form.Item
-            name="topics"
+            name="categoriesId"
             label={
               <span className="text-gray-300 text-lg">
                 Topics you're interested in learning about
@@ -195,8 +242,8 @@ const UserPreference: React.FC<UserProfileProps> = ({
                 key={style.label}
                 onClick={() => handleLearningStyleClick(style.value)}
                 className={`py-4 px-6 rounded-lg cursor-pointer text-center transition-all duration-300 transform ${userDetail.preferredLearningStyle === style.value
-                    ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8533] text-white shadow-lg"
-                    : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
+                  ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8533] text-white shadow-lg"
+                  : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
                   }`}
               >
                 {style.label}
@@ -210,23 +257,35 @@ const UserPreference: React.FC<UserProfileProps> = ({
             <p className="text-gray-400 mb-4">
               Select all teaching methods that match your style
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {approaches.map((approach) => (
-                <Tag.CheckableTag
-                  key={approach.id}
-                  checked={userDetail.teachingApproachIds.includes(approach.id)}
-                  onChange={(checked) =>
-                    handleTeachingApproachChange(approach.id, checked)
-                  }
-                  className={`group p-8 rounded-2xl cursor-pointer text-left transition-all duration-300 transform ${userDetail.teachingApproachIds.includes(approach.id)
+            <Form.Item
+              name="teachingApproachIds"
+              rules={[
+                {
+                  validator: () =>
+                    userDetail.teachingApproachIds.length > 0
+                      ? Promise.resolve()
+                      : Promise.reject(new Error("As a mentor, please choose at least a Teaching Approach.")),
+                },
+              ]}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {approaches.map((approach) => (
+                  <Tag.CheckableTag
+                    key={approach.id}
+                    checked={userDetail.teachingApproachIds.includes(approach.id)}
+                    onChange={(checked) =>
+                      handleTeachingApproachChange(approach.id, checked)
+                    }
+                    className={`group p-8 rounded-2xl cursor-pointer text-left transition-all duration-300 transform ${userDetail.teachingApproachIds.includes(approach.id)
                       ? "!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg"
                       : "!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]"
-                    }`}
-                >
-                  <div className="text-lg m-4">{approach.name}</div>
-                </Tag.CheckableTag>
-              ))}
-            </div>
+                      }`}
+                  >
+                    <div className="text-lg m-4">{approach.name}</div>
+                  </Tag.CheckableTag>
+                ))}
+              </div>
+            </Form.Item>
           </div>
         )}
 
