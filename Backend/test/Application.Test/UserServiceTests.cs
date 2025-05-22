@@ -1,12 +1,13 @@
-﻿using Contract.Services;
 using Application.Services.Users;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
 using Moq;
 using System.Linq.Expressions;
 using System.Net;
@@ -18,6 +19,7 @@ namespace Application.Test
     {
         private Mock<IUserRepository> _mockUserRepository;
         private Mock<IEmailService> _emailServiceMock;
+        private Mock<IWebHostEnvironment> _mockWebHostService;
         private UserService _userService;
 
         [SetUp]
@@ -25,7 +27,9 @@ namespace Application.Test
         {
             _mockUserRepository = new Mock<IUserRepository>();
             _emailServiceMock = new Mock<IEmailService>();
-            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object);
+            _mockWebHostService = new Mock<IWebHostEnvironment>();
+            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object);
+
         }
 
         [Test]

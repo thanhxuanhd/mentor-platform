@@ -1,4 +1,4 @@
-﻿using Application.Services.Expertises;
+using Application.Services.Expertises;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;

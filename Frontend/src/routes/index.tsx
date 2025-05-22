@@ -10,11 +10,10 @@ import ResetPassword from "../pages/Auth/ResetPassword";
 import ForgotPassword from "../pages/Auth/ForgotPassword";
 import OAuthCallback from "../pages/Auth/OAuthCallback";
 import AuthLayout from "../components/AuthLayout";
-import UserProfile from "../pages/Auth/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import { applicationRole } from "../constants/role";
 import ForbiddenPage from "../pages/Forbidden";
-import UserPreference from "../pages/Auth/components/UserPreference";
+import ProfileSetup from "../pages/Auth/ProfileSetup";
 
 const AppRoutes = () => {
   return (
@@ -22,16 +21,31 @@ const AppRoutes = () => {
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
-        <Route path="signup/step2" element={<UserProfile />} />
+        <Route path="profile-setup" element={<ProfileSetup />} />
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
-        <Route path="user-preferences" element={<UserPreference />} />
-        <Route path="user-profile" element={<UserProfile />} />
       </Route>
 
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[
+              applicationRole.ADMIN,
+              applicationRole.LEARNER,
+              applicationRole.MENTOR,
+            ]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="courses" element={<CoursesPage />} />
+      </Route>
       <Route
         element={
           <ProtectedRoute
@@ -41,11 +55,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="courses" element={<CoursesPage />} />
       </Route>
     </Routes>
   );

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import authService from "../../services/auth/authService";
 import { useLocation } from "react-router";
 import { useAuth } from "../../hooks";
+import { userStatus } from "../../constants/userStatus";
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -24,8 +25,17 @@ export default function OAuthCallback() {
       try {
         console.log(provider);
         const response = await authService.loginWithOAuth(code, provider);
-        setToken(response.value);
-        navigate("/");
+        // setToken(response.token);
+        // navigate("/");
+        switch (response.userStatus) {
+          case userStatus.ACTIVE:
+            setToken(response.token);
+            navigate("/");
+            break;
+          default:
+            navigate("/step2", { state: { ...response } });
+            break;
+        }
       } catch (error) {
         console.error("OAuth callback failed", error);
         navigate("/login");

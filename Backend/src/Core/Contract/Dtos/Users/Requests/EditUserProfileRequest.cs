@@ -46,10 +46,10 @@ public record EditUserProfileRequest(
     }
 }
 
-public class UpdateUserDetailRequestValidator : AbstractValidator<EditUserProfileRequest>
+public class EditUserDetailRequestValidator : AbstractValidator<EditUserProfileRequest>
 {
     private static readonly List<int> _allowedDurations = new() { 30, 45, 60, 90, 120 };
-    public UpdateUserDetailRequestValidator()
+    public EditUserDetailRequestValidator()
     {
         RuleFor(x => x.FullName)
             .NotEmpty().WithMessage("Full name is required")
@@ -69,7 +69,8 @@ public class UpdateUserDetailRequestValidator : AbstractValidator<EditUserProfil
 
         RuleFor(x => x.PhoneNumber)
             .NotEmpty().WithMessage("Phone number is required")
-            .MaximumLength(10).WithMessage("Phone number must not exceed 10 characters");
+            .MaximumLength(10).WithMessage("Phone number must not exceed 10 characters")
+            .Matches(@"^\d+$").WithMessage("Phone number must contain only numbers");
 
         RuleFor(x => x.Skills)
             .MaximumLength(200).WithMessage("Skills must not exceed 200 characters")
@@ -83,25 +84,39 @@ public class UpdateUserDetailRequestValidator : AbstractValidator<EditUserProfil
             .MaximumLength(200).WithMessage("Goal must not exceed 200 characters")
             .When(x => x.Goal != null);
 
+        RuleFor(x => x.PreferredCommunicationMethod)
+            .IsInEnum().WithMessage("Invalid communication method selected.")
+            .When(x => x.PreferredCommunicationMethod != null);
+
+        RuleFor(x => x.PreferredSessionFrequency)
+            .IsInEnum().WithMessage("A valid session frequency must be selected.");
+
         RuleFor(x => x.PreferredSessionDuration)
             .Must(duration => _allowedDurations.Contains(duration))
-            .WithMessage("Preferred session duration must be 30, 45, 60, 90, or 120 minutes");
+            .WithMessage($"Session duration must be one of the following: {string.Join(", ", _allowedDurations)} minutes.");
+
+        RuleFor(x => x.PreferredLearningStyle)
+            .IsInEnum().WithMessage("A valid learning style must be selected.");
 
         RuleFor(x => x.AvailabilityIds)
-            .Must(ids => ids == null).WithMessage("All Availability IDs must be valid")
-            .When(x => x.AvailabilityIds != null);
+            .Must(ids => ids!.All(id => id != Guid.Empty))
+            .WithMessage("All Availability IDs must be non-empty Guids")
+            .When(x => x.AvailabilityIds is { Count: > 0 });
 
         RuleFor(x => x.ExpertiseIds)
-            .Must(ids => ids == null).WithMessage("All Expertise IDs must be valid")
-            .When(x => x.ExpertiseIds != null);
+            .Must(ids => ids!.All(id => id != Guid.Empty))
+            .WithMessage("All Expertise IDs must be non-empty Guids")
+            .When(x => x.ExpertiseIds is { Count: > 0 });
 
         RuleFor(x => x.TeachingApproachIds)
-            .Must(ids => ids == null).WithMessage("All Expertise IDs must be valid")
-            .When(x => x.TeachingApproachIds != null);
+            .Must(ids => ids!.All(id => id != Guid.Empty))
+            .WithMessage("All Teaching Approach IDs must be non-empty Guids")
+            .When(x => x.TeachingApproachIds is { Count: > 0 });
 
         RuleFor(x => x.CategoryIds)
-            .Must(ids => ids == null).WithMessage("All Category IDs must be valid")
-            .When(x => x.CategoryIds != null);
+            .Must(ids => ids!.All(id => id != Guid.Empty))
+            .WithMessage("All Category IDs must be non-empty Guids")
+            .When(x => x.CategoryIds is { Count: > 0 });
     }
 
     private bool BeAValidUrl(string? url)
