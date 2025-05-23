@@ -12,9 +12,9 @@ namespace Infrastructure.Services.Background
             while (!stoppingToken.IsCancellationRequested)
             {
 
-                //var now = DateTime.Now;
-                //var nextRun = now.AddMinutes(1);
-                //var delay = nextRun - now;
+                var now = DateTime.Now;
+                var nextRun = now.Date.AddDays(1);
+                var delay = nextRun - now;
                 using (var scope = serviceProvider.CreateScope())
                 {
                     var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
@@ -51,7 +51,7 @@ namespace Infrastructure.Services.Background
 
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                await Task.Delay(delay, stoppingToken);
             }
         }
     }
