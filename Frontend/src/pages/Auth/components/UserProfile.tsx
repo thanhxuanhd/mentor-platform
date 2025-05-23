@@ -154,7 +154,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
   useEffect(() => {
     fetchAvalabilities();
     fetchExpertises();
-  }, [fetchAvalabilities, fetchExpertises]);
+  }, [fetchAvalabilities, fetchExpertises, userDetail.profilePhotoUrl]);
 
   useEffect(() => {
     const userExpertises = expertises.filter((item) =>
@@ -216,7 +216,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
     if (info.file.status === "done") {
       getBase64(info.file.originFileObj as FileType, (url) => {
         setImageUrl(url);
-        console.log(info.file.response?.value);
         updateUserDetail((prev) => ({
           ...prev,
           profilePhotoUrl: info.file.response?.value,
@@ -329,7 +328,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     { required: true, message: "Please enter your full name!" },
                     {
                       max: 100,
-                      message: "Full name can not exceed 50 characters!",
+                      message: "Full name can not exceed 100 characters!",
                     },
                     {
                       pattern: /^[A-Za-z\s]+$/,
@@ -407,6 +406,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
 
         <Form.Item name="expertiseIds" label="Areas Of Expertise">
           <Select
+            maxCount={5}
             mode="multiple"
             allowClear
             placeholder="Select your field of expertise"
@@ -414,7 +414,10 @@ const UserProfile: React.FC<UserProfileProps> = ({
             size="large"
             options={expertises}
             filterOption={(input, option) =>
-              (option?.name ?? "").toLowerCase().includes(input.toLowerCase())
+              (option?.name ?? "")
+                .trim()
+                .toLowerCase()
+                .includes(input.trim().toLowerCase())
             }
             fieldNames={{ label: "name", value: "id" }}
           />
@@ -422,7 +425,16 @@ const UserProfile: React.FC<UserProfileProps> = ({
 
         <div className="flex gap-4 items-center justify-center">
           <div className="flex-1">
-            <Form.Item name="skills" label="Professional Skills">
+            <Form.Item
+              name="skills"
+              label="Professional Skills"
+              rules={[
+                {
+                  max: 200,
+                  message: "Skill field can not exceed 200 characters!",
+                },
+              ]}
+            >
               <Input
                 name="skills"
                 size="large"
@@ -432,7 +444,16 @@ const UserProfile: React.FC<UserProfileProps> = ({
             </Form.Item>
           </div>
           <div className="flex-1">
-            <Form.Item name="experiences" label="Industry Experience">
+            <Form.Item
+              name="experiences"
+              label="Industry Experience"
+              rules={[
+                {
+                  max: 200,
+                  message: "Experience field can not exceed 200 characters!",
+                },
+              ]}
+            >
               <Input
                 name="experiences"
                 size="large"

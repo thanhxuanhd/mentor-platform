@@ -1,11 +1,11 @@
 ﻿using Contract.Repositories;
+using Domain.Abstractions;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Domain.Abstractions;
-using Domain.Enums;
 
 namespace Infrastructure.Repositories;
 
@@ -72,5 +72,15 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
             .ToListAsync();
 
         return validExpertiseIds.Count == listIds.Count;
+    }
+
+    public async Task<ICollection<User>> GetPendingUsersAsync()
+    {
+        var pendingUsers = await _context.Users
+            .Include(u => u.Role)
+            .Where(u => u.Status == UserStatus.Pending)
+            .ToListAsync();
+
+        return pendingUsers;
     }
 }

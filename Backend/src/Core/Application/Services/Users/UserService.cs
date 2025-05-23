@@ -265,11 +265,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         var fileUrl = $"{baseUrl}/images/{fileName}";
 
-        user.ProfilePhotoUrl = fileUrl;
-
-        userRepository.Update(user);
-        await userRepository.SaveChangesAsync();
-
         return Result.Success(fileUrl, HttpStatusCode.OK);
     }
 
@@ -280,10 +275,13 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<bool>("Image URL is required.", HttpStatusCode.BadRequest);
         }
 
+        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return Result.Failure<bool>("Invalid image URL format.", HttpStatusCode.BadRequest);
+        }
+
         try
         {
-            // Extract the file name from the URL
-            var uri = new Uri(imageUrl);
             var fileName = Path.GetFileName(uri.LocalPath);
             var imagesPath = Path.Combine(env.WebRootPath, "images");
             var filePath = Path.Combine(imagesPath, fileName);
@@ -292,18 +290,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             {
                 return Result.Failure<bool>("Avatar file not found.", HttpStatusCode.NotFound);
             }
-
-            var userId = fileName.Split(".")[0];
-            var user = await userRepository.GetByIdAsync(Guid.Parse(userId));
-
-            if (user == null)
-            {
-                return Result.Failure<bool>($"User with ID {userId} not found", HttpStatusCode.BadRequest);
-            }
-
-            user.ProfilePhotoUrl = null;
-            userRepository.Update(user);
-            await userRepository.SaveChangesAsync();
 
             File.Delete(filePath);
 

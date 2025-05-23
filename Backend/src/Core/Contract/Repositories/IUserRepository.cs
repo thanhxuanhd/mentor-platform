@@ -1,6 +1,6 @@
+using Domain.Abstractions;
 using Domain.Entities;
 using System.Linq.Expressions;
-using Domain.Abstractions;
 
 namespace Contract.Repositories;
 
@@ -12,4 +12,5 @@ public interface IUserRepository : IBaseRepository<User, Guid>
     Task<User?> GetUserByEmailAsync(string email);
     Task<bool> CheckEntityListExist<TEntity, TPrimaryKey>(List<TPrimaryKey> listIds) where TEntity : BaseEntity<TPrimaryKey> where TPrimaryKey : struct;
     Task<User?> GetUserDetailAsync(Guid id);
+    Task<ICollection<User>> GetPendingUsersAsync();
 }

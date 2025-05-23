@@ -427,6 +427,33 @@ namespace Application.Test
         }
 
         [Test]
+        public async Task RemoveAvatarAsync_WhenUrlIsInvalidFormat_ReturnsBadRequest()
+        {
+            // Arrange
+            var invalidUrls = new[]
+            {
+                "not-a-url",
+                "ftp://localhost/images/avatar.jpg",
+                "/images/avatar.jpg",
+                "http:/incomplete.com",
+                };
+
+            foreach (var invalidUrl in invalidUrls)
+            {
+                // Act
+                var result = await _userService.RemoveAvatarAsync(invalidUrl);
+
+                // Assert
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.IsSuccess, Is.False);
+                    Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                    Assert.That(result.Error, Is.EqualTo("Invalid image URL format."));
+                });
+            }
+        }
+
+        [Test]
         public async Task RemoveAvatarAsync_WhenFileNotFound_ReturnsNotFound()
         {
             var fakeUrl = "http://localhost/images/nonexistent.jpg";
@@ -442,19 +469,16 @@ namespace Application.Test
         }
 
         [Test]
-        public async Task RemoveAvatar_WhenSuccess_ReturnsOk()
+        public async Task RemoveAvatarAsync_WhenFileExists_DeletesAndReturnsSuccess()
         {
             // Arrange
-            var userId = Guid.NewGuid();
-            var fileName = userId + ".jpg";
-            var imageUrl = $"http://localhost/images/{fileName}";
-            var filePath = Path.Combine(_mockWebHostService.Object.WebRootPath, "images", fileName);
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-            File.WriteAllText(filePath, "dummy image content");
+            var fileName = "avatar.jpg";
+            var filePath = Path.Combine(_tempImagesFolder, "images");
+            Directory.CreateDirectory(filePath);
+            var fullPath = Path.Combine(filePath, fileName);
+            await File.WriteAllTextAsync(fullPath, "dummy content");
 
-            var user = new User { Id = userId, ProfilePhotoUrl = imageUrl };
-            _mockUserRepository.Setup(r => r.GetByIdAsync(userId, null)).ReturnsAsync(user);
-            _mockUserRepository.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
+            var imageUrl = $"http://localhost/images/{fileName}";
 
             // Act
             var result = await _userService.RemoveAvatarAsync(imageUrl);
@@ -462,39 +486,10 @@ namespace Application.Test
             // Assert
             Assert.Multiple(() =>
             {
-                Assert.That(user.ProfilePhotoUrl, Is.Null);
                 Assert.That(result.IsSuccess, Is.True);
-                Assert.That(result.Value, Is.True);
-                Assert.That(File.Exists(filePath), Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(File.Exists(fullPath), Is.False);
             });
-        }
-
-
-        [Test]
-        public async Task RemoveAvatar_WhenUserNotFound_ReturnsBadRequest()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var fileName = userId + ".jpg";
-            var imageUrl = $"http://localhost/images/{fileName}";
-            var filePath = Path.Combine(_mockWebHostService.Object.WebRootPath, "images", fileName);
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-            File.WriteAllText(filePath, "dummy image content");
-
-            _mockUserRepository.Setup(r => r.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
-
-            // Act
-            var result = await _userService.RemoveAvatarAsync(imageUrl);
-
-            // Assert
-
-            Assert.Multiple(() =>
-            {
-                Assert.That(result.IsSuccess, Is.False);
-                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-                Assert.That(result.Error, Does.Contain("User with ID"));
-            });
-
         }
     }
 }
