@@ -9,7 +9,6 @@ import UserPreference from "./components/UserPreference";
 import { useLocation, useNavigate } from "react-router-dom";
 import { userService } from "../../services/user/userService";
 import { axiosClient } from "../../services/apiClient";
-import { useAuth } from "../../hooks";
 import type { NotificationProps } from "../../types/Notification";
 
 const stepItems: {

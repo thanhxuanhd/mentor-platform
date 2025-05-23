@@ -8,6 +8,7 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Moq;
 using System.Linq.Expressions;
 using System.Net;
@@ -21,6 +22,7 @@ namespace Application.Test
         private Mock<IEmailService> _emailServiceMock;
         private Mock<IWebHostEnvironment> _mockWebHostService;
         private UserService _userService;
+        private string _tempImagesFolder;
 
         [SetUp]
         public void Setup()
@@ -28,6 +30,9 @@ namespace Application.Test
             _mockUserRepository = new Mock<IUserRepository>();
             _emailServiceMock = new Mock<IEmailService>();
             _mockWebHostService = new Mock<IWebHostEnvironment>();
+            _tempImagesFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(_tempImagesFolder);
+            _mockWebHostService.Setup(e => e.WebRootPath).Returns(_tempImagesFolder);
             _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object);
 
         }
@@ -315,6 +320,140 @@ namespace Application.Test
                 Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
                 Assert.That(result.Error, Is.EqualTo($"User with id {userId} not found."));
             });
+        }
+
+        [Test]
+        public async Task UploadAvatarAsync_WhenFileIsNull_ReturnsBadRequest()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            IFormFile file = null;
+
+            // Act
+            var result = await _userService.UploadAvatarAsync(userId, null, file);
+
+            // Assert
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo("File not selected"));
+        }
+
+        [Test]
+        public async Task UploadAvatarAsync_WhenUserNotFound_ReturnsBadRequest()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var mockFile = new Mock<IFormFile>();
+            mockFile.Setup(f => f.Length).Returns(100);
+
+            _mockUserRepository
+                .Setup(r => r.GetByIdAsync(userId, null))
+                .ReturnsAsync((User)null);
+
+            // Act
+            var result = await _userService.UploadAvatarAsync(userId, null, mockFile.Object);
+
+            // Assert
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo($"User with ID {userId} not found"));
+        }
+
+        [Test]
+        public async Task UploadAvatarAsync_WhenValid_ReturnsSuccess()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var fileName = "avatar.jpg";
+            var fileMock = new Mock<IFormFile>();
+
+            // Setup file
+            var content = "fake image content";
+            var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+
+            fileMock.Setup(f => f.FileName).Returns(fileName);
+            fileMock.Setup(f => f.Length).Returns(stream.Length);
+            fileMock.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
+                    .Returns<Stream, CancellationToken>((s, t) => stream.CopyToAsync(s, t));
+
+            // Setup user exists
+            _mockUserRepository
+                .Setup(r => r.GetByIdAsync(userId, null))
+                .ReturnsAsync(new User());
+
+            // Setup env
+            var fakeWebRootPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            Directory.CreateDirectory(fakeWebRootPath);
+            _mockWebHostService.Setup(e => e.WebRootPath).Returns(fakeWebRootPath);
+
+            // Mock HttpRequest
+            var mockRequest = new Mock<HttpRequest>();
+            mockRequest.Setup(r => r.Scheme).Returns("http");
+            mockRequest.Setup(r => r.Host).Returns(new HostString("localhost"));
+
+            // Act
+            var result = await _userService.UploadAvatarAsync(userId, mockRequest.Object, fileMock.Object);
+
+            // Assert
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Does.Contain("/images/"));
+
+            // Cleanup
+            Directory.Delete(fakeWebRootPath, true);
+        }
+
+        [Test]
+        public async Task RemoveAvatarAsync_WhenUrlIsNullOrEmpty_ReturnsBadRequest()
+        {
+            var result = await _userService.RemoveAvatarAsync(null);
+
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Is.EqualTo("Image URL is required."));
+        }
+
+        [Test]
+        public async Task RemoveAvatarAsync_WhenFileNotFound_ReturnsNotFound()
+        {
+            var fakeUrl = "http://localhost/images/nonexistent.jpg";
+
+            var result = await _userService.RemoveAvatarAsync(fakeUrl);
+
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+            Assert.That(result.Error, Is.EqualTo("Avatar file not found."));
+        }
+
+        [Test]
+        public async Task RemoveAvatarAsync_WhenFileExists_DeletesAndReturnsSuccess()
+        {
+            // Arrange
+            var fileName = "avatar.jpg";
+            var filePath = Path.Combine(_tempImagesFolder, "images");
+            Directory.CreateDirectory(filePath);
+            var fullPath = Path.Combine(filePath, fileName);
+            await File.WriteAllTextAsync(fullPath, "dummy content");
+
+            var imageUrl = $"http://localhost/images/{fileName}";
+
+            // Act
+            var result = await _userService.RemoveAvatarAsync(imageUrl);
+
+            // Assert
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(File.Exists(fullPath), Is.False); // File should be deleted
+        }
+
+        [Test]
+        public async Task RemoveAvatarAsync_WhenInvalidUrl_ThrowsException_ReturnsInternalServerError()
+        {
+            var result = await _userService.RemoveAvatarAsync("not-a-valid-url");
+
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
+            Assert.That(result.Error, Does.StartWith("Failed to remove avatar:"));
         }
     }
 }

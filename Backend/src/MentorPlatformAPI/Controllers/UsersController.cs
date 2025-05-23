@@ -55,7 +55,7 @@ public class UsersController(IUserService userService) : ControllerBase
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [Authorize]
+    //[Authorize]
     [HttpGet]
     [Route("{userId}/detail")]
     public async Task<IActionResult> GetUserDetailAsync(Guid userId)
