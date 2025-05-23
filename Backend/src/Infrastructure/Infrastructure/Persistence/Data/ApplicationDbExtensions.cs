@@ -9,25 +9,25 @@ namespace Infrastructure.Persistence.Data;
 
 public static class ApplicationDbExtensions
 {
-    public static async Task InitializeDatabaseAsync(this IApplicationBuilder app)
+    public static void SeedData(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-        await SeedAsync(dbContext, CancellationToken.None);
+        SeedNonAsync(dbContext);
     }
 
-    public static async Task SeedAsync(ApplicationDbContext dbContext, CancellationToken cancellationToken)
+    public static void SeedNonAsync(ApplicationDbContext dbContext)
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(dbContext.Database.MigrateAsync, cancellationToken);
-        
+        strategy.Execute(() => dbContext.Database.Migrate());
+
         if (!dbContext.Roles.Any())
         {
             dbContext.Roles.AddRange(new Role { Name = UserRole.Admin }, new Role { Name = UserRole.Mentor },
                 new Role { Name = UserRole.Learner });
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
 
         if (!dbContext.Users.Any())
@@ -82,7 +82,7 @@ public static class ApplicationDbExtensions
                 }
             );
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
 
         if (!dbContext.Categories.Any())
@@ -109,7 +109,7 @@ public static class ApplicationDbExtensions
                 Description = "Resources for career advancement and job hunting", Status = false
             });
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
 
         if (!dbContext.Courses.Any())
@@ -166,7 +166,7 @@ public static class ApplicationDbExtensions
                 Difficulty = CourseDifficulty.Advanced
             });
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
 
         if (!dbContext.Tags.Any())
@@ -178,7 +178,7 @@ public static class ApplicationDbExtensions
                 new Tag { Id = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce"), Name = "Time Management" },
                 new Tag { Id = Guid.Parse("3a6c27f3-1518-4575-8790-54764c2851a7"), Name = "Career Development" });
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
 
         if (!dbContext.CourseTags.Any())
@@ -205,7 +205,7 @@ public static class ApplicationDbExtensions
                 TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
             });
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
 
         if (!dbContext.CourseItems.Any())
@@ -261,7 +261,7 @@ public static class ApplicationDbExtensions
             });
 
 
-            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.SaveChanges();
         }
     }
 

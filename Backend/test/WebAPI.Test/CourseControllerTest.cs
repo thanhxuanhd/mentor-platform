@@ -669,20 +669,20 @@ public class CourseControllerTest
     }
 
     [Test]
-    public async Task DeleteCourseItem_WhenCourseAuthorized_ReturnsNoContentEquivalent()
+    public async Task DeleteCourseItem_WhenCourseAuthorized_ReturnsOk()
     {
         // Arrange
         var courseId = Guid.NewGuid();
         var resourceId = Guid.NewGuid();
         var fetchedCourse = SetupCourseFoundAndAuthorized(courseId);
-        var serviceResult = Result.Success(HttpStatusCode.NoContent);
+        var serviceResult = Result.Success(true, HttpStatusCode.OK);
         _courseItemServiceMock.Setup(s => s.DeleteAsync(courseId, resourceId)).ReturnsAsync(serviceResult);
 
         // Act
         var result = await _controller.DeleteCourseItem(courseId, resourceId);
 
         // Assert
-        AssertObjectResult(result, HttpStatusCode.NoContent, serviceResult);
+        AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
         _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
         _authorizationServiceMock.Verify(s => s.AuthorizeAsync(_user, fetchedCourse, "CourseModifyAccess"), Times.Once);
         _courseItemServiceMock.Verify(s => s.DeleteAsync(courseId, resourceId), Times.Once);

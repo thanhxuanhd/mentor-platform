@@ -35,10 +35,6 @@ builder.Services
     .AddPresentationServices()
     .AddInfrastructureServices(configuration);
 
-// Add background-service (seeding data)
-builder.Services.AddSingleton<DbInitializer>();
-builder.Services.AddHostedService(sp => sp.GetRequiredService<DbInitializer>());
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -57,5 +53,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.SeedData();
 
 app.Run();

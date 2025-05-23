@@ -33,9 +33,9 @@ public class CourseCreateRequestValidator : AbstractValidator<CourseCreateReques
             .NotEmpty()
             .WithMessage("Category Id is required.");
 
-        // RuleFor(x => x.DueDate)
-        //     .Must(dueDate => dueDate < DateTime.Now)
-        //     .WithMessage("Due Date must be in the future.");
+        RuleFor(x => x.DueDate)
+            .Must(dueDate => dueDate < DateTime.Now)
+            .WithMessage("Due Date must be in the future.");
 
         RuleFor(x => x.Tags)
             .Must(tags => tags.Count <= 5)
