@@ -1,14 +1,7 @@
-import type { Course } from "./types.tsx";
+import type { CourseDetailProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
 
-export type CourseDetailProp = {
-  course?: Course;
-  states: Record<string, string>;
-  active: boolean;
-  onClose: (targetAction?: string | undefined) => void;
-};
-
-export const CourseDetail: FC<CourseDetailProp> = ({
+export const CourseDetail: FC<CourseDetailProps> = ({
   course,
   states,
   active,

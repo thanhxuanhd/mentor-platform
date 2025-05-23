@@ -1,6 +1,7 @@
-import { Form, Input, Modal, Select, Button } from "antd";
+import { Button, Form, Input, Modal, Select } from "antd";
 import { type FC, useState } from "react";
-import { courseService } from "../../services/course";
+import { courseService } from "../../../services/course";
+import type { CourseMaterialFormProps } from "../../../types/pages/courses/types.ts";
 
 export type MediaType = "pdf" | "ExternalWebAddress" | "video" | "Course Id";
 
@@ -11,14 +12,7 @@ export interface MaterialFormData {
   webAddress?: string;
 }
 
-interface AddMaterialFormProps {
-  visible: boolean;
-  courseId?: string;
-  onCancel: () => void;
-  onSuccess: () => void;
-}
-
-const AddMaterialForm: FC<AddMaterialFormProps> = ({
+const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
   visible,
   courseId,
   onCancel,
@@ -29,25 +23,25 @@ const AddMaterialForm: FC<AddMaterialFormProps> = ({
 
   const handleSubmit = async () => {
     if (!courseId) return;
-    
+
     try {
       setSubmitting(true);
       const values = await form.validateFields();
-      
+
       await courseService.createResource(courseId, {
         title: values.title,
         description: values.description,
         mediaType: values.mediaType,
-        webAddress: values.webAddress || ""
+        webAddress: values.webAddress || "",
       });
-      
+
       form.resetFields();
       onSuccess();
     } catch (error) {
       console.error("Failed to create material:", error);
       Modal.error({
         title: "Failed to add material",
-        content: "There was an error adding your material. Please try again."
+        content: "There was an error adding your material. Please try again.",
       });
     } finally {
       setSubmitting(false);
@@ -77,17 +71,16 @@ const AddMaterialForm: FC<AddMaterialFormProps> = ({
       width={600}
       centered
     >
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{ mediaType: "pdf" }}
-      >
+      <Form form={form} layout="vertical" initialValues={{ mediaType: "pdf" }}>
         <Form.Item
           name="title"
           label="Title"
           rules={[
             { required: true, message: "Please enter material title" },
-            { max: 256, message: "Material title should not exceed 256 characters" }
+            {
+              max: 256,
+              message: "Material title should not exceed 256 characters",
+            },
           ]}
         >
           <Input placeholder="Enter material title" />
@@ -98,7 +91,7 @@ const AddMaterialForm: FC<AddMaterialFormProps> = ({
           label="Description"
           rules={[
             { required: true, message: "Description is required" },
-            { max: 256, message: "Description must not exceed 256 characters" }
+            { max: 256, message: "Description must not exceed 256 characters" },
           ]}
         >
           <Input.TextArea rows={4} placeholder="Enter material description" />
@@ -111,7 +104,9 @@ const AddMaterialForm: FC<AddMaterialFormProps> = ({
         >
           <Select>
             <Select.Option value="pdf">PDF</Select.Option>
-            <Select.Option value="ExternalWebAddress">External Web Address</Select.Option>
+            <Select.Option value="ExternalWebAddress">
+              External Web Address
+            </Select.Option>
             <Select.Option value="video">Video</Select.Option>
             <Select.Option value="Course Id">Course ID</Select.Option>
           </Select>
@@ -131,7 +126,7 @@ const AddMaterialForm: FC<AddMaterialFormProps> = ({
                 rules={[
                   { required: true, message: "Please enter web address" },
                   { type: "url", message: "Please enter a valid URL" },
-                  { max: 2048, message: "URL is too long" }
+                  { max: 2048, message: "URL is too long" },
                 ]}
               >
                 <Input placeholder="Enter web address" />
@@ -144,4 +139,4 @@ const AddMaterialForm: FC<AddMaterialFormProps> = ({
   );
 };
 
-export default AddMaterialForm;
+export default CourseMaterialForm;

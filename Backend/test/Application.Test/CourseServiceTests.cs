@@ -77,7 +77,7 @@ public class CourseServiceTests
             Status = c.Status,
             Difficulty = c.Difficulty,
             DueDate = c.DueDate,
-            Items = c.Items.Select(i => new CourseItemDto
+            Items = c.Items.Select(i => new CourseItemResponse
             {
                 Title = i.Title,
                 Description = i.Description,
@@ -330,7 +330,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemDto>()
+                Items = new List<CourseItemResponse>()
             })
             .ToList();
 
@@ -599,7 +599,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemDto>()
+                Items = new List<CourseItemResponse>()
             }).ToList(),
             coursesForMentor.Count,
             pageIndex,
@@ -660,7 +660,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemDto>()
+                Items = new List<CourseItemResponse>()
             }).ToList(),
             publishedCourses.Count,
             pageIndex,
@@ -732,7 +732,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemDto>()
+                Items = new List<CourseItemResponse>()
             }).ToList(),
             matchingCourses.Count,
             pageIndex,

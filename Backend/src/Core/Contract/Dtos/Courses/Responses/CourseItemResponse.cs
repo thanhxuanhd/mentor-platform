@@ -2,7 +2,7 @@
 
 namespace Contract.Dtos.Courses.Responses;
 
-public record CourseItemDto
+public record CourseItemResponse
 {
     public Guid Id { get; init; }
     public required string Title { get; init; }

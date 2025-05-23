@@ -1,12 +1,23 @@
 import { type FC, useEffect, useState } from "react";
-import type { Category, CourseFormDataOptions } from "./types.tsx";
-import { Button, DatePicker, Form, Input, Modal, Select, Space, Tag, message } from "antd";
+import type { Category, CourseFormDataOptions } from "../types.tsx";
+import {
+  Button,
+  DatePicker,
+  Form,
+  Input,
+  message,
+  Modal,
+  Select,
+  Space,
+  Tag,
+} from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import {CourseDifficultyEnumMember} from "./initial-values.tsx";
-import dayjs from 'dayjs';
-import { courseService } from "../../services/course";
-import { categoryService } from "../../services/category";
-import { useAuth } from "../../hooks/useAuth";
+import { CourseDifficultyEnumMember } from "../initial-values.tsx";
+import dayjs from "dayjs";
+import { courseService } from "../../../services/course";
+import { categoryService } from "../../../services/category";
+import { useAuth } from "../../../hooks";
+import type { CourseFormProps } from "../../../types/pages/courses/types.ts";
 
 // Add a debounce utility
 const debounce = <F extends (...args: any[]) => any>(
@@ -25,26 +36,19 @@ const debounce = <F extends (...args: any[]) => any>(
   return debounced as (...args: Parameters<F>) => ReturnType<F>;
 };
 
-type CourseFormProp = {
-  formData: CourseFormDataOptions;
-  categories: Category[];
-  states: Record<string, string>;
-  active: boolean;
-  onClose: (targetAction?: string | undefined) => void;
-};
-
-export const CourseForm: FC<CourseFormProp> = ({
+export const CourseForm: FC<CourseFormProps> = ({
   formData,
   active,
   onClose,
-}) => {  
+}) => {
   const { user } = useAuth(); // Get current user from auth context
   const [form] = Form.useForm<CourseFormDataOptions>();
   const [newTag, setNewTag] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
   const [myCategories, setMyCategories] = useState<Category[]>([]);
   const [categoryKeyword, setCategoryKeyword] = useState<string>("");
-  const [submitting, setSubmitting] = useState<boolean>(false);const fetchCategories = async () => {
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const fetchCategories = async () => {
     try {
       const response = await categoryService.list({
         pageIndex: 1,
@@ -53,22 +57,23 @@ export const CourseForm: FC<CourseFormProp> = ({
       });
       setMyCategories(response.items);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
-  };useEffect(() => {
+  };
+  useEffect(() => {
     fetchCategories();
   }, [categoryKeyword]);
-  
+
   // Helper to get current tags
   const getTags = () => tags;
   useEffect(() => {
     if (active) {
       // Initial fetch of categories when the form becomes active
       fetchCategories();
-      
-      const formValues = {...formData};
-      
-      if (formValues.dueDate && typeof formValues.dueDate === 'string') {
+
+      const formValues = { ...formData };
+
+      if (formValues.dueDate && typeof formValues.dueDate === "string") {
         try {
           // Convert string date to dayjs object - this is what Ant Design DatePicker expects
           const dateValue = dayjs(formValues.dueDate);
@@ -79,26 +84,27 @@ export const CourseForm: FC<CourseFormProp> = ({
           (formValues as any).dueDate = undefined;
         }
       }
-      
+
       form.setFieldsValue(formValues);
-      
+
       const initialTags = Array.isArray(formData.tags) ? formData.tags : [];
       setTags(initialTags);
     }
-  }, [active, form, formData]);  const handleSubmit = async () => {
+  }, [active, form, formData]);
+  const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      
+
       // Format the date for .NET DateTime compatibility
       let formattedDueDate = values.dueDate;
-      
+
       // Check if it's an object with a dayjs format method
-      if (values.dueDate && typeof values.dueDate === 'object') {
+      if (values.dueDate && typeof values.dueDate === "object") {
         // Using type assertion to safely access the properties
         const dateObj = values.dueDate as any;
-        if (dateObj.format && typeof dateObj.format === 'function') {
+        if (dateObj.format && typeof dateObj.format === "function") {
           // Use dayjs format method to ensure consistent date format for .NET
-          formattedDueDate = dateObj.format('YYYY-MM-DDTHH:mm:ss');
+          formattedDueDate = dateObj.format("YYYY-MM-DDTHH:mm:ss");
         } else if (dateObj.$d instanceof Date) {
           // Convert the date to ISO string format which is compatible with .NET DateTime
           formattedDueDate = dateObj.$d.toISOString();
@@ -107,10 +113,13 @@ export const CourseForm: FC<CourseFormProp> = ({
           formattedDueDate = dateObj.toISOString();
         }
       }
-        if (formData.id) {
+      if (formData.id) {
         // Edit mode - call update API
-        console.log("EDIT MODE - Sending update request for course ID:", formData.id);
-        
+        console.log(
+          "EDIT MODE - Sending update request for course ID:",
+          formData.id,
+        );
+
         setSubmitting(true);
         try {
           // Make the API call to update the course
@@ -121,34 +130,36 @@ export const CourseForm: FC<CourseFormProp> = ({
             dueDate: formattedDueDate as string,
             difficulty: values.difficulty,
             mentorId: user?.id || "", // Use current user's ID as mentorId
-            tags: getTags() // Include tags in the API call
+            tags: getTags(), // Include tags in the API call
           });
-          
+
           // Close the form and signal to refresh the course list
           onClose("refresh");
         } catch (error) {
           console.error("Error updating course:", error);
           // Show error message to user
           Modal.error({
-            title: 'Failed to update course',
-            content: 'There was an error updating your course. Please try again.',
+            title: "Failed to update course",
+            content:
+              "There was an error updating your course. Please try again.",
           });
         } finally {
           setSubmitting(false);
         }
-      } else {        // Create mode - call the POST /api/course endpoint
+      } else {
+        // Create mode - call the POST /api/course endpoint
         console.log("CREATE MODE - Data being sent to create API:", {
           title: values.title,
           description: values.description,
           categoryId: values.categoryId,
-          dueDate: formattedDueDate, 
+          dueDate: formattedDueDate,
           difficulty: values.difficulty,
           tags: getTags(),
-          mentorId: user?.id || "" // Use current user's ID as mentorId
+          mentorId: user?.id || "", // Use current user's ID as mentorId
         });
-        
+
         setSubmitting(true);
-        try {          
+        try {
           // Make the API call to create a new course
           await courseService.create({
             title: values.title,
@@ -157,17 +168,18 @@ export const CourseForm: FC<CourseFormProp> = ({
             dueDate: formattedDueDate as string,
             difficulty: values.difficulty,
             mentorId: user?.id || "", // Use current user's ID as mentorId
-            tags: getTags() // Include tags in the API call
+            tags: getTags(), // Include tags in the API call
           });
-          
+
           // Close the form and signal to refresh the course list
           onClose("refresh");
         } catch (error) {
           console.error("Error creating course:", error);
           // Show error message to user
           Modal.error({
-            title: 'Failed to create course',
-            content: 'There was an error creating your course. Please try again.',
+            title: "Failed to create course",
+            content:
+              "There was an error creating your course. Please try again.",
           });
         } finally {
           setSubmitting(false);
@@ -196,18 +208,19 @@ export const CourseForm: FC<CourseFormProp> = ({
     setTags(updatedTags);
     form.setFieldValue("tags", updatedTags);
   };
-  return (    
-  <Modal
+  return (
+    <Modal
       title={formData.id ? `Edit Course: ${formData.title}` : "Add New Course"}
       open={active}
       onCancel={() => onClose()}
-      width={800}footer={[
+      width={800}
+      footer={[
         <Button key="cancel" onClick={() => onClose()}>
           Cancel
-        </Button>,        
-        <Button 
-          key="submit" 
-          type="primary" 
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
           onClick={handleSubmit}
           loading={submitting}
           disabled={submitting}
@@ -215,19 +228,26 @@ export const CourseForm: FC<CourseFormProp> = ({
           {formData.id ? "Save Changes" : "Create Course"}
         </Button>,
       ]}
-    >      
-    <Form form={form} layout="vertical" initialValues={{
-        ...formData, 
-        tags: Array.isArray(formData.tags) ? formData.tags : [],
-        dueDate: undefined
-      }}>
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{
+          ...formData,
+          tags: Array.isArray(formData.tags) ? formData.tags : [],
+          dueDate: undefined,
+        }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Form.Item
             name="title"
             label="Title"
             rules={[
               { required: true, message: "Please enter course title" },
-              { max: 256, message: "Course title should not exceed 256 characters" }
+              {
+                max: 256,
+                message: "Course title should not exceed 256 characters",
+              },
             ]}
           >
             <Input placeholder="Course title" />
@@ -243,11 +263,15 @@ export const CourseForm: FC<CourseFormProp> = ({
               placeholder="Select a category"
               options={myCategories.map((category) => ({
                 label: category.name,
-                value: category.id
+                value: category.id,
               }))}
               filterOption={false}
               onSearch={debounce((input) => setCategoryKeyword(input), 100)}
-              notFoundContent={categoryKeyword ? "No matching categories" : "Type to search categories"}
+              notFoundContent={
+                categoryKeyword
+                  ? "No matching categories"
+                  : "Type to search categories"
+              }
               loading={!myCategories.length && categoryKeyword !== ""}
             />
           </Form.Item>
@@ -258,37 +282,38 @@ export const CourseForm: FC<CourseFormProp> = ({
             rules={[{ required: true, message: "Please select a difficulty!" }]}
           >
             <Select>
-              {Object.entries(CourseDifficultyEnumMember).map(([value, label]) => (
-                <Select.Option key={value} value={value}>
-                  {label}
-                </Select.Option>
-              ))}
+              {Object.entries(CourseDifficultyEnumMember).map(
+                ([value, label]) => (
+                  <Select.Option key={value} value={value}>
+                    {label}
+                  </Select.Option>
+                ),
+              )}
             </Select>
-          </Form.Item>          
+          </Form.Item>
           <Form.Item
             name="dueDate"
             label="Due Date"
-            rules={[
-              { required: true, message: "Please select a due date!" },
-            ]}
+            rules={[{ required: true, message: "Please select a due date!" }]}
           >
-            <DatePicker 
-              style={{ width: '100%' }}
+            <DatePicker
+              style={{ width: "100%" }}
               placeholder="Select due date"
               format="YYYY-MM-DD"
             />
-          </Form.Item>          
+          </Form.Item>
           <Form.Item
             name="tags"
             label="Tags"
-            rules={[              {
+            rules={[
+              {
                 validator: async () => {
                   if (getTags().length > 5) {
-                    throw new Error('You can choose maximum 5 tags');
+                    throw new Error("You can choose maximum 5 tags");
                   }
                   return Promise.resolve();
-                }
-              }
+                },
+              },
             ]}
           >
             <Space direction="vertical" style={{ width: "100%" }}>
@@ -297,10 +322,10 @@ export const CourseForm: FC<CourseFormProp> = ({
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
                   placeholder="Add a tag"
-                  onPressEnter={e => {
+                  onPressEnter={(e) => {
                     e.preventDefault();
                     if (getTags().length >= 5) {
-                      message.error('You can choose maximum 5 tags');
+                      message.error("You can choose maximum 5 tags");
                       return;
                     }
                     handleAddTag();
@@ -310,18 +335,18 @@ export const CourseForm: FC<CourseFormProp> = ({
                   type="primary"
                   icon={<PlusOutlined />}
                   onClick={handleAddTag}
-                  disabled={!newTag.trim() || getTags().includes(newTag.trim()) || getTags().length >= 5}
+                  disabled={
+                    !newTag.trim() ||
+                    getTags().includes(newTag.trim()) ||
+                    getTags().length >= 5
+                  }
                 >
                   Add
                 </Button>
               </Space.Compact>
               <Space wrap style={{ marginTop: 8 }}>
                 {getTags().map((tag: string) => (
-                  <Tag
-                    key={tag}
-                    closable
-                    onClose={() => handleRemoveTag(tag)}
-                  >
+                  <Tag key={tag} closable onClose={() => handleRemoveTag(tag)}>
                     {tag}
                   </Tag>
                 ))}
@@ -335,7 +360,10 @@ export const CourseForm: FC<CourseFormProp> = ({
             className="md:col-span-2"
             rules={[
               { required: true, message: "Description is required" },
-              { max: 256, message: "Description must not exceed 256 characters" }
+              {
+                max: 256,
+                message: "Description must not exceed 256 characters",
+              },
             ]}
           >
             <Input.TextArea rows={4} placeholder="Course description" />

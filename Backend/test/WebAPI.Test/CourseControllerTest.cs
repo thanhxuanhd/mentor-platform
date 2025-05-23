@@ -136,9 +136,9 @@ public class CourseControllerTest
         return failureResult;
     }
 
-    private Result<List<CourseItemDto>> SetupCourseItemNotFound(Guid courseId)
+    private Result<List<CourseItemResponse>> SetupCourseItemNotFound(Guid courseId)
     {
-        var failureResult = Result.Failure<List<CourseItemDto>>("Course not found", HttpStatusCode.NotFound);
+        var failureResult = Result.Failure<List<CourseItemResponse>>("Course not found", HttpStatusCode.NotFound);
         _courseItemServiceMock.Setup(s => s.GetAllByCourseIdAsync(courseId))
             .ReturnsAsync(failureResult);
         return failureResult;
@@ -537,7 +537,7 @@ public class CourseControllerTest
         // Arrange
         var courseId = Guid.NewGuid();
         var fetchedCourse = SetupCourseFoundAndAuthorized(courseId);
-        var items = new List<CourseItemDto>
+        var items = new List<CourseItemResponse>
         {
             new()
             {
@@ -581,7 +581,7 @@ public class CourseControllerTest
         var courseId = Guid.NewGuid();
         var resourceId = Guid.NewGuid();
         var fetchedCourse = SetupCourseFoundAndAuthorized(courseId);
-        var item = new CourseItemDto
+        var item = new CourseItemResponse
         {
             Id = resourceId,
             Title = "Test Item",
@@ -613,7 +613,7 @@ public class CourseControllerTest
             WebAddress = "http://example.com/new"
         };
         var fetchedCourse = SetupCourseFoundAndAuthorized(courseId);
-        var createdItem = new CourseItemDto
+        var createdItem = new CourseItemResponse
         {
             Id = Guid.NewGuid(),
             Title = request.Title,
@@ -648,7 +648,7 @@ public class CourseControllerTest
             WebAddress = "http://example.com/updated"
         };
         var fetchedCourse = SetupCourseFoundAndAuthorized(courseId);
-        var updatedItem = new CourseItemDto
+        var updatedItem = new CourseItemResponse
         {
             Id = resourceId,
             Title = request.Title,

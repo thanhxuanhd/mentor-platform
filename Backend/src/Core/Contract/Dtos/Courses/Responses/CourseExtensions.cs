@@ -23,9 +23,9 @@ public static class CourseExtensions
         };
     }
 
-    public static CourseItemDto ToCourseItemDto(this CourseItem courseItem)
+    public static CourseItemResponse ToCourseItemDto(this CourseItem courseItem)
     {
-        return new CourseItemDto
+        return new CourseItemResponse
         {
             Id = courseItem.Id,
             Description = courseItem.Description,

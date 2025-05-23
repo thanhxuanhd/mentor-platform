@@ -12,15 +12,15 @@ import type {
   Mentor,
 } from "./types.tsx";
 import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
-import { CourseTable } from "./CourseTable.tsx";
-import { CourseForm } from "./CourseForm.tsx";
+import { CourseTable } from "./components/CourseTable.tsx";
+import { CourseForm } from "./components/CourseForm.tsx";
 
-import { CourseResource } from "./CourseResource.tsx";
+import { CourseResource } from "./components/CourseResource.tsx";
 import { courseService } from "../../services/course";
 import { categoryService } from "../../services/category";
 import { mentorService } from "../../services/mentor";
-import { CourseDetail } from "./CourseDetail.tsx";
-import { SearchBar } from "./SearchBar.tsx";
+import { CourseDetail } from "./components/CourseDetail.tsx";
+import { SearchBar } from "./components/SearchBar.tsx";
 import { App, Modal } from "antd";
 
 const Page: React.FC = () => {

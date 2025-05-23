@@ -14,7 +14,7 @@ public class CourseSummary
     public string? MentorName { get; set; }
     public CourseDifficulty Difficulty { get; set; }
     public DateTime? DueDate { get; set; }
-    public List<CourseItemDto> Items { get; init; } = [];
+    public List<CourseItemResponse> Items { get; init; } = [];
     public List<string> Tags { get; init; } = [];
     public CourseStatus Status { get; set; }
 }

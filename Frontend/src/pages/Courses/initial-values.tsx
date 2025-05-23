@@ -7,7 +7,11 @@ export const CourseStatesEnumMember: Record<CourseStatus, string> = {
   archived: "Archived",
 };
 
-export type CourseDifficulty = "beginner" | "intermediate" | "advanced" | string;
+export type CourseDifficulty =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | string;
 export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
   beginner: "Beginner",
   intermediate: "Intermediate",

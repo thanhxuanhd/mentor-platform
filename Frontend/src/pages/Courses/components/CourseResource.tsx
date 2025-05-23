@@ -1,16 +1,9 @@
 import { type FC, useState } from "react";
-import { Button, App } from "antd";
+import { App, Button } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import type { Course, CourseItem } from "./types.tsx";
-import AddMaterialForm from "./AddMaterialForm";
-import { courseService } from "../../services/course";
-
-export type CourseResourceProps = {
-  course?: Course;
-  onDownload: (material: CourseItem) => void;
-  active: boolean;
-  onClose: (targetAction?: string | undefined) => void;
-};
+import CourseMaterialForm from "./CourseMaterialForm.tsx";
+import { courseService } from "../../../services/course";
+import type {CourseResourceProps} from "../../../types/pages/courses/types.ts";
 
 export const CourseResource: FC<CourseResourceProps> = ({
   course,
@@ -39,7 +32,7 @@ export const CourseResource: FC<CourseResourceProps> = ({
           console.error("Failed to delete material:", error);
           message.error("Failed to delete material");
         }
-      }
+      },
     });
   };
 
@@ -86,7 +79,9 @@ export const CourseResource: FC<CourseResourceProps> = ({
                   <div className="flex-1">
                     <p className="font-medium">{item.title}</p>
                     <p className="text-xs text-gray-400">{item.description}</p>
-                    <p className="text-xs text-gray-500 mt-1">Type: {item.mediaType}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Type: {item.mediaType}
+                    </p>
                   </div>
                   <div className="flex space-x-2">
                     <Button
@@ -96,7 +91,7 @@ export const CourseResource: FC<CourseResourceProps> = ({
                     >
                       Download
                     </Button>
-                    <Button 
+                    <Button
                       danger
                       onClick={() => handleDeleteMaterial(item.id)}
                     >
@@ -107,11 +102,13 @@ export const CourseResource: FC<CourseResourceProps> = ({
               ))}
             </div>
           ) : (
-            <p className="text-gray-400">No materials available for this course.</p>
+            <p className="text-gray-400">
+              No materials available for this course.
+            </p>
           )}
         </div>
 
-        <AddMaterialForm
+        <CourseMaterialForm
           visible={materialModalVisible}
           courseId={course.id}
           onCancel={() => setMaterialModalVisible(false)}
