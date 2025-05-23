@@ -41,7 +41,7 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
             .Include(c => c.Tags)
             .Include(c => c.Items)
             .AsSplitQuery()
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<PaginatedList<CourseSummary>> GetPaginatedCoursesAsync(

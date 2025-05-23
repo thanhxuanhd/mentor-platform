@@ -15,7 +15,7 @@ export const menuItems: MenuItemProps[] = [
     icon: <BarChartOutlined />,
     label: "Dashboard",
     link: "dashboard",
-    role: [applicationRole.ADMIN, applicationRole.LEARNER],
+    role: [applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR],
   },
   {
     key: "users",

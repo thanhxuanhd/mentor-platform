@@ -10,3 +10,11 @@ export interface ResetPasswordUser {
   expectedMessage: string;
 }
 
+export interface SignUpUser {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  isTermCheck: boolean;
+  expectedMessage: string;
+}
+

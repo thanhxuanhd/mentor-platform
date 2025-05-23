@@ -5,7 +5,7 @@
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class CourseManagementCreate_CourseItem_Course_CourseTag_Tag : Migration
+    public partial class Course_Creating_And_Editing : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
