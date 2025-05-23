@@ -1,3 +1,6 @@
+import { useEffect, useState, useContext } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
 import {
   AudioOutlined,
   CloseOutlined,
@@ -6,58 +9,18 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
-import { useNavigate, useParams } from "react-router-dom";
-import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
-const { TextArea } = Input;
-import { useEffect, useState, useContext } from "react";
 import type { DefaultOptionType } from "antd/es/select";
-import type { NotificationProps } from "../../../types/Notification";
-import UserProfileClient, { type UpdateProfileRequest } from "../userProfileClient";
+
+import { userService } from "../../../services/user/userService";
+import { getListCategories } from "../../../services/categoryServices";
 import { AuthContext } from "../../../contexts/AuthContext";
 
-const availabilityMap: Record<string, string> = {
-  "67eb556e-d860-498d-212a-08dd9819fea6": "Weekdays",
-  "3eab46db-9a91-4ab7-212b-08dd9819fea6": "Weekends",
-  "eec61c62-5198-4e1d-212c-08dd9819fea6": "Mornings",
-  "9574cf95-2df0-4982-212d-08dd9819fea6": "Afternoons",
-  "25cfac78-2bc0-46bf-212e-08dd9819fea6": "Evenings",
-};
+import type { NotificationProps } from "../../../types/Notification";
+import type { UpdateProfileRequest, UserProfile as UserProfileType } from "../../../types/UserTypes"; // Explicitly used now
 
-const reverseAvailabilityMap: Record<string, string> = Object.fromEntries(
-  Object.entries(availabilityMap).map(([guid, value]) => [value, guid])
-);
-
-const expertiseMap: Record<string, string> = {
-  "ecbea5a8-62a1-48d8-fb6d-08dd9819fec3": "Business",
-  "9ea17990-b9b6-4041-fb6f-08dd9819fec3": "Communication",
-  "2b7ac1a6-29c6-4b74-fb6c-08dd9819fec3": "Data Science",
-  "02d3db0e-0ce1-493e-fb6a-08dd9819fec3": "Design",
-  "8f0585c6-6b78-46dc-fb68-08dd9819fec3": "Leadership",
-  "5a1f1d05-8e7c-4dce-fb6b-08dd9819fec3": "Marketing",
-  "5c9dd8a1-a6f3-4fdd-fb69-08dd9819fec3": "Programming",
-  "a36ffa6c-b908-4b70-fb6e-08dd9819fec3": "Project Management",
-};
-
-const teachingApproachMap: Record<string, string> = {
-  "9178c57a-b963-469b-06aa-08dd9819fec9": "Discussion Based",
-  "b9a50969-32e1-40b7-06a9-08dd9819fec9": "Hands-on Practice",
-  "75e450d4-3928-46e1-06ac-08dd9819fec9": "Lecture Style",
-  "3c916553-b282-48cf-06ab-08dd9819fec9": "Project Based",
-};
-
-const reverseTeachingApproachMap: Record<string, string> = Object.fromEntries(
-  Object.entries(teachingApproachMap).map(([guid, value]) => [value, guid])
-);
-
-const categoryMap: Record<string, string> = {
-  "Time Management": "4b896130-3727-46c7-98d1-214107bd4709",
-  "Communication Skills": "07e80bb4-5fbb-4016-979d-847878ab81d5",
-  "Public Speaking": "4aa8eb25-7bb0-4bdc-b391-9924bc218eb2",
-  "Leadership Coaching": "3144da58-deaa-4bf7-a777-cd96e7f1e3b1",
-  "Career Development": "ead230f7-76ff-4c10-b025-d1f80fcdd277",
-};
+const { TextArea } = Input;
 
 const communicationMethodMap: Record<string, number> = {
   "video": 0,
@@ -68,14 +31,6 @@ const communicationMethodMap: Record<string, number> = {
 const reverseCommunicationMethodMap: Record<number, string> = Object.fromEntries(
   Object.entries(communicationMethodMap).map(([key, value]) => [value, key])
 );
-
-const availabilityOptions = [
-  "Weekdays",
-  "Weekends",
-  "Mornings",
-  "Afternoons",
-  "Evenings",
-];
 
 const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   {
@@ -137,6 +92,11 @@ const roleMap: Record<string, number> = {
   "mentor": 2,
 };
 
+// Maps for converting between names and IDs for display/submission
+const reverseAvailabilityMap: Record<string, string> = {};
+const reverseTeachingApproachMap: Record<string, string> = {};
+const reverseCategoryMap: Record<string, string> = {};
+
 export default function EditProfile() {
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState("");
@@ -146,9 +106,63 @@ export default function EditProfile() {
   const { userId } = useParams<{ userId: string }>();
   const [selectedAvailability, setSelectedAvailability] = useState<string[]>([]);
   const { notification } = App.useApp();
-  const [tags, setTags] = useState<DefaultOptionType[]>([]);
+  const [expertiseOptions, setExpertiseOptions] = useState<DefaultOptionType[]>([]);
+  const [availabilityOptions, setAvailabilityOptions] = useState<{ id: string; name: string }[]>([]);
+  const [teachingApproachOptions, setTeachingApproachOptions] = useState<DefaultOptionType[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<DefaultOptionType[]>([]);
+
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      if (!token) {
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "Authentication token not found.",
+        });
+        setLoading(false);
+        return;
+      }
+      try {
+        const [availabilities, expertises, teachingApproaches, categoriesResult] = await Promise.all([
+          userService.getAvailabilities(token),
+          userService.getExpertises(token),
+          userService.getTeachingApproaches(token),
+          getListCategories(1, 100),
+        ]);
+
+        availabilities.forEach(item => {
+          reverseAvailabilityMap[item.name] = item.id;
+        });
+        teachingApproaches.forEach(item => {
+          reverseTeachingApproachMap[item.name] = item.id;
+        });
+
+        const categoriesData = categoriesResult?.items || [];
+        categoriesData.forEach((item: { id: string; name: string }) => {
+          reverseCategoryMap[item.name] = item.id;
+        });
+
+        setAvailabilityOptions(availabilities);
+        setExpertiseOptions(expertises.map(item => ({ label: item.name, value: item.id })));
+        setTeachingApproachOptions(teachingApproaches.map(item => ({ label: item.name, value: item.id })));
+        setCategoryOptions(categoriesData.map((item: { id: string; name: string }) => ({ label: item.name, value: item.id })));
+
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: "Failed to load dropdown data.",
+        });
+      }
+    };
+
+    fetchDropdownData();
+  }, [token]);
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -162,38 +176,36 @@ export default function EditProfile() {
         if (!currentUserId) {
           throw new Error("User ID not found");
         }
-        
-        const userProfileData = await UserProfileClient.getProfile(currentUserId, token);
-        
-        const expertiseOptions = Object.entries(expertiseMap).map(([guid, label]) => ({
-          label,
-          value: guid, 
-        }));
-        setTags(expertiseOptions);
 
-        const mappedExpertise = userProfileData.expertiseIds || [];
-        
-        const mappedAvailability = userProfileData.availabilityIds?.map(id => availabilityMap[id] || "").filter(Boolean) || [];
+        // Explicitly type userProfileData to use UserProfileType to resolve "defined but never used" warning
+        const userProfileData: UserProfileType = await userService.getUserProfile(currentUserId);
 
+        // Set form fields directly with IDs for Select components
         form.setFieldsValue({
           fullname: userProfileData.fullName,
           phone: userProfileData.phoneNumber,
           bio: userProfileData.bio,
           roleSelect: userProfileData.roleId === 3 ? "learner" : userProfileData.roleId === 2 ? "mentor" : "learner",
-          expertise: mappedExpertise,
+          expertise: userProfileData.expertiseIds || [], // Already IDs
           skills: userProfileData.skills,
           experience: userProfileData.experiences,
           objective: userProfileData.goal,
           communicationMethod: reverseCommunicationMethodMap[userProfileData.preferredCommunicationMethod] || "video",
-          availability: mappedAvailability,
+          availability: userProfileData.availabilityIds || [], // Set with IDs for the form field
+          teachingApproach: userProfileData.teachingApproachIds || [], // Set with IDs
+          categoryIds: userProfileData.categoryIds || [], // Set with IDs
         });
 
-        setSelectedAvailability(mappedAvailability);
-        
+        // For the custom availability button group display, map IDs to names
+        setSelectedAvailability(userProfileData.availabilityIds?.map(id => {
+          const found = availabilityOptions.find(opt => opt.id === id);
+          return found ? found.name : "";
+        }).filter(Boolean) || []);
+
         if (userProfileData.profilePhotoUrl) {
           setImageUrl(userProfileData.profilePhotoUrl);
         }
-        
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -207,8 +219,10 @@ export default function EditProfile() {
       }
     };
 
-    fetchUserData();
-  }, [userId, user, token, navigate, form]);
+    if (availabilityOptions.length > 0 && expertiseOptions.length > 0 && teachingApproachOptions.length > 0 && categoryOptions.length > 0) {
+      fetchUserData();
+    }
+  }, [userId, user, token, navigate, form, availabilityOptions, expertiseOptions, teachingApproachOptions, categoryOptions]);
 
   useEffect(() => {
     if (notify) {
@@ -241,7 +255,7 @@ export default function EditProfile() {
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 1MB!", 
+        description: "Image must smaller than 1MB!",
       });
     }
     return isFormatAllowed && isLt1M;
@@ -249,7 +263,7 @@ export default function EditProfile() {
 
   const handleChange = (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === "done") {
-      setImageUrl(info.file.response?.value);
+      setImageUrl(info.file.response?.url);
     } else if (info.file.status === "error") {
       setNotify({
         type: "error",
@@ -260,22 +274,24 @@ export default function EditProfile() {
   };
 
   const toggleSelection = (
-    value: string,
-    list: string[],
+    value: string, // This `value` is the name, not the ID
+    list: string[], // This `list` contains names
     setter: (val: string[]) => void,
   ) => {
     const newList = list.includes(value)
       ? list.filter((item) => item !== value)
       : [...list, value];
-    setter(newList);
-    form.setFieldsValue({ availability: newList });
+    setter(newList); 
+
+    const newIds = newList.map(name => reverseAvailabilityMap[name]).filter(Boolean);
+    form.setFieldsValue({ availability: newIds }); 
   };
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
-      
+
       if (!token) {
         throw new Error("Token not found");
       }
@@ -284,12 +300,12 @@ export default function EditProfile() {
       if (!currentUserId) {
         throw new Error("User ID not found");
       }
-      
-      const availabilityIds = values.availability.map((item: string) => reverseAvailabilityMap[item]).filter(Boolean);
+
+      const availabilityIds = values.availability; 
       const expertiseIds = values.expertise;
-      const teachingApproachIds = values.availability.map((item: string) => reverseTeachingApproachMap[item]).filter(Boolean);
-      const categoryIds = values.availability.map((item: string) => categoryMap[item]).filter(Boolean);
-      
+      const teachingApproachIds = values.teachingApproach;
+      const categoryIds = values.categoryIds;
+
       const updateData: UpdateProfileRequest = {
         fullName: values.fullname,
         phoneNumber: values.phone,
@@ -311,17 +327,17 @@ export default function EditProfile() {
         categoryIds,
         profilePhotoUrl: imageUrl || undefined,
       };
-      
+
       console.log("Sending update to API:", JSON.stringify(updateData, null, 2));
-      const result = await UserProfileClient.updateProfile(currentUserId, updateData);
+      const result = await userService.updateUserProfile(currentUserId, updateData);
       console.log("API update result:", result);
-      
+
       setNotify({
         type: "success",
         message: "Success",
         description: "Profile updated successfully!",
       });
-    
+
       setTimeout(() => {
         navigate("/profile");
       }, 1000);
@@ -339,10 +355,10 @@ export default function EditProfile() {
 
   return (
     <div className="text-white p-6 rounded-xl max-w-3xl my-10 mx-auto shadow-lg bg-gray-800">
-      <Form 
-        form={form} 
-        layout="vertical" 
-        name="user_profile_form" 
+      <Form
+        form={form}
+        layout="vertical"
+        name="user_profile_form"
         requiredMark={false}
         onFinish={handleSubmit}
       >
@@ -370,7 +386,7 @@ export default function EditProfile() {
                 <Upload
                   maxCount={1}
                   showUploadList={false}
-                  action={`${import.meta.env.VITE_BASE_URL_BE}/Users/avatar/${userId || user?.id}`}
+                  action={`${import.meta.env.VITE_BASE_URL_BE}/Users/${userId || user?.id}/photo`}
                   headers={{
                     Authorization: `Bearer ${token}`,
                   }}
@@ -389,7 +405,7 @@ export default function EditProfile() {
                           className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setImageUrl(""); 
+                            setImageUrl("");
                           }}
                         >
                           <CloseOutlined />
@@ -494,24 +510,24 @@ export default function EditProfile() {
                   placeholder="Select your field of expertise"
                   className="w-full"
                   size="large"
-                  options={tags}
+                  options={expertiseOptions}
                 />
               </Form.Item>
             </div>
             <div className="flex gap-4 items-center justify-center">
               <div className="flex-1">
                 <Form.Item name="skills" label="Professional Skills"
-                rules={[
-                { max: 200, message: "Professional Skills can not exceed 200 characters" },
-              ]}>
+                  rules={[
+                    { max: 200, message: "Professional Skills can not exceed 200 characters" },
+                  ]}>
                   <Input size="large" placeholder="Your skills" />
                 </Form.Item>
               </div>
               <div className="flex-1">
                 <Form.Item name="experience" label="Industry Experience"
-                rules={[
-                { max: 200, message: "Industry Experience can not exceed 200 characters" },
-              ]}>
+                  rules={[
+                    { max: 200, message: "Industry Experience can not exceed 200 characters" },
+                  ]}>
                   <Input size="large" placeholder="Your experience" />
                 </Form.Item>
               </div>
@@ -525,28 +541,58 @@ export default function EditProfile() {
               <div className="flex gap-2 items-center justify-center flex-wrap">
                 {availabilityOptions.map((item) => (
                   <Button
-                    key={item}
+                    key={item.id}
                     type={
-                      selectedAvailability.includes(item) ? "primary" : "default"
+                      selectedAvailability.includes(item.name) ? "primary" : "default"
                     }
                     className={
-                      (selectedAvailability.includes(item)
+                      (selectedAvailability.includes(item.name)
                         ? "bg-orange-500 border-none"
                         : "") + " flex-1"
                     }
                     size="large"
                     onClick={() =>
                       toggleSelection(
-                        item,
+                        item.name,
                         selectedAvailability,
                         setSelectedAvailability,
                       )
                     }
                   >
-                    {item}
+                    {item.name}
                   </Button>
                 ))}
               </div>
+            </Form.Item>
+
+            <Form.Item
+              name="teachingApproach"
+              label="Teaching Approach"
+              rules={[]}
+            >
+              <Select
+                mode="multiple"
+                allowClear
+                placeholder="Select your preferred teaching approaches"
+                className="w-full"
+                size="large"
+                options={teachingApproachOptions}
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="categoryIds"
+              label="Categories"
+              rules={[]}
+            >
+              <Select
+                mode="multiple"
+                allowClear
+                placeholder="Select relevant categories"
+                className="w-full"
+                size="large"
+                options={categoryOptions}
+              />
             </Form.Item>
 
             <Form.Item

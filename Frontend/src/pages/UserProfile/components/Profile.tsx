@@ -1,35 +1,19 @@
 "use client"
 
-import { ShareAltOutlined } from "@ant-design/icons/lib/icons"
-import { Button, Tag, Spin } from "antd"
 import { useEffect, useState, useContext } from "react"
 import { useNavigate } from "react-router-dom"
-import UserProfileClient, { type UserProfile as UserProfileType } from "../userProfileClient"
-import { AuthContext } from "../../../contexts/AuthContext" 
+import { Button, Tag, Spin } from "antd"
+import { ShareAltOutlined } from "@ant-design/icons/lib/icons"
+
+import { userService } from "../../../services/user/userService"
+import { getListCategories } from "../../../services/categoryServices"
+import { AuthContext } from "../../../contexts/AuthContext"
+
+import type { UserProfile as UserProfileType } from "../../../types/UserTypes" 
 
 interface ProfileProps {
   userId?: string
 }
-
-const expertiseMap: Record<string, string> = {
-  "ecbea5a8-62a1-48d8-fb6d-08dd9819fec3": "Business",
-  "9ea17990-b9b6-4041-fb6f-08dd9819fec3": "Communication",
-  "2b7ac1a6-29c6-4b74-fb6c-08dd9819fec3": "Data Science",
-  "02d3db0e-0ce1-493e-fb6a-08dd9819fec3": "Design",
-  "8f0585c6-6b78-46dc-fb68-08dd9819fec3": "Leadership",
-  "5a1f1d05-8e7c-4dce-fb6b-08dd9819fec3": "Marketing",
-  "5c9dd8a1-a6f3-4fdd-fb69-08dd9819fec3": "Programming",
-  "a36ffa6c-b908-4b70-fb6e-08dd9819fec3": "Project Management",
-};
-
-const availabilityMap: Record<string, string> = {
-  "67eb556e-d860-498d-212a-08dd9819fea6": "Weekdays",
-  "3eab46db-9a91-4ab7-212b-08dd9819fea6": "Weekends",
-  "eec61c62-5198-4e1d-212c-08dd9819fea6": "Mornings",
-  "9574cf95-2df0-4982-212d-08dd9819fea6": "Afternoons",
-  "25cfac78-2bc0-46bf-212e-08dd9819fea6": "Evenings",
-};
-
 
 const communicationMethodMap: Record<number, string> = {
   0: "Video Call",
@@ -41,8 +25,41 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
   const [userData, setUserData] = useState<UserProfileType | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const navigate = useNavigate()
-  const { user, isAuthenticated } = useContext(AuthContext) 
+  const { user, isAuthenticated } = useContext(AuthContext)
   const token = localStorage.getItem("token")
+
+  const [expertises, setExpertises] = useState<{ id: string; name: string }[]>([]);
+  const [availabilities, setAvailabilities] = useState<{ id: string; name: string }[]>([]);
+  const [teachingApproaches, setTeachingApproaches] = useState<{ id: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      if (!token) {
+        console.error("Authentication token not found.");
+        setLoading(false);
+        return;
+      }
+      try {
+        const [fetchedAvailabilities, fetchedExpertises, fetchedTeachingApproaches, categoriesResult] = await Promise.all([
+          userService.getAvailabilities(token),
+          userService.getExpertises(token),
+          userService.getTeachingApproaches(token),
+          getListCategories(1, 100),
+        ]);
+        setAvailabilities(fetchedAvailabilities);
+        setExpertises(fetchedExpertises);
+        setTeachingApproaches(fetchedTeachingApproaches);
+        const categoriesData = categoriesResult?.items || [];
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Error fetching dropdown data:", error);
+      }
+    };
+
+    fetchDropdownData();
+  }, [token]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,7 +69,7 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
           throw new Error("User not authenticated")
         }
 
-        const currentUserId = propUserId || user.id 
+        const currentUserId = propUserId || user.id
         if (!currentUserId) {
           throw new Error("User ID not found")
         }
@@ -60,18 +77,20 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
         if (!token) {
           throw new Error("Token not found")
         }
-        const userProfileData = await UserProfileClient.getProfile(currentUserId, token)
+        const userProfileData = await userService.getUserProfile(currentUserId)
         setUserData(userProfileData)
         setLoading(false)
       } catch (error) {
         console.error("Error fetching user data:", error)
         setLoading(false)
-        navigate("/login") 
+        navigate("/login")
       }
-    }
+    };
 
-    fetchUserData()
-  }, [propUserId, user, isAuthenticated, token, navigate])
+    if (availabilities.length > 0 && expertises.length > 0 && teachingApproaches.length > 0 && categories.length > 0) {
+      fetchUserData();
+    }
+  }, [propUserId, user, isAuthenticated, token, navigate, availabilities, expertises, teachingApproaches, categories])
 
   const handleShareProfile = () => {
     console.log("Sharing profile...")
@@ -86,11 +105,31 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
   }
 
   const getExpertiseNames = (ids: string[] = []) => {
-    return ids.map((id) => expertiseMap[id] || `Expertise ${id}`);
+    return ids.map((id) => {
+      const expertise = expertises.find(exp => exp.id === id);
+      return expertise ? expertise.name : `Expertise ${id}`;
+    });
   }
 
   const getAvailabilityNames = (ids: string[] = []) => {
-    return ids.map((id) => availabilityMap[id] || `Availability ${id}`);
+    return ids.map((id) => {
+      const availability = availabilities.find(avail => avail.id === id);
+      return availability ? availability.name : `Availability ${id}`;
+    });
+  }
+
+  const getTeachingApproachNames = (ids: string[] = []) => {
+    return ids.map((id) => {
+      const approach = teachingApproaches.find(ta => ta.id === id);
+      return approach ? approach.name : `Teaching Approach ${id}`;
+    });
+  }
+
+  const getCategoryNames = (ids: string[] = []) => {
+    return ids.map((id) => {
+      const category = categories.find(cat => cat.id === id);
+      return category ? category.name : `Category ${id}`;
+    });
   }
 
   const getCommunicationMethod = (id = 0) => {
@@ -190,6 +229,36 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
             ))
           ) : (
             <p>No availability provided.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h3 className="text-gray-400 mb-2">Teaching Approaches</h3>
+        <div className="flex flex-wrap gap-2">
+          {userData?.teachingApproachIds && userData.teachingApproachIds.length > 0 ? (
+            getTeachingApproachNames(userData.teachingApproachIds).map((item) => (
+              <Tag key={item} className="bg-gray-700 text-white border-none px-4 py-1 rounded-full">
+                {item}
+              </Tag>
+            ))
+          ) : (
+            <p>No teaching approaches provided.</p>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-8">
+        <h3 className="text-gray-400 mb-2">Categories</h3> {/* New section for Categories */}
+        <div className="flex flex-wrap gap-2">
+          {userData?.categoryIds && userData.categoryIds.length > 0 ? (
+            getCategoryNames(userData.categoryIds).map((item) => (
+              <Tag key={item} className="bg-gray-700 text-white border-none px-4 py-1 rounded-full">
+                {item}
+              </Tag>
+            ))
+          ) : (
+            <p>No categories provided.</p>
           )}
         </div>
       </div>
