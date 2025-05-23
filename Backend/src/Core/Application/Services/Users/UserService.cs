@@ -1,5 +1,4 @@
 using Application.Helpers;
-using Contract.Services;
 using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
@@ -7,7 +6,6 @@ using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
-using Domain.Entities;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
@@ -243,7 +241,8 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
         }
 
-        if (await userRepository.GetByIdAsync(userId) == null)
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
         {
             return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.BadRequest);
         }
@@ -266,6 +265,11 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         var fileUrl = $"{baseUrl}/images/{fileName}";
 
+        user.ProfilePhotoUrl = fileUrl;
+
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
         return Result.Success(fileUrl, HttpStatusCode.OK);
     }
 
@@ -281,7 +285,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             // Extract the file name from the URL
             var uri = new Uri(imageUrl);
             var fileName = Path.GetFileName(uri.LocalPath);
-
             var imagesPath = Path.Combine(env.WebRootPath, "images");
             var filePath = Path.Combine(imagesPath, fileName);
 
@@ -289,6 +292,18 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             {
                 return Result.Failure<bool>("Avatar file not found.", HttpStatusCode.NotFound);
             }
+
+            var userId = fileName.Split(".")[0];
+            var user = await userRepository.GetByIdAsync(Guid.Parse(userId));
+
+            if (user == null)
+            {
+                return Result.Failure<bool>($"User with ID {userId} not found", HttpStatusCode.BadRequest);
+            }
+
+            user.ProfilePhotoUrl = null;
+            userRepository.Update(user);
+            await userRepository.SaveChangesAsync();
 
             File.Delete(filePath);
 

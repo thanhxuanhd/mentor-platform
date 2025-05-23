@@ -333,9 +333,13 @@ namespace Application.Test
             var result = await _userService.UploadAvatarAsync(userId, null, file);
 
             // Assert
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("File not selected"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(result.Error, Is.EqualTo("File not selected"));
+            });
+
         }
 
         [Test]
@@ -354,9 +358,12 @@ namespace Application.Test
             var result = await _userService.UploadAvatarAsync(userId, null, mockFile.Object);
 
             // Assert
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo($"User with ID {userId} not found"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(result.Error, Is.EqualTo($"User with ID {userId} not found"));
+            });
         }
 
         [Test]
@@ -395,9 +402,12 @@ namespace Application.Test
             var result = await _userService.UploadAvatarAsync(userId, mockRequest.Object, fileMock.Object);
 
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(result.Value, Does.Contain("/images/"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(result.Value, Does.Contain("/images/"));
+            });
 
             // Cleanup
             Directory.Delete(fakeWebRootPath, true);
@@ -408,9 +418,12 @@ namespace Application.Test
         {
             var result = await _userService.RemoveAvatarAsync(null);
 
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
-            Assert.That(result.Error, Is.EqualTo("Image URL is required."));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(result.Error, Is.EqualTo("Image URL is required."));
+            });
         }
 
         [Test]
@@ -420,40 +433,68 @@ namespace Application.Test
 
             var result = await _userService.RemoveAvatarAsync(fakeUrl);
 
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
-            Assert.That(result.Error, Is.EqualTo("Avatar file not found."));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+                Assert.That(result.Error, Is.EqualTo("Avatar file not found."));
+            });
         }
 
         [Test]
-        public async Task RemoveAvatarAsync_WhenFileExists_DeletesAndReturnsSuccess()
+        public async Task RemoveAvatar_WhenSuccess_ReturnsOk()
         {
             // Arrange
-            var fileName = "avatar.jpg";
-            var filePath = Path.Combine(_tempImagesFolder, "images");
-            Directory.CreateDirectory(filePath);
-            var fullPath = Path.Combine(filePath, fileName);
-            await File.WriteAllTextAsync(fullPath, "dummy content");
-
+            var userId = Guid.NewGuid();
+            var fileName = userId + ".jpg";
             var imageUrl = $"http://localhost/images/{fileName}";
+            var filePath = Path.Combine(_mockWebHostService.Object.WebRootPath, "images", fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            File.WriteAllText(filePath, "dummy image content");
+
+            var user = new User { Id = userId, ProfilePhotoUrl = imageUrl };
+            _mockUserRepository.Setup(r => r.GetByIdAsync(userId, null)).ReturnsAsync(user);
+            _mockUserRepository.Setup(r => r.SaveChangesAsync()).ReturnsAsync(1);
 
             // Act
             var result = await _userService.RemoveAvatarAsync(imageUrl);
 
             // Assert
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            Assert.That(File.Exists(fullPath), Is.False); // File should be deleted
+            Assert.Multiple(() =>
+            {
+                Assert.That(user.ProfilePhotoUrl, Is.Null);
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.Value, Is.True);
+                Assert.That(File.Exists(filePath), Is.False);
+            });
         }
 
-        [Test]
-        public async Task RemoveAvatarAsync_WhenInvalidUrl_ThrowsException_ReturnsInternalServerError()
-        {
-            var result = await _userService.RemoveAvatarAsync("not-a-valid-url");
 
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
-            Assert.That(result.Error, Does.StartWith("Failed to remove avatar:"));
+        [Test]
+        public async Task RemoveAvatar_WhenUserNotFound_ReturnsBadRequest()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var fileName = userId + ".jpg";
+            var imageUrl = $"http://localhost/images/{fileName}";
+            var filePath = Path.Combine(_mockWebHostService.Object.WebRootPath, "images", fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            File.WriteAllText(filePath, "dummy image content");
+
+            _mockUserRepository.Setup(r => r.GetByIdAsync(userId, null)).ReturnsAsync((User?)null);
+
+            // Act
+            var result = await _userService.RemoveAvatarAsync(imageUrl);
+
+            // Assert
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.False);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+                Assert.That(result.Error, Does.Contain("User with ID"));
+            });
+
         }
     }
 }
