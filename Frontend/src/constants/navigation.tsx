@@ -15,7 +15,7 @@ export const menuItems: MenuItemProps[] = [
     icon: <BarChartOutlined />,
     label: "Dashboard",
     link: "dashboard",
-    role: [applicationRole.ADMIN, applicationRole.LEARNER],
+    role: [applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR],
   },
   {
     key: "users",
@@ -36,7 +36,7 @@ export const menuItems: MenuItemProps[] = [
     icon: <BookOutlined />,
     label: "Courses",
     link: "courses",
-    role: [applicationRole.LEARNER, applicationRole.ADMIN],
+    role: [applicationRole.LEARNER, applicationRole.ADMIN, applicationRole.MENTOR],
   },
   {
     key: "profile",

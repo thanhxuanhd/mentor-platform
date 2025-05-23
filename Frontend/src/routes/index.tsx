@@ -36,7 +36,7 @@ const AppRoutes = () => {
       <Route
         element={
           <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}
+            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR]}
           >
             <MainLayout />
           </ProtectedRoute>
@@ -44,10 +44,20 @@ const AppRoutes = () => {
       >
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="courses" element={<CoursesPage />} />
+
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="courses" element={<CoursesPage />} />
-        
       </Route>
     </Routes>
   );

@@ -9,7 +9,9 @@ public class TeachingApproachService(ITeachingApproachRepository teachingApproac
 {
     public async Task<Result<List<GetTeachingApproachResponse>>> GetAllTeachingApproachesAsync()
     {
-        var teachingApproaches = teachingApproachRepository.GetAll().Select(a => new GetTeachingApproachResponse(a.Id, a.Name));
+        var teachingApproaches = teachingApproachRepository.GetAll()
+            .Select(a => new GetTeachingApproachResponse(a.Id, a.Name));
+
         var result = await teachingApproachRepository.ToListAsync(teachingApproaches);
 
         return Result.Success(result, HttpStatusCode.OK);

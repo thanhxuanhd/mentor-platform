@@ -15,6 +15,7 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
     {
         var user = await _context.Users
             .Include(user => user.Role)
+            .Where(u => !u.Status.Equals(UserStatus.Deactivated))
             .FirstOrDefaultAsync(u => u.Email.Equals(email));
 
         return user;
@@ -38,21 +39,11 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
             .AnyAsync(e => e.Email == email && e.Id != id);
     }
 
-    public async Task<User?> GetUserByEmailAsync(string email)
-    {
-        var user = await _context.Users
-            .Include(u => u.Role)
-            .Where(u => u.Email.Equals(email))
-            .Where(u => !u.Status.Equals(UserStatus.Deactivated))
-            .FirstOrDefaultAsync();
-
-        return user;
-    }
-
     public async Task<User?> GetUserDetailAsync(Guid id)
     {
         var user = await _context.Users
             .Include(u => u.Role)
+            .Include(u => u.UserCategories)
             .Include(u => u.UserAvailabilities)
             .Include(u => u.UserExpertises)
             .Include(u => u.UserTeachingApproaches)

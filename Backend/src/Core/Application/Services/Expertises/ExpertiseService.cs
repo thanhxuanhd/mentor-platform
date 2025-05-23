@@ -9,7 +9,9 @@ public class ExpertiseService(IExpertiseRepository expertiseRepository) : IExper
 {
     public async Task<Result<List<GetExpertiseResponse>>> GetAllExpertisesAsync()
     {
-        var expertises = expertiseRepository.GetAll().Select(a => new GetExpertiseResponse(a.Id, a.Name));
+        var expertises = expertiseRepository.GetAll()
+            .Select(a => new GetExpertiseResponse(a.Id, a.Name));
+
         var result = await expertiseRepository.ToListAsync(expertises);
 
         return Result.Success(result, HttpStatusCode.OK);

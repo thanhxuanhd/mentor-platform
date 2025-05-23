@@ -12,25 +12,36 @@ test.describe('@ResetPassword Reset Password Test', () => {
         await resetPasswordPage.goToForgotPasswordModal();
     });
 
-    const userData = [
-        {
-            label: '@SmokeTest Valid Case',
-            data: testData.valid_case as ResetPasswordUser,
-        }
-    ];
+    const userData: { [label: string]: ResetPasswordUser } = {
+        '@SmokeTest Valid Case': testData.valid_case,
+        'Empty new password': testData.empty_new_password,
+        'Over max length new password': testData.over_max_length_new_password
+    };
 
-    for (const { label, data } of userData) {
+    const invalidUserData: { [label: string]: ResetPasswordUser } = {
+        '@SmokeTest @InvalidCase Wrong current password': testData.wrong_current_password,
+        '@InvalidCase Empty current password': testData.empty_current_password,
+    };
+
+    const failedUserData: { [label: string]: ResetPasswordUser } = {
+        'Empty Email': testData.empty_email,
+        'Disable/Deleted Email': testData.disabled_deleted_notexist_email
+    };
+
+    for (const [label, data] of Object.entries(userData)) {
         test(`${label} - Reset Password`, async ({ request }) => {
             let currentPassword: string;
-
             await test.step('Send new password to email', async () => {
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.clickSendNewPasswordButton();
-                await resetPasswordPage.expectSendSuccess();
-                currentPassword = await requestNewPasswordFromEmail(request, data.email);
+                await Promise.any([
+                    await resetPasswordPage.expectSendSuccess(),
+                    await resetPasswordPage.expectSendFail()
+                ]);
             });
 
             await test.step('Input details data and submit', async () => {
+                currentPassword = await requestNewPasswordFromEmail(request, data.email)
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.inputCurrentPassword(currentPassword);
                 await resetPasswordPage.inputNewPassword(data.newPassword);
@@ -39,6 +50,43 @@ test.describe('@ResetPassword Reset Password Test', () => {
 
             await test.step('Verify system behavior', async () => {
                 await resetPasswordPage.expectMessage(data.expectedMessage);
+            });
+        });
+    }
+
+    for (const [label, data] of Object.entries(invalidUserData)) {
+        test(`${label} - Reset Password`, async ({ request }) => {
+            let currentPassword: string;
+            await test.step('Send new password to email', async () => {
+                await resetPasswordPage.inputEmail(data.email);
+                await resetPasswordPage.clickSendNewPasswordButton();
+                await Promise.any([
+                    await resetPasswordPage.expectSendSuccess(),
+                    await resetPasswordPage.expectSendFail()
+                ]);
+            });
+
+            await test.step('Input details data and submit', async () => {
+                currentPassword = data.currentPassword
+                await resetPasswordPage.inputEmail(data.email);
+                await resetPasswordPage.inputCurrentPassword(currentPassword);
+                await resetPasswordPage.inputNewPassword(data.newPassword);
+                await resetPasswordPage.clickResetPasswordButton();
+            });
+
+            await test.step('Verify system behavior', async () => {
+                await resetPasswordPage.expectMessage(data.expectedMessage);
+            });
+
+        });
+    }
+
+    for (const [label, data] of Object.entries(failedUserData)) {
+        test(`${label} - Reset Password`, async ({ request }) => {
+            await test.step('Send new password to email', async () => {
+                await resetPasswordPage.inputEmail(data.email);
+                await resetPasswordPage.clickSendNewPasswordButton();
+                await resetPasswordPage.expectSendFail()
             });
         });
     }
