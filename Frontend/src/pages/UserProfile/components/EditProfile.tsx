@@ -241,7 +241,7 @@ export default function EditProfile() {
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 1MB!", // Đồng bộ với UserProfile.tsx
+        description: "Image must smaller than 1MB!", 
       });
     }
     return isFormatAllowed && isLt1M;
@@ -249,7 +249,6 @@ export default function EditProfile() {
 
   const handleChange = (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === "done") {
-      // Cập nhật imageUrl từ phản hồi của API
       setImageUrl(info.file.response?.value);
     } else if (info.file.status === "error") {
       setNotify({
@@ -285,13 +284,12 @@ export default function EditProfile() {
       if (!currentUserId) {
         throw new Error("User ID not found");
       }
-
-      // Ánh xạ các giá trị hiển thị về GUID
+      
       const availabilityIds = values.availability.map((item: string) => reverseAvailabilityMap[item]).filter(Boolean);
       const expertiseIds = values.expertise;
       const teachingApproachIds = values.availability.map((item: string) => reverseTeachingApproachMap[item]).filter(Boolean);
       const categoryIds = values.availability.map((item: string) => categoryMap[item]).filter(Boolean);
-
+      
       const updateData: UpdateProfileRequest = {
         fullName: values.fullname,
         phoneNumber: values.phone,
@@ -374,7 +372,7 @@ export default function EditProfile() {
                   showUploadList={false}
                   action={`${import.meta.env.VITE_BASE_URL_BE}/Users/avatar/${userId || user?.id}`}
                   headers={{
-                    Authorization: `Bearer ${token}`, // Gửi token trong header
+                    Authorization: `Bearer ${token}`,
                   }}
                   beforeUpload={beforeUpload}
                   onChange={handleChange}
@@ -391,7 +389,7 @@ export default function EditProfile() {
                           className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setImageUrl(""); // Xóa ảnh (có thể thêm logic gọi API để xóa ảnh nếu cần)
+                            setImageUrl(""); 
                           }}
                         >
                           <CloseOutlined />
@@ -418,7 +416,7 @@ export default function EditProfile() {
                         { required: true, message: "Please enter your full name!" },
                         {
                           max: 50,
-                          message: "Full name can not exceed 50 characters!",
+                          message: "Full name can not exceed 100 characters!",
                         },
                         {
                           pattern: /^[A-Za-z\s]+$/,
@@ -502,12 +500,18 @@ export default function EditProfile() {
             </div>
             <div className="flex gap-4 items-center justify-center">
               <div className="flex-1">
-                <Form.Item name="skills" label="Professional Skills">
+                <Form.Item name="skills" label="Professional Skills"
+                rules={[
+                { max: 200, message: "Professional Skills can not exceed 200 characters" },
+              ]}>
                   <Input size="large" placeholder="Your skills" />
                 </Form.Item>
               </div>
               <div className="flex-1">
-                <Form.Item name="experience" label="Industry Experience">
+                <Form.Item name="experience" label="Industry Experience"
+                rules={[
+                { max: 200, message: "Industry Experience can not exceed 200 characters" },
+              ]}>
                   <Input size="large" placeholder="Your experience" />
                 </Form.Item>
               </div>

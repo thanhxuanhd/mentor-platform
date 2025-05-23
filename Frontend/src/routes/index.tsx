@@ -27,12 +27,9 @@ const AppRoutes = () => {
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
-      </Route>
-
+      </Route>    
       <Route
         element={
           <ProtectedRoute
@@ -58,6 +55,18 @@ const AppRoutes = () => {
       >
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.ADMIN, applicationRole.MENTOR, applicationRole.LEARNER]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
     </Routes>
   );

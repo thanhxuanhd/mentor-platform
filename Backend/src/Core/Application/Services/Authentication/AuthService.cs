@@ -19,7 +19,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         {
             return Result.Failure<AuthResponse>("Null user", HttpStatusCode.NotFound);
         }
-        if (user.Password == null)
+        if (user.PasswordHash == null)
         {
             return Result.Failure<AuthResponse>("Invalid password", HttpStatusCode.Unauthorized);
         }
