@@ -92,9 +92,9 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpDelete("avatar")]
-    public async Task<IActionResult> RemoveAvatar(string imageUrl)
+    public IActionResult RemoveAvatar(string imageUrl)
     {
-        var result = await userService.RemoveAvatarAsync(imageUrl);
+        var result = userService.RemoveAvatarAsync(imageUrl);
 
         return StatusCode((int)result.StatusCode, result);
     }
