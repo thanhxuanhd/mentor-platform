@@ -104,9 +104,7 @@ const ForgotPasswordForm: React.FC = () => {
                 : "bg-orange-600 hover:bg-orange-700"
             }`}
           >
-            {isLoading
-              ? "Sending..."
-              : "A new password has been sent to your email."}
+            {isLoading ? "Sending..." : "Send New Password"}
           </button>
         </form>
       )}
