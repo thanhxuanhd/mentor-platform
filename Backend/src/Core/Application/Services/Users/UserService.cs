@@ -272,7 +272,9 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
             var filePath = Path.Combine(imagesPath, fileName);
 
-            using var stream = new FileStream(filePath, FileMode.Create); await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
+            using var stream = new FileStream(filePath, FileMode.Create);
+
+            await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
 
             var fileUrl = $"{baseUrl}/images/{fileName}";
 

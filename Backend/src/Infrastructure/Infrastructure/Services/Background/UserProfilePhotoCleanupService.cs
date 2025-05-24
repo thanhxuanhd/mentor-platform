@@ -25,35 +25,33 @@ namespace Infrastructure.Services.Background
                         .GetAll().Where(u => u.Status == UserStatus.Pending).ToList();
 
                     var imagesDir = Path.Combine(env.WebRootPath, "images");
-                    if (!Directory.Exists(imagesDir))
+
+                    if (pendingUsers.Count == 0 || !Directory.Exists(imagesDir))
                     {
+                        await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
                         continue;
                     }
 
-                    if (pendingUsers.Count != 0)
+                    foreach (var user in pendingUsers)
                     {
-                        foreach (var user in pendingUsers)
-                        {
-                            var userIdStr = user.Id.ToString();
-                            var files = Directory.GetFiles(imagesDir)
-                                .Where(f => Path.GetFileName(f).Contains(userIdStr, StringComparison.OrdinalIgnoreCase));
+                        var userIdStr = user.Id.ToString();
+                        var files = Directory.GetFiles(imagesDir)
+                            .Where(f => Path.GetFileName(f).Contains(userIdStr, StringComparison.OrdinalIgnoreCase));
 
-                            foreach (var file in files)
+                        foreach (var file in files)
+                        {
+                            try
                             {
-                                try
-                                {
-                                    File.Delete(file);
-                                }
-                                catch (Exception ex)
-                                {
-                                    logger.LogError(ex, $"Failed to delete file {file}");
-                                }
+                                File.Delete(file);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, $"Failed to delete file {file}");
                             }
                         }
                     }
-
                 }
-                await Task.Delay(delay, stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
             }
         }
     }
