@@ -35,7 +35,7 @@ interface AuthProviderProps {
 
 interface Token {
   sub: string;
-  exp: any;
+  exp: number;
   userId: string;
   email: string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;

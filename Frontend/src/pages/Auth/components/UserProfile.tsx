@@ -325,7 +325,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
                   name="fullName"
                   label="Full Name"
                   rules={[
-                    { required: true, message: "Please enter your full name!" },
                     {
                       max: 100,
                       message: "Full name can not exceed 100 characters!",
@@ -333,6 +332,14 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     {
                       pattern: /^[A-Za-z\s]+$/,
                       message: "Full name can only contain letters and spaces!",
+                    },
+                    {
+                      validator: (_, value) =>
+                        value && value.trim() > 0
+                          ? Promise.resolve()
+                          : Promise.reject(
+                              "Full name is required and cannot be all white space!",
+                            ),
                     },
                   ]}
                 >

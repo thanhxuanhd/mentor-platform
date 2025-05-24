@@ -73,14 +73,4 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
 
         return validExpertiseIds.Count == listIds.Count;
     }
-
-    public async Task<ICollection<User>> GetPendingUsersAsync()
-    {
-        var pendingUsers = await _context.Users
-            .Include(u => u.Role)
-            .Where(u => u.Status == UserStatus.Pending)
-            .ToListAsync();
-
-        return pendingUsers;
-    }
 }

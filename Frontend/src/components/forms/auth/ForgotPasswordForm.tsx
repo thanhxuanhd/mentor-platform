@@ -30,7 +30,7 @@ const ForgotPasswordForm: React.FC = () => {
 
     setFieldError(errors);
     if (Object.keys(errors).length > 0) {
-      setIsLoading(false); // Đảm bảo không bị kẹt ở trạng thái sending
+      setIsLoading(false);
       return;
     }
 

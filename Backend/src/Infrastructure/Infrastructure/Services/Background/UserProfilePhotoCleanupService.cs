@@ -15,11 +15,12 @@ namespace Infrastructure.Services.Background
                 var now = DateTime.Now;
                 var nextRun = now.Date.AddDays(1);
                 var delay = nextRun - now;
+
                 using (var scope = serviceProvider.CreateScope())
                 {
                     var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
-                    var pendingUsers = await userRepository
-                        .GetPendingUsersAsync();
+                    var pendingUsers = userRepository
+                        .GetAll().Where(u => u.Status == Domain.Enums.UserStatus.Pending).ToList();
 
                     if (pendingUsers.Count != 0)
                     {
@@ -51,7 +52,7 @@ namespace Infrastructure.Services.Background
 
                 }
 
-                await Task.Delay(delay, stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
         }
     }

@@ -12,5 +12,4 @@ public interface IUserRepository : IBaseRepository<User, Guid>
     Task<User?> GetUserByEmailAsync(string email);
     Task<bool> CheckEntityListExist<TEntity, TPrimaryKey>(List<TPrimaryKey> listIds) where TEntity : BaseEntity<TPrimaryKey> where TPrimaryKey : struct;
     Task<User?> GetUserDetailAsync(Guid id);
-    Task<ICollection<User>> GetPendingUsersAsync();
 }
