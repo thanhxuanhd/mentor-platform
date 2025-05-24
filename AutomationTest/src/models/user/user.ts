@@ -18,3 +18,17 @@ export interface SignUpUser {
   expectedMessage: string;
 }
 
+export interface UserProfileCreation {
+  fullname: string;
+  phoneNumber: string;
+  bio?: string;
+  role?: string;
+  expertise?: string[];
+  skills?: string;
+  experience?: string;
+  availbility: number[];
+  communication_method?: string;
+  url_image?: string;
+  objective?: string;
+  expectedMessage: string;
+}
