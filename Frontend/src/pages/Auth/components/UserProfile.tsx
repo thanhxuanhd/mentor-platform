@@ -335,7 +335,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                     },
                     {
                       validator: (_, value) =>
-                        value && value.trim() > 0
+                        value && value.trim().length > 0
                           ? Promise.resolve()
                           : Promise.reject(
                               "Full name is required and cannot be all white space!",
