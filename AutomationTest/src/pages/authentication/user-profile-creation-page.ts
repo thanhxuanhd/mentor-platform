@@ -2,7 +2,7 @@ import { Locator, Page } from "@playwright/test";
 import { BasePage } from "../base-page";
 import path from "path";
 
-export class SignUpStep2Page extends BasePage {
+export class UserProfileSetupPage extends BasePage {
   private TXT_AVATAR: Locator;
   private TXT_FULL_NAME: Locator;
   private TXT_PHONE_NUMBER: Locator;

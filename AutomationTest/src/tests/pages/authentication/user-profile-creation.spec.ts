@@ -4,16 +4,16 @@ import { UserProfileCreation } from "../../../models/user/user";
 import { SignUpPage } from "../../../pages/authentication/sign-up-page";
 import testDataStep2 from "../../test-data/user-profile-creation-data.json";
 import testDataStep1 from "../../test-data/sign-up-user-data.json";
-import { SignUpStep2Page } from "../../../pages/authentication/user-profile-creation-page";
+import { UserProfileSetupPage } from "../../../pages/authentication/user-profile-creation-page";
 
 test.describe("@Registration Sign Up test", () => {
   let registrationstep1Page: SignUpPage;
-  let registrationstep2Page: SignUpStep2Page;
+  let registrationstep2Page: UserProfileSetupPage;
   const validRegisterStep1Data = testDataStep1.valid_case;
 
   test.beforeEach(async ({ page }) => {
     registrationstep1Page = new SignUpPage(page);
-    registrationstep2Page = new SignUpStep2Page(page);
+    registrationstep2Page = new UserProfileSetupPage(page);
     await registrationstep1Page.goToRegistrationStep1Modal();
 
     await test.step("Input details data and submit", async () => {
