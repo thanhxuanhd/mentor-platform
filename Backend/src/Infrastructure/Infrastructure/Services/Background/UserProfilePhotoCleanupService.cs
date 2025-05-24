@@ -28,7 +28,7 @@ namespace Infrastructure.Services.Background
 
                     if (pendingUsers.Count == 0 || !Directory.Exists(imagesDir))
                     {
-                        await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                        await Task.Delay(delay, stoppingToken);
                         continue;
                     }
 
@@ -51,7 +51,7 @@ namespace Infrastructure.Services.Background
                         }
                     }
                 }
-                await Task.Delay(TimeSpan.FromSeconds(60), stoppingToken);
+                await Task.Delay(delay, stoppingToken);
             }
         }
     }
