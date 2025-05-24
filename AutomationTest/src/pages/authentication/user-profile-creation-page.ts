@@ -68,29 +68,33 @@ export class SignUpStep2Page extends BasePage {
   }
 
   async fillInBioField(bio: string) {
-    await this.fill(this.TXT_BIO, bio);
+    if (bio) await this.fill(this.TXT_BIO, bio);
   }
 
   async selectUserRole(role: string) {
-    const ddl_role_loc = this.DDL_ROLE(role);
-    await this.click(ddl_role_loc);
+    if (role) {
+      const ddl_role_loc = this.DDL_ROLE(role);
+      await this.click(ddl_role_loc);
+    }
   }
 
   async selectExpertise(expertise: string[]) {
-    await this.click(this.DDL_EXPERTISE);
-    for (const item of expertise) {
-      const expertise_loc = this.DDL_EXPERTISE_OPTIONS(item);
-      await this.click(expertise_loc);
+    if (expertise) {
+      await this.click(this.DDL_EXPERTISE);
+      for (const item of expertise) {
+        const expertise_loc = this.DDL_EXPERTISE_OPTIONS(item);
+        await this.click(expertise_loc);
+      }
+      await this.click(this.DDL_EXPERTISE);
     }
-    await this.click(this.DDL_EXPERTISE);
   }
 
   async fillProfessionalSkillsField(skills: string) {
-    await this.fill(this.TXT_SKILLS, skills);
+    if (skills) await this.fill(this.TXT_SKILLS, skills);
   }
 
   async fillExperienceField(experience: string) {
-    await this.fill(this.TXT_INDUSTRY_EXPERIENCE, experience);
+    if (experience) await this.fill(this.TXT_INDUSTRY_EXPERIENCE, experience);
   }
 
   async selectAvailbilityOptions(availbility: number[]) {
@@ -100,12 +104,14 @@ export class SignUpStep2Page extends BasePage {
   }
 
   async selectCommunicationMethod(method: string) {
-    const communicationLOC = this.DDL_COMMUNICATION_METHOD(method);
-    await this.click(communicationLOC);
+    if (method) {
+      const communicationLOC = this.DDL_COMMUNICATION_METHOD(method);
+      await this.click(communicationLOC);
+    }
   }
 
   async fillObjectiveField(objective: string) {
-    await this.fill(this.TXT_OBJECTIVE, objective);
+    if (objective) await this.fill(this.TXT_OBJECTIVE, objective);
   }
 
   async clickOnNextStepButton() {

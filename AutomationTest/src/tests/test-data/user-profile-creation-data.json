@@ -1,6 +1,5 @@
 {
   "valid_case": {
-    "url_image": "valid_image.png",
     "fullname": "Le Kim Cuong",
     "phoneNumber": "0912345678",
     "bio": "My name is Cuong",
@@ -24,6 +23,12 @@
     "phoneNumber": "0912345678",
     "availbility": [2, 3],
     "expectedMessage": "Please enter your full name!"
+  },
+  "wrong_format_fullname": {
+    "fullname": "18237!!!!",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "expectedMessage": "Full name can only contain letters and spaces!"
   },
   "invalid_image_format": {
     "fullname": "Le Kim Cuong",
