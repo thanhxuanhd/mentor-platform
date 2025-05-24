@@ -62,37 +62,12 @@ const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   },
 ];
 
-const roleOptions: CheckboxGroupProps<string>["options"] = [
-  {
-    label: (
-      <div className="flex-1 px-4 py-3 rounded-md flex flex-col items-center">
-        <span className="text-xl mb-1">👨‍🎓</span>
-        <span className="font-medium">Learner</span>
-        <span className="text-xs mt-1 opacity-80">I want to find mentors</span>
-      </div>
-    ),
-    value: "learner",
-    className: "h-full!",
-  },
-  {
-    label: (
-      <div className="flex-1 px-4 py-3 rounded-md flex flex-col items-center">
-        <span className="text-xl mb-1">👨‍🏫</span>
-        <span className="font-medium">Mentor</span>
-        <span className="text-xs mt-1 opacity-80">I want to mentor others</span>
-      </div>
-    ),
-    value: "mentor",
-    className: "h-full!",
-  },
-];
-
+   
 const roleMap: Record<string, number> = {
   "learner": 3,
   "mentor": 2,
 };
 
-// Maps for converting between names and IDs for display/submission
 const reverseAvailabilityMap: Record<string, string> = {};
 const reverseTeachingApproachMap: Record<string, string> = {};
 const reverseCategoryMap: Record<string, string> = {};
@@ -177,26 +152,23 @@ export default function EditProfile() {
           throw new Error("User ID not found");
         }
 
-        // Explicitly type userProfileData to use UserProfileType to resolve "defined but never used" warning
         const userProfileData: UserProfileType = await userService.getUserProfile(currentUserId);
 
-        // Set form fields directly with IDs for Select components
         form.setFieldsValue({
           fullname: userProfileData.fullName,
           phone: userProfileData.phoneNumber,
           bio: userProfileData.bio,
           roleSelect: userProfileData.roleId === 3 ? "learner" : userProfileData.roleId === 2 ? "mentor" : "learner",
-          expertise: userProfileData.expertiseIds || [], // Already IDs
+          expertise: userProfileData.expertiseIds || [], 
           skills: userProfileData.skills,
           experience: userProfileData.experiences,
           objective: userProfileData.goal,
           communicationMethod: reverseCommunicationMethodMap[userProfileData.preferredCommunicationMethod] || "video",
-          availability: userProfileData.availabilityIds || [], // Set with IDs for the form field
-          teachingApproach: userProfileData.teachingApproachIds || [], // Set with IDs
-          categoryIds: userProfileData.categoryIds || [], // Set with IDs
+          availability: userProfileData.availabilityIds || [],
+          teachingApproach: userProfileData.teachingApproachIds || [], 
+          categoryIds: userProfileData.categoryIds || [],
         });
 
-        // For the custom availability button group display, map IDs to names
         setSelectedAvailability(userProfileData.availabilityIds?.map(id => {
           const found = availabilityOptions.find(opt => opt.id === id);
           return found ? found.name : "";
@@ -274,8 +246,8 @@ export default function EditProfile() {
   };
 
   const toggleSelection = (
-    value: string, // This `value` is the name, not the ID
-    list: string[], // This `list` contains names
+    value: string, 
+    list: string[], 
     setter: (val: string[]) => void,
   ) => {
     const newList = list.includes(value)
@@ -483,20 +455,7 @@ export default function EditProfile() {
               </div>
             </div>
 
-            <Form.Item
-              name="roleSelect"
-              label="I am joining as"
-              initialValue={"learner"}
-              rules={[]}
-            >
-              <Radio.Group
-                block
-                options={roleOptions}
-                optionType="button"
-                buttonStyle="solid"
-                className="h-content! gap-2"
-              />
-            </Form.Item>
+            
 
             <div>
               <Form.Item

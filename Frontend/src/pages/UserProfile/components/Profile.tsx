@@ -249,7 +249,7 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
       </div>
 
       <div className="mb-8">
-        <h3 className="text-gray-400 mb-2">Categories</h3> {/* New section for Categories */}
+        <h3 className="text-gray-400 mb-2">Categories</h3>
         <div className="flex flex-wrap gap-2">
           {userData?.categoryIds && userData.categoryIds.length > 0 ? (
             getCategoryNames(userData.categoryIds).map((item) => (
