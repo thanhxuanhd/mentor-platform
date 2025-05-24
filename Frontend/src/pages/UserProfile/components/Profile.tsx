@@ -22,16 +22,6 @@ const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   { label: "Text Chat", value: "text" },
 ];
 
-// type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-
-// const getBase64 = (file: FileType): Promise<string> =>
-//   new Promise((resolve, reject) => {
-//     const reader = new FileReader();
-//     reader.readAsDataURL(file);
-//     reader.onload = () => resolve(reader.result as string);
-//     reader.onerror = (error) => reject(error);
-//   });
-
 interface UserProfileData {
   fullName: string;
   bio: string;
@@ -112,23 +102,6 @@ export default function UserProfile() {
     setTags(options);
   }, []);
 
-  // const handlePreview = async (file: UploadFile) => {
-  //   if (!file.url && !file.preview) {
-  //     await getBase64(file.originFileObj as FileType).then((imageUrl) => {
-  //       setPreviewImage(imageUrl);
-  //     });
-  //   }
-  //   setPreviewOpen(true);
-  // };
-
-  // const handleChange: UploadProps["onChange"] = (info) => {
-  //   if (info.file.status === "done") {
-  //     getBase64(info.file.originFileObj as FileType).then((imageUrl) => {
-  //       setPreviewImage(imageUrl);
-  //     });
-  //   }
-  // };
-
   const toggleSelection = (
     value: string,
     list: string[],
@@ -146,13 +119,6 @@ export default function UserProfile() {
     console.log("Sharing profile...");
     // Could open a modal with sharing options or copy link to clipboard
   };
-
-  // const uploadButton = (
-  //   <Button style={{ border: 0, background: "none", boxShadow: "none" }}>
-  //     <PlusOutlined />
-  //     <div>Upload</div>
-  //   </Button>
-  // );
 
   if (loading) {
     return (

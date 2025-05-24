@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -48,7 +49,9 @@ public static class ConfigureServices
         services.AddHostedService(provider =>
         new UserProfilePhotoCleanupService(
         provider,
-        provider.GetRequiredService<IWebHostEnvironment>()));
+        provider.GetRequiredService<IWebHostEnvironment>(),
+        provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
+        ));
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

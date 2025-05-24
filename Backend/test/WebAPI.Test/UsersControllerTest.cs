@@ -273,14 +273,16 @@ public class UsersControllerTests
 
         // Act
         var result = await _usersController.UploadAvatar(userId, mockFile.Object) as ObjectResult;
-
+        var resultValue = result?.Value as Result<string>;
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-        var resultValue = result.Value as Result<string>;
-        Assert.That(resultValue, Is.Not.Null);
-        Assert.That(resultValue!.IsSuccess, Is.True);
-        Assert.That(resultValue.Value, Is.EqualTo(expectedUrl));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(resultValue, Is.Not.Null);
+            Assert.That(resultValue!.IsSuccess, Is.True);
+            Assert.That(resultValue.Value, Is.EqualTo(expectedUrl));
+        });
     }
 
     [Test]
@@ -305,83 +307,79 @@ public class UsersControllerTests
 
         // Act
         var result = await _usersController.UploadAvatar(userId, mockFile.Object) as ObjectResult;
-
+        var resultValue = result?.Value as Result<string>;
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-        var resultValue = result.Value as Result<string>;
-        Assert.That(resultValue, Is.Not.Null);
-        Assert.That(resultValue!.IsSuccess, Is.False);
-        Assert.That(resultValue.Error, Is.EqualTo("File not selected"));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+            Assert.That(resultValue, Is.Not.Null);
+            Assert.That(resultValue!.IsSuccess, Is.False);
+            Assert.That(resultValue.Error, Is.EqualTo("File not selected"));
+        });
     }
 
     [Test]
-    public async Task RemoveAvatar_WhenSuccess_ReturnsOk()
+    public void RemoveAvatar_Success_ReturnsOk()
     {
         // Arrange
         var imageUrl = "http://localhost/images/avatar.jpg";
+        var result = Result.Success(true, HttpStatusCode.OK);
 
-        _userServiceMock
-            .Setup(s => s.RemoveAvatarAsync(imageUrl))
-            .ReturnsAsync(Result.Success(true, HttpStatusCode.OK));
+        _userServiceMock.Setup(s => s.RemoveAvatar(imageUrl)).Returns(result);
 
         // Act
-        var result = await _usersController.RemoveAvatar(imageUrl) as ObjectResult;
+        var response = _usersController.RemoveAvatar(imageUrl) as ObjectResult;
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-
-        var resultValue = result.Value as Result<bool>;
-        Assert.That(resultValue, Is.Not.Null);
-        Assert.That(resultValue!.IsSuccess, Is.True);
-        Assert.That(resultValue.Value, Is.True);
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(response.Value, Is.EqualTo(result));
+        });
     }
 
     [Test]
-    public async Task RemoveAvatar_WhenUrlInvalid_ReturnsBadRequest()
+    public void RemoveAvatar_InvalidUrl_ReturnsBadRequest()
     {
         // Arrange
-        var imageUrl = "";
+        var imageUrl = "invalid-url";
+        var result = Result.Failure<bool>("Invalid image URL format.", HttpStatusCode.BadRequest);
 
-        _userServiceMock
-            .Setup(s => s.RemoveAvatarAsync(imageUrl))
-            .ReturnsAsync(Result.Failure<bool>("Image URL is required.", HttpStatusCode.BadRequest));
+        _userServiceMock.Setup(s => s.RemoveAvatar(imageUrl)).Returns(result);
 
         // Act
-        var result = await _usersController.RemoveAvatar(imageUrl) as ObjectResult;
+        var response = _usersController.RemoveAvatar(imageUrl) as ObjectResult;
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-
-        var resultValue = result.Value as Result<bool>;
-        Assert.That(resultValue, Is.Not.Null);
-        Assert.That(resultValue!.IsSuccess, Is.False);
-        Assert.That(resultValue.Error, Is.EqualTo("Image URL is required."));
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+            Assert.That(response.Value, Is.EqualTo(result));
+        });
     }
 
     [Test]
-    public async Task RemoveAvatar_WhenFileNotFound_ReturnsNotFound()
+    public void RemoveAvatar_FileNotFound_ReturnsNotFound()
     {
         // Arrange
-        var imageUrl = "http://localhost/images/missing.jpg";
+        var imageUrl = "http://localhost/images/nonexistent.jpg";
+        var result = Result.Failure<bool>("Avatar file not found.", HttpStatusCode.NotFound);
 
-        _userServiceMock
-            .Setup(s => s.RemoveAvatarAsync(imageUrl))
-            .ReturnsAsync(Result.Failure<bool>("Avatar file not found.", HttpStatusCode.NotFound));
+        _userServiceMock.Setup(s => s.RemoveAvatar(imageUrl)).Returns(result);
 
         // Act
-        var result = await _usersController.RemoveAvatar(imageUrl) as ObjectResult;
+        var response = _usersController.RemoveAvatar(imageUrl) as ObjectResult;
 
         // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-
-        var resultValue = result.Value as Result<bool>;
-        Assert.That(resultValue, Is.Not.Null);
-        Assert.That(resultValue!.IsSuccess, Is.False);
-        Assert.That(resultValue.Error, Is.EqualTo("Avatar file not found."));
+        Assert.Multiple(() =>
+        {
+            Assert.That(response, Is.Not.Null);
+            Assert.That(response!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(response.Value, Is.EqualTo(result));
+        });
     }
 
 }

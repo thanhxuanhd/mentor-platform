@@ -241,22 +241,22 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
         }
 
-        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
-        var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!allowedExtensions.Contains(fileExtension))
-        {
-            return Result.Failure<string>("File format is not allowed.", HttpStatusCode.BadRequest);
-        }
-
-        if (file.Length > FileSize.MAX_IMAGE_SIZE)
-        {
-            return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
-        }
-
         var user = await userRepository.GetByIdAsync(userId);
         if (user == null)
         {
             return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        var fileContentType = file.ContentType;
+
+        if (!FileConstants.IMAGE_CONTENT_TYPES.Contains(fileContentType))
+        {
+            return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
+        }
+
+        if (file.Length > FileConstants.MAX_IMAGE_SIZE)
+        {
+            return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
         }
 
         var imagesPath = Path.Combine(env.WebRootPath, "images");
@@ -266,21 +266,25 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             Directory.CreateDirectory(imagesPath);
         }
 
-        var fileName = userId.ToString() + Path.GetExtension(file.FileName);
+        try
+        {
+            var fileName = userId.ToString() + Path.GetExtension(file.FileName);
 
-        var filePath = Path.Combine(imagesPath, fileName);
+            var filePath = Path.Combine(imagesPath, fileName);
 
-        using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+            using var stream = new FileStream(filePath, FileMode.Create); await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
 
-        var baseUrl = $"{request?.Scheme}://{request?.Host}";
+            var fileUrl = $"{baseUrl}/images/{fileName}";
 
-        var fileUrl = $"{baseUrl}/images/{fileName}";
-
-        return Result.Success(fileUrl, HttpStatusCode.OK);
+            return Result.Success(fileUrl, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
     }
 
-    public Result<bool> RemoveAvatarAsync(string imageUrl)
+    public Result<bool> RemoveAvatar(string imageUrl)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
         {

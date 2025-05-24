@@ -17,5 +17,5 @@ public interface IUserService
     Task<Result> ForgotPasswordRequest(string email);
     Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId);
     Task<Result<string>> UploadAvatarAsync(Guid userId, HttpRequest request, IFormFile file);
-    Result<bool> RemoveAvatarAsync(string imageUrl);
+    Result<bool> RemoveAvatar(string imageUrl);
 }

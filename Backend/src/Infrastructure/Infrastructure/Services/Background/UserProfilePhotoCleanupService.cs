@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services.Background
 {
-    public class UserProfilePhotoCleanupService(IServiceProvider serviceProvider, IWebHostEnvironment env) : BackgroundService
+    public class UserProfilePhotoCleanupService(IServiceProvider serviceProvider, IWebHostEnvironment env, ILogger<UserProfilePhotoCleanupService> logger) : BackgroundService
     {
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -44,7 +45,7 @@ namespace Infrastructure.Services.Background
                                 }
                                 catch (Exception ex)
                                 {
-                                    Console.WriteLine($"Failed to delete file {file}: {ex.Message}");
+                                    logger.LogError(ex, $"Failed to delete file {file}");
                                 }
                             }
                         }
@@ -52,7 +53,7 @@ namespace Infrastructure.Services.Background
 
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(delay, stoppingToken);
             }
         }
     }
