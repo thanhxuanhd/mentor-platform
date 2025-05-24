@@ -1,4 +1,5 @@
 ﻿using Contract.Repositories;
+using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,18 +22,18 @@ namespace Infrastructure.Services.Background
                 {
                     var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
                     var pendingUsers = userRepository
-                        .GetAll().Where(u => u.Status == Domain.Enums.UserStatus.Pending).ToList();
+                        .GetAll().Where(u => u.Status == UserStatus.Pending).ToList();
+
+                    var imagesDir = Path.Combine(env.WebRootPath, "images");
+                    if (!Directory.Exists(imagesDir))
+                    {
+                        continue;
+                    }
 
                     if (pendingUsers.Count != 0)
                     {
                         foreach (var user in pendingUsers)
                         {
-                            var imagesDir = Path.Combine(env.WebRootPath, "images");
-                            if (!Directory.Exists(imagesDir))
-                            {
-                                continue;
-                            }
-
                             var userIdStr = user.Id.ToString();
                             var files = Directory.GetFiles(imagesDir)
                                 .Where(f => Path.GetFileName(f).Contains(userIdStr, StringComparison.OrdinalIgnoreCase));
@@ -52,7 +53,6 @@ namespace Infrastructure.Services.Background
                     }
 
                 }
-
                 await Task.Delay(delay, stoppingToken);
             }
         }
