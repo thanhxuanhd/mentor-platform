@@ -49,7 +49,7 @@ const SignUpForm: React.FC = () => {
 
       setTimeout(() => {
         setShowNotification(false);
-        navigate("/login", { replace: true });
+        navigate("step2", { state: { ...res } });
       }, 1000);
     } catch (err) {
       console.error("Signup failed:", err);

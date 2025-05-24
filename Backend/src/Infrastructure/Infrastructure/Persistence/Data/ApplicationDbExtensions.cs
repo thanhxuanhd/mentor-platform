@@ -22,6 +22,47 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        if (!dbContext.Availabilities.Any())
+        {
+            dbContext.Availabilities.AddRange(
+                new Availability { Name = "Weekdays" },
+                new Availability { Name = "Weekends" },
+                new Availability { Name = "Mornings" },
+                new Availability { Name = "Afternoons" },
+                new Availability { Name = "Evenings" }
+            );
+
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.Expertises.Any())
+        {
+            dbContext.Expertises.AddRange(
+                new Expertise { Name = "Leadership" },
+                new Expertise { Name = "Programming" },
+                new Expertise { Name = "Design" },
+                new Expertise { Name = "Marketing" },
+                new Expertise { Name = "Data Science" },
+                new Expertise { Name = "Business" },
+                new Expertise { Name = "Project Management" },
+                new Expertise { Name = "Communication" }
+            );
+
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.TeachingApproaches.Any())
+        {
+            dbContext.TeachingApproaches.AddRange(
+                new TeachingApproach { Name = "Hands-on Practice" },
+                new TeachingApproach { Name = "Discussion Based" },
+                new TeachingApproach { Name = "Project Based" },
+                new TeachingApproach { Name = "Lecture Style" }
+            );
+
+            dbContext.SaveChanges();
+        }
+
         if (!dbContext.Users.Any())
         {
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);

@@ -13,7 +13,14 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CourseItem> CourseItems { get; set; }
     public DbSet<CourseTag> CourseTags { get; set; }
     public DbSet<Tag> Tags { get; set; }
-
+    public DbSet<Expertise> Expertises { get; set; }
+    public DbSet<UserExpertise> UserExpertises { get; set; }
+    public DbSet<Availability> Availabilities { get; set; }
+    public DbSet<UserAvailability> UserAvailabilities { get; set; }
+    public DbSet<TeachingApproach> TeachingApproaches { get; set; }
+    public DbSet<UserCategory> UserCategories { get; set; }
+    public DbSet<UserTeachingApproach> UserTeachingApproaches { get; set; }
+ 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
