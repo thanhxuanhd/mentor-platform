@@ -394,7 +394,7 @@ public class AuthServiceTests
         {
             Assert.That(result.IsSuccess, Is.False);
             Assert.That(result.Error, Is.EqualTo("Old password is incorrect"));
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         });
 
         _mockUserRepository.Verify(repo => repo.GetUserByEmail(request.Email), Times.Once);

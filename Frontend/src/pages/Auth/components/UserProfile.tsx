@@ -212,7 +212,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
   };
 
   const handleUpload = (info: UploadChangeParam<UploadFile>) => {
-    setImageUrl("");
     if (info.file.status === "done") {
       getBase64(info.file.originFileObj as FileType, (url) => {
         setImageUrl(url);
