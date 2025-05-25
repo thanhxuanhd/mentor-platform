@@ -9,9 +9,17 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
+import { Upload, Button, Input, Form, Select, Radio } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
+import type { SelectProps } from "rc-select";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import type { DefaultOptionType } from "antd/es/select";
+<<<<<<<< HEAD:Frontend/src/pages/Auth/UserProfile.tsx
+import type { NotificationProps } from "../../types/Notification";
+import { userService } from "../../services/user/userService";
+========
 
 import { userService } from "../../../services/user/userService";
 import { getListCategories } from "../../../services/categoryServices";
@@ -62,7 +70,7 @@ const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   },
 ];
 
-   
+
 const roleMap: Record<string, number> = {
   "learner": 3,
   "mentor": 2,
@@ -96,10 +104,10 @@ export default function EditProfile() {
           type: "error",
           message: "Error",
           description: "Authentication token not found.",
-        });
+      });
         setLoading(false);
         return;
-      }
+    }
       try {
         const [availabilities, expertises, teachingApproaches, categoriesResult] = await Promise.all([
           userService.getAvailabilities(token),
@@ -246,8 +254,8 @@ export default function EditProfile() {
   };
 
   const toggleSelection = (
-    value: string, 
-    list: string[], 
+    value: string,
+    list: string[],
     setter: (val: string[]) => void,
   ) => {
     const newList = list.includes(value)
@@ -343,173 +351,174 @@ export default function EditProfile() {
           </div>
         ) : (
           <>
-            <div className="flex gap-6 items-start">
-              <Form.Item
-                name="avatar"
-                label="Profile Picture"
-                valuePropName="fileList"
+        <div className="flex gap-6 items-start">
+          <Form.Item
+            name="avatar"
+            label="Profile Picture"
+            valuePropName="fileList"
                 getValueFromEvent={(e) => {
                   if (Array.isArray(e)) {
                     return e;
                   }
                   return e && e.fileList;
                 }}
-              >
-                <Upload
-                  maxCount={1}
-                  showUploadList={false}
+          >
+            <Upload
+              maxCount={1}
+              showUploadList={false}
                   action={`${import.meta.env.VITE_BASE_URL_BE}/Users/${userId || user?.id}/photo`}
                   headers={{
                     Authorization: `Bearer ${token}`,
                   }}
-                  beforeUpload={beforeUpload}
-                  onChange={handleChange}
-                >
-                  <div className="relative w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer">
-                    {imageUrl ? (
-                      <>
-                        <img
-                          src={imageUrl}
-                          alt="avatar"
-                          className="w-full h-full rounded-full object-cover"
-                        />
-                        <div
-                          className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setImageUrl("");
-                          }}
-                        >
-                          <CloseOutlined />
-                        </div>
-                      </>
-                    ) : (
-                      <span className="text-4xl">
-                        <UserOutlined />
-                      </span>
-                    )}
-                    <div className="absolute bottom-0 bg-orange-500 right-0 leading-none p-3 rounded-full">
-                      <PlusOutlined />
+              beforeUpload={beforeUpload}
+              onChange={handleChange}
+            >
+              <div className="relative w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center cursor-pointer">
+                {imageUrl ? (
+                  <>
+                    <img
+                      src={imageUrl}
+                      alt="avatar"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                    <div
+                      className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        userService.removeAvatar(imageUrl);
+                        setImageUrl("");
+                      }}
+                    >
+                      <CloseOutlined />
                     </div>
-                  </div>
-                </Upload>
-              </Form.Item>
-              <div className="flex-1">
-                <div className="flex gap-4">
-                  <div className="flex-2">
-                    <Form.Item
-                      name="fullname"
-                      label="Full Name"
-                      rules={[
-                        { required: true, message: "Please enter your full name!" },
-                        {
+                  </>
+                ) : (
+                  <span className="text-4xl">
+                    <UserOutlined />
+                  </span>
+                )}
+                <div className="absolute bottom-0 bg-orange-500 right-0 leading-none p-3 rounded-full">
+                  <PlusOutlined />
+                </div>
+              </div>
+            </Upload>
+          </Form.Item>
+          <div className="flex-1">
+            <div className="flex gap-4">
+              <div className="flex-2">
+                <Form.Item
+                  name="fullname"
+                  label="Full Name"
+                  rules={[
+                    { required: true, message: "Please enter your full name!" },
+                    {
                           max: 50,
                           message: "Full name can not exceed 100 characters!",
-                        },
-                        {
-                          pattern: /^[A-Za-z\s]+$/,
-                          message: "Full name can only contain letters and spaces!",
-                        },
-                      ]}
-                    >
-                      <Input maxLength={50} size="large" placeholder="Full Name" />
-                    </Form.Item>
-                  </div>
-                  <div className="flex-1">
-                    <Form.Item
-                      name="phone"
-                      label="Phone Number"
-                      rules={[
-                        {
-                          required: true,
-                          message: "Please enter your phone number!",
-                        },
-                        {
-                          pattern: /^\d{10}$/,
-                          message: "Phone number must consist of exactly 10 digits!",
-                        },
-                      ]}
-                    >
-                      <Input
-                        maxLength={10}
-                        size="large"
-                        placeholder="Phone Number"
-                        type="tel"
-                      />
-                    </Form.Item>
-                  </div>
-                </div>
-
-                <Form.Item
-                  name="bio"
-                  label="Bio"
-                  rules={[
-                    { max: 200, message: "Bio must be less than 200 characters!" },
+                    },
+                    {
+                      pattern: /^[A-Za-z\s]+$/,
+                      message: "Full name can only contain letters and spaces!",
+                    },
                   ]}
                 >
-                  <TextArea
-                    placeholder="A brief introduction about yourself..."
-                    maxLength={200}
+                      <Input maxLength={50} size="large" placeholder="Full Name" />
+                </Form.Item>
+              </div>
+              <div className="flex-1">
+                <Form.Item
+                  name="phone"
+                  label="Phone Number"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please enter your phone number!",
+                    },
+                    {
+                      pattern: /^\d{10}$/,
+                          message: "Phone number must consist of exactly 10 digits!",
+                    },
+                  ]}
+                >
+                  <Input
+                    maxLength={10}
+                    size="large"
+                    placeholder="Phone Number"
+                    type="tel"
                   />
                 </Form.Item>
               </div>
             </div>
 
+            <Form.Item
+              name="bio"
+              label="Bio"
+              rules={[
+                    { max: 200, message: "Bio must be less than 200 characters!" },
+              ]}
+            >
+              <TextArea
+                placeholder="A brief introduction about yourself..."
+                    maxLength={200}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
             
 
             <div>
-              <Form.Item
-                name="expertise"
-                label="Areas Of Expertise"
+        <Form.Item
+          name="expertise"
+          label="Areas Of Expertise"
                 rules={[]}
-              >
-                <Select
-                  mode="multiple"
-                  allowClear
-                  placeholder="Select your field of expertise"
-                  className="w-full"
-                  size="large"
+        >
+          <Select
+            mode="multiple"
+            allowClear
+            placeholder="Select your field of expertise"
+            className="w-full"
+            size="large"
                   options={expertiseOptions}
-                />
-              </Form.Item>
+          />
+        </Form.Item>
             </div>
-            <div className="flex gap-4 items-center justify-center">
+        <div className="flex gap-4 items-center justify-center">
               <div className="flex-1">
                 <Form.Item name="skills" label="Professional Skills"
                   rules={[
                     { max: 200, message: "Professional Skills can not exceed 200 characters" },
                   ]}>
-                  <Input size="large" placeholder="Your skills" />
-                </Form.Item>
+            <Input size="large" placeholder="Your skills" />
+          </Form.Item>
               </div>
               <div className="flex-1">
                 <Form.Item name="experience" label="Industry Experience"
                   rules={[
                     { max: 200, message: "Industry Experience can not exceed 200 characters" },
                   ]}>
-                  <Input size="large" placeholder="Your experience" />
-                </Form.Item>
-              </div>
+            <Input size="large" placeholder="Your experience" />
+          </Form.Item>
+        </div>
             </div>
             <div className="flex gap-4 items-center justify-center"></div>
-            <Form.Item
-              name="availability"
-              label="Your Availability"
+        <Form.Item
+          name="availability"
+          label="Your Availability"
               rules={[]}
-            >
+        >
               <div className="flex gap-2 items-center justify-center flex-wrap">
-                {availabilityOptions.map((item) => (
-                  <Button
+            {availabilityOptions.map((item) => (
+              <Button
                     key={item.id}
                     type={
                       selectedAvailability.includes(item.name) ? "primary" : "default"
                     }
-                    className={
+                className={
                       (selectedAvailability.includes(item.name)
-                        ? "bg-orange-500 border-none"
-                        : "") + " flex-1"
-                    }
-                    size="large"
+                    ? "bg-orange-500 border-none"
+                    : "") + " flex-1"
+                }
+                size="large"
                     onClick={() =>
                       toggleSelection(
                         item.name,
@@ -517,14 +526,14 @@ export default function EditProfile() {
                         setSelectedAvailability,
                       )
                     }
-                  >
+              >
                     {item.name}
-                  </Button>
-                ))}
-              </div>
-            </Form.Item>
+              </Button>
+            ))}
+          </div>
+        </Form.Item>
 
-            <Form.Item
+        <Form.Item
               name="teachingApproach"
               label="Teaching Approach"
               rules={[]}
@@ -555,52 +564,52 @@ export default function EditProfile() {
             </Form.Item>
 
             <Form.Item
-              name="communicationMethod"
-              label="Communication Method"
-              initialValue={"video"}
+          name="communicationMethod"
+          label="Communication Method"
+          initialValue={"video"}
               rules={[]}
-            >
-              <Radio.Group
-                block
-                options={communicationMethodOptions}
-                optionType="button"
-                buttonStyle="solid"
-                size="large"
-              />
-            </Form.Item>
-            <Form.Item
-              name="objective"
-              label="Objective"
+        >
+          <Radio.Group
+            block
+            options={communicationMethodOptions}
+            optionType="button"
+            buttonStyle="solid"
+            size="large"
+          />
+        </Form.Item>
+        <Form.Item
+          name="objective"
+          label="Objective"
               rules={[
                 { max: 200, message: "Objective can not exceed 200 characters" },
               ]}
-            >
-              <TextArea
-                placeholder="Describe your learning objectives and what you hope to achieve..."
-                maxLength={200}
-              />
-            </Form.Item>
+        >
+          <TextArea
+            placeholder="Describe your learning objectives and what you hope to achieve..."
+            maxLength={200}
+          />
+        </Form.Item>
 
             <div className="flex justify-between mt-6 border-t border-gray-700 pt-4 gap-4">
-              <Button
-                type="primary"
-                size="large"
-                onClick={() => navigate("/profile")}
+          <Button 
+            type="primary" 
+            size="large"
+            onClick={() => navigate("/profile")}
                 className="bg-gray-500! hover:bg-gray-400!"
-              >
-                Back
-              </Button>
-              <Button
-                type="primary"
-                size="large"
+          >
+            Back
+          </Button>
+          <Button
+            type="primary"
+            size="large"
                 className="flex-1 bg-orange-500 hover:bg-orange-600"
                 htmlType="submit"
                 loading={loading}
                 onClick={handleSubmit}
-              >
-                Save Changes
-              </Button>
-            </div>
+          >
+            Save Changes
+          </Button>
+        </div>
           </>
         )}
       </Form>

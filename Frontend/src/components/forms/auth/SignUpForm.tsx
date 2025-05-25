@@ -9,7 +9,12 @@ const SignUpForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string; terms?: string }>({});
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    terms?: string;
+  }>({});
   const [showNotification, setShowNotification] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
@@ -19,7 +24,10 @@ const SignUpForm: React.FC = () => {
 
   const validatePassword = (password: string) => {
     const lengthValid = password.length >= 8 && password.length <= 32;
-    const containsMix = /[A-Za-z]/.test(password) && /\d/.test(password) && /[^A-Za-z0-9]/.test(password);
+    const containsMix =
+      /[A-Za-z]/.test(password) &&
+      /\d/.test(password) &&
+      /[^A-Za-z0-9]/.test(password);
     const noSpaces = !/\s/.test(password);
     return lengthValid && containsMix && noSpaces;
   };
@@ -34,7 +42,10 @@ const SignUpForm: React.FC = () => {
       newErrors.email = "Please enter your email";
     } else if (!validateEmail(trimmedEmail)) {
       newErrors.email = "Email must be in a correct format";
-    } 
+    } else if (trimmedEmail.length > 50) {
+      newErrors.email = "Email should not exceed 50 characters";
+    }
+
     if (!password) {
       newErrors.password = "Please enter your password";
     } else {
@@ -44,7 +55,8 @@ const SignUpForm: React.FC = () => {
         if (/\s/.test(password)) {
           newErrors.password = "Password should not include space characters";
         } else {
-          newErrors.password = "Password must include a mix of letters, numbers, symbols";
+          newErrors.password =
+            "Password must include a mix of letters, numbers, symbols";
         }
       }
     }
@@ -78,7 +90,7 @@ const SignUpForm: React.FC = () => {
 
       setTimeout(() => {
         setShowNotification(false);
-        navigate("/signup/step2", { replace: true });
+        navigate("/profile-setup", { state: { ...res } });
       }, 1000);
     } catch (err) {
       console.error("Signup failed:", err);
@@ -89,8 +101,12 @@ const SignUpForm: React.FC = () => {
   return (
     <div className="w-full max-w-md space-y-6 p-6 bg-gray-800 rounded shadow mx-auto text-sm text-gray-300">
       {showNotification && (
-        <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-3 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm text-sm">
-          <CheckCircleOutlined className="text-green-500 text-lg mr-2" />
+        <div className="fixed top-4 right-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-md transition-all duration-500 transform animate-fade-in flex items-center max-w-sm">
+          <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
+          <div>
+            <p className="font-bold">Success!</p>
+            <p>Your account has been created successfully.</p>
+          </div>
         </div>
       )}
 
@@ -115,7 +131,9 @@ const SignUpForm: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -124,13 +142,15 @@ const SignUpForm: React.FC = () => {
             </label>
             <input
               id="password"
-              type="text"
+              type="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -145,7 +165,11 @@ const SignUpForm: React.FC = () => {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
             />
-            {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.confirmPassword}
+              </p>
+            )}
           </div>
 
           <div className="flex items-center">
@@ -167,7 +191,9 @@ const SignUpForm: React.FC = () => {
               </a>
             </label>
           </div>
-          {errors.terms && <p className="text-red-500 text-xs mt-1">{errors.terms}</p>}
+          {errors.terms && (
+            <p className="text-red-500 text-xs mt-1">{errors.terms}</p>
+          )}
 
           <button
             type="submit"

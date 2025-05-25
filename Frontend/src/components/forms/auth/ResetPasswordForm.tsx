@@ -26,7 +26,11 @@ const ResetPasswordForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldError, setFieldError] = useState<FieldError>({});
+  const [fieldError, setFieldError] = useState<{
+    email?: string;
+    oldPassword?: string;
+    newPassword?: string;
+  }>({});
 
   const navigate = useNavigate();
   const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
@@ -35,7 +39,11 @@ const ResetPasswordForm: React.FC = () => {
     e.preventDefault();
 
     const trimmedEmail = email.trim();
-    const errors: FieldError = {};
+    const errors: {
+      email?: string;
+      oldPassword?: string;
+      newPassword?: string;
+    } = {};
 
     if (!trimmedEmail) {
       errors.email = "Please enter your email";
@@ -49,17 +57,19 @@ const ResetPasswordForm: React.FC = () => {
 
     if (!newPassword.trim()) {
       errors.newPassword = "Please enter your new password";
+    }
+    if (!newPassword.trim()) {
+      errors.newPassword = "Please enter your new password";
     } else if (newPassword.length < 8 || newPassword.length > 32) {
       errors.newPassword = "Password must be between 8 and 32 characters";
     } else if (
       !/(?=.*[a-zA-Z])/.test(newPassword) || // letters
-      !/(?=.*\d)/.test(newPassword) ||       // digits
+      !/(?=.*\d)/.test(newPassword) || // digits
       !/(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\/-])/.test(newPassword) // special chars
     ) {
       errors.newPassword =
         "Password must include letters, numbers, and special characters";
     }
-
     setFieldError(errors);
 
     if (Object.keys(errors).length > 0) {
@@ -84,21 +94,15 @@ const ResetPasswordForm: React.FC = () => {
         navigate("/login", { replace: true });
         setSubmitted(true);
       }, 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Reset password failed:", err);
-      const newErrors: FieldError = {};
-
-      if (axios.isAxiosError(err)) {
-        const status = err.response?.status;
-        if (status === 400) {
-          newErrors.oldPassword = "Current password is incorrect.";
-        } else if (status === 404) {
-          newErrors.email = "Email not found.";
-        } else {
-          alert("Reset password failed: an unexpected error occurred.");
-        }
+      const newErrors: typeof fieldError = {};
+      if (err?.response?.status === 400) {
+        newErrors.oldPassword = "Current password is incorrect.";
+      } else if (err?.response?.status === 404) {
+        newErrors.email = "Email not found.";
       } else {
-        alert("An unknown error occurred.");
+        alert("Reset password failed: an unexpected error occurred.");
       }
 
       setFieldError(newErrors);
@@ -118,7 +122,7 @@ const ResetPasswordForm: React.FC = () => {
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
             <p className="font-bold">Success!</p>
-            <p>Reset password successfully, please sign in again!</p>
+            <p>Reset password sucessfully, please sign in again!</p>
           </div>
         </div>
       )}
@@ -164,7 +168,9 @@ const ResetPasswordForm: React.FC = () => {
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                   className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
-                    fieldError.oldPassword ? "border-red-500" : "border-gray-300"
+                    fieldError.oldPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Enter your current password"
                 />
@@ -187,7 +193,9 @@ const ResetPasswordForm: React.FC = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
-                    fieldError.newPassword ? "border-red-500" : "border-gray-300"
+                    fieldError.newPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
                   }`}
                   placeholder="Enter your new password"
                 />

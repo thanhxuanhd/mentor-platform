@@ -1,6 +1,6 @@
+using Domain.Abstractions;
 using Domain.Entities;
 using System.Linq.Expressions;
-using Domain.Abstractions;
 
 namespace Contract.Repositories;
 

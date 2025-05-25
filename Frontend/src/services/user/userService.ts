@@ -1,6 +1,7 @@
 import type {
   EditUserRequest,
   GetUserResponse,
+  UserDetail,
   UserFilterPagedRequest,
 } from "../../types/UserTypes";
 import { axiosClient } from "../apiClient";
@@ -32,10 +33,29 @@ export const userService = {
       });
   },
 
+  getUserDetail: async (userId: string): Promise<UserDetail> => {
+    return await axiosClient
+      .get(`Users/${userId}/detail`)
+      .then((response) => {
+        return response.data.value;
+      })
+      .catch((error) => {
+        throw error;
+      });
+  },
+
   updateUser: async (userId: string, userData: EditUserRequest) => {
     await axiosClient.put(`Users/${userId}`, userData).then((response) => {
       return response.data.value;
     });
+  },
+
+  updateUserDetail: async (userId: string, userDetail: UserDetail) => {
+    await axiosClient
+      .put(`Users/${userId}/detail`, userDetail)
+      .then((response) => {
+        return response.data.value;
+      });
   },
 
   changeUserStatus: async (userId: string) => {
@@ -50,6 +70,14 @@ export const userService = {
       `/Users/request-forgot-password/${encodedEmail}`,
     );
     return response.data.value;
+  },
+
+  removeAvatar: async (imageUrl: string) => {
+    await axiosClient
+      .delete(`Users/avatar`, { params: { imageUrl } })
+      .then((response) => {
+        return response.data.value;
+      });
   },
 
   removeAvatar: async (imageUrl: string) => {
@@ -112,4 +140,9 @@ export const userService = {
     });
     return response.data.value as { id: string; name: string }[];
   },
+};
+
+export const getAllTeachingApproaches = async () => {
+  const response = await axiosClient.get(`TeachingApproaches`);
+  return response.data.value;
 };

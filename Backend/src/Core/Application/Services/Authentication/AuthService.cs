@@ -1,12 +1,12 @@
 ﻿using Application.Helpers;
 using Contract.Dtos.Authentication.Requests;
+using Contract.Dtos.Authentication.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using System.Net;
-using Contract.Dtos.Authentication.Responses;
 
 namespace Application.Services.Authentication;
 

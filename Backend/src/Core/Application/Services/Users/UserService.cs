@@ -125,7 +125,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         var user = await userRepository.GetUserDetailAsync(userId);
         if (user == null)
         {
-            return Result.Failure($"User with ID {userId} not found.", HttpStatusCode.BadRequest);
+            return Result.Failure($"User with ID {userId} not found.", HttpStatusCode.NotFound);
         }
         if (request.AvailabilityIds is not null &&
             !await userRepository.CheckEntityListExist<Availability, Guid>(request.AvailabilityIds))
@@ -241,6 +241,24 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
         }
 
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        var fileContentType = file.ContentType;
+
+        if (!FileConstants.IMAGE_CONTENT_TYPES.Contains(fileContentType))
+        {
+            return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
+        }
+
+        if (file.Length > FileConstants.MAX_IMAGE_SIZE)
+        {
+            return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
+        }
+
         var imagesPath = Path.Combine(env.WebRootPath, "images");
 
         if (!Directory.Exists(imagesPath))
@@ -248,33 +266,41 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             Directory.CreateDirectory(imagesPath);
         }
 
-        var fileName = userId.ToString() + Path.GetExtension(file.FileName);
+        try
+        {
+            var fileName = userId.ToString() + Path.GetExtension(file.FileName);
 
-        var filePath = Path.Combine(imagesPath, fileName);
+            var filePath = Path.Combine(imagesPath, fileName);
 
-        using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+            using var stream = new FileStream(filePath, FileMode.Create);
 
-        var baseUrl = $"{request?.Scheme}://{request?.Host}";
+            await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
 
-        var fileUrl = $"{baseUrl}/images/{fileName}";
+            var fileUrl = $"{baseUrl}/images/{fileName}";
 
-        return Result.Success(fileUrl, HttpStatusCode.OK);
+            return Result.Success(fileUrl, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
     }
 
-    public async Task<Result<bool>> RemoveAvatarAsync(string imageUrl)
+    public Result<bool> RemoveAvatar(string imageUrl)
     {
         if (string.IsNullOrWhiteSpace(imageUrl))
         {
             return Result.Failure<bool>("Image URL is required.", HttpStatusCode.BadRequest);
         }
 
+        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return Result.Failure<bool>("Invalid image URL format.", HttpStatusCode.BadRequest);
+        }
+
         try
         {
-            // Extract the file name from the URL
-            var uri = new Uri(imageUrl);
             var fileName = Path.GetFileName(uri.LocalPath);
-
             var imagesPath = Path.Combine(env.WebRootPath, "images");
             var filePath = Path.Combine(imagesPath, fileName);
 

@@ -1,4 +1,5 @@
-﻿using Application.Services.Authentication;
+﻿using Application.Helpers;
+using Application.Services.Authentication;
 using Contract.Dtos.Authentication.Requests;
 using Contract.Repositories;
 using Contract.Services;
@@ -7,7 +8,6 @@ using Domain.Entities;
 using Domain.Enums;
 using Moq;
 using System.Net;
-using Application.Helpers;
 
 namespace Application.Test;
 
@@ -436,7 +436,7 @@ public class AuthServiceTests
     public async Task ResetPasswordAsync_UserNotFound_ReturnsNotFound()
     {
         // Arrange
-        var request = new ResetPasswordRequest(Email: "nonexistent@example.com",OldPassword: "olePassword123", NewPassword: "newPassword123");
+        var request = new ResetPasswordRequest(Email: "nonexistent@example.com", OldPassword: "olePassword123", NewPassword: "newPassword123");
 
         _mockUserRepository.Setup(repo => repo.GetUserByEmail(request.Email))
             .ReturnsAsync((User)null!);
