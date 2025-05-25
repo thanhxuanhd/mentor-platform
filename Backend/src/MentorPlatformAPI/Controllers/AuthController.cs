@@ -22,7 +22,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         var result = await authService.RegisterAsync(request);
 
         return StatusCode((int)result.StatusCode, result);
-    }   
+    }
 
     [HttpPost("github")]
     public async Task<IActionResult> SignInGithub([FromBody] OAuthSignInRequest request)

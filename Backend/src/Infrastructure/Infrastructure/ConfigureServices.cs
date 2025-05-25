@@ -8,13 +8,13 @@ using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
-using Infrastructure.Services.Authorization.Policies;
+using Infrastructure.Services.Background;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure;
@@ -45,8 +45,6 @@ public static class ConfigureServices
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
-        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
-        services.AddScoped<ITagRepository, TagRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

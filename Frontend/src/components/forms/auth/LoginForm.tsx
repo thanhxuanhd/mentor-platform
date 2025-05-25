@@ -115,15 +115,13 @@ const LoginForm: React.FC = () => {
       setShowSuccessNotification(true);
       setTimeout(() => {
         setShowSuccessNotification(false);
-        setToken(res.token);
-        navigate("/");
         switch (res.userStatus) {
           case userStatus.ACTIVE:
             setToken(res.token);
             navigate("/");
             break;
-          default:
-            navigate("/step2", { state: { ...res } });
+          case userStatus.PENDING:
+            navigate("/profile-setup", { state: { ...res } });
             break;
         }
       }, 1000);

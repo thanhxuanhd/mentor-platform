@@ -1,4 +1,4 @@
-﻿using Application.Services.TeachingApproaches;
+using Application.Services.TeachingApproaches;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
