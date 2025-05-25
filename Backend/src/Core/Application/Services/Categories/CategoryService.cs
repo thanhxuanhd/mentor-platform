@@ -1,9 +1,9 @@
-﻿using Contract.Dtos.Categories.Requests;
+﻿using System.Net;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
-using System.Net;
 
 namespace Application.Services.Categories;
 

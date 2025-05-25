@@ -4,9 +4,9 @@ namespace Contract.Dtos.Courses.Responses;
 
 public static class CourseExtensions
 {
-    public static CourseSummary ToCourseSummary(this Course course)
+    public static CourseSummaryResponse ToCourseSummaryResponse(this Course course)
     {
-        return new CourseSummary
+        return new CourseSummaryResponse
         {
             Id = course.Id,
             Title = course.Title,
@@ -17,13 +17,13 @@ public static class CourseExtensions
             MentorName = course.Mentor.FullName,
             Difficulty = course.Difficulty,
             DueDate = course.DueDate,
-            Items = course.Items.Select(ToCourseItemDto).ToList(),
+            Items = course.Items.Select(ToCourseItemResponse).ToList(),
             Tags = course.Tags.Select(t => t.Name).ToList(),
             Status = course.Status
         };
     }
 
-    public static CourseItemResponse ToCourseItemDto(this CourseItem courseItem)
+    public static CourseItemResponse ToCourseItemResponse(this CourseItem courseItem)
     {
         return new CourseItemResponse
         {

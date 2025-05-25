@@ -11,7 +11,6 @@ public record CourseCreateRequest
     public required CourseDifficulty Difficulty { get; init; }
     public List<string> Tags { get; init; } = [];
     public required DateTime DueDate { get; init; }
-    public Guid MentorId { get; init; }
 }
 
 public class CourseCreateRequestValidator : AbstractValidator<CourseCreateRequest>

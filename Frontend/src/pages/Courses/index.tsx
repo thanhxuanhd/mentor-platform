@@ -32,6 +32,7 @@ const Page: React.FC = () => {
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
+  const [status, setStatus] = useState<string | undefined>();
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
@@ -90,6 +91,7 @@ const Page: React.FC = () => {
           difficulty: difficulty,
           categoryId: categoryId,
           mentorId: mentorId,
+          status: status,
         });
 
         const categoryResponse = await categoryService.list();
@@ -115,6 +117,7 @@ const Page: React.FC = () => {
     categoryId,
     mentorId,
     refreshTrigger,
+    status,
   ]);
 
   const handleDeleteCourse = async (course: Course) => {
@@ -148,7 +151,7 @@ const Page: React.FC = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-semibold">
-                  Course Management (Admin)
+                  Course Management
                 </h1>
                 <button
                   onClick={() => {
@@ -162,6 +165,7 @@ const Page: React.FC = () => {
               </div>
 
               <SearchBar
+                states={states}
                 categories={categories}
                 difficulties={difficulties}
                 mentors={mentors}
@@ -170,6 +174,7 @@ const Page: React.FC = () => {
                   setDifficulty(options.difficulty);
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
+                  setStatus(options.status);
                 }}
               />
               <CourseTable

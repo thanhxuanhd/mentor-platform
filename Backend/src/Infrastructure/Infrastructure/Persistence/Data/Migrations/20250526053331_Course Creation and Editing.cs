@@ -5,7 +5,7 @@
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class Course_Creating_And_Editing : Migration
+    public partial class CourseCreationandEditing : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

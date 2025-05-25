@@ -1,11 +1,14 @@
-﻿using Contract.Dtos.CourseItems.Requests;
+﻿using System.Security.Claims;
+using Application.Services.CourseItems;
+using Application.Services.Courses;
+using Application.Services.Users;
+using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
-using Contract.Services;
 using Domain.Enums;
 using Infrastructure.Services.Authorization;
-using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static Infrastructure.Services.Authorization.Policies.CourseResourcePolicyName;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -21,176 +24,134 @@ public class CourseController(
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] CourseListRequest request)
     {
-        // TODO: ACL pagination: include draft courses for admin and course mentor
-        var result = await courseService.GetAllAsync(request);
-        return StatusCode((int)result.StatusCode, result);
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var roleName = Enum.Parse<UserRole>(HttpContext.User.FindFirstValue(ClaimTypes.Role)!);
+        var serviceResult = await courseService.GetAllAsync(userId, roleName, request);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
+    [HttpGet("{courseId:guid}")]
+    public async Task<IActionResult> GetById(Guid courseId)
     {
-        // TODO: permit only admin and course mentor when state is draft
-        var result = await courseService.GetByIdAsync(id);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseService.GetByIdAsync(courseId);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
     [HttpPost]
+    [Authorize(Policy = RequiredRole.Mentor)]
     public async Task<IActionResult> Create([FromBody] CourseCreateRequest request)
     {
-        Guid mentorId;
-        if (HttpContext.User.IsInRole(nameof(UserRole.Mentor)))
-        {
-            mentorId = request.MentorId;
-        }
-        else
-        {
-            if (!HttpContext.User.IsInRole(nameof(UserRole.Admin)))
-            {
-                return Forbid();
-            }
-            mentorId = request.MentorId;
-        }
-
-        var result = await courseService.CreateAsync(mentorId, request);
-        return StatusCode((int)result.StatusCode, result);
+        var mentorId = Guid.Parse(HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var serviceResult = await courseService.CreateAsync(mentorId, request);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CourseUpdateRequest request)
+    [HttpPut("{courseId:guid}")]
+    [Authorize(Policy = RequiredRole.Mentor)]
+    public async Task<IActionResult> Update(Guid courseId, [FromBody] CourseUpdateRequest request)
     {
-        var course = await courseService.GetByIdAsync(id);
-        if (!course.IsSuccess)
-        {
-            return StatusCode((int)course.StatusCode, course);
-        }
-
-        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-        if (!authorizationResult.Succeeded)
-        {
-            return Forbid();
-        }
-
-        var result = await courseService.UpdateAsync(id, request);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseService.UpdateAsync(courseId, request);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
+    [HttpDelete("{courseId:guid}")]
+    public async Task<IActionResult> Delete(Guid courseId)
     {
-        var course = await courseService.GetByIdAsync(id);
-        if (!course.IsSuccess)
-        {
-            return StatusCode((int)course.StatusCode, course);
-        }
+        var course = await courseService.GetByIdAsync(courseId);
+        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
 
-        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-        if (!authorizationResult.Succeeded)
-        {
-            return Forbid();
-        }
+        var authorization =
+            await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, UserCanEditCoursePolicyName);
+        if (!authorization.Succeeded) return Forbid();
 
-        var result = await courseService.DeleteAsync(id);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseService.DeleteAsync(courseId);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpPut("{id:guid}/publish")]
+    [HttpPut("{courseId:guid}/publish")]
     [Authorize(Policy = RequiredRole.Admin)]
-    public async Task<IActionResult> PublishCourse(Guid id)
+    public async Task<IActionResult> PublishCourse(Guid courseId)
     {
-        var result = await courseService.PublishCourseAsync(id);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseService.PublishCourseAsync(courseId);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpPut("{id:guid}/archive")]
-    public async Task<IActionResult> ArchiveCourse(Guid id)
+    [HttpPut("{courseId:guid}/archive")]
+    public async Task<IActionResult> ArchiveCourse(Guid courseId)
     {
-        var course = await courseService.GetByIdAsync(id);
-        if (!course.IsSuccess)
+        var course = await courseService.GetByIdAsync(courseId);
+        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+
+        var authorization =
+            await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, UserCanEditCoursePolicyName);
+        if (!authorization.Succeeded) return Forbid();
+
+        var serviceResult = await courseService.ArchiveCourseAsync(courseId);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
+    }
+
+    [HttpGet("{courseId:guid}/resource")]
+    public async Task<IActionResult> GetAllCourseItem(Guid courseId)
+    {
+        var course = await courseService.GetByIdAsync(courseId);
+        if (course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+
+        var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var roleName = HttpContext.User.FindFirstValue(ClaimTypes.Role)!;
+
+        if (course.Value!.Status != CourseStatus.Draft
+            || course.Value!.Status == CourseStatus.Draft
+            && roleName == nameof(UserRole.Admin) || mentorId == course.Value!.MentorId)
         {
-            return StatusCode((int)course.StatusCode, course);
+            var serviceResult = await courseItemService.GetAllByCourseIdAsync(courseId);
+            return StatusCode((int)serviceResult.StatusCode, serviceResult);
         }
 
-        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-        if (!authorizationResult.Succeeded)
+        return Forbid();
+    }
+
+    [HttpGet("{courseId:guid}/resource/{courseItemId:guid}")]
+    public async Task<IActionResult> GetCourseItemById(Guid courseId, Guid courseItemId)
+    {
+        var course = await courseService.GetByIdAsync(courseId);
+        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+
+        var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var roleName = HttpContext.User.FindFirstValue(ClaimTypes.Role)!;
+
+        if (course.Value!.Status != CourseStatus.Draft
+            || course.Value!.Status == CourseStatus.Draft
+            && roleName == nameof(UserRole.Admin) || mentorId == course.Value!.MentorId)
         {
-            return Forbid();
+            var serviceResult = await courseItemService.GetByIdAsync(courseItemId);
+            return StatusCode((int)serviceResult.StatusCode, serviceResult);
         }
 
-        var result = await courseService.ArchiveCourseAsync(id);
-        return StatusCode((int)result.StatusCode, result);
+        return Forbid();
     }
 
-    [HttpGet("{id:guid}/resource")]
-    public async Task<IActionResult> GetAllCourseItem(Guid id)
+    [HttpPost("{courseId:guid}/resource")]
+    [Authorize(Policy = RequiredRole.Mentor)]
+    public async Task<IActionResult> CreateCourseItem(Guid courseId, [FromBody] CourseItemCreateRequest request)
     {
-        // TODO: permit only admin and course mentor when state is draft
-        var result = await courseItemService.GetAllByCourseIdAsync(id);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseItemService.CreateAsync(courseId, request);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpGet("{id:guid}/resource/{resourceId:guid}")]
-    public async Task<IActionResult> GetCourseItemById(Guid id, Guid resourceId)
-    {
-        // TODO: permit only admin and course mentor when state is draft
-        var result = await courseItemService.GetByIdAsync(id, resourceId);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPost("{id:guid}/resource")]
-    public async Task<IActionResult> CreateCourseItem(Guid id, [FromBody] CourseItemCreateRequest request)
-    {
-        var course = await courseService.GetByIdAsync(id);
-        if (!course.IsSuccess)
-        {
-            return StatusCode((int)course.StatusCode, course);
-        }
-
-        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-        if (!authorizationResult.Succeeded)
-        {
-            return Forbid();
-        }
-
-        var result = await courseItemService.CreateAsync(id, request);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPut("{id:guid}/resource/{resourceId:guid}")]
-    public async Task<IActionResult> UpdateCourseItem(Guid id, Guid resourceId,
+    [HttpPut("{courseId:guid}/resource/{courseItemId:guid}")]
+    [Authorize(Policy = RequiredRole.Mentor)]
+    public async Task<IActionResult> UpdateCourseItem(Guid courseId, Guid courseItemId,
         [FromBody] CourseItemUpdateRequest request)
     {
-        var course = await courseService.GetByIdAsync(id);
-        if (!course.IsSuccess)
-        {
-            return StatusCode((int)course.StatusCode, course);
-        }
-
-        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-        if (!authorizationResult.Succeeded)
-        {
-            return Forbid();
-        }
-
-        var result = await courseItemService.UpdateAsync(id, resourceId, request);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseItemService.UpdateAsync(courseItemId, request);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpDelete("{id:guid}/resource/{resourceId:guid}")]
-    public async Task<IActionResult> DeleteCourseItem(Guid id, Guid resourceId)
+    [HttpDelete("{courseId:guid}/resource/{courseItemId:guid}")]
+    [Authorize(Policy = RequiredRole.Mentor)]
+    public async Task<IActionResult> DeleteCourseItem(Guid courseId, Guid courseItemId)
     {
-        var course = await courseService.GetByIdAsync(id);
-        if (!course.IsSuccess)
-        {
-            return StatusCode((int)course.StatusCode, course);
-        }
-
-        var authorizationResult = await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, "CourseModifyAccess");
-        if (!authorizationResult.Succeeded)
-        {
-            return Forbid();
-        }
-
-        var result = await courseItemService.DeleteAsync(id, resourceId);
-        return StatusCode((int)result.StatusCode, result);
+        var serviceResult = await courseItemService.DeleteAsync(courseItemId);
+        return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 }

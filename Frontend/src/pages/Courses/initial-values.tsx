@@ -10,8 +10,8 @@ export const CourseStatesEnumMember: Record<CourseStatus, string> = {
 export type CourseDifficulty =
   | "beginner"
   | "intermediate"
-  | "advanced"
-  | string;
+  | "advanced";
+
 export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
   beginner: "Beginner",
   intermediate: "Intermediate",

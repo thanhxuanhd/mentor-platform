@@ -1,9 +1,8 @@
-using Domain.Entities;
 using Domain.Enums;
 
 namespace Contract.Dtos.Courses.Responses;
 
-public class CourseSummary
+public class CourseSummaryResponse
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = null!;

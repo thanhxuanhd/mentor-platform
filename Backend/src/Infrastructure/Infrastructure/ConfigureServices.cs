@@ -8,13 +8,13 @@ using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
-using Infrastructure.Services.Background;
+using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure;
@@ -41,7 +41,9 @@ public static class ConfigureServices
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
@@ -78,9 +80,10 @@ public static class ConfigureServices
             .AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(nameof(UserRole.Admin)))
             .AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(nameof(UserRole.Mentor)))
             .AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(nameof(UserRole.Learner)))
-            .AddPolicy("CourseModifyAccess", policy => policy.Requirements.Add(new CourseModifyAccessRequirement()));
+            .AddPolicy(CourseResourcePolicyName.UserCanEditCoursePolicyName,
+                policy => policy.Requirements.Add(new UserCanEditCourseRequirement()));
 
-        services.AddTransient<IAuthorizationHandler, CourseModifyAccessHandler>();
+        services.AddTransient<IAuthorizationHandler, UserCanEditCourseAccessHandler>();
 
         return services;
     }

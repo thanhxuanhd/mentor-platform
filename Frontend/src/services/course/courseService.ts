@@ -1,7 +1,9 @@
 import { axiosClient } from "../apiClient";
 import type { Course } from "../../pages/Courses/types";
+import type { CourseStatus } from "../../pages/Courses/initial-values";
 
 interface CourseListParams {
+  status?: CourseStatus;
   keyword?: string;
   difficulty?: string;
   categoryId?: string;

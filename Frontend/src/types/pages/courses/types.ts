@@ -43,6 +43,7 @@ export type CourseTableProps = {
 };
 
 export type SearchBarProps = {
+    states: Record<string, string>;
     categories: Category[];
     mentors: Mentor[];
     difficulties: Record<CourseDifficulty, string>;

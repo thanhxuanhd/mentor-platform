@@ -1,51 +1,80 @@
-﻿using System.Net;
-using Contract.Dtos.Courses.Requests;
+﻿using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
 using Contract.Repositories;
-using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
+using static System.Net.HttpStatusCode;
 
 namespace Application.Services.Courses;
 
 public class CourseService(ICourseRepository courseRepository, ITagRepository tagRepository) : ICourseService
 {
-    public async Task<Result<PaginatedList<CourseSummary>>> GetAllAsync(CourseListRequest request)
+    public async Task<Result<PaginatedList<CourseSummaryResponse>>> GetAllAsync(Guid userId, UserRole userRole,
+        CourseListRequest request)
     {
-        if (request.PageIndex <= 0 || request.PageSize <= 0)
-            return Result.Failure<PaginatedList<CourseSummary>>("Page index and page size must be greater than 0",
-                HttpStatusCode.BadRequest);
+        var (pageIndex, pageSize, categoryId, mentorId, keyword, status, difficulty) = request;
 
-        var courses = await courseRepository.GetPaginatedCoursesAsync(
-            request.PageIndex,
-            request.PageSize,
-            request.CategoryId,
-            request.MentorId,
-            request.Keyword,
-            request.Status,
-            request.Difficulty);
+        var effectiveStatus = status;
+        if (status == CourseStatus.Draft && userRole == UserRole.Learner || !status.HasValue)
+        {
+            effectiveStatus = CourseStatus.Published;
+        }
 
-        return Result.Success(courses, HttpStatusCode.OK);
+        var query = courseRepository.GetAll();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+        {
+            query = query.Where(c => c.Title.Contains(keyword) || c.Description.Contains(keyword));
+        }
+
+        if (categoryId.HasValue) query = query.Where(c => c.CategoryId == categoryId);
+
+        if (difficulty.HasValue) query = query.Where(c => c.Difficulty == difficulty);
+
+        if (userRole == UserRole.Mentor)
+        {
+            query = query.Where(c => c.MentorId == userId && c.Status == effectiveStatus);
+        }
+        else
+        {
+            if (mentorId.HasValue) query = query.Where(c => c.MentorId == mentorId);
+            query = query.Where(c => c.Status == effectiveStatus);
+        }
+
+        var courseSummaries =
+            await courseRepository.ToPaginatedListAsync(
+                query.Select(t => t.ToCourseSummaryResponse()), pageSize, pageIndex);
+
+        return Result.Success(courseSummaries, OK);
     }
 
-    public async Task<Result<CourseSummary>> GetByIdAsync(Guid id)
+    public async Task<Result<CourseSummaryResponse>> GetByIdAsync(Guid id)
     {
-        var course = await courseRepository.GetCourseWithDetailsAsync(id);
-        if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+        var course = await courseRepository.GetByIdAsync(id);
+        if (course == null) return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
 
-        var response = course.ToCourseSummary();
-        return Result.Success(response, HttpStatusCode.OK);
+        var response = course.ToCourseSummaryResponse();
+        return Result.Success(response, OK);
     }
 
-    public async Task<Result<CourseSummary>> CreateAsync(Guid mentorId, CourseCreateRequest request)
+    public async Task<Result<CourseSummaryResponse>> CreateAsync(Guid mentorId, CourseCreateRequest request)
     {
-        // Suggestion from test team: Course with same name and category -> reject
-        // TODO: Unique constraints at stores
-        var existingCourse = await courseRepository.GetCourseByTitleAsync(request.Title);
-        if (existingCourse?.CategoryId == request.CategoryId)
-            return Result.Failure<CourseSummary>("Already have this course", HttpStatusCode.BadRequest);
+        // RESOLVED: Work item 143#17488893
+        var courseWithSameTitle = await courseRepository.GetByTitleAsync(request.Title);
 
+        if (courseWithSameTitle?.CategoryId == request.CategoryId)
+        {
+            return Result.Failure<CourseSummaryResponse>(
+                $"Course with title {courseWithSameTitle.Title} and category {courseWithSameTitle.Category.Name} already exists.",
+                Conflict);
+        }
+
+        return await CreateAsyncInternal(mentorId, request);
+    }
+
+    private async Task<Result<CourseSummaryResponse>> CreateAsyncInternal(Guid mentorId, CourseCreateRequest request)
+    {
         var caseSensitiveTagNames = request.Tags.ToHashSet();
         var tags = await tagRepository.UpsertAsync(caseSensitiveTagNames);
         await tagRepository.SaveChangesAsync();
@@ -54,31 +83,45 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         {
             Title = request.Title,
             Description = request.Description,
-            CategoryId = request.CategoryId,
-            MentorId = mentorId,
             DueDate = request.DueDate,
             Status = CourseStatus.Draft,
-            Difficulty = request.Difficulty
+            Difficulty = request.Difficulty,
+            CategoryId = request.CategoryId,
+            MentorId = mentorId
         };
 
         await courseRepository.AddAsync(course);
         await courseRepository.UpdateTagsCollection(tags, course);
         await courseRepository.SaveChangesAsync();
 
-        var createdCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
-        if (createdCourse == null)
-            return Result.Failure<CourseSummary>("Failed to retrieve created course",
-                HttpStatusCode.InternalServerError);
-
-        var response = createdCourse.ToCourseSummary();
-        return Result.Success(response, HttpStatusCode.Created);
+        await courseRepository.LoadReferencedEntities(course);
+        var response = course.ToCourseSummaryResponse();
+        return Result.Success(response, Created);
     }
 
-    public async Task<Result<CourseSummary>> UpdateAsync(Guid id, CourseUpdateRequest request)
+    public async Task<Result<CourseSummaryResponse>> UpdateAsync(Guid id, CourseUpdateRequest request)
     {
-        var course = await courseRepository.GetCourseWithDetailsAsync(id);
-        if (course == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+        // RESOLVED: Work item 143#17488893
+        var course = await courseRepository.GetByIdAsync(id);
+        if (course == null)
+            return Result.Failure<CourseSummaryResponse>(
+                "Course not found",
+                NotFound);
 
+        if (request.Title != course.Title)
+        {
+            var courseWithSameTitle = await courseRepository.GetByTitleAsync(request.Title);
+            if (courseWithSameTitle?.CategoryId == request.CategoryId)
+                return Result.Failure<CourseSummaryResponse>(
+                    $"Course with title {course.Title} and category {course.Category.Name} already exists.",
+                    Conflict);
+        }
+
+        return await UpdateAsyncInternal(course, request);
+    }
+
+    private async Task<Result<CourseSummaryResponse>> UpdateAsyncInternal(Course course, CourseUpdateRequest request)
+    {
         var caseSensitiveTagNames = request.Tags.ToHashSet();
         var tags = await tagRepository.UpsertAsync(caseSensitiveTagNames);
         await tagRepository.SaveChangesAsync();
@@ -92,53 +135,51 @@ public class CourseService(ICourseRepository courseRepository, ITagRepository ta
         await courseRepository.UpdateTagsCollection(tags, course);
         await courseRepository.SaveChangesAsync();
 
-        var updatedCourse = await courseRepository.GetCourseWithDetailsAsync(course.Id);
-        if (updatedCourse == null) return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
-        var response = course.ToCourseSummary();
-
-        return Result.Success(response, HttpStatusCode.OK);
+        await courseRepository.LoadReferencedEntities(course);
+        var response = course.ToCourseSummaryResponse();
+        return Result.Success(response, OK);
     }
 
     public async Task<Result<bool>> DeleteAsync(Guid id)
     {
         var course = await courseRepository.GetByIdAsync(id);
-        if (course == null) return Result.Failure<bool>("Course not found", HttpStatusCode.NotFound);
+        if (course == null) return Result.Failure<bool>("Course not found", NotFound);
 
         courseRepository.Delete(course);
         await courseRepository.SaveChangesAsync();
 
-        return Result.Success(true, HttpStatusCode.OK);
+        return Result.Success(true, OK);
     }
 
-    public async Task<Result<CourseSummary>> PublishCourseAsync(Guid id)
+    public async Task<Result<CourseSummaryResponse>> PublishCourseAsync(Guid id)
     {
-        var course = await courseRepository.GetCourseWithDetailsAsync(id);
+        var course = await courseRepository.GetByIdAsync(id);
         if (course == null)
-            return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+            return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
 
         if (course.Status == CourseStatus.Published)
-            return Result.Failure<CourseSummary>("Course is already published", HttpStatusCode.BadRequest);
+            return Result.Failure<CourseSummaryResponse>("Course is already published", BadRequest);
 
         course.Status = CourseStatus.Published;
         await courseRepository.SaveChangesAsync();
 
-        var response = course.ToCourseSummary();
-        return Result.Success(response, HttpStatusCode.OK);
+        var response = course.ToCourseSummaryResponse();
+        return Result.Success(response, OK);
     }
 
-    public async Task<Result<CourseSummary>> ArchiveCourseAsync(Guid id)
+    public async Task<Result<CourseSummaryResponse>> ArchiveCourseAsync(Guid id)
     {
-        var course = await courseRepository.GetCourseWithDetailsAsync(id);
+        var course = await courseRepository.GetByIdAsync(id);
         if (course == null)
-            return Result.Failure<CourseSummary>("Course not found", HttpStatusCode.NotFound);
+            return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
 
         if (course.Status == CourseStatus.Archived)
-            return Result.Failure<CourseSummary>("Course is already archived", HttpStatusCode.BadRequest);
+            return Result.Failure<CourseSummaryResponse>("Course is already archived", BadRequest);
 
         course.Status = CourseStatus.Archived;
         await courseRepository.SaveChangesAsync();
 
-        var response = course.ToCourseSummary();
-        return Result.Success(response, HttpStatusCode.OK);
+        var response = course.ToCourseSummaryResponse();
+        return Result.Success(response, OK);
     }
 }
