@@ -1,11 +1,11 @@
 ﻿using Contract.Repositories;
+using Domain.Abstractions;
 using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using Domain.Abstractions;
-using Domain.Enums;
 
 namespace Infrastructure.Repositories;
 

@@ -11,16 +11,34 @@ const ForgotPasswordForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<{ email?: string }>({});
   const navigate = useNavigate();
+
+  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
+
+    const trimmedEmail = email.trim();
+    const errors: { email?: string } = {};
+
+    if (!trimmedEmail) {
+      errors.email = "Please enter your email";
+    } else if (!validateEmail(trimmedEmail)) {
+      errors.email = "Email must be in a correct format";
+    }
+
+    setFieldError(errors);
+    if (Object.keys(errors).length > 0) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setError("");
 
     try {
-      await userService.forgotPassword(email);
+      await userService.forgotPassword(trimmedEmail);
       setSubmitted(true);
       setTimeout(() => {
         navigate("/reset-password", { replace: true });
@@ -54,7 +72,7 @@ const ForgotPasswordForm: React.FC = () => {
           Password reset successful. Please check your email.
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
           <div>
             <label
               htmlFor="email"
@@ -64,13 +82,17 @@ const ForgotPasswordForm: React.FC = () => {
             </label>
             <input
               id="email"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded bg-gray-700 text-white"
+              className={`mt-1 w-full px-3 py-2 border rounded bg-gray-700 text-white ${
+                fieldError.email ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="you@example.com"
             />
+            {fieldError.email && (
+              <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>
+            )}
           </div>
 
           <button
@@ -82,7 +104,7 @@ const ForgotPasswordForm: React.FC = () => {
                 : "bg-orange-600 hover:bg-orange-700"
             }`}
           >
-            {isLoading ? "Sending..." : "Send Reset Link"}
+            {isLoading ? "Sending..." : "Send New Password"}
           </button>
         </form>
       )}

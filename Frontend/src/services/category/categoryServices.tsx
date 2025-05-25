@@ -1,5 +1,5 @@
-import type { CategoryRequest } from '../types/CategoryTypes';
-import { axiosClient } from './apiClient';
+import type { CategoryRequest } from '../../types/CategoryTypes';
+import { axiosClient } from '../apiClient';
 
 export const getListCategories = async (
   pageIndex: number = 1,

@@ -10,10 +10,10 @@ import ResetPassword from "../pages/Auth/ResetPassword";
 import ForgotPassword from "../pages/Auth/ForgotPassword";
 import OAuthCallback from "../pages/Auth/OAuthCallback";
 import AuthLayout from "../components/AuthLayout";
-import UserProfile from "../pages/Auth/UserProfile";
 import ProtectedRoute from "./ProtectedRoute";
 import { applicationRole } from "../constants/role";
 import ForbiddenPage from "../pages/Forbidden";
+import ProfileSetup from "../pages/Auth/ProfileSetup";
 
 const AppRoutes = () => {
   return (
@@ -21,7 +21,7 @@ const AppRoutes = () => {
       <Route element={<AuthLayout />}>
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<SignUp />} />
-        <Route path="signup/step2" element={<UserProfile />} />
+        <Route path="profile-setup" element={<ProfileSetup />} />
         <Route path="reset-password" element={<ResetPassword />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
@@ -32,7 +32,11 @@ const AppRoutes = () => {
       <Route
         element={
           <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR]}
+            requiredRole={[
+              applicationRole.ADMIN,
+              applicationRole.LEARNER,
+              applicationRole.MENTOR,
+            ]}
           >
             <MainLayout />
           </ProtectedRoute>
@@ -41,7 +45,6 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
-
       </Route>
       <Route
         element={

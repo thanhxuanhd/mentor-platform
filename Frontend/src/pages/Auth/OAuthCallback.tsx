@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import authService from '../../services/auth/authService';
-import { useLocation } from 'react-router';
-import { useAuth } from '../../hooks';
-import { userStatus } from '../../constants/userStatus';
+import { useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import authService from "../../services/auth/authService";
+import { useLocation } from "react-router";
+import { useAuth } from "../../hooks";
+import { userStatus } from "../../constants/userStatus";
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -33,7 +33,7 @@ export default function OAuthCallback() {
             navigate("/");
             break;
           default:
-            navigate("/signup/step2", { state: { ...response } });
+            navigate("/profile-setup", { state: { ...response } });
             break;
         }
       } catch (error) {
