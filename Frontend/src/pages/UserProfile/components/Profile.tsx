@@ -6,7 +6,7 @@ import { Button, Tag, Spin } from "antd"
 import { ShareAltOutlined } from "@ant-design/icons/lib/icons"
 
 import { userService } from "../../../services/user/userService"
-import { getListCategories } from "../../../services/categoryServices"
+import { getListCategories } from "../../../services/category/categoryServices"
 import { AuthContext } from "../../../contexts/AuthContext"
 
 import type { UserProfile as UserProfileType } from "../../../types/UserTypes" 

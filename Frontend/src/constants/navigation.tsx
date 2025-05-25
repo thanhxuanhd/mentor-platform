@@ -59,11 +59,4 @@ export const menuItems: MenuItemProps[] = [
     link: "profile",
     role: [applicationRole.LEARNER, applicationRole.MENTOR],
   },
-  {
-    key: "profile",
-    icon: <ProfileOutlined />,
-    label: "Profile",
-    link: "profile",
-    role: [applicationRole.LEARNER, applicationRole.MENTOR],
-  },
 ];

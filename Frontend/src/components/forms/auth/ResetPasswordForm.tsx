@@ -10,13 +10,6 @@ import {
 import authService from "../../../services/auth/authService";
 import type { ResetPasswordReq } from "../../../models";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
-type FieldError = {
-  email?: string;
-  oldPassword?: string;
-  newPassword?: string;
-};
 
 const ResetPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("");

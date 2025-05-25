@@ -80,14 +80,6 @@ export const userService = {
       });
   },
 
-  removeAvatar: async (imageUrl: string) => {
-    await axiosClient
-      .delete(`Users/avatar`, { params: { imageUrl } })
-      .then((response) => {
-        return response.data.value;
-      });
-  },
-
   getUserProfile: async (userId: string): Promise<UserProfile> => {
   return await axiosClient
     .get(`Users/${userId}/detail`)
@@ -110,7 +102,7 @@ export const userService = {
     const formData = new FormData();
     formData.append("file", file);
     return await axiosClient
-      .post(`Users/${userId}/photo`, formData, {
+      .post(`Users/${userId}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

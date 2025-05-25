@@ -15,6 +15,7 @@ import { applicationRole } from "../constants/role";
 import ForbiddenPage from "../pages/Forbidden";
 import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
+import ProfileSetup from "../pages/Auth/ProfileSetup";
 
 const AppRoutes = () => {
   return (

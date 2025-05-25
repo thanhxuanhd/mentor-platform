@@ -1,6 +1,5 @@
 import { useEffect, useState, useContext } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
 import {
   AudioOutlined,
   CloseOutlined,
@@ -9,20 +8,12 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
-import { Upload, Button, Input, Form, Select, Radio } from "antd";
+import { Upload, Button, Input, Form, Select, Radio, App, type GetProp } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
-import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
-import type { SelectProps } from "rc-select";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import type { RcFile, UploadChangeParam, UploadFile, UploadProps } from "antd/es/upload";
 import type { DefaultOptionType } from "antd/es/select";
-<<<<<<<< HEAD:Frontend/src/pages/Auth/UserProfile.tsx
-import type { NotificationProps } from "../../types/Notification";
-import { userService } from "../../services/user/userService";
-========
-
 import { userService } from "../../../services/user/userService";
-import { getListCategories } from "../../../services/categoryServices";
+import { getListCategories } from "../../../services/category/categoryServices";
 import { AuthContext } from "../../../contexts/AuthContext";
 
 import type { NotificationProps } from "../../../types/Notification";
@@ -96,7 +87,12 @@ export default function EditProfile() {
 
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
-
+  type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
+  const getBase64 = (img: FileType, callback: (url: string) => void) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result as string));
+    reader.readAsDataURL(img);
+  };
   useEffect(() => {
     const fetchDropdownData = async () => {
       if (!token) {
@@ -167,13 +163,13 @@ export default function EditProfile() {
           phone: userProfileData.phoneNumber,
           bio: userProfileData.bio,
           roleSelect: userProfileData.roleId === 3 ? "learner" : userProfileData.roleId === 2 ? "mentor" : "learner",
-          expertise: userProfileData.expertiseIds || [], 
+          expertise: userProfileData.expertiseIds || [],
           skills: userProfileData.skills,
           experience: userProfileData.experiences,
           objective: userProfileData.goal,
           communicationMethod: reverseCommunicationMethodMap[userProfileData.preferredCommunicationMethod] || "video",
           availability: userProfileData.availabilityIds || [],
-          teachingApproach: userProfileData.teachingApproachIds || [], 
+          teachingApproach: userProfileData.teachingApproachIds || [],
           categoryIds: userProfileData.categoryIds || [],
         });
 
@@ -242,16 +238,14 @@ export default function EditProfile() {
   };
 
   const handleChange = (info: UploadChangeParam<UploadFile>) => {
-    if (info.file.status === "done") {
-      setImageUrl(info.file.response?.url);
-    } else if (info.file.status === "error") {
-      setNotify({
-        type: "error",
-        message: "Error",
-        description: "Failed to upload photo",
-      });
-    }
-  };
+      setImageUrl("");
+      if (info.file.status === "done") {
+        getBase64(info.file.originFileObj as FileType, () => {
+          setImageUrl(info.file.response?.value);
+          form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
+        });
+      }
+    };
 
   const toggleSelection = (
     value: string,
@@ -261,10 +255,10 @@ export default function EditProfile() {
     const newList = list.includes(value)
       ? list.filter((item) => item !== value)
       : [...list, value];
-    setter(newList); 
+    setter(newList);
 
     const newIds = newList.map(name => reverseAvailabilityMap[name]).filter(Boolean);
-    form.setFieldsValue({ availability: newIds }); 
+    form.setFieldsValue({ availability: newIds });
   };
 
   const handleSubmit = async () => {
@@ -281,7 +275,7 @@ export default function EditProfile() {
         throw new Error("User ID not found");
       }
 
-      const availabilityIds = values.availability; 
+      const availabilityIds = values.availability;
       const expertiseIds = values.expertise;
       const teachingApproachIds = values.teachingApproach;
       const categoryIds = values.categoryIds;
@@ -366,7 +360,7 @@ export default function EditProfile() {
             <Upload
               maxCount={1}
               showUploadList={false}
-                  action={`${import.meta.env.VITE_BASE_URL_BE}/Users/${userId || user?.id}/photo`}
+                  action={`${import.meta.env.VITE_BASE_URL_BE}/Users/avatar/${userId || user?.id}`}
                   headers={{
                     Authorization: `Bearer ${token}`,
                   }}
@@ -464,7 +458,7 @@ export default function EditProfile() {
           </div>
         </div>
 
-            
+
 
             <div>
         <Form.Item
@@ -591,8 +585,8 @@ export default function EditProfile() {
         </Form.Item>
 
             <div className="flex justify-between mt-6 border-t border-gray-700 pt-4 gap-4">
-          <Button 
-            type="primary" 
+          <Button
+            type="primary"
             size="large"
             onClick={() => navigate("/profile")}
                 className="bg-gray-500! hover:bg-gray-400!"
@@ -616,3 +610,5 @@ export default function EditProfile() {
     </div>
   );
 }
+
+
