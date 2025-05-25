@@ -173,7 +173,7 @@ const UserPreference: React.FC<UserProfileProps> = ({
 
         <div className="mb-6">
           <Form.Item
-            name="categoriesId"
+            name="categoryIds"
             label={
               <span className="text-gray-300 text-lg">
                 Topics you're interested in learning about
@@ -185,6 +185,7 @@ const UserPreference: React.FC<UserProfileProps> = ({
                 message: "Please select your field of topics!",
               },
             ]}
+            initialValue={userDetail.categoryIds}
           >
             <Select
               mode="multiple"
@@ -194,13 +195,11 @@ const UserPreference: React.FC<UserProfileProps> = ({
               className="w-full"
               size="large"
               options={tags}
-              style={{ background: "#1E293B" }}
               filterOption={false}
               onSearch={handleSearch}
               onChange={(value) =>
                 updateUserDetail((prev) => ({ ...prev, categoryIds: value }))
               }
-              value={userDetail.categoryIds}
               maxCount={5}
             />
           </Form.Item>

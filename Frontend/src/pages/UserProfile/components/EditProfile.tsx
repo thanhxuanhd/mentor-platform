@@ -8,23 +8,9 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
-import {
-  Upload,
-  Button,
-  Input,
-  Form,
-  Select,
-  Radio,
-  App,
-  type GetProp,
-} from "antd";
+import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
-import type {
-  RcFile,
-  UploadChangeParam,
-  UploadFile,
-  UploadProps,
-} from "antd/es/upload";
+import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import type { DefaultOptionType } from "antd/es/select";
 import { userService } from "../../../services/user/userService";
 import { getListCategories } from "../../../services/category/categoryServices";
@@ -114,12 +100,7 @@ export default function EditProfile() {
 
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
-  type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-  const getBase64 = (img: FileType, callback: (url: string) => void) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => callback(reader.result as string));
-    reader.readAsDataURL(img);
-  };
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       if (!token) {
@@ -309,10 +290,8 @@ export default function EditProfile() {
 
   const handleUpload = (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === "done") {
-      getBase64(info.file.originFileObj as FileType, (url) => {
-        setImageUrl(url);
-        form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
-      });
+      setImageUrl(info.file.response?.value);
+      form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
     }
   };
 
@@ -371,7 +350,7 @@ export default function EditProfile() {
         availabilityIds,
         teachingApproachIds,
         categoryIds,
-        profilePhotoUrl: values.avatar[0].response.value,
+        profilePhotoUrl: imageUrl,
       };
 
       console.log(
