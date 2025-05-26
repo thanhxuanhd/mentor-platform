@@ -14,6 +14,5 @@ namespace Domain.Entities
         
         public User Mentor { get; set; } = null!;
         public ICollection<ApplicationDocument> ApplicationDocuments { get; set; } = [];
-
     }
 }

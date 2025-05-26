@@ -42,4 +42,55 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
         return Result.Success(result, HttpStatusCode.OK);
     }
+
+    public async Task<Result<MentorApplicationDetailResponse>> GetMentorApplicationByIdAsync(Guid currentUserId, Guid applicationId)
+    {
+        var user = await userRepository.GetByIdAsync(currentUserId, user => user.Role);
+
+        if (user!.Role.Name == UserRole.Learner)
+        {
+            return Result.Failure<MentorApplicationDetailResponse>(
+                "You do not have permission to view this mentor application.", HttpStatusCode.Forbidden
+            );
+        }
+
+        var applicationDetails = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
+
+        if (applicationDetails == null)
+        {
+            return Result.Failure<MentorApplicationDetailResponse>(
+                "Mentor application not found.", HttpStatusCode.NotFound
+            );
+        }
+
+        if (user.Role.Name == UserRole.Mentor && applicationDetails.MentorId != currentUserId)
+        {
+            return Result.Failure<MentorApplicationDetailResponse>(
+                "You do not have permission to view this mentor application.", HttpStatusCode.Forbidden
+            );
+        }
+
+        var response = new MentorApplicationDetailResponse
+        {
+            MentorApplicationId = applicationDetails.Id,
+            ProfilePhotoUrl = applicationDetails.Mentor.ProfilePhotoUrl,
+            MentorName = applicationDetails.Mentor.FullName,
+            Email = applicationDetails.Mentor.Email,
+            Bio = applicationDetails.Mentor.Bio,
+            Experiences = applicationDetails.Mentor.Experiences,
+            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
+            ApplicationStatus = applicationDetails.Status.ToString(),
+            SubmittedAt = applicationDetails.SubmittedAt,
+            ReviewedAt = applicationDetails.ReviewedAt,
+            Note = applicationDetails.Note,
+            Documents = applicationDetails.ApplicationDocuments.Select(doc => new Document
+            {
+                DocumentId = doc.Id,
+                DocumentType = doc.DocumentType.ToString(),
+                DocumentUrl = doc.DocumentUrl
+            }).ToList()
+        };
+
+        return Result.Success(response, HttpStatusCode.OK);
+    }
 }

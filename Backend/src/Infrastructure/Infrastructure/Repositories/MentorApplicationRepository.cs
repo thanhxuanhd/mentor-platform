@@ -14,4 +14,14 @@ public class MentorApplicationRepository(ApplicationDbContext context) : BaseRep
             .Include(ma => ma.Mentor)
                 .ThenInclude(m => m.UserExpertises);
     }
+
+    public async Task<MentorApplication?> GetMentorApplicationByIdAsync(Guid applicationId)
+    {
+        return await _context.MentorApplications
+            .Include(ma => ma.Mentor)
+                .ThenInclude(m => m.UserExpertises)
+            .Include(ma => ma.ApplicationDocuments)            
+            .FirstOrDefaultAsync(ma => ma.Id == applicationId);
+    }
+
 }
