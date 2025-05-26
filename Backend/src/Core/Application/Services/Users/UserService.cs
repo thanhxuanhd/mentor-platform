@@ -268,7 +268,20 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         try
         {
-            var fileName = userId.ToString() + Path.GetExtension(file.FileName);
+            var userIdStr = userId.ToString();
+
+            var existingFile = Directory.GetFiles(imagesPath)
+            .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f)
+                            .Split("_")[0].Equals(userIdStr, StringComparison.OrdinalIgnoreCase));
+
+            if (existingFile != null)
+            {
+                File.Delete(existingFile);
+            }
+
+            long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            var fileName = $"{userIdStr}_{epoch}{Path.GetExtension(file.FileName)}";
 
             var filePath = Path.Combine(imagesPath, fileName);
 

@@ -15,15 +15,9 @@ import {
   Radio,
   App,
   type FormInstance,
-  type GetProp,
 } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
-import type {
-  RcFile,
-  UploadChangeParam,
-  UploadFile,
-  UploadProps,
-} from "antd/es/upload";
+import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 const { TextArea } = Input;
 import { useCallback, useEffect, useState } from "react";
 import type { NotificationProps } from "../../../types/Notification";
@@ -64,12 +58,6 @@ const communicationMethodOptions: CheckboxGroupProps<CommunicationMethod>["optio
       value: CommunicationMethod.TextChat,
     },
   ];
-type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-const getBase64 = (img: FileType, callback: (url: string) => void) => {
-  const reader = new FileReader();
-  reader.addEventListener("load", () => callback(reader.result as string));
-  reader.readAsDataURL(img);
-};
 
 const roleOptions: CheckboxGroupProps<number>["options"] = [
   {
@@ -110,7 +98,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
   formRef,
 }) => {
   const [form] = Form.useForm<UserDetail>();
-  const [imageUrl, setImageUrl] = useState(userDetail.profilePhotoUrl || "");
+  const [imageUrl, setImageUrl] = useState("");
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [selectedAvailabilities, setSelectedAvailabilities] = useState<
     string[]
@@ -154,7 +142,8 @@ const UserProfile: React.FC<UserProfileProps> = ({
   useEffect(() => {
     fetchAvalabilities();
     fetchExpertises();
-  }, [fetchAvalabilities, fetchExpertises, userDetail.profilePhotoUrl]);
+    setImageUrl(userDetail.profilePhotoUrl);
+  }, [fetchAvalabilities, fetchExpertises]);
 
   useEffect(() => {
     const userExpertises = expertises.filter((item) =>
@@ -212,16 +201,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
   };
 
   const handleUpload = (info: UploadChangeParam<UploadFile>) => {
-    setImageUrl("");
     if (info.file.status === "done") {
-      getBase64(info.file.originFileObj as FileType, (url) => {
-        setImageUrl(url);
-        updateUserDetail((prev) => ({
-          ...prev,
-          profilePhotoUrl: info.file.response?.value,
-        }));
-        form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
-      });
+      setImageUrl(info.file.response?.value);
+      updateUserDetail((prev) => ({
+        ...prev,
+        profilePhotoUrl: info.file.response?.value,
+      }));
+      form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
     }
   };
 
@@ -269,11 +255,13 @@ const UserProfile: React.FC<UserProfileProps> = ({
         </h1>
         <div className="flex gap-6 items-start">
           <Form.Item
-            name="profilePhotoUrl"
             label="Profile Photo"
-            valuePropName="file"
+            valuePropName="fileList"
             getValueFromEvent={(e) => {
-              return e?.fileList[0];
+              if (Array.isArray(e)) {
+                return e;
+              }
+              return e && e.fileList;
             }}
           >
             <Upload
@@ -295,7 +283,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                       className="absolute top-0 bg-gray-400 right-0 leading-none p-1 rounded-full"
                       onClick={(e) => {
                         e.stopPropagation();
-                        userService.removeAvatar(userDetail.profilePhotoUrl);
+                        userService.removeAvatar(imageUrl);
                         setImageUrl("");
                         updateUserDetail((prev) => ({
                           ...prev,
