@@ -1,11 +1,10 @@
-using System;
 using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
 using Contract.Shared;
 
-namespace Application.Services.Application;
+namespace Application.Services.MentorApplication;
 
 public interface IMentorApplicationService
 {
-    Task<Result<FilterMentorApplicationResponse>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request);
+    Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request);
 }
