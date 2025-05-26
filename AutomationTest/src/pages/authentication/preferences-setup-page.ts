@@ -4,7 +4,6 @@ import { PAGE_ENDPOINT_URL } from "../../core/constants/page-url";
 
 export class PreferentsSetupPage extends BasePage {
     private DRD_TOPIC_LOCATOR: Locator;
-    //skip frequency + duration + learning style
     private BTN_TEACHINGAPPROACH_LOCATOR: Locator;
     private CBX_PRIVATEPROFILE_LOCATOR: Locator;
     private CBX_ALLOWMESSAGES_LOCATOR: Locator;
