@@ -22,7 +22,7 @@
     "fullname": "",
     "phoneNumber": "0912345678",
     "availbility": [2, 3],
-    "expectedMessage": "Please enter your full name!"
+    "expectedMessage": "Full name is required and cannot be all white space!"
   },
   "wrong_format_fullname": {
     "fullname": "18237!!!!",
