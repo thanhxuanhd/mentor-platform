@@ -56,6 +56,7 @@ export default function ProfileSetup() {
     teachingApproachIds: [],
     categoryIds: [],
   });
+  console.log(userDetail);
   const [notify, setNotify] = useState<NotificationProps | null>(null);
 
   const fetchUserDetail = useCallback(async () => {

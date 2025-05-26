@@ -396,7 +396,7 @@ namespace Application.Test
             Assert.Multiple(() =>
             {
                 Assert.That(result.IsSuccess, Is.True);
-                Assert.That(result.Value, Does.Contain($"/images/{userId}.jpg"));
+                Assert.That(result.Value, Does.Contain($"/images/{userId}"));
             });
         }
 

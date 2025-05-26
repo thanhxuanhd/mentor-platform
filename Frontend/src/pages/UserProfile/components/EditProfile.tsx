@@ -8,23 +8,9 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
-import {
-  Upload,
-  Button,
-  Input,
-  Form,
-  Select,
-  Radio,
-  App,
-  type GetProp,
-} from "antd";
+import { Upload, Button, Input, Form, Select, Radio, App } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
-import type {
-  RcFile,
-  UploadChangeParam,
-  UploadFile,
-  UploadProps,
-} from "antd/es/upload";
+import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
 import type { DefaultOptionType } from "antd/es/select";
 import { userService } from "../../../services/user/userService";
 import { getListCategories } from "../../../services/category/categoryServices";
@@ -114,12 +100,7 @@ export default function EditProfile() {
 
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
-  type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
-  const getBase64 = (img: FileType, callback: (url: string) => void) => {
-    const reader = new FileReader();
-    reader.addEventListener("load", () => callback(reader.result as string));
-    reader.readAsDataURL(img);
-  };
+
   useEffect(() => {
     const fetchDropdownData = async () => {
       if (!token) {
@@ -309,10 +290,8 @@ export default function EditProfile() {
 
   const handleUpload = (info: UploadChangeParam<UploadFile>) => {
     if (info.file.status === "done") {
-      getBase64(info.file.originFileObj as FileType, (url) => {
-        setImageUrl(url);
-        form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
-      });
+      setImageUrl(info.file.response?.value);
+      form.setFieldsValue({ profilePhotoUrl: info.file.response?.value });
     }
   };
 
@@ -371,7 +350,7 @@ export default function EditProfile() {
         availabilityIds,
         teachingApproachIds,
         categoryIds,
-        profilePhotoUrl: values.avatar[0].response.value,
+        profilePhotoUrl: imageUrl,
       };
 
       console.log(
@@ -485,13 +464,21 @@ export default function EditProfile() {
                           message: "Please enter your full name!",
                         },
                         {
-                          max: 50,
+                          max: 100,
                           message: "Full name can not exceed 100 characters!",
                         },
                         {
                           pattern: /^[A-Za-z\s]+$/,
                           message:
                             "Full name can only contain letters and spaces!",
+                        },
+                        {
+                          validator: (_, value) =>
+                            value && value.trim().length > 0
+                              ? Promise.resolve()
+                              : Promise.reject(
+                                  "Full name is required and cannot be all white space!",
+                                ),
                         },
                       ]}
                     >
@@ -549,12 +536,20 @@ export default function EditProfile() {
             <div>
               <Form.Item name="expertise" label="Areas Of Expertise" rules={[]}>
                 <Select
+                  maxCount={5}
                   mode="multiple"
                   allowClear
                   placeholder="Select your field of expertise"
                   className="w-full"
                   size="large"
                   options={expertiseOptions}
+                  fieldNames={{ label: "label", value: "value" }}
+                  filterOption={(input, option) =>
+                    String(option?.label)
+                      .replace(/\s/g, "")
+                      .toLowerCase()
+                      .includes(input.replace(/\s/g, "").toLowerCase())
+                  }
                 />
               </Form.Item>
             </div>
@@ -591,7 +586,16 @@ export default function EditProfile() {
               </div>
             </div>
             <div className="flex gap-4 items-center justify-center"></div>
-            <Form.Item name="availability" label="Your Availability" rules={[]}>
+            <Form.Item
+              name="availability"
+              label="Your Availability"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select your availability!",
+                },
+              ]}
+            >
               <div className="flex gap-2 items-center justify-center flex-wrap">
                 {availabilityOptions.map((item) => (
                   <Button
@@ -633,6 +637,13 @@ export default function EditProfile() {
                 className="w-full"
                 size="large"
                 options={teachingApproachOptions}
+                fieldNames={{ label: "label", value: "value" }}
+                filterOption={(input, option) =>
+                  String(option?.label)
+                    .replace(/\s/g, "")
+                    .toLowerCase()
+                    .includes(input.replace(/\s/g, "").toLowerCase())
+                }
               />
             </Form.Item>
 
@@ -644,6 +655,13 @@ export default function EditProfile() {
                 className="w-full"
                 size="large"
                 options={categoryOptions}
+                fieldNames={{ label: "label", value: "value" }}
+                filterOption={(input, option) =>
+                  String(option?.label)
+                    .replace(/\s/g, "")
+                    .toLowerCase()
+                    .includes(input.replace(/\s/g, "").toLowerCase())
+                }
               />
             </Form.Item>
 

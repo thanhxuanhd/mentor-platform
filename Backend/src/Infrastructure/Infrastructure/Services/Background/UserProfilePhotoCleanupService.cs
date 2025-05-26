@@ -36,7 +36,8 @@ namespace Infrastructure.Services.Background
                     {
                         var userIdStr = user.Id.ToString();
                         var files = Directory.GetFiles(imagesDir)
-                            .Where(f => Path.GetFileNameWithoutExtension(f).Equals(userIdStr, StringComparison.OrdinalIgnoreCase));
+                            .Where(f => Path.GetFileNameWithoutExtension(f)
+                            .Split("_")[0].Equals(userIdStr, StringComparison.OrdinalIgnoreCase));
 
                         foreach (var file in files)
                         {
