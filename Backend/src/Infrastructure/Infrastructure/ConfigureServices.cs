@@ -7,10 +7,13 @@ using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
+using Infrastructure.Services.Background;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -39,6 +42,16 @@ public static class ConfigureServices
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
+        services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
+        services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
+
+        services.AddHostedService(provider =>
+        new UserProfilePhotoCleanupService(
+        provider,
+        provider.GetRequiredService<IWebHostEnvironment>(),
+        provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
+        ));
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

@@ -28,3 +28,7 @@ button {
   flex-direction: column;
   justify-content: space-between;
 }
+
+.ant-radio-button-wrapper:not(:first-child)::before {
+  display: none;
+}

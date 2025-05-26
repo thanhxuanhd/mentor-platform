@@ -19,27 +19,88 @@ const ResetPasswordForm: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<{
+    email?: string;
+    oldPassword?: string;
+    newPassword?: string;
+  }>({});
+
   const navigate = useNavigate();
+  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isLoading) return;
+
+    const trimmedEmail = email.trim();
+    const errors: {
+      email?: string;
+      oldPassword?: string;
+      newPassword?: string;
+    } = {};
+
+    if (!trimmedEmail) {
+      errors.email = "Please enter your email";
+    } else if (!validateEmail(trimmedEmail)) {
+      errors.email = "Email must be in a correct format";
+    }
+
+    if (!oldPassword.trim()) {
+      errors.oldPassword = "Please enter your current password";
+    }
+
+    if (!newPassword.trim()) {
+      errors.newPassword = "Please enter your new password";
+    }
+    if (!newPassword.trim()) {
+      errors.newPassword = "Please enter your new password";
+    } else if (newPassword.length < 8 || newPassword.length > 32) {
+      errors.newPassword = "Password must be between 8 and 32 characters";
+    } else if (
+      !/(?=.*[a-zA-Z])/.test(newPassword) || // letters
+      !/(?=.*\d)/.test(newPassword) || // digits
+      !/(?=.*[!@#$%^&*()_+{}[\]:;<>,.?~\\/-])/.test(newPassword) // special chars
+    ) {
+      errors.newPassword =
+        "Password must include letters, numbers, and special characters";
+    }
+    setFieldError(errors);
+
+    if (Object.keys(errors).length > 0) {
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
 
-    const data: ResetPasswordReq = { email, oldPassword, newPassword };
+    const data: ResetPasswordReq = {
+      email: trimmedEmail,
+      oldPassword,
+      newPassword,
+    };
+
     try {
       await authService.resetPassword(data);
       console.log("Reset password successful for:", email);
-
       setShowNotification(true);
       setTimeout(() => {
         setShowNotification(false);
         navigate("/login", { replace: true });
         setSubmitted(true);
       }, 3000);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Reset password failed:", err);
-      alert("Reset password failed: incorrect email or old password.");
+      const newErrors: typeof fieldError = {};
+      if (err?.response?.status === 400) {
+        newErrors.oldPassword = "Current password is incorrect.";
+      } else if (err?.response?.status === 404) {
+        newErrors.email = "Email not found.";
+      } else {
+        alert("Reset password failed: an unexpected error occurred.");
+      }
+
+      setFieldError(newErrors);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -54,7 +115,7 @@ const ResetPasswordForm: React.FC = () => {
           <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
           <div>
             <p className="font-bold">Success!</p>
-            <p>Reset Password successfully!</p>
+            <p>Reset password sucessfully, please sign in again!</p>
           </div>
         </div>
       )}
@@ -69,7 +130,7 @@ const ResetPasswordForm: React.FC = () => {
             Your password has been reset successfully.
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
             <div>
               <label
                 htmlFor="email"
@@ -79,13 +140,17 @@ const ResetPasswordForm: React.FC = () => {
               </label>
               <input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
-                className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+                className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
+                  fieldError.email ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="you@example.com"
               />
+              {fieldError.email && (
+                <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>
+              )}
             </div>
 
             <div>
@@ -101,11 +166,19 @@ const ResetPasswordForm: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  required
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+                  className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
+                    fieldError.oldPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                   placeholder="Enter your current password"
                 />
               </div>
+              {fieldError.oldPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {fieldError.oldPassword}
+                </p>
+              )}
             </div>
 
             <div>
@@ -121,8 +194,11 @@ const ResetPasswordForm: React.FC = () => {
                   type={showPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
+                  className={`mt-1 w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white ${
+                    fieldError.newPassword
+                      ? "border-red-500"
+                      : "border-gray-300"
+                  }`}
                   placeholder="Enter your new password"
                 />
                 <button
@@ -133,6 +209,11 @@ const ResetPasswordForm: React.FC = () => {
                   {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 </button>
               </div>
+              {fieldError.newPassword && (
+                <p className="text-red-500 text-sm mt-1">
+                  {fieldError.newPassword}
+                </p>
+              )}
             </div>
 
             <button

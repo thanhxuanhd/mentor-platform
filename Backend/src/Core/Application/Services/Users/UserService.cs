@@ -1,18 +1,21 @@
 using Application.Helpers;
-using Contract.Services;
 using Contract.Dtos.Users.Extensions;
 using Contract.Dtos.Users.Paginations;
 using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
 using Domain.Constants;
+using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using System.Net;
 
 namespace Application.Services.Users;
 
-public class UserService(IUserRepository userRepository, IEmailService emailService) : IUserService
+public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env) : IUserService
 {
     public async Task<Result<GetUserResponse>> GetUserByEmailAsync(string email)
     {
@@ -117,6 +120,71 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         return Result.Success(true, HttpStatusCode.OK);
     }
 
+    public async Task<Result> EditUserDetailAsync(Guid userId, EditUserProfileRequest request)
+    {
+        var user = await userRepository.GetUserDetailAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure($"User with ID {userId} not found.", HttpStatusCode.NotFound);
+        }
+        if (request.AvailabilityIds is not null &&
+            !await userRepository.CheckEntityListExist<Availability, Guid>(request.AvailabilityIds))
+        {
+            return Result.Failure("Invalid Availability IDs", HttpStatusCode.BadRequest);
+        }
+        if (request.ExpertiseIds is not null &&
+            !await userRepository.CheckEntityListExist<Expertise, Guid>(request.ExpertiseIds))
+        {
+            return Result.Failure("Invalid Expertise IDs", HttpStatusCode.BadRequest);
+        }
+        if (request.TeachingApproachIds is not null &&
+            !await userRepository.CheckEntityListExist<TeachingApproach, Guid>(request.TeachingApproachIds))
+        {
+            return Result.Failure("Invalid Teaching Approach IDs", HttpStatusCode.BadRequest);
+        }
+        if (request.CategoryIds is not null &&
+            !await userRepository.CheckEntityListExist<Category, Guid>(request.CategoryIds))
+        {
+            return Result.Failure("Invalid Category IDs", HttpStatusCode.BadRequest);
+        }
+
+        if (request.AvailabilityIds != null)
+        {
+            user.UserAvailabilities.Clear();
+            user.UserAvailabilities = request.AvailabilityIds
+                .Select(id => new UserAvailability { UserId = user.Id, AvailabilityId = id })
+                .ToList();
+        }
+        if (request.ExpertiseIds != null)
+        {
+            user.UserExpertises.Clear();
+            user.UserExpertises = request.ExpertiseIds
+                .Select(id => new UserExpertise { UserId = user.Id, ExpertiseId = id })
+                .ToList();
+        }
+        if (request.CategoryIds != null)
+        {
+            user.UserCategories.Clear();
+            user.UserCategories = request.CategoryIds
+                .Select(id => new UserCategory { UserId = user.Id, CategoryId = id })
+                .ToList();
+        }
+        if (request.TeachingApproachIds != null)
+        {
+            user.UserTeachingApproaches.Clear();
+            user.UserTeachingApproaches = request.TeachingApproachIds
+                .Select(id => new UserTeachingApproach { UserId = user.Id, TeachingApproachId = id })
+                .ToList();
+        }
+
+        request.ToUser(user);
+        user.Status = UserStatus.Active;
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
+        return Result.Success(HttpStatusCode.OK);
+    }
+
     public async Task<Result> ForgotPasswordRequest(string email)
     {
         var user = await userRepository.GetByEmailAsync(email, user => user.Role);
@@ -146,11 +214,108 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             newPassword = newPassword
         }, HttpStatusCode.OK);
     }
+
+    public async Task<Result<GetUserDetailResponse>> GetUserDetailAsync(Guid userId)
+    {
+        var user = await userRepository.GetUserDetailAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<GetUserDetailResponse>("User not found", HttpStatusCode.NotFound);
+        }
+
+        return Result.Success(user.ToGetUserDetailResponse(), HttpStatusCode.OK);
+    }
+
     private string GenerateRandomPassword(int length)
     {
         const string validChars = "ABCDEFGHJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*?";
         var random = new Random();
         return new string(Enumerable.Repeat(validChars, length)
             .Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+
+    public async Task<Result<string>> UploadAvatarAsync(Guid userId, HttpRequest request, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
+        }
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        var fileContentType = file.ContentType;
+
+        if (!FileConstants.IMAGE_CONTENT_TYPES.Contains(fileContentType))
+        {
+            return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
+        }
+
+        if (file.Length > FileConstants.MAX_IMAGE_SIZE)
+        {
+            return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
+        }
+
+        var imagesPath = Path.Combine(env.WebRootPath, "images");
+
+        if (!Directory.Exists(imagesPath))
+        {
+            Directory.CreateDirectory(imagesPath);
+        }
+
+        try
+        {
+            var fileName = userId.ToString() + Path.GetExtension(file.FileName);
+
+            var filePath = Path.Combine(imagesPath, fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+
+            await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
+
+            var fileUrl = $"{baseUrl}/images/{fileName}";
+
+            return Result.Success(fileUrl, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
+    }
+
+    public Result<bool> RemoveAvatar(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+        {
+            return Result.Failure<bool>("Image URL is required.", HttpStatusCode.BadRequest);
+        }
+
+        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return Result.Failure<bool>("Invalid image URL format.", HttpStatusCode.BadRequest);
+        }
+
+        try
+        {
+            var fileName = Path.GetFileName(uri.LocalPath);
+            var imagesPath = Path.Combine(env.WebRootPath, "images");
+            var filePath = Path.Combine(imagesPath, fileName);
+
+            if (!File.Exists(filePath))
+            {
+                return Result.Failure<bool>("Avatar file not found.", HttpStatusCode.NotFound);
+            }
+
+            File.Delete(filePath);
+
+            return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>($"Failed to remove avatar: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
     }
 }
