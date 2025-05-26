@@ -19,22 +19,17 @@ import { categoryService } from "../../../services/category";
 import { useAuth } from "../../../hooks";
 import type { CourseFormProps } from "../../../types/pages/courses/types.ts";
 
-// Add a debounce utility
-const debounce = <F extends (...args: any[]) => any>(
+function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
   func: F,
   waitFor: number,
-) => {
-  let timeout: ReturnType<typeof setTimeout> | null = null;
+): (...args: Parameters<F>) => void {
+  let timeout: ReturnType<typeof setTimeout>;
 
-  const debounced = (...args: Parameters<F>) => {
-    if (timeout !== null) {
-      clearTimeout(timeout);
-    }
+  return (...args: Parameters<F>): void => {
+    clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), waitFor);
   };
-
-  return debounced as (...args: Parameters<F>) => ReturnType<F>;
-};
+}
 
 export const CourseForm: FC<CourseFormProps> = ({
   formData,
@@ -89,6 +84,8 @@ export const CourseForm: FC<CourseFormProps> = ({
 
       const initialTags = Array.isArray(formData.tags) ? formData.tags : [];
       setTags(initialTags);
+    } else {
+      setNewTag("");
     }
   }, [active, form, formData]);
   const handleSubmit = async () => {
@@ -126,7 +123,7 @@ export const CourseForm: FC<CourseFormProps> = ({
           await courseService.update(formData.id, {
             title: values.title,
             description: values.description,
-            categoryId: values.categoryId,
+            categoryId: values.categoryId || "",
             dueDate: formattedDueDate as string,
             difficulty: values.difficulty,
             mentorId: user?.id || "", // Use current user's ID as mentorId
@@ -164,7 +161,7 @@ export const CourseForm: FC<CourseFormProps> = ({
           await courseService.create({
             title: values.title,
             description: values.description,
-            categoryId: values.categoryId,
+            categoryId: values.categoryId || "",
             dueDate: formattedDueDate as string,
             difficulty: values.difficulty,
             mentorId: user?.id || "", // Use current user's ID as mentorId
@@ -250,7 +247,7 @@ export const CourseForm: FC<CourseFormProps> = ({
               },
             ]}
           >
-            <Input placeholder="Course title" />
+            <Input placeholder="Enter new course title" />
           </Form.Item>
 
           <Form.Item
@@ -266,7 +263,9 @@ export const CourseForm: FC<CourseFormProps> = ({
                 value: category.id,
               }))}
               filterOption={false}
-              onSearch={debounce((input) => setCategoryKeyword(input), 100)}
+              onSearch={(input) =>
+                debounce(() => setCategoryKeyword(input), 100)
+              }
               notFoundContent={
                 categoryKeyword
                   ? "No matching categories"
@@ -300,6 +299,8 @@ export const CourseForm: FC<CourseFormProps> = ({
               style={{ width: "100%" }}
               placeholder="Select due date"
               format="YYYY-MM-DD"
+              minDate={dayjs()}
+              inputReadOnly={true}
             />
           </Form.Item>
           <Form.Item
@@ -359,14 +360,13 @@ export const CourseForm: FC<CourseFormProps> = ({
             label="Description"
             className="md:col-span-2"
             rules={[
-              { required: true, message: "Description is required" },
               {
                 max: 256,
                 message: "Description must not exceed 256 characters",
               },
             ]}
           >
-            <Input.TextArea rows={4} placeholder="Course description" />
+            <Input.TextArea rows={4} placeholder="Enter course description" />
           </Form.Item>
         </div>
       </Form>

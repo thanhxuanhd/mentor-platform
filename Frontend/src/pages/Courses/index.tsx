@@ -94,6 +94,11 @@ const Page: React.FC = () => {
           status: status,
         });
 
+        console.log(
+          "Course list refreshed after fetch courses:",
+          courseResponse,
+        );
+
         const categoryResponse = await categoryService.list();
         const mentorResponse = await mentorService.list();
 
@@ -143,6 +148,7 @@ const Page: React.FC = () => {
     });
   };
 
+
   return (
     <>
       <div className="min-h-screen bg-gray-900 text-gray-200">
@@ -150,9 +156,7 @@ const Page: React.FC = () => {
           <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-semibold">
-                  Course Management
-                </h1>
+                <h1 className="text-2xl font-semibold">Course Management</h1>
                 <button
                   onClick={() => {
                     setPopoverTarget(CoursePopoverTarget.add);

@@ -7,10 +7,7 @@ export const CourseStatesEnumMember: Record<CourseStatus, string> = {
   archived: "Archived",
 };
 
-export type CourseDifficulty =
-  | "beginner"
-  | "intermediate"
-  | "advanced";
+export type CourseDifficulty = "beginner" | "intermediate" | "advanced";
 
 export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
   beginner: "Beginner",
@@ -28,7 +25,7 @@ export const initialFormData: CourseFormDataOptions = {
   id: undefined,
   title: "",
   description: "",
-  categoryId: "",
+  categoryId: undefined,
   status: "draft",
   dueDate: "",
   difficulty: "beginner",

@@ -24,7 +24,6 @@ public class CourseUpdateRequestValidator : AbstractValidator<CourseUpdateReques
             .WithMessage("Course title should not exceed 256 characters.");
 
         RuleFor(x => x.Description)
-            .NotEmpty()
             .MaximumLength(256)
             .WithMessage("Description must not exceed 256 characters.");
 

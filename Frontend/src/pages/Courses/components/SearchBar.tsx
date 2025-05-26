@@ -1,4 +1,6 @@
 import { type ChangeEvent, type FC, useState } from "react";
+import { Button, Flex, Input, Select, Tooltip } from "antd";
+import { CloseOutlined, FilterOutlined } from "@ant-design/icons";
 
 import type { SearchBarProps } from "../../../types/pages/courses/types.ts";
 
@@ -23,138 +25,162 @@ export const SearchBar: FC<SearchBarProps> = ({
   const [mentorId, setMentorId] = useState<string | undefined>();
   const [status, setStatus] = useState<string | undefined>();
 
-  const updateSearchBar = (props: Record<string, string>) => {
+  const updateParentWithFilters = (updatedField: Partial<SearchBarOptions>) => {
     onChange({
       keyword: keyword,
       difficulty: difficulty,
       categoryId: categoryId,
       mentorId: mentorId,
-      ...props,
+      status: status,
+      ...updatedField,
     });
   };
 
-  function handleCategoryChange(event: ChangeEvent<HTMLSelectElement>) {
-    setCategoryId(event.target.value);
-    updateSearchBar({
-      categoryId: event.target.value,
-    });
-  }
-
   function handleKeywordChange(event: ChangeEvent<HTMLInputElement>) {
-    setKeyword(event.target.value);
-    updateSearchBar({
-      keyword: event.target.value,
-    });
+    const value = event.target.value;
+    const actualValue = value === "" ? undefined : value;
+    setKeyword(actualValue);
+    updateParentWithFilters({ keyword: actualValue });
   }
 
-  function handleDifficultyChange(event: ChangeEvent<HTMLSelectElement>) {
-    setDifficulty(event.target.value);
-    updateSearchBar({
-      difficulty: event.target.value,
-    });
+  function handleDifficultyChange(value: string | undefined) {
+    setDifficulty(value);
+    updateParentWithFilters({ difficulty: value });
   }
 
-  function handleMentorChange(event: ChangeEvent<HTMLSelectElement>) {
-    setMentorId(event.target.value);
-    updateSearchBar({
-      mentorId: event.target.value,
-    });
+  function handleCategoryChange(value: string | undefined) {
+    setCategoryId(value);
+    updateParentWithFilters({ categoryId: value });
   }
 
-  function handleStatusChange(event: ChangeEvent<HTMLSelectElement>) {
-    setStatus(event.target.value);
-    updateSearchBar({
-      status: event.target.value,
-    });
+  function handleMentorChange(value: string | undefined) {
+    setMentorId(value);
+    updateParentWithFilters({ mentorId: value });
   }
+
+  function handleStatusChange(value: string | undefined) {
+    setStatus(value);
+    updateParentWithFilters({ status: value });
+  }
+
+  const clearAllFilters = () => {
+    setKeyword(undefined);
+    setDifficulty(undefined);
+    setCategoryId(undefined);
+    setMentorId(undefined);
+    setStatus(undefined);
+    onChange({
+      keyword: undefined,
+      difficulty: undefined,
+      categoryId: undefined,
+      mentorId: undefined,
+      status: undefined,
+    });
+  };
+
+  const anyFilterActive = !!(
+    keyword ||
+    difficulty ||
+    categoryId ||
+    mentorId ||
+    status
+  );
+
+  const selectStyle: React.CSSProperties = { minWidth: "110px" }; // Adjusted for a slightly more compact look like image
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div>
-        <label htmlFor="search" className="block text-sm font-medium mb-1">
-          Search
-        </label>
-        <input
-          type="text"
-          id="search"
-          value={keyword}
-          onChange={handleKeywordChange}
-          placeholder="Filter by keyword"
-          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        />
-      </div>
-      <div>
-        <label htmlFor="difficulty" className="block text-sm font-medium mb-1">
-          Difficulty
-        </label>
-        <select
-          id="difficulty"
-          value={difficulty}
-          onChange={handleDifficultyChange}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <option value="">-</option>
-          {Object.entries(difficulties).map(([value, memberName]) => (
-            <option key={value} value={memberName}>
-              {memberName}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="category" className="block text-sm font-medium mb-1">
-          Category
-        </label>
-        <select
-          id="category"
-          value={categoryId}
-          onChange={handleCategoryChange}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <option value="">-</option>
-          {categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="mentor" className="block text-sm font-medium mb-1">
-          Mentor
-        </label>
-        <select
-          id="mentor"
-          value={mentorId}
-          onChange={handleMentorChange}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <option value="">-</option>
-          {mentors.map((mentor) => (
-            <option key={mentor.id} value={mentor.id}>
-              {mentor.fullName}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label htmlFor="status" className="block text-sm font-medium mb-1">
-          Status
-        </label>
-        <select
-          id="status"
-          value={status}
-          onChange={handleStatusChange}
-          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        >
-          <option value="">-</option>
-          {Object.entries(states).map(([key, value]) => (
-            <option key={key} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+    <Flex
+      align="center"
+      gap="small"
+      wrap="wrap"
+      style={{
+        width: "100%",
+        padding: "8px 12px",
+        background: "#1F2937", // Distinct background color (e.g., Tailwind slate-800)
+        borderRadius: "4px", // Matches the slight rounding in the image
+        marginBottom: "20px", // Spacing between search bar and table
+      }}
+    >
+      <Input
+        id="search"
+        value={keyword || ""}
+        onChange={handleKeywordChange}
+        placeholder="Filter by keyword"
+        prefix={<FilterOutlined />}
+        allowClear
+        variant="borderless"
+        style={{
+          flex: "1 1 200px",
+          minWidth: "180px",
+        }}
+      />
+      <Select
+        id="difficulty"
+        value={difficulty}
+        onChange={handleDifficultyChange}
+        placeholder="Types"
+        allowClear
+        variant="borderless"
+        style={selectStyle}
+        options={Object.entries(difficulties).map(([key, memberName]) => ({
+          key: key,
+          value: String(memberName),
+          label: String(memberName),
+        }))}
+      />
+      <Select
+        id="category"
+        value={categoryId}
+        onChange={handleCategoryChange}
+        placeholder="Category"
+        allowClear
+        variant="borderless"
+        style={selectStyle}
+        options={categories.map((category) => ({
+          key: category.id,
+          value: String(category.id),
+          label: category.name,
+        }))}
+      />
+      <Select
+        id="mentor"
+        value={mentorId}
+        onChange={handleMentorChange}
+        placeholder="Mentor"
+        allowClear
+        variant="borderless"
+        style={selectStyle}
+        options={mentors.map((mentor) => ({
+          key: mentor.id,
+          value: String(mentor.id),
+          label: mentor.fullName,
+        }))}
+      />
+      <Select
+        id="status"
+        value={status}
+        onChange={handleStatusChange}
+        placeholder="States"
+        allowClear
+        variant="borderless"
+        style={selectStyle}
+        options={Object.entries(states).map(([key, stateValue]) => ({
+          key: key,
+          value: String(stateValue),
+          label: String(stateValue),
+        }))}
+      />
+      {anyFilterActive && (
+        <Tooltip title="Clear all filters">
+          <Button
+            icon={<CloseOutlined />}
+            onClick={clearAllFilters}
+            type="text"
+            ghost
+            style={{ marginLeft: "auto" }}
+          />
+        </Tooltip>
+      )}
+    </Flex>
   );
 };

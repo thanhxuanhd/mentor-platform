@@ -44,7 +44,7 @@ export type CourseFormDataOptions = {
   id?: string;
   title: string;
   description: string;
-  categoryId: string;
+  categoryId?: string;
   status: string;
   dueDate: string;
   difficulty: string;
