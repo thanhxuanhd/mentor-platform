@@ -132,10 +132,7 @@ const ResetPasswordForm: React.FC = () => {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-white"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-white">
                 Email
               </label>
               <input
@@ -154,10 +151,7 @@ const ResetPasswordForm: React.FC = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="oldPassword"
-                className="block text-sm font-medium text-white"
-              >
+              <label htmlFor="oldPassword" className="block text-sm font-medium text-white">
                 Current Password
               </label>
               <div className="relative">
@@ -182,10 +176,7 @@ const ResetPasswordForm: React.FC = () => {
             </div>
 
             <div>
-              <label
-                htmlFor="newPassword"
-                className="block text-sm font-medium text-white"
-              >
+              <label htmlFor="newPassword" className="block text-sm font-medium text-white">
                 New Password
               </label>
               <div className="relative">

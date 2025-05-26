@@ -19,6 +19,10 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
         {
             return Result.Failure<AuthResponse>("Null user", HttpStatusCode.NotFound);
         }
+        if (user.PasswordHash == null)
+        {
+            return Result.Failure<AuthResponse>("Invalid password", HttpStatusCode.Unauthorized);
+        }
 
         var isVerified = PasswordHelper.VerifyPassword(request.Password, user!.PasswordHash!);
         if (!isVerified)
@@ -87,7 +91,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
 
         if (!PasswordHelper.VerifyPassword(request.OldPassword, user.PasswordHash!))
         {
-            return Result.Failure("Old password is incorrect", HttpStatusCode.Unauthorized);
+            return Result.Failure("Old password is incorrect", HttpStatusCode.BadRequest);
         }
         var newHashedPassword = PasswordHelper.HashPassword(request.NewPassword);
         user.PasswordHash = newHashedPassword;
