@@ -75,17 +75,19 @@ export class CourseListingAndBrowsingPage extends BasePage {
     //Search course by category filter
     async selectCategory() {
         await this.click(this.DDL_CATEGORY_FILTER_LOC);
-
+        this.DDL_CATEGORY_FILTER_LOC.selectOption('Time Management');
     }
 
     //Search course by mentor filter
     async selectMentor() {
         await this.click(this.DDL_MENTOR_FILTER_LOC);
+        this.DDL_MENTOR_FILTER_LOC.selectOption('DuongSenpai@at.local');
     }
 
     //Search course by level filter
     async selectLevel() {
         await this.click(this.DDL_LEVEL_FILTER_LOC);
+        this.DDL_LEVEL_FILTER_LOC.selectOption('Beginner');
     }
 
     async expectAllCoursesContain(value: string) {

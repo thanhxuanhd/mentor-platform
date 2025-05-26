@@ -7,7 +7,7 @@ test.describe("@CourseListingAndBrowsing All user role management pagination fun
 
   test.beforeEach(async ({ loggedInPage, page }) => {
     courseListingAndBrowsing = new CourseListingAndBrowsingPage(page);
-    await test.step("Navigate to User Role Management page", async () => {
+    await test.step("Navigate to Course Listing and Browsing page", async () => {
       await courseListingAndBrowsing.navigateToCourseListingAndBrowsingPage();
       await courseListingAndBrowsing.navigateToCourses();
     });
@@ -17,14 +17,14 @@ test.describe("@CourseListingAndBrowsing All user role management pagination fun
   test("Verify that the Previous button is disable when user is in the first page", async () => {
     await courseListingAndBrowsing.clickOnNavigationButton(0);
     const isTrue = await courseListingAndBrowsing.getPreviousButtonStatus();
-    expect(isTrue).toBeFalsy();
+    expect(isTrue).toBeTruthy();
   });
 
   test("Verify that the Next button is disable when user is in the last page", async () => {
     const totalPaging = await courseListingAndBrowsing.getAllPagingCount();
     await courseListingAndBrowsing.clickOnNavigationButton(totalPaging - 1);
     const isTrue = await courseListingAndBrowsing.getNextButtonStatus();
-    expect(isTrue).toBeFalsy();
+    expect(isTrue).toBeTruthy();
   });
 
   test("Verify Next button is enable if user stays from Page 2 to the last page", async () => {

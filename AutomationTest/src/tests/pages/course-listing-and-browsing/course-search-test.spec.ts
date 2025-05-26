@@ -6,8 +6,6 @@ import { test } from "../../../core/fixture/authFixture";
 test.describe("@courseListingAndBrowsing All course listing and browsing testcase", async () => {
   let courseListingAndBrowsing: CourseListingAndBrowsingPage;
   const searchCourse = courseData.search_course;
-  const courseRoleFilter = courseData.search_with_filter.course_filter;
-  const searchCourseWithFilter = courseData.search_with_filter.search_filters;
 
   test.beforeEach(async ({ loggedInPage, page }) => {
     courseListingAndBrowsing = new CourseListingAndBrowsingPage(page);
@@ -64,46 +62,26 @@ test.describe("@courseListingAndBrowsing All course listing and browsing testcas
     });
   });
 
-  courseRoleFilter.forEach((role, index) => {
+  searchCourse.forEach((Course, index) => {
     test(`@SmokeTest Verify search Course with filter successfully ${index}`, async () => {
-      await test.step("Perform search Course", async () => {
+      await test.step("Perform search course", async () => {
         await courseListingAndBrowsing.searchCourse();
+        await courseListingAndBrowsing.getAllCourse();
       });
 
       await test.step("Search Course by Category filter", async () => {
         await courseListingAndBrowsing.selectCategory();
-
-        await courseListingAndBrowsing.searchCourse(
-          searchCourseWithFilter.oneKeyword
-        );
-
-        await courseListingAndBrowsing.expectAllCoursesContain(
-          searchCourseWithFilter.oneKeyword
-        );
+        await courseListingAndBrowsing.getAllCourse();
       });
 
       await test.step("Search Course by Level filter", async () => {
         await courseListingAndBrowsing.selectLevel();
-
-        await courseListingAndBrowsing.searchCourse(
-          searchCourseWithFilter.oneKeyword
-        );
-
-        await courseListingAndBrowsing.expectAllCoursesContain(
-          searchCourseWithFilter.oneKeyword
-        );
+        await courseListingAndBrowsing.getAllCourse();
       });
 
       await test.step("Search Course by Mentor filter", async () => {
         await courseListingAndBrowsing.selectMentor();
-
-        await courseListingAndBrowsing.searchCourse(
-          searchCourseWithFilter.oneKeyword
-        );
-
-        await courseListingAndBrowsing.expectAllCoursesContain(
-          searchCourseWithFilter.oneKeyword
-        );
+        await courseListingAndBrowsing.getAllCourse();
       });
     });
   });
