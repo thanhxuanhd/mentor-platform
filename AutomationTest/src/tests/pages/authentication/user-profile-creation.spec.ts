@@ -37,6 +37,7 @@ test.describe("@Registration Sign Up test", () => {
     "Empty fullname": testDataStep2.empty_fullname,
     "Empty phone number": testDataStep2.empty_phone_number,
     "Incorrect phone number format": testDataStep2.wrong_phone_number_format,
+    "Empty availability": testDataStep2.empty_availability,
     "Verify user can search for expertise value":
       testDataStep2.search_expertise,
     "Verify display error message when skills exceed 200 characters":
