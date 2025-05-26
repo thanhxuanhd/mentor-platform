@@ -1,0 +1,22 @@
+{
+    "search_course": [
+    {
+      "fullname": "Public Speaking Mastery"
+    },
+    {
+      "empty": ""
+    },
+    {
+      "oneKeyword": "Public"
+    },
+    {
+      "multipleKeywords": "Speaking Mastery."
+    },
+    {
+      "invalidKeyword": "Sempoi"
+    },
+    {
+      "wildCard": "Pu"
+    }
+  ]
+}

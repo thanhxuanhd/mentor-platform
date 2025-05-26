@@ -8,8 +8,8 @@ type AuthFixtures = {
 };
 
 const defaultUser: LoginUser = {
-    email: process.env.USER_NAME!,
-    password: process.env.PASSWORD!,
+    email: "string@example.com",
+    password: "stringss",
 };
 
 export const test = baseTest.extend<AuthFixtures>({
