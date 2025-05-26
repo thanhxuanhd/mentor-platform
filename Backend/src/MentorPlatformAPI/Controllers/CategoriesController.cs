@@ -5,11 +5,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-[Authorize]
+
 [Route("api/[controller]")]
 [ApiController]
 public class CategoriesController(ICategoryService categoryService) : ControllerBase
 {
+    [Authorize]
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetCategoryById(Guid id)
+    {
+        var result = await categoryService.GetCategoryByIdAsync(id);
+        return StatusCode((int)result.StatusCode, result);
+    }
     [HttpGet]
     public async Task<IActionResult> GetCategories([FromQuery] FilterCategoryRequest request)
     {
@@ -20,6 +27,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpGet("{id}/courses")]
     public async Task<IActionResult> FilterCourseByCategory(Guid id, FilterCourseByCategoryRequest request)
     {
@@ -28,6 +36,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateCategory([FromBody] CategoryRequest request)
     {
@@ -35,6 +44,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpPut]
     [Route("{categoryId}")]
     public async Task<IActionResult> EditCategory(Guid categoryId, [FromBody] CategoryRequest request)
@@ -43,6 +53,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize]
     [HttpDelete]
     [Route("{categoryId}")]
     public async Task<IActionResult> DeleteCategory(Guid categoryId)
