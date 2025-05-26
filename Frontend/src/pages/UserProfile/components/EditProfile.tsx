@@ -464,13 +464,20 @@ export default function EditProfile() {
                           message: "Please enter your full name!",
                         },
                         {
-                          max: 50,
+                          max: 100,
                           message: "Full name can not exceed 100 characters!",
                         },
                         {
                           pattern: /^[A-Za-z\s]+$/,
-                          message:
-                            "Full name can only contain letters and spaces!",
+                          message: "Full name can only contain letters and spaces!",
+                        },
+                        {
+                          validator: (_, value) =>
+                            value && value.trim().length > 0
+                              ? Promise.resolve()
+                              : Promise.reject(
+                                  "Full name is required and cannot be all white space!",
+                                ),
                         },
                       ]}
                     >
@@ -528,14 +535,23 @@ export default function EditProfile() {
             <div>
               <Form.Item name="expertise" label="Areas Of Expertise" rules={[]}>
                 <Select
+                  maxCount={5}
                   mode="multiple"
                   allowClear
                   placeholder="Select your field of expertise"
                   className="w-full"
                   size="large"
                   options={expertiseOptions}
+                  fieldNames={{ label: "label", value: "value" }}
+                  filterOption={(input, option) =>
+                    String(option?.label)
+                      .replace(/\s/g, "")
+                      .toLowerCase()
+                      .includes(input.replace(/\s/g, "").toLowerCase())
+                  }
                 />
               </Form.Item>
+
             </div>
             <div className="flex gap-4 items-center justify-center">
               <div className="flex-1">
@@ -570,7 +586,12 @@ export default function EditProfile() {
               </div>
             </div>
             <div className="flex gap-4 items-center justify-center"></div>
-            <Form.Item name="availability" label="Your Availability" rules={[]}>
+            <Form.Item name="availability" label="Your Availability" rules={[
+                {
+                  required: true,
+                  message: "Please select your availability!",
+                },
+              ]}>
               <div className="flex gap-2 items-center justify-center flex-wrap">
                 {availabilityOptions.map((item) => (
                   <Button
@@ -612,6 +633,13 @@ export default function EditProfile() {
                 className="w-full"
                 size="large"
                 options={teachingApproachOptions}
+                fieldNames={{ label: "label", value: "value" }}
+                filterOption={(input, option) =>
+                String(option?.label)
+                  .replace(/\s/g, "")
+                  .toLowerCase()
+                  .includes(input.replace(/\s/g, "").toLowerCase())
+              }
               />
             </Form.Item>
 
@@ -623,6 +651,13 @@ export default function EditProfile() {
                 className="w-full"
                 size="large"
                 options={categoryOptions}
+                fieldNames={{ label: "label", value: "value" }}
+                filterOption={(input, option) =>
+                  String(option?.label)
+                    .replace(/\s/g, "")
+                    .toLowerCase()
+                    .includes(input.replace(/\s/g, "").toLowerCase())
+                }
               />
             </Form.Item>
 

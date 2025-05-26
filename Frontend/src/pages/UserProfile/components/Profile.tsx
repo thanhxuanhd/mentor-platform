@@ -190,7 +190,9 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
 
         <div className="mb-8">
           <h3 className="text-gray-400 mb-2">About</h3>
-          <p>{userData?.bio || "No bio provided."}</p>
+          <p className="whitespace-pre-wrap break-words">
+            {userData?.bio || "No bio provided."}
+          </p>
         </div>
 
         <div className="mb-8">
@@ -210,12 +212,16 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
 
         <div className="mb-8">
           <h3 className="text-gray-400 mb-2">Professional skills</h3>
-          <p>{userData?.skills || "No skills provided."}</p>
+          <p className="whitespace-pre-wrap break-words">
+            {userData?.skills || "No skills provided."}
+          </p>
         </div>
 
         <div className="mb-8">
           <h3 className="text-gray-400 mb-2">Industry experience</h3>
-        <p>{userData?.experiences || "No experience provided."}</p>
+        <p className="whitespace-pre-wrap break-words">
+          {userData?.experiences || "No experience provided."}
+        </p>
       </div>
 
       <div className="mb-8">
@@ -270,7 +276,9 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
 
         <div className="mb-8">
         <h3 className="text-gray-400 mb-2">Learning Goal</h3>
-        <p>{userData?.goal || "No goal provided."}</p>
+        <p className="whitespace-pre-wrap break-words">
+          {userData?.goal || "No goal provided."}
+        </p>
         </div>
 
         <div className="pt-4 border-t border-gray-700">
