@@ -36,11 +36,3 @@ export function withTimestampEmail(data: any) {
     email: `${timestamp}${data.email}`,
   };
 }
-
-export function withTimestampEmail(data: any) {
-    const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '');
-    return {
-        ...data,
-        email: `${timestamp}${data.email}`
-    };
-}
