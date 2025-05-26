@@ -38,11 +38,6 @@ export class CategoryBrowsingPage extends BasePage {
       } else {
         for (let category of categories) {
           category = category.trim().toLowerCase();
-          console.log(
-            `Category: ${category}, Search Term: ${searchTerm
-              .trim()
-              .toLowerCase()}`
-          );
           expect(
             category.includes(searchTerm.trim().toLowerCase())
           ).toBeTruthy();

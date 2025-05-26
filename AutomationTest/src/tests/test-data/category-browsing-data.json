@@ -3,8 +3,7 @@
     "search_term": " "
   },
   "search_category_keyword_no_results": {
-    "search_term": "nonexistentkeyword",
-    "expectedMessage": "No data"
+    "search_term": "nonexistentkeyword"
   },
   "search_category_multiple_keyword": {
     "search_term": "Time Management"
