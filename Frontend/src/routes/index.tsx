@@ -16,6 +16,7 @@ import ForbiddenPage from "../pages/Forbidden";
 import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
+import AvailabilityManager from "../pages/Availability";
 
 const AppRoutes = () => {
   return (
@@ -46,6 +47,7 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
+        <Route path="availability" element={<AvailabilityManager />} />
       </Route>
       <Route
         element={
