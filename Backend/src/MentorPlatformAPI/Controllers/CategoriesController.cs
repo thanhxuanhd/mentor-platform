@@ -29,7 +29,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
     [Authorize]
     [HttpGet("{id}/courses")]
-    public async Task<IActionResult> FilterCourseByCategory(Guid id, FilterCourseByCategoryRequest request)
+    public async Task<IActionResult> FilterCourseByCategory(Guid id, [FromQuery] FilterCourseByCategoryRequest request)
     {
         var result = await categoryService.FilterCourseByCategoryAsync(id, request);
 

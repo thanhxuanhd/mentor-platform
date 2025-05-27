@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import Search from 'antd/es/input/Search';
 import EditCategoryModal from './components/EditCategoryModal';
-import type { Category, CategoryFilter, CategoryRequest } from '../../types/CategoryTypes';
+import type { Category, CategoryFilter, CategoryFilterCourse, CategoryRequest } from '../../types/CategoryTypes';
 import type { NotificationProps } from '../../types/Notification';
 import type { PaginatedList } from '../../types/Pagination';
 import PaginationControls from '../../components/shared/Pagination';
-import { createCategory, deleteCategory, editCategory, getCategoryById, getListCategories } from '../../services/category/categoryServices';
+import { createCategory, deleteCategory, editCategory, getCategoryById, getCoursesByCategoryId, getListCategories } from '../../services/category/categoryServices';
+import DisplayCourseModal from './components/DisplayCoursesModal';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,12 +26,15 @@ export default function CategoriesPage() {
     keyword: "",
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [isCreating, setIsCreating] = useState(true);
   const { notification } = App.useApp();
+  const [courses, setCourses] = useState<CategoryFilterCourse[]>([]);
+
 
   const fetchData = async () => {
     try {
@@ -58,6 +62,18 @@ export default function CategoriesPage() {
       setPagination((prev) => ({ ...prev, items: [], totalCount: 0 }));
     }
   };
+
+  const fetchCourses = async (categoryId: string) => {
+    try {
+      const response = await getCoursesByCategoryId(categoryId);
+      setCourses(response.items || []);
+      return response.items || [];
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses([]);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [filters]);
@@ -171,6 +187,15 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleCourseModalClick = (categoryId: string) => {
+    fetchCourses(categoryId);
+    setIsCourseModalVisible(true);
+  };
+
+  const handleCourseModalCancel = () => {
+    setIsCourseModalVisible(false);
+  };
+
   const columns: ColumnsType<Category> = [
     {
       title: "Name",
@@ -234,6 +259,13 @@ export default function CategoriesPage() {
               />
             </Popconfirm>
           </Tooltip>
+          <Tooltip title="View List Courses">
+            <Button
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => handleCourseModalClick(record.id)}
+            />
+          </Tooltip>
         </Space>
       ),
     },
@@ -265,6 +297,7 @@ export default function CategoriesPage() {
         dataSource={categories}
         rowKey="id"
         pagination={false}
+        className='mb-6'
       />
       <PaginationControls
         pageIndex={pagination.pageIndex}
@@ -293,6 +326,14 @@ export default function CategoriesPage() {
         title={isCreating ? "Add Category" : "Edit Category"}
         onText={isCreating ? "Add" : "Update"}
       />
+      <DisplayCourseModal
+        visible={isCourseModalVisible}
+        courses={courses}
+        onClose={handleCourseModalCancel}
+      />
     </div>
   );
 }
+
+
+

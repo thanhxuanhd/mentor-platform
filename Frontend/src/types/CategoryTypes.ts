@@ -24,3 +24,11 @@ export interface CategoryRequest {
     description?: string;
     status: boolean;
 }
+
+export interface CategoryFilterCourse {
+    id: string;
+    title: string;
+    difficulty: string;
+    status: string;
+    dueDate: string;
+  }
