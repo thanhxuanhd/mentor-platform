@@ -21,7 +21,7 @@ export class CategoryBrowsingPage extends BasePage {
   }
 
   async navigateToCategoryPage(): Promise<void> {
-    await this.page.goto(PAGE_ENDPOINT_URL.CATEGORY_BROWSING);
+    await this.page.goto(PAGE_ENDPOINT_URL.CATEGORIES);
   }
 
   async searchCategory(categoryName: string): Promise<void> {
@@ -44,5 +44,10 @@ export class CategoryBrowsingPage extends BasePage {
         }
       }
     }
+  }
+
+  async getNumberOfCategoryRow() {
+    const categoryRowCount = await this.LBL_CATEGORY_NAME.count();
+    return categoryRowCount;
   }
 }

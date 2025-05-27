@@ -1,13 +1,20 @@
+import { expect } from "@playwright/test";
 import { test } from "../../../core/fixture/authFixture";
+import { withTimestamp } from "../../../core/utils/generate-unique-data";
 import { CategoryBrowsingSearch } from "../../../models/categories/category-browsing";
+import { CUCategory } from "../../../models/categories/create-category";
+import { CategoryPage } from "../../../pages/categories/categories-page";
 import { CategoryBrowsingPage } from "../../../pages/categories/category-browsing-page";
 import categorySearchTermData from "../../test-data/category-browsing-data.json";
+import categoryData from "../../test-data/category-data.json";
 
 test.describe("@Category Category browsing tests", () => {
   let categoryBrowsingPage: CategoryBrowsingPage;
+  let categoryPage: CategoryPage;
 
   test.beforeEach(async ({ loggedInPage, page }) => {
     categoryBrowsingPage = new CategoryBrowsingPage(page);
+    categoryPage = new CategoryPage(page);
     await categoryBrowsingPage.navigateToCategoryPage();
   });
 
@@ -27,7 +34,7 @@ test.describe("@Category Category browsing tests", () => {
   };
 
   for (const [label, data] of Object.entries(categories)) {
-    test(`${label} - Create a Category`, async () => {
+    test(`${label} - Verify Search category`, async () => {
       await test.step("Search category", async () => {
         await categoryBrowsingPage.searchCategory(data.search_term);
       });
@@ -36,4 +43,36 @@ test.describe("@Category Category browsing tests", () => {
       });
     });
   }
+
+  test(`@SmokeTest Verifying that category list are updated after editing category`, async () => {
+    const categoryUniqueName: CUCategory = withTimestamp(
+      categoryData.update_valid_category
+    );
+    await test.step("Input category details and submit", async () => {
+      await categoryPage.clickUpdateCategoryButton();
+      await categoryPage.inputName(categoryUniqueName.name);
+      await categoryPage.inputDescription(
+        categoryData.update_valid_category.description
+      );
+    });
+    await test.step("Confirm update selected category", async () => {
+      await categoryPage.clickUpdateButton();
+    });
+    await test.step("Verify category is updated", async () => {
+      await categoryPage.expectMessage(categoryUniqueName.name);
+    });
+  });
+
+  test(`@SmokeTest Verifying that category list updated after deleting a category`, async () => {
+    await test.step("Verify category is deleted", async () => {
+      const beforeDeleteCategory =
+        await categoryBrowsingPage.getNumberOfCategoryRow();
+      await categoryPage.clickDeleteCategoryButton();
+      await categoryPage.clickConfirmDeleteButton();
+      await categoryPage.expectSucessDeleteMessage();
+      const afterDeleteCategory =
+        await categoryBrowsingPage.getNumberOfCategoryRow();
+      expect(beforeDeleteCategory).not.toEqual(afterDeleteCategory);
+    });
+  });
 });

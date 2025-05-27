@@ -4,5 +4,5 @@ export const PAGE_ENDPOINT_URL = {
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
   REGISTRATION_STEP_1: "/signup",
-  CATEGORY_BROWSING: "/categories",
+  VIEW_PROFILE: "/profile",
 };
