@@ -8,5 +8,7 @@ public class FilterMentorApplicationResponse
     public string Email { get; set; } = null!;
     public string? Bio { get; set; }
     public string? Experiences { get; set; } = null!;
+    public DateTime SubmittedDate { get; set; }
+    public string Status { get; set; } = null!;
     public List<string> Expertises { get; set; } = new List<string>();
 }
