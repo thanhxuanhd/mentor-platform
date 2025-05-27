@@ -72,9 +72,4 @@ export class PreferentsSetupPage extends BasePage {
     async clickCompleteRegistrationButton() {
         await this.click(this.BTN_COMPLETEREGISTRATION_LOCATOR);
     }
-
-    async expectMessage(message: string) {
-        const locator: Locator = this.page.getByText(message);
-        await this.isVisible(locator);
-    }
 }

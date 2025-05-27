@@ -40,7 +40,7 @@ test.describe('@Registration User Registration test', () => {
     };
 
     for (const [label, data] of Object.entries(validserData)) {
-        test(`${label} - User Registration 3 steps`, async ({ page }) => {
+        test(`${label} - User Registration 3 steps with valid data`, async ({ page }) => {
             await test.step('Input details data and submit', async () => {
                 await preferencesSetupPage.selectTopics(data.topics);
                 await preferencesSetupPage.selectMultipleTeachingApproaches(data.teachApproach);
@@ -57,7 +57,7 @@ test.describe('@Registration User Registration test', () => {
     }
 
     for (const [label, data] of Object.entries(invalidUserData)) {
-        test(`${label} - User Registration 3 steps`, async ({ page }) => {
+        test(`${label} - User Registration 3 steps with invalid data`, async ({ page }) => {
             await test.step('Input details data and submit', async () => {
                 await preferencesSetupPage.selectTopics(data.topics);
                 await preferencesSetupPage.selectMultipleTeachingApproaches(data.teachApproach);
