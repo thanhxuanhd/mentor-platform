@@ -128,7 +128,7 @@ export class EditUserProfile extends BasePage {
     if (experience) await this.fill(this.TXT_INDUSTRY_EXPERIENCE, experience);
   }
 
-  async selectAvailbilityOptions(availbility: number[]) {
+  async selectAvailabilityOptions(availbility: number[]) {
     if (availbility) {
       for (const item of availbility) {
         await this.click(this.DDL_AVAILBILITY.nth(item));
@@ -136,7 +136,7 @@ export class EditUserProfile extends BasePage {
     }
   }
 
-  async unselectedAvailbilityOptions() {
+  async unselectedAvailabilityOptions() {
     const optionsCount = await this.DDL_SELECTED_AVAILBILITY.count();
     for (let i = 0; i < optionsCount; i++) {
       const button = this.DDL_SELECTED_AVAILBILITY.nth(0);
@@ -157,12 +157,5 @@ export class EditUserProfile extends BasePage {
 
   async clickOnSaveChangeButton() {
     await this.click(this.BTN_SAVE_CHANGE);
-  }
-
-  async expectMessage(message: string) {
-    if (message) {
-      const locator: Locator = this.page.getByText(message);
-      await this.isVisible(locator);
-    }
   }
 }
