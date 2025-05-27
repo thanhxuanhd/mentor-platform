@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.BASE_URL,
     trace: 'retain-on-failure',
-    headless: true,
+    headless: false,
     testIdAttribute: '',
     actionTimeout: 10000,
     extraHTTPHeaders: {
