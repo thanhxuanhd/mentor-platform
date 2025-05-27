@@ -422,7 +422,7 @@ namespace Application.Test
         [Test]
         public async Task UploadAvatar_TooLarge_ReturnsBadRequest()
         {
-            var file = CreateMockFormFile("file.jpg", "image/jpeg", FileConstants.MAX_IMAGE_SIZE + 1);
+            var file = CreateMockFormFile("file.jpg", "image/jpeg", FileConstants.MAX_FILE_SIZE + 1);
             _mockUserRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), null))
             .ReturnsAsync(new User { Id = Guid.NewGuid() });
 
