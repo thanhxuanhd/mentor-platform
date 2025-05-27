@@ -3,9 +3,9 @@ using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
 using Contract.Repositories;
 using Contract.Shared;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
-using Microsoft.AspNetCore.Identity;
 
 namespace Application.Services.MentorApplication;
 
@@ -119,6 +119,9 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         application.Status = ApplicationStatus.Submitted;
         mentorApplicationRepository.Update(application);
         await mentorApplicationRepository.SaveChangesAsync();
+
+        var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Id);
 
         return Result.Success(true, HttpStatusCode.OK);
     }

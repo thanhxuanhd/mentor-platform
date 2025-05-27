@@ -4,6 +4,7 @@
     {
         public const string SUBJECT_RESET_PASSWORD = "Reset Your Password";
 
+        public const string SUBJECT_UPDATE_APPLICATION = "Mentor has updated application";
         public static string BodyResetPasswordEmail(string email, string newPassword)
         {
             return $@"
@@ -16,6 +17,16 @@
             {Environment.NewLine}
             Please login and change it as soon as possible for security reasons.
             {Environment.NewLine}
+            Thank you,
+            Support Team";
+        }
+
+        public static string BodyUpdatedNotificationApplication(Guid id)
+        {
+            return $@"
+            Hello Admin,
+            {Environment.NewLine}
+            Mentor with ID {id} has updated their application.
             Thank you,
             Support Team";
         }
