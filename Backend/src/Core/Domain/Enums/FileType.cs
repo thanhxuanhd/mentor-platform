@@ -2,8 +2,8 @@
 
 namespace Domain.Enums;
 
-[JsonConverter(typeof(JsonStringEnumConverter<CourseMediaType>))]
-public enum CourseMediaType
+[JsonConverter(typeof(JsonStringEnumConverter<FileType>))]
+public enum FileType
 {
     Pdf = 0,
     Video = 1,
