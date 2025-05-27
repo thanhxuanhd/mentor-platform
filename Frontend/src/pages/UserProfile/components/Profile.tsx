@@ -190,9 +190,10 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
 
         <div className="mb-8">
           <h3 className="text-gray-400 mb-2">About</h3>
-          <p className="whitespace-pre-wrap break-words">
-            {userData?.bio || "No bio provided."}
-          </p>
+          <div className="space-y-2 whitespace-pre-wrap break-words">
+            <p><strong>Phone:</strong> {userData?.phoneNumber || "No phone number provided."}</p>
+            <p><strong>Bio:</strong> {userData?.bio || "No bio provided."}</p>
+          </div>
         </div>
 
         <div className="mb-8">
