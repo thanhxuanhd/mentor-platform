@@ -102,7 +102,6 @@ export class CoursePage extends BasePage {
         await this.click(dayOption);
     }
 
-
     async inputTagsName(tags: string[]) {
         for (const tag of tags) {
             await this.fill(this.TXT_TAGS_LOCATOR, tag);
