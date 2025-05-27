@@ -1,6 +1,3 @@
-using System;
-using Domain.Enums;
-
 namespace Contract.Dtos.MentorApplication.Responses;
 
 public class    MentorApplicationDetailResponse

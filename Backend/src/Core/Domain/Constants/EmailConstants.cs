@@ -31,5 +31,26 @@
             Best regards,
             Mentor Platform Team";
         }
+
+        public const string SUBJECT_MENTOR_APPLICATION_DECISION = "Mentor Application Decision";
+        public static string BodyMentorApplicationDecisionEmail(string mentorName, string status, string? note)
+        {
+            if (string.IsNullOrEmpty(note))
+            {
+                note = "No additional notes provided.";
+            }
+            
+            return $@"
+            Dear {mentorName},
+            {Environment.NewLine}
+            Your mentor application has been {status.ToLower()}.
+            {Environment.NewLine}
+            Note: {note}
+            {Environment.NewLine}
+            Thank you for your interest in becoming a mentor.
+            {Environment.NewLine}
+            Best regards,
+            Mentor Platform Team";
+        }
     }
 }

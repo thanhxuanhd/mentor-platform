@@ -1,4 +1,3 @@
-using System;
 using System.Net;
 using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
@@ -141,6 +140,55 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         var result = new RequestApplicationInfoResponse
         {
             Message = "Request for additional information has been sent successfully.",
+        };
+
+        return Result.Success(result, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid applicationId, UpdateApplicationStatusRequest request)
+    {
+        var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
+
+        if (application == null)
+        {
+            return Result.Failure<UpdateApplicationStatusResponse>(
+                "Mentor application not found.", HttpStatusCode.NotFound
+            );
+        }
+
+        if (application.Status == ApplicationStatus.Approved || application.Status == ApplicationStatus.Rejected)
+        {
+            return Result.Failure<UpdateApplicationStatusResponse>(
+                "Application is already approved or rejected.", HttpStatusCode.Conflict
+            );
+        }
+
+        application.Status = request.Status;
+        application.Note = request.Note;
+        application.ReviewedAt = DateTime.Now;
+
+        mentorApplicationRepository.Update(application);
+        await mentorApplicationRepository.SaveChangesAsync();
+
+        var subject = EmailConstants.SUBJECT_MENTOR_APPLICATION_DECISION;
+        var body = EmailConstants.BodyMentorApplicationDecisionEmail(application.Mentor.FullName, request.Status.ToString(), request.Note);
+
+        var emailSent = await emailService.SendEmailAsync(
+            application.Mentor.Email,
+            subject,
+            body
+        );
+
+        if (!emailSent)
+        {
+            return Result.Failure<UpdateApplicationStatusResponse>(
+                "Failed to send notification email.", HttpStatusCode.InternalServerError
+            );
+        }
+
+        var result = new UpdateApplicationStatusResponse
+        {
+            Message = "Mentor application status updated successfully.",
         };
 
         return Result.Success(result, HttpStatusCode.OK);

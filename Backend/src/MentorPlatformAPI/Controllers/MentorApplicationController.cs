@@ -35,4 +35,12 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
         var result = await mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
         return StatusCode((int)result.StatusCode, result);
     }
+    [Authorize(Roles = "Admin")]
+    [HttpPut("mentor-applications/{applicationId}/status")]
+    public async Task<IActionResult> UpdateApplicationStatus(Guid applicationId, UpdateApplicationStatusRequest request)
+    {
+        var result = await mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
 }

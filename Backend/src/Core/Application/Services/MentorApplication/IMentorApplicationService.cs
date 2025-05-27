@@ -9,4 +9,5 @@ public interface IMentorApplicationService
     Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request);
     Task<Result<MentorApplicationDetailResponse>> GetMentorApplicationByIdAsync(Guid currentUserId, Guid applicationId);
     Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid applicationId, RequestApplicationInfoRequest request);
+    Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid applicationId, UpdateApplicationStatusRequest request);
 }
