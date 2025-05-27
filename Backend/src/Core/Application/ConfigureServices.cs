@@ -20,7 +20,6 @@ public static class ConfigureServices
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICategoryService, CategoryService>();
         services.AddScoped<ICourseService, CourseService>();
-        services.AddScoped<ICourseItemService, CourseItemService>();
         services.AddScoped<ITeachingApproachService, TeachingApproachService>();
         services.AddScoped<IExpertiseService, ExpertiseService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
