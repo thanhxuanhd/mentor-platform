@@ -1,6 +1,6 @@
 namespace Contract.Dtos.MentorApplication.Responses;
 
-public class    MentorApplicationDetailResponse
+public class MentorApplicationDetailResponse
 {
     public Guid MentorApplicationId { get; set; }
     public string? ProfilePhotoUrl { get; set; }
