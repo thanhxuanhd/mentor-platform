@@ -78,10 +78,11 @@ public class MentorApplicationControllerTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
         var response = new RequestApplicationInfoResponse { Message = "Information request sent." };
         var result = Result.Success(response, HttpStatusCode.OK);
-        _mockMentorApplicationService.Setup(s => s.RequestApplicationInfoAsync(applicationId, request)).ReturnsAsync(result);
+        _mockMentorApplicationService.Setup(s => s.RequestApplicationInfoAsync(adminId, applicationId, request)).ReturnsAsync(result);
 
         // Act
         var actionResult = await _mentorApplicationController.RequestApplicationInfo(applicationId, request);
@@ -98,10 +99,11 @@ public class MentorApplicationControllerTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new UpdateApplicationStatusRequest { Status = Domain.Enums.ApplicationStatus.Approved, Note = "Approved" };
         var response = new UpdateApplicationStatusResponse { Message = "Status updated." };
         var result = Result.Success(response, HttpStatusCode.OK);
-        _mockMentorApplicationService.Setup(s => s.UpdateApplicationStatusAsync(applicationId, request)).ReturnsAsync(result);
+        _mockMentorApplicationService.Setup(s => s.UpdateApplicationStatusAsync(adminId, applicationId, request)).ReturnsAsync(result);
 
         // Act
         var actionResult = await _mentorApplicationController.UpdateApplicationStatus(applicationId, request);

@@ -72,5 +72,15 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasMany(u => u.MentorApplications)
+            .WithOne(ma => ma.Mentor)
+            .HasForeignKey(ma => ma.MentorId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasMany(u => u.ReviewedMentorApplications)
+            .WithOne(ma => ma.Admin)
+            .HasForeignKey(ma => ma.AdminId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }
