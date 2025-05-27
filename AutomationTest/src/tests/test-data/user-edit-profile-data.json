@@ -1,0 +1,79 @@
+{
+  "valid_case": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "0912345678",
+    "bio": "My name is Cuong",
+    "expertise": [
+      "Business",
+      "Communication",
+      "Data Science",
+      "Design",
+      "Programming"
+    ],
+    "skills": ".NET, TS",
+    "experience": "5 years in AUTE",
+    "availbility": [2, 3],
+    "teaching": ["Discussion Based", "lecture style"],
+    "category": ["Time Management", "Communication Skills"],
+    "communication_method": "audio call",
+    "objective": "Become PM",
+    "expectedMessage": "Your Profile"
+  },
+  "empty_fullname": {
+    "fullname": "",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "expectedMessage": "Full name is required and cannot be all white space!"
+  },
+  "wrong_format_fullname": {
+    "fullname": "18237!!!!",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "expectedMessage": "Full name can only contain letters and spaces!"
+  },
+  "empty_availability": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "0912345678",
+    "availbility": [],
+    "search_term": "pr",
+    "expectedMessage": "Please select your availability!"
+  },
+  "invalid_image_format": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "expectedMessage": "File format not allowed!"
+  },
+  "image_over_1MB": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "expectedMessage": "Image must smaller than 1MB!"
+  },
+  "empty_phone_number": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "",
+    "availbility": [2, 3],
+    "expectedMessage": "Please enter your phone number!"
+  },
+  "wrong_phone_number_format": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "abcd",
+    "availbility": [2, 3],
+    "expectedMessage": "Phone number must consist of exactly 10 digits!"
+  },
+  "professional_skills_exceed_200_characters": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "skills": "xA7mBv#pQ29dLTefN5Wgy!JcX13rKuZsnVbH8@MoUqYi9zC4jlthRDkw0PaGSmEx6OIfNeB$vFJgqp7MBLXZHTuKWo2CSr!5nx9dyARzVMtL3cfPKuGEYbQ6J@miha0XtDUovw41FepWBn92zYq!CMJvg87sOrxRkTLUhDZwbVtyi4jEQg6pNX3xA7mBv#pQ29dLTefNxA7mBv#pQ29dLTefN5Wgy!JcX13rKuZsnVbH8@MoUqYi9zC4jlthRDkw0PaGSmEx6OIfNeB$vFJgqp7MBLXZHTuKWo2CSr!5nx9d",
+    "expectedMessage": "Professional Skills can not exceed 200 characters"
+  },
+  "industry_experience_exceed_200_characters": {
+    "fullname": "Le Kim Cuong",
+    "phoneNumber": "0912345678",
+    "availbility": [2, 3],
+    "experience": "xA7mBv#pQ29dLTefN5Wgy!JcX13rKuZsnVbH8@MoUqYi9zC4jlthRDkw0PaGSmEx6OIfNeB$vFJgqp7MBLXZHTuKWo2CSr!5nx9dyARzVMtL3cfPKuGEYbQ6J@miha0XtDUovw41FepWBn92zYq!CMJvg87sOrxRkTLUhDZwbVtyi4jEQg6pNX3xA7mBv#pQ29dLTefNxA7mBv#pQ29dLTefN5Wgy!JcX13rKuZsnVbH8@MoUqYi9zC4jlthRDkw0PaGSmEx6OIfNeB$vFJgqp7MBLXZHTuKWo2CSr!5nx9d",
+    "expectedMessage": "Industry Experience can not exceed 200 characters"
+  }
+}
