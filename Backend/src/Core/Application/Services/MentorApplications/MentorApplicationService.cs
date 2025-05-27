@@ -7,7 +7,7 @@ using Contract.Shared;
 using Domain.Constants;
 using Domain.Enums;
 
-namespace Application.Services.MentorApplication;
+namespace Application.Services.MentorApplications;
 
 public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
 {

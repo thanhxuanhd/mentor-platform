@@ -2,7 +2,7 @@ using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
 using Contract.Shared;
 
-namespace Application.Services.MentorApplication;
+namespace Application.Services.MentorApplications;
 
 public interface IMentorApplicationService
 {

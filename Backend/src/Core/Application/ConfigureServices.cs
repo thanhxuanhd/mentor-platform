@@ -3,7 +3,7 @@ using Application.Services.Availabilities;
 using Application.Services.Categories;
 using Application.Services.Courses;
 using Application.Services.Expertises;
-using Application.Services.MentorApplication;
+using Application.Services.MentorApplications;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;
 using Contract.Services;
