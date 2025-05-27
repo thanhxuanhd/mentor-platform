@@ -1,13 +1,16 @@
+using System;
 using System.Net;
 using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
+using Domain.Constants;
 using Domain.Enums;
 
 namespace Application.Services.MentorApplication;
 
-public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository) : IMentorApplicationService
+public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
 {
     public async Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request)
     {
@@ -15,7 +18,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
         if (!string.IsNullOrEmpty(request.Keyword))
         {
-            mentorApplications = mentorApplications.Where(x => x.Mentor.FullName.Contains(request.Keyword));
+            mentorApplications = mentorApplications.Where(x => x.Mentor.FullName.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase));
         }
 
         if (request.Status.HasValue && Enum.IsDefined(typeof(ApplicationStatus), request.Status.Value))
@@ -83,7 +86,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
             Note = applicationDetails.Note,
-            Documents = applicationDetails.ApplicationDocuments.Select(doc => new Document
+            Documents = applicationDetails.ApplicationDocuments.Select(doc => new DocumentResponse
             {
                 DocumentId = doc.Id,
                 DocumentType = doc.DocumentType.ToString(),
@@ -92,5 +95,54 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         };
 
         return Result.Success(response, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid applicationId, RequestApplicationInfoRequest request)
+    {
+        var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
+
+        if (application == null)
+        {
+            return Result.Failure<RequestApplicationInfoResponse>(
+                "Mentor application not found.", HttpStatusCode.NotFound
+            );
+        }
+
+        if (application.Status != ApplicationStatus.Submitted)
+        {
+            return Result.Failure<RequestApplicationInfoResponse>(
+                "You can only request additional information for submitted applications.", HttpStatusCode.Conflict
+            );
+        }
+
+        application.ReviewedAt = DateTime.Now;
+        application.Status = ApplicationStatus.WaitingInfo;
+        application.Note = request.Note;
+
+        mentorApplicationRepository.Update(application);
+        await mentorApplicationRepository.SaveChangesAsync();
+
+        var subject = EmailConstants.SUBJECT_REQUEST_APPLICATION_INFO;
+        var body = EmailConstants.BodyRequestApplicationInfoEmail(application.Mentor.FullName);
+
+        var emailSent = await emailService.SendEmailAsync(
+            application.Mentor.Email,
+            subject,
+            body
+        );
+
+        if (!emailSent)
+        {
+            return Result.Failure<RequestApplicationInfoResponse>(
+                "Failed to send notification email.", HttpStatusCode.InternalServerError
+            );
+        }
+
+        var result = new RequestApplicationInfoResponse
+        {
+            Message = "Request for additional information has been sent successfully.",
+        };
+
+        return Result.Success(result, HttpStatusCode.OK);
     }
 }

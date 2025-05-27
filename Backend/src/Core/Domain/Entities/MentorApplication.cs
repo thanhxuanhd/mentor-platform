@@ -13,6 +13,7 @@ namespace Domain.Entities
         public string? Certifications { get; set; }
         public string? Statement { get; set; }
         public string? Note { get; set; }
+        public User Mentor { get; set; } = null!;
         public ICollection<ApplicationDocument> ApplicationDocuments { get; set; } = [];
     }
 }

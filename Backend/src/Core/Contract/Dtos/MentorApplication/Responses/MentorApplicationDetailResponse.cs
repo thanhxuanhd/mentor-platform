@@ -16,10 +16,10 @@ public class    MentorApplicationDetailResponse
     public DateTime SubmittedAt { get; set; }
     public DateTime? ReviewedAt { get; set; }
     public string? Note { get; set; }
-    public List<Document> Documents { get; set; } = new List<Document>();
+    public List<DocumentResponse> Documents { get; set; } = new List<DocumentResponse>();
 }
 
-public class Document
+public class DocumentResponse
 {
     public Guid DocumentId { get; set; }
     public string DocumentType { get; set; } = null!;

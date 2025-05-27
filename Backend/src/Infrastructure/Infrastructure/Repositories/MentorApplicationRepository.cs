@@ -12,7 +12,8 @@ public class MentorApplicationRepository(ApplicationDbContext context) : BaseRep
     {
         return _context.MentorApplications
             .Include(ma => ma.Mentor)
-                .ThenInclude(m => m.UserExpertises);
+                .ThenInclude(m => m.UserExpertises)
+                    .ThenInclude(ue => ue.Expertise);
     }
 
     public async Task<MentorApplication?> GetMentorApplicationByIdAsync(Guid applicationId)
@@ -20,6 +21,7 @@ public class MentorApplicationRepository(ApplicationDbContext context) : BaseRep
         return await _context.MentorApplications
             .Include(ma => ma.Mentor)
                 .ThenInclude(m => m.UserExpertises)
+                    .ThenInclude(ue => ue.Expertise)
             .Include(ma => ma.ApplicationDocuments)            
             .FirstOrDefaultAsync(ma => ma.Id == applicationId);
     }

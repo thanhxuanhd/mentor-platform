@@ -19,5 +19,17 @@
             Thank you,
             Support Team";
         }
+
+        public const string SUBJECT_REQUEST_APPLICATION_INFO = "Request Application Information";
+        public static string BodyRequestApplicationInfoEmail(string mentorName)
+        {
+            return $@"
+            Dear {mentorName},
+            {Environment.NewLine}
+            We have requested additional information regarding your mentor application. Please check your profile for details.
+            {Environment.NewLine}
+            Best regards,
+            Mentor Platform Team";
+        }
     }
 }

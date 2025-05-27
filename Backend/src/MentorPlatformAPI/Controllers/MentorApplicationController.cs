@@ -1,7 +1,6 @@
 using System.Security.Claims;
 using Application.Services.MentorApplication;
 using Contract.Dtos.MentorApplication.Requests;
-using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +10,8 @@ namespace MentorPlatformAPI.Controllers;
 [ApiController]
 public class MentorApplicationController(IMentorApplicationService mentorApplicationService) : ControllerBase
 {
+    // Mentor can also use this route to display all of their applications
+    [Authorize(Roles = "Admin,Mentor")]
     [HttpGet("mentor-applications")]
     public async Task<IActionResult> GetAllMentorApplications([FromQuery] FilterMentorApplicationRequest request)
     {
@@ -24,6 +25,14 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     {
         var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         var result = await mentorApplicationService.GetMentorApplicationByIdAsync(currentUserId, applicationId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("mentor-applications/{applicationId}/request-info")]
+    public async Task<IActionResult> RequestApplicationInfo(Guid applicationId, RequestApplicationInfoRequest request)
+    {
+        var result = await mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 }
