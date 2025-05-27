@@ -25,7 +25,7 @@ public class User : BaseEntity<Guid>
     public bool IsPrivate { get; set; }
     public bool IsAllowedMessage { get; set; }
     public bool IsReceiveNotification { get; set; }
-
+    public virtual ICollection<MentorApplication> MentorApplications { get; set; } = [];
     public virtual ICollection<UserTeachingApproach> UserTeachingApproaches { get; set; } = [];
     public virtual ICollection<UserCategory> UserCategories { get; set; } = [];
     public virtual ICollection<UserAvailability> UserAvailabilities { get; set; } = [];
