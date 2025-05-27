@@ -10,8 +10,10 @@ namespace Domain.Entities
         public ApplicationStatus Status { get; set; }
         public DateTime SubmittedAt { get; set; }
         public DateTime? ReviewedAt { get; set; }
-        public ICollection<ApplicationDocument> ApplicationDocuments { get; set; } = [];
+        public string? Education { get; set; }
+        public string? Certifications { get; set; }
         public string? Statement { get; set; }
         public string? Note { get; set; }
+        public ICollection<ApplicationDocument> ApplicationDocuments { get; set; } = [];
     }
 }
