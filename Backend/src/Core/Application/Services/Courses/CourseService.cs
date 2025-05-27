@@ -63,7 +63,7 @@ public class CourseService(
 
         if (courseWithSameTitle?.CategoryId == request.CategoryId)
             return Result.Failure<CourseSummaryResponse>(
-                $"Course with title {courseWithSameTitle.Title} and category {courseWithSameTitle.Category.Name} already exists.",
+                "Already have this course",
                 Conflict);
 
         // RESOLVED: Work item 250#17489379
@@ -95,7 +95,7 @@ public class CourseService(
             var courseWithSameTitle = await courseRepository.GetByTitleAsync(request.Title);
             if (courseWithSameTitle?.CategoryId == request.CategoryId)
                 return Result.Failure<CourseSummaryResponse>(
-                    $"Course with title {course.Title} and category {course.Category.Name} already exists.",
+                    "Already have this course",
                     Conflict);
         }
 
