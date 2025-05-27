@@ -46,8 +46,7 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
     public async Task UpdateTagsCollection(List<Tag> tags, Course course)
     {
         await _context.Entry(course).Collection(c => c.Tags).LoadAsync();
-        var tagIds = tags.Select(t => t.Id);
-        course.Tags.RemoveAll(t => !tagIds.Contains(t.Id));
+        course.Tags.Clear();
         course.Tags.AddRange(tags);
     }
 

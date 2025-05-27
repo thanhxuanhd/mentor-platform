@@ -133,7 +133,8 @@ export const CourseForm: FC<CourseFormProps> = ({
             if (error.response?.data?.errors) {
               const allErrors: string[] = [];
               const fluentValidationErrors = error.response?.data?.errors;
-              Object.values(fluentValidationErrors).filter(Boolean)
+              Object.values(fluentValidationErrors)
+                .filter(Boolean)
                 .forEach((fieldErrors) => {
                   if (Array.isArray(fieldErrors)) {
                     allErrors.push(...fieldErrors);
@@ -183,13 +184,33 @@ export const CourseForm: FC<CourseFormProps> = ({
           // Close the form and signal to refresh the course list
           onClose("refresh");
         } catch (error) {
-          console.error("Error creating course:", error);
-          // Show error message to user
-          Modal.error({
-            title: "Failed to create course",
-            content:
-              "There was an error creating your course. Please try again.",
-          });
+          console.error("Error updating course:", error);
+          if (!isAxiosError(error)) {
+            message.error("An unknown error occurred.");
+          } else {
+            if (error.response?.data?.errors) {
+              const allErrors: string[] = [];
+              const fluentValidationErrors = error.response?.data?.errors;
+              Object.values(fluentValidationErrors)
+                .filter(Boolean)
+                .forEach((fieldErrors) => {
+                  if (Array.isArray(fieldErrors)) {
+                    allErrors.push(...fieldErrors);
+                  } else if (typeof fieldErrors === "string") {
+                    allErrors.push(fieldErrors);
+                  }
+                });
+              message.error(allErrors.join("\n"));
+              return;
+            }
+
+            if (error.response?.data?.error) {
+              const errorMessage =
+                error.response?.data?.error ?? "An unknown error occurred.";
+              message.error(errorMessage);
+              return;
+            }
+          }
         } finally {
           setSubmitting(false);
         }
@@ -309,7 +330,7 @@ export const CourseForm: FC<CourseFormProps> = ({
               style={{ width: "100%" }}
               placeholder="Select due date"
               format="YYYY-MM-DD"
-              minDate={dayjs()}
+              minDate={dayjs().add(1, 'day')}
               inputReadOnly={true}
             />
           </Form.Item>

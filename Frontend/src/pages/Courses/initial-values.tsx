@@ -1,4 +1,5 @@
 import type { CourseFormDataOptions } from "./types.tsx";
+import dayjs from "dayjs";
 
 export type CourseStatus = "draft" | "published" | "archived" | string;
 export const CourseStatesEnumMember: Record<CourseStatus, string> = {
@@ -27,7 +28,7 @@ export const initialFormData: CourseFormDataOptions = {
   description: "",
   categoryId: undefined,
   status: "draft",
-  dueDate: "",
+  dueDate: dayjs().add(1, 'day').toString(),
   difficulty: "beginner",
   tags: [],
 };
