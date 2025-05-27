@@ -14,6 +14,7 @@ public class MentorApplicationDetailResponse
     public string ApplicationStatus { get; set; } = null!;
     public DateTime SubmittedAt { get; set; }
     public DateTime? ReviewedAt { get; set; }
+    public string? ReviewBy { get; set; }
     public string? Note { get; set; }
     public ApplicationStatus Status { get; set; }
     public List<Document> Documents { get; set; } = [];

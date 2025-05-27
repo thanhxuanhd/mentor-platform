@@ -33,10 +33,9 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             Email = x.Mentor.Email,
             Bio = x.Mentor.Bio,
             Experiences = x.Mentor.Experiences,
-            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
-            Status = x.Status,
-            SumittedAt = x.SubmittedAt,
-            
+            SubmittedAt = x.SubmittedAt,
+            Status = x.Status.ToString(),
+            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
         });
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
@@ -87,8 +86,8 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
             Note = applicationDetails.Note,
-            Status = applicationDetails.Status,
-            Documents = applicationDetails.ApplicationDocuments.Select(doc => new Document
+            ReviewBy = applicationDetails.Admin?.FullName,
+            Documents = applicationDetails.ApplicationDocuments.Select(doc => new DocumentResponse
             {
                 DocumentId = doc.Id,
                 DocumentType = doc.DocumentType.ToString(),
@@ -110,7 +109,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         {
             return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
         }
-        
+
         application.ApplicationDocuments = [.. request.Documents!.Select(doc => new ApplicationDocument
         {
             DocumentType = doc.DocumentType,
