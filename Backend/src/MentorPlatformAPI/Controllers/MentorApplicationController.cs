@@ -18,7 +18,7 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
         return StatusCode((int)result.StatusCode, result);
     }
 
-    //[Authorize(Roles = "Admin,Mentor")]
+    [Authorize(Roles = "Admin,Mentor")]
     [HttpGet("mentor-applications/{applicationId}")]
     public async Task<IActionResult> GetMentorApplicationById(Guid applicationId)
     {
