@@ -1,10 +1,11 @@
 import { axiosClient } from "../apiClient";
-import type { CategoryRequest } from '../../types/CategoryTypes';
+import type { CategoryRequest } from "../../types/CategoryTypes";
 
 interface CategoryListParams {
   pageIndex?: number;
   pageSize?: number;
   keyword?: string;
+  status?: boolean;
 }
 
 export const categoryService = {
@@ -12,17 +13,11 @@ export const categoryService = {
    * Get a list of categories
    */
   list: async (params: CategoryListParams = {}) => {
-    const {
-      pageIndex = 1,
-      pageSize = 5,
-      keyword = '',
-    } = params;
-    
-    const response = await axiosClient.get('Categories', {
+
+    const response = await axiosClient.get("Categories", {
       params: {
-        pageIndex,
-        pageSize,
-        keyword: keyword.trim(),
+        ...params,
+        keyword: params.keyword?.trim(),
       },
     });
     return response.data.value;
@@ -40,7 +35,7 @@ export const categoryService = {
    * Create a new category
    */
   create: async (category: any) => {
-    const response = await axiosClient.post('Categories', category);
+    const response = await axiosClient.post("Categories", category);
     return response.data.value;
   },
 
@@ -66,7 +61,7 @@ export const categoryService = {
   delete: async (categoryId: string) => {
     const response = await axiosClient.delete(`Categories/${categoryId}`);
     return response.data;
-  }
+  },
 };
 
 export default categoryService;

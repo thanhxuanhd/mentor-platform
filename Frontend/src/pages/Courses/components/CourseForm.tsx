@@ -1,11 +1,11 @@
 import { type FC, useEffect, useState } from "react";
 import type { Category, CourseFormDataOptions } from "../types.tsx";
 import {
+  App,
   Button,
   DatePicker,
   Form,
   Input,
-  message,
   Modal,
   Select,
   Space,
@@ -18,18 +18,7 @@ import { courseService } from "../../../services/course";
 import { categoryService } from "../../../services/category";
 import { useAuth } from "../../../hooks";
 import type { CourseFormProps } from "../../../types/pages/courses/types.ts";
-
-function debounce<F extends (...args: Parameters<F>) => ReturnType<F>>(
-  func: F,
-  waitFor: number,
-): (...args: Parameters<F>) => void {
-  let timeout: ReturnType<typeof setTimeout>;
-
-  return (...args: Parameters<F>): void => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), waitFor);
-  };
-}
+import { isAxiosError } from "axios";
 
 export const CourseForm: FC<CourseFormProps> = ({
   formData,
@@ -37,6 +26,7 @@ export const CourseForm: FC<CourseFormProps> = ({
   onClose,
 }) => {
   const { user } = useAuth(); // Get current user from auth context
+  const { message } = App.useApp();
   const [form] = Form.useForm<CourseFormDataOptions>();
   const [newTag, setNewTag] = useState<string>("");
   const [tags, setTags] = useState<string[]>([]);
@@ -49,6 +39,7 @@ export const CourseForm: FC<CourseFormProps> = ({
         pageIndex: 1,
         pageSize: 5,
         keyword: categoryKeyword.trim(),
+        status: true,
       });
       setMyCategories(response.items);
     } catch (error) {
@@ -71,9 +62,8 @@ export const CourseForm: FC<CourseFormProps> = ({
       if (formValues.dueDate && typeof formValues.dueDate === "string") {
         try {
           // Convert string date to dayjs object - this is what Ant Design DatePicker expects
-          const dateValue = dayjs(formValues.dueDate);
           // Use type assertion to bypass TypeScript's type checking
-          (formValues as any).dueDate = dateValue;
+          (formValues as any).dueDate = dayjs(formValues.dueDate);
         } catch (e) {
           console.error("Error formatting date:", e);
           (formValues as any).dueDate = undefined;
@@ -132,14 +122,36 @@ export const CourseForm: FC<CourseFormProps> = ({
 
           // Close the form and signal to refresh the course list
           onClose("refresh");
+          message.success(
+            formData.id ? "Update successfully!" : "Create successfully!",
+          );
         } catch (error) {
           console.error("Error updating course:", error);
-          // Show error message to user
-          Modal.error({
-            title: "Failed to update course",
-            content:
-              "There was an error updating your course. Please try again.",
-          });
+          if (!isAxiosError(error)) {
+            message.error("An unknown error occurred.");
+          } else {
+            if (error.response?.data?.errors) {
+              const allErrors: string[] = [];
+              const fluentValidationErrors = error.response?.data?.errors;
+              Object.values(fluentValidationErrors).filter(Boolean)
+                .forEach((fieldErrors) => {
+                  if (Array.isArray(fieldErrors)) {
+                    allErrors.push(...fieldErrors);
+                  } else if (typeof fieldErrors === "string") {
+                    allErrors.push(fieldErrors);
+                  }
+                });
+              message.error(allErrors.join("\n"));
+              return;
+            }
+
+            if (error.response?.data?.error) {
+              const errorMessage =
+                error.response?.data?.error ?? "An unknown error occurred.";
+              message.error(errorMessage);
+              return;
+            }
+          }
         } finally {
           setSubmitting(false);
         }
@@ -263,9 +275,7 @@ export const CourseForm: FC<CourseFormProps> = ({
                 value: category.id,
               }))}
               filterOption={false}
-              onSearch={(input) =>
-                debounce(() => setCategoryKeyword(input), 100)
-              }
+              onSearch={(input) => setCategoryKeyword(input)}
               notFoundContent={
                 categoryKeyword
                   ? "No matching categories"
@@ -362,7 +372,7 @@ export const CourseForm: FC<CourseFormProps> = ({
             rules={[
               {
                 max: 256,
-                message: "Description must not exceed 256 characters",
+                message: "Course description should not exceed 256 characters",
               },
             ]}
           >

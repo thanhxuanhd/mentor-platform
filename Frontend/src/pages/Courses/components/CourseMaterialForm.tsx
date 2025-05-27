@@ -91,7 +91,7 @@ const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
           label="Description"
           rules={[
             { required: true, message: "Description is required" },
-            { max: 256, message: "Description must not exceed 256 characters" },
+            { max: 256, message: "Course Item must not exceed 256 characters" },
           ]}
         >
           <Input.TextArea rows={4} placeholder="Enter material description" />

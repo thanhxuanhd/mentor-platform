@@ -1,7 +1,6 @@
 ﻿using System.Security.Claims;
 using Application.Services.CourseItems;
 using Application.Services.Courses;
-using Application.Services.Users;
 using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Requests;
 using Domain.Enums;
@@ -94,14 +93,14 @@ public class CourseController(
     public async Task<IActionResult> GetAllCourseItem(Guid courseId)
     {
         var course = await courseService.GetByIdAsync(courseId);
-        if (course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
 
         var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var roleName = HttpContext.User.FindFirstValue(ClaimTypes.Role)!;
 
         if (course.Value!.Status != CourseStatus.Draft
-            || course.Value!.Status == CourseStatus.Draft
-            && roleName == nameof(UserRole.Admin) || mentorId == course.Value!.MentorId)
+            || (course.Value!.Status == CourseStatus.Draft
+                && roleName == nameof(UserRole.Admin)) || mentorId == course.Value!.MentorId)
         {
             var serviceResult = await courseItemService.GetAllByCourseIdAsync(courseId);
             return StatusCode((int)serviceResult.StatusCode, serviceResult);
@@ -120,8 +119,8 @@ public class CourseController(
         var roleName = HttpContext.User.FindFirstValue(ClaimTypes.Role)!;
 
         if (course.Value!.Status != CourseStatus.Draft
-            || course.Value!.Status == CourseStatus.Draft
-            && roleName == nameof(UserRole.Admin) || mentorId == course.Value!.MentorId)
+            || (course.Value!.Status == CourseStatus.Draft
+                && roleName == nameof(UserRole.Admin)) || mentorId == course.Value!.MentorId)
         {
             var serviceResult = await courseItemService.GetByIdAsync(courseItemId);
             return StatusCode((int)serviceResult.StatusCode, serviceResult);

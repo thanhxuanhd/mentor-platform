@@ -3,7 +3,6 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Data;
 
@@ -12,21 +11,14 @@ public static class ApplicationDbExtensions
     public static void SeedData(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
+        dbContext!.Database.EnsureCreated();
 
-        SeedNonAsync(dbContext);
-    }
-
-    public static void SeedNonAsync(ApplicationDbContext dbContext)
-    {
-        var strategy = dbContext.Database.CreateExecutionStrategy();
-        strategy.Execute(() => dbContext.Database.Migrate());
-
+        // Seeding logic moved directly here
         if (!dbContext.Roles.Any())
         {
             dbContext.Roles.AddRange(new Role { Name = UserRole.Admin }, new Role { Name = UserRole.Mentor },
                 new Role { Name = UserRole.Learner });
-
             dbContext.SaveChanges();
         }
 
@@ -39,7 +31,6 @@ public static class ApplicationDbExtensions
                 new Availability { Name = "Afternoons" },
                 new Availability { Name = "Evenings" }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -55,7 +46,6 @@ public static class ApplicationDbExtensions
                 new Expertise { Name = "Project Management" },
                 new Expertise { Name = "Communication" }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -67,7 +57,6 @@ public static class ApplicationDbExtensions
                 new TeachingApproach { Name = "Project Based" },
                 new TeachingApproach { Name = "Lecture Style" }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -122,7 +111,6 @@ public static class ApplicationDbExtensions
                     RoleId = adminRole.Id
                 }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -149,7 +137,6 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
                 Description = "Resources for career advancement and job hunting", Status = false
             });
-
             dbContext.SaveChanges();
         }
 
@@ -193,7 +180,8 @@ public static class ApplicationDbExtensions
                 MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
                 Status = CourseStatus.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(4),
-                Description = "Learn and apply proven strategies to manage your time effectively and increase productivity.",
+                Description =
+                    "Learn and apply proven strategies to manage your time effectively and increase productivity.",
                 Difficulty = CourseDifficulty.Beginner
             }, new Course
             {
@@ -206,7 +194,6 @@ public static class ApplicationDbExtensions
                 Description = "Discover how to build, motivate, and lead high-performing teams.",
                 Difficulty = CourseDifficulty.Advanced
             });
-
             dbContext.SaveChanges();
         }
 
@@ -218,7 +205,6 @@ public static class ApplicationDbExtensions
                 new Tag { Id = Guid.Parse("4e21ccd5-5b36-4f2b-9472-d1ab4cf95ab6"), Name = "Public Speaking" },
                 new Tag { Id = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce"), Name = "Time Management" },
                 new Tag { Id = Guid.Parse("3a6c27f3-1518-4575-8790-54764c2851a7"), Name = "Career Development" });
-
             dbContext.SaveChanges();
         }
 
@@ -245,13 +231,12 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
                 TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
             });
-
             dbContext.SaveChanges();
         }
 
         if (!dbContext.CourseItems.Any())
         {
-            dbContext.CourseItems.Add(new CourseItem()
+            dbContext.CourseItems.Add(new CourseItem
             {
                 Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
                 Title = "Introduction to Leadership Concepts",
@@ -261,7 +246,7 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
             });
 
-            dbContext.CourseItems.Add(new CourseItem()
+            dbContext.CourseItems.Add(new CourseItem
             {
                 Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
                 Title = "Non-Verbal Communication Essentials",
@@ -271,7 +256,7 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
             });
 
-            dbContext.CourseItems.Add(new CourseItem()
+            dbContext.CourseItems.Add(new CourseItem
             {
                 Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
                 Title = "Structuring Your Speech",
@@ -281,7 +266,7 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
             });
 
-             dbContext.CourseItems.Add(new CourseItem()
+            dbContext.CourseItems.Add(new CourseItem
             {
                 Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
                 Title = "Prioritization Techniques",
@@ -291,7 +276,7 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
             });
 
-            dbContext.CourseItems.Add(new CourseItem()
+            dbContext.CourseItems.Add(new CourseItem
             {
                 Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
                 Title = "Building Trust and Rapport",
@@ -300,8 +285,6 @@ public static class ApplicationDbExtensions
                 WebAddress = GetMediaUrl(CourseMediaType.Video, 2),
                 CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
             });
-
-
             dbContext.SaveChanges();
         }
     }
