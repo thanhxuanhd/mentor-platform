@@ -1,8 +1,9 @@
-using System.Security.Claims;
 using Application.Services.MentorApplications;
 using Contract.Dtos.MentorApplication.Requests;
+using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -19,27 +20,13 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [Authorize(Roles = "Admin,Mentor")]
-    [HttpGet("{applicationId}")]
-    public async Task<IActionResult> GetMentorApplicationById(Guid applicationId)
+    [Authorize(Roles = "Mentor")]
+    [HttpPost("mentor-submission")]
+    public async Task<IActionResult> MentorSubmission([FromBody] MentorSubmissionRequest request)
     {
-        var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-        var result = await mentorApplicationService.GetMentorApplicationByIdAsync(currentUserId, applicationId);
-        return StatusCode((int)result.StatusCode, result);
-    }
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await mentorApplicationService.CreateMentorApplicationAsync(Guid.Parse(userId), request);
 
-    [Authorize(Roles = "Admin")]
-    [HttpPut("{applicationId}/request-info")]
-    public async Task<IActionResult> RequestApplicationInfo(Guid applicationId, RequestApplicationInfoRequest request)
-    {
-        var result = await mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
-        return StatusCode((int)result.StatusCode, result);
-    }
-    [Authorize(Roles = "Admin")]
-    [HttpPut("{applicationId}/status")]
-    public async Task<IActionResult> UpdateApplicationStatus(Guid applicationId, UpdateApplicationStatusRequest request)
-    {
-        var result = await mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 

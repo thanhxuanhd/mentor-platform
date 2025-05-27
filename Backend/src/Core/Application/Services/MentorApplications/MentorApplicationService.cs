@@ -1,14 +1,86 @@
-using System.Net;
+using Contract.Dtos.MentorApplication.Requests;
+using Contract.Dtos.MentorApplication.Responses;
+using Contract.Dtos.Users.Requests;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
-using Domain.Constants;
+using Domain.Entities;
 using Domain.Enums;
+using System.Net;
 
 namespace Application.Services.MentorApplications;
 
 public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
 {
+    private static FileType GetFileTypeFromUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty", nameof(url));
+        }
+
+        if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+        {
+            throw new InvalidOperationException("Invalid document URL format.");
+        }
+
+        var path = uri.IsAbsoluteUri ? uri.LocalPath : url;
+        var fileName = Path.GetFileName(path);
+        var fileTypeString = fileName.Split("-")[0];
+
+        return fileTypeString.ToLower() switch
+        {
+            "pdf" => FileType.Pdf,
+            "video" => FileType.Video,
+            "audio" => FileType.Audio,
+            "image" => FileType.Image,
+            _ => throw new InvalidOperationException($"Unknown file type: {fileTypeString}")
+        };
+    }
+
+    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request)
+    {
+        var user = userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
+        }
+
+        var mentorApplication = new MentorApplication
+        {
+            MentorId = userId,
+            SubmittedAt = DateTime.UtcNow,
+
+        };
+        request.ToMentorApplication(mentorApplication);
+
+        if (request.DocumentURLs != null && request.DocumentURLs.Any())
+        {
+            try
+            {
+                mentorApplication.ApplicationDocuments = request.DocumentURLs.Select(url => new ApplicationDocument
+                {
+                    MentorApplicationId = mentorApplication.Id,
+                    DocumentUrl = url,
+                    DocumentType = GetFileTypeFromUrl(url)
+                }).ToList();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Result.Failure<bool>(ex.Message, HttpStatusCode.BadRequest);
+            }
+            catch (ArgumentException ex)
+            {
+                return Result.Failure<bool>(ex.Message, HttpStatusCode.BadRequest);
+            }
+        }
+
+        await mentorApplicationRepository.AddAsync(mentorApplication);
+        await mentorApplicationRepository.SaveChangesAsync();
+
+        return Result.Success<bool>(true, HttpStatusCode.OK);
+    }
+
     public async Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request)
     {
         var mentorApplications = mentorApplicationRepository.GetAllApplicationsAsync();
@@ -39,155 +111,6 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             request.PageSize,
             request.PageIndex
         );
-
-        return Result.Success(result, HttpStatusCode.OK);
-    }
-
-    public async Task<Result<MentorApplicationDetailResponse>> GetMentorApplicationByIdAsync(Guid currentUserId, Guid applicationId)
-    {
-        var user = await userRepository.GetByIdAsync(currentUserId, user => user.Role);
-
-        if (user!.Role.Name == UserRole.Learner)
-        {
-            return Result.Failure<MentorApplicationDetailResponse>(
-                "You do not have permission to view this mentor application.", HttpStatusCode.Forbidden
-            );
-        }
-
-        var applicationDetails = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
-
-        if (applicationDetails == null)
-        {
-            return Result.Failure<MentorApplicationDetailResponse>(
-                "Mentor application not found.", HttpStatusCode.NotFound
-            );
-        }
-
-        if (user.Role.Name == UserRole.Mentor && applicationDetails.MentorId != currentUserId)
-        {
-            return Result.Failure<MentorApplicationDetailResponse>(
-                "You do not have permission to view this mentor application.", HttpStatusCode.Forbidden
-            );
-        }
-
-        var response = new MentorApplicationDetailResponse
-        {
-            MentorApplicationId = applicationDetails.Id,
-            ProfilePhotoUrl = applicationDetails.Mentor.ProfilePhotoUrl,
-            MentorName = applicationDetails.Mentor.FullName,
-            Email = applicationDetails.Mentor.Email,
-            Bio = applicationDetails.Mentor.Bio,
-            Experiences = applicationDetails.Mentor.Experiences,
-            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
-            ApplicationStatus = applicationDetails.Status.ToString(),
-            SubmittedAt = applicationDetails.SubmittedAt,
-            ReviewedAt = applicationDetails.ReviewedAt,
-            Note = applicationDetails.Note,
-            Documents = applicationDetails.ApplicationDocuments.Select(doc => new DocumentResponse
-            {
-                DocumentId = doc.Id,
-                DocumentType = doc.DocumentType.ToString(),
-                DocumentUrl = doc.DocumentUrl
-            }).ToList()
-        };
-
-        return Result.Success(response, HttpStatusCode.OK);
-    }
-
-    public async Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid applicationId, RequestApplicationInfoRequest request)
-    {
-        var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
-
-        if (application == null)
-        {
-            return Result.Failure<RequestApplicationInfoResponse>(
-                "Mentor application not found.", HttpStatusCode.NotFound
-            );
-        }
-
-        if (application.Status != ApplicationStatus.Submitted)
-        {
-            return Result.Failure<RequestApplicationInfoResponse>(
-                "You can only request additional information for submitted applications.", HttpStatusCode.Conflict
-            );
-        }
-
-        application.ReviewedAt = DateTime.Now;
-        application.Status = ApplicationStatus.WaitingInfo;
-        application.Note = request.Note;
-
-        mentorApplicationRepository.Update(application);
-        await mentorApplicationRepository.SaveChangesAsync();
-
-        var subject = EmailConstants.SUBJECT_REQUEST_APPLICATION_INFO;
-        var body = EmailConstants.BodyRequestApplicationInfoEmail(application.Mentor.FullName);
-
-        var emailSent = await emailService.SendEmailAsync(
-            application.Mentor.Email,
-            subject,
-            body
-        );
-
-        if (!emailSent)
-        {
-            return Result.Failure<RequestApplicationInfoResponse>(
-                "Failed to send notification email.", HttpStatusCode.InternalServerError
-            );
-        }
-
-        var result = new RequestApplicationInfoResponse
-        {
-            Message = "Request for additional information has been sent successfully.",
-        };
-
-        return Result.Success(result, HttpStatusCode.OK);
-    }
-
-    public async Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid applicationId, UpdateApplicationStatusRequest request)
-    {
-        var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
-
-        if (application == null)
-        {
-            return Result.Failure<UpdateApplicationStatusResponse>(
-                "Mentor application not found.", HttpStatusCode.NotFound
-            );
-        }
-
-        if (application.Status == ApplicationStatus.Approved || application.Status == ApplicationStatus.Rejected)
-        {
-            return Result.Failure<UpdateApplicationStatusResponse>(
-                "Application is already approved or rejected.", HttpStatusCode.Conflict
-            );
-        }
-
-        application.Status = request.Status;
-        application.Note = request.Note;
-        application.ReviewedAt = DateTime.Now;
-
-        mentorApplicationRepository.Update(application);
-        await mentorApplicationRepository.SaveChangesAsync();
-
-        var subject = EmailConstants.SUBJECT_MENTOR_APPLICATION_DECISION;
-        var body = EmailConstants.BodyMentorApplicationDecisionEmail(application.Mentor.FullName, request.Status.ToString(), request.Note);
-
-        var emailSent = await emailService.SendEmailAsync(
-            application.Mentor.Email,
-            subject,
-            body
-        );
-
-        if (!emailSent)
-        {
-            return Result.Failure<UpdateApplicationStatusResponse>(
-                "Failed to send notification email.", HttpStatusCode.InternalServerError
-            );
-        }
-
-        var result = new UpdateApplicationStatusResponse
-        {
-            Message = "Mentor application status updated successfully.",
-        };
 
         return Result.Success(result, HttpStatusCode.OK);
     }
