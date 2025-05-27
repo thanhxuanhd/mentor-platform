@@ -1,0 +1,38 @@
+{
+  "search_course_with_invalid_keyword": {
+    "searchText": "Sample Course",
+    "difficulty": "Beginner",
+    "category": "Time Management",
+    "mentor": "MySuperKawawiiMentorXxX@at.local"
+  },
+  "search_course_with_full_valid_data": {
+    "searchText": "Public Speaking Mastery",
+    "difficulty": "Beginner",
+    "category": "Public Speaking",
+    "mentor": "MySuperKawawiiMentorXxX@at.local"
+  },
+  "search_course_with_lowercase_valid_title":{
+    "searchText": "public speaking mastery",
+    "difficulty": "Beginner",
+    "category": "Public Speaking",
+    "mentor": "MySuperKawawiiMentorXxX@at.local"
+  },
+  "search_course_with_uppercase_valid_title": {
+    "searchText": "PUBLIC SPEAKING MASTERY",
+    "difficulty": "Beginner",
+    "category": "Public Speaking",
+    "mentor": "MySuperKawawiiMentorXxX@at.local"
+  },
+  "search_course_with_empty_data": {
+    "searchText": "",
+    "difficulty": "",
+    "category": "",
+    "mentor": ""
+  },
+  "search_course_with_wildcard_data": {
+    "searchText": "Public",
+    "difficulty": "Beginner",
+    "category": "Public Speaking",
+    "mentor": "MySuperKawawiiMentorXxX@at.local"
+  }
+}
