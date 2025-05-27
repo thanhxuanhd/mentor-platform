@@ -3,7 +3,9 @@ using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
 using Contract.Repositories;
 using Contract.Shared;
+using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 
 namespace Application.Services.MentorApplication;
 
@@ -31,7 +33,10 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             Email = x.Mentor.Email,
             Bio = x.Mentor.Bio,
             Experiences = x.Mentor.Experiences,
-            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
+            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
+            Status = x.Status,
+            SumittedAt = x.SubmittedAt,
+            
         });
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
@@ -39,7 +44,6 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             request.PageSize,
             request.PageIndex
         );
-
         return Result.Success(result, HttpStatusCode.OK);
     }
 
@@ -83,14 +87,39 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
             Note = applicationDetails.Note,
+            Status = applicationDetails.Status,
             Documents = applicationDetails.ApplicationDocuments.Select(doc => new Document
             {
                 DocumentId = doc.Id,
                 DocumentType = doc.DocumentType.ToString(),
                 DocumentUrl = doc.DocumentUrl
-            }).ToList()
+            }).ToList(),
         };
 
         return Result.Success(response, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)
+    {
+        var application = await mentorApplicationRepository.GetByIdAsync(applicationId);
+        if (application == null)
+        {
+            return Result.Failure<bool>("Mentor application not found.", HttpStatusCode.NotFound);
+        }
+        if (application.Status != ApplicationStatus.WaitingInfo)
+        {
+            return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
+        }
+        
+        application.ApplicationDocuments = [.. request.Documents!.Select(doc => new ApplicationDocument
+        {
+            DocumentType = doc.DocumentType,
+            DocumentUrl = doc.DocumentUrl
+        })];
+        application.Status = ApplicationStatus.Submitted;
+        mentorApplicationRepository.Update(application);
+        await mentorApplicationRepository.SaveChangesAsync();
+
+        return Result.Success(true, HttpStatusCode.OK);
     }
 }

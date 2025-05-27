@@ -1,4 +1,4 @@
-using System;
+using Domain.Enums;
 
 namespace Contract.Dtos.MentorApplication.Responses;
 
@@ -10,5 +10,7 @@ public class FilterMentorApplicationResponse
     public string Email { get; set; } = null!;
     public string? Bio { get; set; }
     public string? Experiences { get; set; } = null!;
-    public List<string> Expertises { get; set; } = new List<string>();
+    public List<string> Expertises { get; set; } = [];
+    public ApplicationStatus Status { get; set; }
+    public DateTime SumittedAt { get; set; }
 }
