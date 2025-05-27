@@ -136,7 +136,7 @@ export class EditUserProfile extends BasePage {
     }
   }
 
-  async unselectedAvailabilityOptions() {
+  async unselectAvailabilityOptions() {
     const optionsCount = await this.DDL_SELECTED_AVAILBILITY.count();
     for (let i = 0; i < optionsCount; i++) {
       const button = this.DDL_SELECTED_AVAILBILITY.nth(0);
