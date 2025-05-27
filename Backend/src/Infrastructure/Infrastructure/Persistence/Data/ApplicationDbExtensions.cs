@@ -66,7 +66,10 @@ public static class ApplicationDbExtensions
         if (!dbContext.Users.Any())
         {
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
-            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            if (mentorRole is null)
+            {
+                throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            }
 
             dbContext.Users.AddRange(
                 new User
@@ -92,6 +95,14 @@ public static class ApplicationDbExtensions
                     Email = "AnhDoSkibidi@at.local",
                     PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
                     RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                    FullName = "John Doe",
+                    Email = "johndoe@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
+                    RoleId = mentorRole.Id
                 }
             );
 
@@ -102,24 +113,34 @@ public static class ApplicationDbExtensions
         {
             dbContext.Categories.AddRange(new Category
             {
-                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
-                Description = "Courses related to developing leadership skills and strategies", Status = true
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
-                Description = "Effective communication in professional settings", Status = true
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                Name = "Communication Skills",
+                Description = "Effective communication in professional settings",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
-                Description = "Techniques to improve public speaking and presentation skills", Status = true
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
-                Description = "Strategies for better time management and productivity", Status = false
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                Name = "Time Management",
+                Description = "Strategies for better time management and productivity",
+                Status = false
             }, new Category
             {
-                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
-                Description = "Resources for career advancement and job hunting", Status = false
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"),
+                Name = "Career Development",
+                Description = "Resources for career advancement and job hunting",
+                Status = false
             });
 
             dbContext.SaveChanges();
@@ -218,6 +239,71 @@ public static class ApplicationDbExtensions
                 TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
             });
 
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.MentorApplications.Any())
+        {
+            dbContext.MentorApplications.AddRange(new MentorApplication
+            {
+                Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Bachelor's in Computer Science",
+                Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("7ad56b17-cb7d-4ca8-9058-8a05def6229f"),
+                MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Master's in Business Administration",
+                Certifications = "Project Management Professional (PMP), Six Sigma Green Belt",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("f64b84ef-5807-4a81-8ee4-9e92f6303916"),
+                MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                Status = ApplicationStatus.Approved,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "PhD in Psychology",
+                Certifications = "Certified Life Coach, Emotional Intelligence Practitioner",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
+                MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                Status = ApplicationStatus.Rejected,
+                SubmittedAt = new DateTime(2000, 1, 1),
+                ReviewedAt = null,
+                Education = "Bachelor's in Arts",
+                Certifications = "Certified Art Therapist",
+                Statement = null,
+                Note = "Invalid"
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("c9ad54d7-f90e-4ecf-b8ec-8b5badedf171"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Bachelor's in Graphic Design",
+                Certifications = null,
+                Statement = null,
+                Note = null
+            });
             dbContext.SaveChanges();
         }
 
