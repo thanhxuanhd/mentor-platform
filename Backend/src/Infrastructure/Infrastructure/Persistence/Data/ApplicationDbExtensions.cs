@@ -76,7 +76,8 @@ public static class ApplicationDbExtensions
                     FullName = "Alice Wonderland",
                     Email = "alice.wonderland@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("password123"),
-                    RoleId = mentorRole.Id
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
@@ -84,7 +85,8 @@ public static class ApplicationDbExtensions
                     FullName = "Bob Builder",
                     Email = "bob.builder@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("securepassword"),
-                    RoleId = mentorRole.Id
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
@@ -92,7 +94,8 @@ public static class ApplicationDbExtensions
                     FullName = "Charlie Chaplin",
                     Email = "charlie.chaplin@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("anotherpassword"),
-                    RoleId = mentorRole.Id
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
@@ -100,7 +103,8 @@ public static class ApplicationDbExtensions
                     FullName = "David Copperfield",
                     Email = "david.copperfield@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("mypassword"),
-                    RoleId = learnerRole.Id
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
@@ -108,7 +112,8 @@ public static class ApplicationDbExtensions
                     FullName = "The Administrator",
                     Email = "mini@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
-                    RoleId = adminRole.Id
+                    RoleId = adminRole.Id,
+                    Status = UserStatus.Active
                 }
             );
             dbContext.SaveChanges();

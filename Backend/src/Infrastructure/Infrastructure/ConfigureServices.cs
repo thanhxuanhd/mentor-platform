@@ -52,7 +52,7 @@ public static class ConfigureServices
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             options.EnableSensitiveDataLogging();
-            options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
+            // options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
         });
         services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
         // Add JWT Authentication
