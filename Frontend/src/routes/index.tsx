@@ -16,6 +16,7 @@ import ForbiddenPage from "../pages/Forbidden";
 import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
+import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 
 const AppRoutes = () => {
   return (
@@ -29,7 +30,19 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
+        
+        {/* Route đặc biệt cho mentor application */}
+        <Route 
+          path="mentor-application" 
+          element={
+            <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
+              <MentorApplicationForm />
+            </ProtectedRoute>
+          } 
+        />
       </Route>    
+      
+      {/* Routes cho tất cả roles với kiểm tra mentor application */}
       <Route
         element={
           <ProtectedRoute
@@ -38,6 +51,7 @@ const AppRoutes = () => {
               applicationRole.LEARNER,
               applicationRole.MENTOR,
             ]}
+            checkMentorApplication={true} 
           >
             <MainLayout />
           </ProtectedRoute>
@@ -46,7 +60,11 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
+      
+      {/* Routes chỉ dành cho ADMIN và LEARNER */}
       <Route
         element={
           <ProtectedRoute
@@ -58,18 +76,6 @@ const AppRoutes = () => {
       >
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-      </Route>
-      <Route
-        element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.MENTOR, applicationRole.LEARNER]}
-          >
-            <MainLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
     </Routes>
   );
