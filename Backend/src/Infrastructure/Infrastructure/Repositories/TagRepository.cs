@@ -14,14 +14,12 @@ public class TagRepository(ApplicationDbContext context) : BaseRepository<Tag, G
         var existingTagNames = tags.Select(t => t.Name).ToHashSet();
 
         foreach (var tagName in tagNames)
-        {
             if (!existingTagNames.Contains(tagName))
             {
                 var tag = new Tag { Name = tagName };
                 _context.Tags.Add(tag);
                 tags.Add(tag);
             }
-        }
 
         return tags;
     }

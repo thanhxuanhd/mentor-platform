@@ -11,12 +11,12 @@ export type SearchBarOptions = {
 };
 
 export const SearchBar: FC<SearchBarProps> = ({
-                                                states,
-                                                categories,
-                                                mentors,
-                                                difficulties,
-                                                onChange,
-                                              }) => {
+  states,
+  categories,
+  mentors,
+  difficulties,
+  onChange,
+}) => {
   const [keyword, setKeyword] = useState<string | undefined>();
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
@@ -69,92 +69,92 @@ export const SearchBar: FC<SearchBarProps> = ({
   }
 
   return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div>
-          <label htmlFor="search" className="block text-sm font-medium mb-1">
-            Search
-          </label>
-          <input
-              type="text"
-              id="search"
-              value={keyword}
-              onChange={handleKeywordChange}
-              placeholder="Filter by keyword"
-              className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-          />
-        </div>
-        <div>
-          <label htmlFor="difficulty" className="block text-sm font-medium mb-1">
-            Difficulty
-          </label>
-          <select
-              id="difficulty"
-              value={difficulty}
-              onChange={handleDifficultyChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="">-</option>
-            {Object.entries(difficulties).map(([value, memberName]) => (
-                <option key={value} value={memberName}>
-                  {memberName}
-                </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="category" className="block text-sm font-medium mb-1">
-            Category
-          </label>
-          <select
-              id="category"
-              value={categoryId}
-              onChange={handleCategoryChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="">-</option>
-            {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="mentor" className="block text-sm font-medium mb-1">
-            Mentor
-          </label>
-          <select
-              id="mentor"
-              value={mentorId}
-              onChange={handleMentorChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="">-</option>
-            {mentors.map((mentor) => (
-                <option key={mentor.id} value={mentor.id}>
-                  {mentor.fullName}
-                </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium mb-1">
-            Status
-          </label>
-          <select
-              id="status"
-              value={status}
-              onChange={handleStatusChange}
-              className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="">-</option>
-            {Object.entries(states).map(([key, value]) => (
-                <option key={key} value={value}>
-                  {value}
-                </option>
-            ))}
-          </select>
-        </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div>
+        <label htmlFor="search" className="block text-sm font-medium mb-1">
+          Search
+        </label>
+        <input
+          type="text"
+          id="search"
+          value={keyword}
+          onChange={handleKeywordChange}
+          placeholder="Filter by keyword"
+          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        />
       </div>
+      <div>
+        <label htmlFor="difficulty" className="block text-sm font-medium mb-1">
+          Difficulty
+        </label>
+        <select
+          id="difficulty"
+          value={difficulty}
+          onChange={handleDifficultyChange}
+          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="">-</option>
+          {Object.entries(difficulties).map(([value, memberName]) => (
+            <option key={value} value={memberName}>
+              {memberName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="category" className="block text-sm font-medium mb-1">
+          Category
+        </label>
+        <select
+          id="category"
+          value={categoryId}
+          onChange={handleCategoryChange}
+          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="">-</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="mentor" className="block text-sm font-medium mb-1">
+          Mentor
+        </label>
+        <select
+          id="mentor"
+          value={mentorId}
+          onChange={handleMentorChange}
+          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="">-</option>
+          {mentors.map((mentor) => (
+            <option key={mentor.id} value={mentor.id}>
+              {mentor.fullName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="status" className="block text-sm font-medium mb-1">
+          Status
+        </label>
+        <select
+          id="status"
+          value={status}
+          onChange={handleStatusChange}
+          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="">-</option>
+          {Object.entries(states).map(([key, value]) => (
+            <option key={key} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
   );
 };

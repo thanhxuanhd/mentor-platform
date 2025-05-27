@@ -14,11 +14,9 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
     {
         var course = await courseRepository.GetByIdAsync(courseId);
         if (course == null)
-        {
             return Result.Failure<List<CourseItemResponse>>(
                 $"Course with id = {courseId} not found",
                 NotFound);
-        }
 
         var query = courseItemRepository.GetAll()
             .OrderBy(ci => ci.Id)
@@ -43,11 +41,9 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
     {
         var course = await courseRepository.GetByIdAsync(courseId);
         if (course == null)
-        {
             return Result.Failure<CourseItemResponse>(
                 $"Course with id = {courseId} not found",
                 NotFound);
-        }
 
         var item = new CourseItem
         {
@@ -69,11 +65,9 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
     {
         var item = await courseItemRepository.GetByIdAsync(courseItemId);
         if (item == null)
-        {
             return Result.Failure<CourseItemResponse>(
                 $"Course item with id = {courseItemId} not found",
                 NotFound);
-        }
 
         item.Title = request.Title;
         item.Description = request.Description;
@@ -89,11 +83,9 @@ public class CourseItemService(ICourseItemRepository courseItemRepository, ICour
     {
         var item = await courseItemRepository.GetByIdAsync(courseItemId);
         if (item == null)
-        {
             return Result.Failure<bool>(
                 $"Course item with id = {courseItemId} not found",
                 NotFound);
-        }
 
         courseItemRepository.Delete(item);
         await courseItemRepository.SaveChangesAsync();

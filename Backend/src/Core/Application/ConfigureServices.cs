@@ -6,7 +6,6 @@ using Application.Services.Courses;
 using Application.Services.Expertises;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;
-using Contract.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;

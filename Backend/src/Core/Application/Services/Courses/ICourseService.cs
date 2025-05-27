@@ -9,6 +9,7 @@ public interface ICourseService
 {
     Task<Result<PaginatedList<CourseSummaryResponse>>> GetAllAsync(Guid userId, UserRole userRole,
         CourseListRequest request);
+
     Task<Result<CourseSummaryResponse>> GetByIdAsync(Guid id);
     Task<Result<CourseSummaryResponse>> CreateAsync(Guid mentorId, CourseCreateRequest request);
     Task<Result<CourseSummaryResponse>> UpdateAsync(Guid id, CourseUpdateRequest request);

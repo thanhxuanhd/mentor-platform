@@ -21,7 +21,7 @@ import { categoryService } from "../../services/category";
 import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./components/CourseDetail.tsx";
 import { SearchBar } from "./components/SearchBar.tsx";
-import {App, Modal} from "antd";
+import { App, Modal } from "antd";
 
 const Page: React.FC = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -148,7 +148,6 @@ const Page: React.FC = () => {
       },
     });
   };
-
 
   return (
     <>

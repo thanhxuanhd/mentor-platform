@@ -3,7 +3,7 @@ import { App, Button } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import CourseMaterialForm from "./CourseMaterialForm.tsx";
 import { courseService } from "../../../services/course";
-import type {CourseResourceProps} from "../../../types/pages/courses/types.ts";
+import type { CourseResourceProps } from "../../../types/pages/courses/types.ts";
 
 export const CourseResource: FC<CourseResourceProps> = ({
   course,

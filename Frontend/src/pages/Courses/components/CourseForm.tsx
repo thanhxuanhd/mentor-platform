@@ -122,9 +122,7 @@ export const CourseForm: FC<CourseFormProps> = ({
 
           // Close the form and signal to refresh the course list
           onClose("refresh");
-          message.success(
-              "Update successfully!" ,
-          );
+          message.success("Update successfully!");
         } catch (error) {
           console.error("Error updating course:", error);
           if (!isAxiosError(error)) {
@@ -183,7 +181,7 @@ export const CourseForm: FC<CourseFormProps> = ({
 
           // Close the form and signal to refresh the course list
           onClose("refresh");
-          message.success("Create successfully!")
+          message.success("Create successfully!");
         } catch (error) {
           console.error("Error creating course:", error);
           if (!isAxiosError(error)) {
@@ -331,7 +329,7 @@ export const CourseForm: FC<CourseFormProps> = ({
               style={{ width: "100%" }}
               placeholder="Select due date"
               format="YYYY-MM-DD"
-              minDate={dayjs().add(1, 'day')}
+              minDate={dayjs().add(1, "day")}
               inputReadOnly={true}
             />
           </Form.Item>
