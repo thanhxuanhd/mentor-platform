@@ -38,10 +38,15 @@ namespace Infrastructure.Persistence.Data.Configurations
                 .HasMaxLength(300)
                 .IsRequired(false);
 
-            builder.HasOne<User>(ma => ma.Mentor)
+            builder.HasOne(ma => ma.Mentor)
                 .WithMany(u => u.MentorApplications)
                 .HasForeignKey(ma => ma.MentorId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(ma => ma.Admin)
+                .WithMany(u => u.ReviewedMentorApplications)
+                .HasForeignKey(ma => ma.AdminId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(ma => ma.ApplicationDocuments)
                 .WithOne(ad => ad.MentorApplication)

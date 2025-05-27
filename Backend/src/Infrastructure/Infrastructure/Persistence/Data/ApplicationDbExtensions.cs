@@ -63,6 +63,9 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        Guid AdminGuid1 = Guid.NewGuid();
+        Guid AdminGuid2 = Guid.NewGuid();
+        
         if (!dbContext.Users.Any())
         {
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
@@ -103,6 +106,22 @@ public static class ApplicationDbExtensions
                     Email = "johndoe@at.local",
                     PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
                     RoleId = mentorRole.Id
+                },
+                new User
+                {
+                    Id = AdminGuid1,
+                    FullName = "Admin User 1",
+                    Email = "admin1@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("AdminPassword1!"),
+                    RoleId = dbContext.Roles.First(r => r.Name == UserRole.Admin).Id
+                },
+                new User
+                {
+                    Id = AdminGuid2,
+                    FullName = "Admin User 2",
+                    Email = "admin2@at.local",
+                    PasswordHash = PasswordHelper.HashPassword("AdminPassword2!"),
+                    RoleId = dbContext.Roles.First(r => r.Name == UserRole.Admin).Id
                 }
             );
 
@@ -273,8 +292,9 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("f64b84ef-5807-4a81-8ee4-9e92f6303916"),
                 MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
                 Status = ApplicationStatus.Approved,
-                SubmittedAt = DateTime.UtcNow,
-                ReviewedAt = null,
+                SubmittedAt = DateTime.UtcNow.AddDays(-5),
+                ReviewedAt = DateTime.UtcNow,
+                AdminId = AdminGuid2,
                 Education = "PhD in Psychology",
                 Certifications = "Certified Life Coach, Emotional Intelligence Practitioner",
                 Statement = null,
@@ -296,9 +316,10 @@ public static class ApplicationDbExtensions
             {
                 Id = Guid.Parse("c9ad54d7-f90e-4ecf-b8ec-8b5badedf171"),
                 MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
-                Status = ApplicationStatus.Submitted,
-                SubmittedAt = DateTime.UtcNow,
-                ReviewedAt = null,
+                Status = ApplicationStatus.Approved,
+                SubmittedAt = DateTime.UtcNow.AddDays(-10),
+                ReviewedAt = DateTime.UtcNow,
+                AdminId = AdminGuid1,
                 Education = "Bachelor's in Graphic Design",
                 Certifications = null,
                 Statement = null,

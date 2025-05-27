@@ -32,14 +32,16 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     [HttpPut("{applicationId}/request-info")]
     public async Task<IActionResult> RequestApplicationInfo(Guid applicationId, RequestApplicationInfoRequest request)
     {
-        var result = await mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
+        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var result = await mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
         return StatusCode((int)result.StatusCode, result);
     }
     [Authorize(Roles = "Admin")]
     [HttpPut("{applicationId}/status")]
     public async Task<IActionResult> UpdateApplicationStatus(Guid applicationId, UpdateApplicationStatusRequest request)
     {
-        var result = await mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
+        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var result = await mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
