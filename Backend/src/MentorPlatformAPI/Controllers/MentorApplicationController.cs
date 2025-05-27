@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-[Route("api/mentor-application")]
+[Route("api/mentor-applications")]
 [ApiController]
 public class MentorApplicationController(IMentorApplicationService mentorApplicationService) : ControllerBase
 {
     // Mentor can also use this route to display all of their applications
     [Authorize(Roles = "Admin,Mentor")]
-    [HttpGet("mentor-applications")]
+    [HttpGet]
     public async Task<IActionResult> GetAllMentorApplications([FromQuery] FilterMentorApplicationRequest request)
     {
         var result = await mentorApplicationService.GetAllMentorApplicationsAsync(request);
@@ -20,7 +20,7 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     }
 
     [Authorize(Roles = "Admin,Mentor")]
-    [HttpGet("mentor-applications/{applicationId}")]
+    [HttpGet("{applicationId}")]
     public async Task<IActionResult> GetMentorApplicationById(Guid applicationId)
     {
         var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
@@ -29,14 +29,14 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPut("mentor-applications/{applicationId}/request-info")]
+    [HttpPut("{applicationId}/request-info")]
     public async Task<IActionResult> RequestApplicationInfo(Guid applicationId, RequestApplicationInfoRequest request)
     {
         var result = await mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
         return StatusCode((int)result.StatusCode, result);
     }
     [Authorize(Roles = "Admin")]
-    [HttpPut("mentor-applications/{applicationId}/status")]
+    [HttpPut("{applicationId}/status")]
     public async Task<IActionResult> UpdateApplicationStatus(Guid applicationId, UpdateApplicationStatusRequest request)
     {
         var result = await mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
