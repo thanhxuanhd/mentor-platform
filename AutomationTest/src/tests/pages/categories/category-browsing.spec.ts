@@ -12,13 +12,13 @@ test.describe("@Category Category browsing tests", () => {
   });
 
   const categories: { [label: string]: CategoryBrowsingSearch } = {
-    "Search empty category keyword":
+    "@SmokeTest Search empty category keyword":
       categorySearchTermData.search_empty_category_keyword,
-    "Search nonexistence category keyword":
+    "@SmokeTest Search nonexistence category keyword":
       categorySearchTermData.search_category_keyword_no_results,
-    "Search multiple category keywords":
+    "@SmokeTest Search multiple category keywords":
       categorySearchTermData.search_category_multiple_keyword,
-    "Search one category keyword":
+    "@SmokeTest Search one category keyword":
       categorySearchTermData.search_category_one_keyword,
     "Search wildcard category keyword":
       categorySearchTermData.search_category_wilcard_characters,
