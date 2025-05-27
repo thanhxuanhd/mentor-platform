@@ -33,6 +33,8 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             Email = x.Mentor.Email,
             Bio = x.Mentor.Bio,
             Experiences = x.Mentor.Experiences,
+            SubmittedDate = x.SubmittedAt,
+            Status = x.Status.ToString(),
             Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
         });
 
