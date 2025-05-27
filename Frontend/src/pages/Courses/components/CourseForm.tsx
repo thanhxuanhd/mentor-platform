@@ -123,7 +123,7 @@ export const CourseForm: FC<CourseFormProps> = ({
           // Close the form and signal to refresh the course list
           onClose("refresh");
           message.success(
-            formData.id ? "Update successfully!" : "Create successfully!",
+              "Update successfully!" ,
           );
         } catch (error) {
           console.error("Error updating course:", error);
@@ -183,8 +183,9 @@ export const CourseForm: FC<CourseFormProps> = ({
 
           // Close the form and signal to refresh the course list
           onClose("refresh");
+          message.success("Create successfully!")
         } catch (error) {
-          console.error("Error updating course:", error);
+          console.error("Error creating course:", error);
           if (!isAxiosError(error)) {
             message.error("An unknown error occurred.");
           } else {

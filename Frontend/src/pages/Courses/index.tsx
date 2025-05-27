@@ -21,7 +21,7 @@ import { categoryService } from "../../services/category";
 import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./components/CourseDetail.tsx";
 import { SearchBar } from "./components/SearchBar.tsx";
-import {App, message, Modal} from "antd";
+import {App, Modal} from "antd";
 
 const Page: React.FC = () => {
   const [pageIndex, setPageIndex] = useState<number>(0);
@@ -48,7 +48,7 @@ const Page: React.FC = () => {
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
-  const { modal } = App.useApp();
+  const { modal, message } = App.useApp();
 
   useEffect(() => {
     if (refreshTrigger > 0) {
@@ -135,8 +135,8 @@ const Page: React.FC = () => {
       onOk: async () => {
         try {
           await courseService.delete(course.id);
-          setRefreshTrigger((prev) => prev + 1); // Refresh the list after deletion
           message.success("Delete successfully!");
+          setRefreshTrigger((prev) => prev + 1); // Refresh the list after deletion
         } catch (error) {
           console.error("Error deleting course:", error);
           Modal.error({
