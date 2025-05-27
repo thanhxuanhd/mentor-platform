@@ -22,6 +22,14 @@ namespace Infrastructure.Persistence.Data.Configurations
                 .HasConversion<string>()
                 .HasDefaultValue(ApplicationStatus.Submitted);
 
+            builder.Property(ma => ma.Education)
+                .HasMaxLength(300)
+                .IsRequired(false);
+
+            builder.Property(ma => ma.Certifications)
+                .HasMaxLength(300)
+                .IsRequired(false);
+
             builder.Property(ma => ma.Statement)
                 .HasMaxLength(300)
                 .IsRequired(false);

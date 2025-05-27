@@ -251,6 +251,8 @@ public static class ApplicationDbExtensions
                 Status = ApplicationStatus.Submitted,
                 SubmittedAt = DateTime.UtcNow,
                 ReviewedAt = null,
+                Education = "Bachelor's in Computer Science",
+                Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
                 Statement = null,
                 Note = null
             },
@@ -261,6 +263,8 @@ public static class ApplicationDbExtensions
                 Status = ApplicationStatus.Submitted,
                 SubmittedAt = DateTime.UtcNow,
                 ReviewedAt = null,
+                Education = "Master's in Business Administration",
+                Certifications = "Project Management Professional (PMP), Six Sigma Green Belt",
                 Statement = null,
                 Note = null
             },
@@ -271,6 +275,8 @@ public static class ApplicationDbExtensions
                 Status = ApplicationStatus.Approved,
                 SubmittedAt = DateTime.UtcNow,
                 ReviewedAt = null,
+                Education = "PhD in Psychology",
+                Certifications = "Certified Life Coach, Emotional Intelligence Practitioner",
                 Statement = null,
                 Note = null
             },
@@ -281,8 +287,10 @@ public static class ApplicationDbExtensions
                 Status = ApplicationStatus.Rejected,
                 SubmittedAt = new DateTime(2000, 1, 1),
                 ReviewedAt = null,
+                Education = "Bachelor's in Arts",
+                Certifications = "Certified Art Therapist",
                 Statement = null,
-                Note = null
+                Note = "Invalid"
             },
             new MentorApplication
             {
@@ -291,6 +299,8 @@ public static class ApplicationDbExtensions
                 Status = ApplicationStatus.Submitted,
                 SubmittedAt = DateTime.UtcNow,
                 ReviewedAt = null,
+                Education = "Bachelor's in Graphic Design",
+                Certifications = null,
                 Statement = null,
                 Note = null
             });
