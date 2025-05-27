@@ -9,25 +9,33 @@ export default function DisplayCourseModal({ visible, courses, onClose }: { visi
       dataIndex: 'title',
       key: 'title',
       width: 300,
+      ellipsis: true,
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      width: 400,
+      ellipsis: true,
     },
     {
       title: 'Difficulty',
       dataIndex: 'difficulty',
       key: 'difficulty',
-      width: 200,
+      width: 100,
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      width: 200,
+      width: 100,
     },
     {
       title: 'Due Date',
       dataIndex: 'dueDate',
       key: 'dueDate',
       render: (date: string) => formatDate(date),
-      width: 200,
+      width: 100,
     },
   ];
 
@@ -37,7 +45,7 @@ export default function DisplayCourseModal({ visible, courses, onClose }: { visi
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={800}
+      width={1200}
       centered
     >
       <Table
