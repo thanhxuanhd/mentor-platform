@@ -254,7 +254,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
         }
 
-        if (file.Length > FileConstants.MAX_IMAGE_SIZE)
+        if (file.Length > FileConstants.MAX_FILE_SIZE)
         {
             return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
         }
@@ -329,6 +329,102 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         catch (Exception ex)
         {
             return Result.Failure<bool>($"Failed to remove avatar: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<Result<string>> UploadDocumentAsync(Guid userId, HttpRequest request, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
+        }
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        var fileContentType = file.ContentType;
+
+        if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+        {
+            return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
+        }
+
+        if (file.Length > FileConstants.MAX_FILE_SIZE)
+        {
+            return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
+        }
+
+        var imagesPath = Path.Combine(env.WebRootPath, "documents");
+
+        if (!Directory.Exists(imagesPath))
+        {
+            Directory.CreateDirectory(imagesPath);
+        }
+
+        try
+        {
+            var userIdStr = userId.ToString();
+
+            long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            string fileName;
+
+            if (fileContentType == "application/pdf")
+            {
+                fileName = $"{fileContentType.Split("/")[1]}-{userIdStr}_{epoch}{Path.GetExtension(file.FileName)}";
+            }
+            else
+            {
+                fileName = $"{fileContentType.Split("/")[0]}-{userIdStr}_{epoch}{Path.GetExtension(file.FileName)}";
+            }
+
+            var filePath = Path.Combine(imagesPath, fileName);
+
+            using var stream = new FileStream(filePath, FileMode.Create);
+
+            await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
+
+            var fileUrl = $"{baseUrl}/documents/{fileName}";
+
+            return Result.Success(fileUrl, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
+    }
+    public Result<bool> RemoveDocument(string documentUrl)
+    {
+        if (string.IsNullOrWhiteSpace(documentUrl))
+        {
+            return Result.Failure<bool>("Document URL is required.", HttpStatusCode.BadRequest);
+        }
+
+        if (!Uri.TryCreate(documentUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return Result.Failure<bool>("Invalid document URL format.", HttpStatusCode.BadRequest);
+        }
+
+        try
+        {
+            var fileName = Path.GetFileName(uri.LocalPath);
+            var documentsPath = Path.Combine(env.WebRootPath, "documents");
+            var filePath = Path.Combine(documentsPath, fileName);
+
+            if (!File.Exists(filePath))
+            {
+                return Result.Failure<bool>("Document file not found.", HttpStatusCode.NotFound);
+            }
+
+            File.Delete(filePath);
+
+            return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>($"Failed to remove file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
     }
 }

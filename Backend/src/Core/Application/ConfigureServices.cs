@@ -3,6 +3,7 @@ using Application.Services.Availabilities;
 using Application.Services.Categories;
 using Application.Services.Courses;
 using Application.Services.Expertises;
+using Application.Services.MentorApplications;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;
 using Contract.Services;
@@ -22,7 +23,8 @@ public static class ConfigureServices
         services.AddScoped<ITeachingApproachService, TeachingApproachService>();
         services.AddScoped<IExpertiseService, ExpertiseService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
-
+        services.AddScoped<IMentorApplicationService, MentorApplicationService>();
+        
         return services;
     }
 }
