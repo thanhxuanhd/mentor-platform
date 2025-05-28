@@ -24,11 +24,10 @@
         public static string BodyRequestApplicationInfoEmail(string mentorName)
         {
             return $@"
-            Dear {mentorName},
-            {Environment.NewLine}
-            We have requested additional information regarding your mentor application. Please check your profile for details.
-            {Environment.NewLine}
-            Best regards,
+            Dear {mentorName},<br><br>
+            Thank you for your interest in becoming a mentor. We have received your application and are currently reviewing it.
+            We have requested additional information regarding your mentor application. Please check your profile for details.<br><br>
+            Best regards,<br>
             Mentor Platform Team";
         }
 
@@ -41,15 +40,14 @@
             }
             
             return $@"
-            Dear {mentorName},
-            {Environment.NewLine}
-            Your mentor application has been {status.ToLower()}.
-            {Environment.NewLine}
-            Note: {note}
-            {Environment.NewLine}
-            Thank you for your interest in becoming a mentor.
-            {Environment.NewLine}
-            Best regards,
+            Dear {mentorName},<br><br>
+
+            Your mentor application has been {status.ToLower()}.<br><br>
+
+            Note: {note}<br>
+            Thank you for your interest in becoming a mentor.<br><br>
+            
+            Best regards,<br>
             Mentor Platform Team";
         }
     }
