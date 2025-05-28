@@ -17,7 +17,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
         if (!string.IsNullOrEmpty(request.Keyword))
         {
-            mentorApplications = mentorApplications.Where(x => x.Mentor.FullName.Contains(request.Keyword, StringComparison.OrdinalIgnoreCase));
+            mentorApplications = mentorApplications.Where(x => x.Mentor.FullName.Contains(request.Keyword));
         }
 
         if (request.Status.HasValue && Enum.IsDefined(typeof(ApplicationStatus), request.Status.Value))
@@ -33,8 +33,10 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             Email = x.Mentor.Email,
             Bio = x.Mentor.Bio,
             Experiences = x.Mentor.Experiences,
+            SubmittedAt = x.SubmittedAt,
+            Status = x.Status.ToString(),
             Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
-        });
+        }).OrderByDescending(x => x.SubmittedAt);
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
             applicationInfos,
@@ -85,6 +87,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
             Note = applicationDetails.Note,
+            ReviewBy = applicationDetails.Admin?.FullName,
             Documents = applicationDetails.ApplicationDocuments.Select(doc => new DocumentResponse
             {
                 DocumentId = doc.Id,
@@ -96,7 +99,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         return Result.Success(response, HttpStatusCode.OK);
     }
 
-    public async Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid applicationId, RequestApplicationInfoRequest request)
+    public async Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid adminId, Guid applicationId, RequestApplicationInfoRequest request)
     {
         var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
 
@@ -115,6 +118,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         }
 
         application.ReviewedAt = DateTime.Now;
+        application.AdminId = adminId;
         application.Status = ApplicationStatus.WaitingInfo;
         application.Note = request.Note;
 
@@ -145,7 +149,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         return Result.Success(result, HttpStatusCode.OK);
     }
 
-    public async Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid applicationId, UpdateApplicationStatusRequest request)
+    public async Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid adminId, Guid applicationId, UpdateApplicationStatusRequest request)
     {
         var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
 
@@ -166,6 +170,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         application.Status = request.Status;
         application.Note = request.Note;
         application.ReviewedAt = DateTime.Now;
+        application.AdminId = adminId;
 
         mentorApplicationRepository.Update(application);
         await mentorApplicationRepository.SaveChangesAsync();

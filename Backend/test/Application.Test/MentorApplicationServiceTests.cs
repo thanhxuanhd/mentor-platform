@@ -287,13 +287,14 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
 
         _mockMentorApplicationRepository.Setup(r => r.GetMentorApplicationByIdAsync(applicationId))
             .ReturnsAsync((MentorApplication?)null);
 
         // Act
-        var result = await _mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
+        var result = await _mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -309,6 +310,7 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
         var application = new MentorApplication { Id = applicationId, Status = ApplicationStatus.Approved, Mentor = new User() }; // Not Submitted
 
@@ -316,7 +318,7 @@ public class MentorApplicationServiceTests
             .ReturnsAsync(application);
 
         // Act
-        var result = await _mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
+        var result = await _mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -332,6 +334,7 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
         var mentorEmail = "mentor@example.com";
         var application = new MentorApplication
@@ -347,7 +350,7 @@ public class MentorApplicationServiceTests
             .ReturnsAsync(false); // Simulate email failure
 
         // Act
-        var result = await _mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
+        var result = await _mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -365,6 +368,7 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
         var mentorEmail = "mentor@example.com";
         var application = new MentorApplication
@@ -380,7 +384,7 @@ public class MentorApplicationServiceTests
             .ReturnsAsync(true);
 
         // Act
-        var result = await _mentorApplicationService.RequestApplicationInfoAsync(applicationId, request);
+        var result = await _mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -399,13 +403,14 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
 
         _mockMentorApplicationRepository.Setup(r => r.GetMentorApplicationByIdAsync(applicationId))
             .ReturnsAsync((MentorApplication?)null);
 
         // Act
-        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
+        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -419,6 +424,7 @@ public class MentorApplicationServiceTests
     public async Task UpdateApplicationStatusAsync_ApplicationAlreadyProcessed_ReturnsConflict()
     {
         // Arrange
+        var adminId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
         var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
         var application = new MentorApplication { Id = applicationId, Status = ApplicationStatus.Approved, Mentor = new User() }; // Already Approved
@@ -427,7 +433,7 @@ public class MentorApplicationServiceTests
             .ReturnsAsync(application);
 
         // Act
-        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
+        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -442,6 +448,7 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var mentorUserId = Guid.NewGuid();
         var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Well done!" };
         var mentorEmail = "mentor@example.com";
@@ -467,7 +474,7 @@ public class MentorApplicationServiceTests
             .ReturnsAsync(true);
 
         // Act
-        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
+        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
@@ -490,6 +497,7 @@ public class MentorApplicationServiceTests
     {
         // Arrange
         var applicationId = Guid.NewGuid();
+        var adminId = Guid.NewGuid();
         var mentorUserId = Guid.NewGuid();
         var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved, but email failed" };
         var mentorEmail = "mentor@example.com";
@@ -521,7 +529,7 @@ public class MentorApplicationServiceTests
             .ReturnsAsync(false);
 
         // Act
-        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(applicationId, request);
+        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
 
         // Assert
         Assert.Multiple(() =>
