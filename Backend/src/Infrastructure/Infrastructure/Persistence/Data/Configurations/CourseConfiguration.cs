@@ -6,8 +6,6 @@ namespace Infrastructure.Persistence.Data.Configurations;
 
 public class CourseConfiguration : IEntityTypeConfiguration<Course>
 {
-    // TODO: explicitly setting all entity as optional, await team member to complete their parts
-    // Set all property as required once blocking items got resolved
     public void Configure(EntityTypeBuilder<Course> builder)
     {
         builder.HasKey(c => c.Id);
@@ -38,5 +36,10 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
         builder.HasMany(c => c.Tags)
             .WithMany()
             .UsingEntity<CourseTag>();
+
+        builder.HasMany(c => c.Items)
+            .WithOne(ci => ci.Course)
+            .HasForeignKey(ci => ci.CourseId)
+            .IsRequired();
     }
 }
