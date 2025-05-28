@@ -36,8 +36,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             categories = categories.Where(c => c.Name.Contains(request.Keyword));
         }
-
-        // RESOLVED: 250#17489379
+        
         if (request.Status.HasValue)
         {
             categories = categories.Where(c => c.Status == request.Status);

@@ -79,7 +79,6 @@ public class CourseService(
 
     public async Task<Result<CourseSummaryResponse>> CreateAsync(Guid mentorId, CourseCreateRequest request)
     {
-        // RESOLVED: Work item 143#17488893
         var courseWithSameTitle = await courseRepository.GetByTitleAsync(request.Title);
 
         if (courseWithSameTitle?.CategoryId == request.CategoryId)
@@ -88,8 +87,7 @@ public class CourseService(
                 "Already have this course",
                 Conflict);
         }
-
-        // RESOLVED: Work item 250#17489379
+        
         var category = await categoryRepository.GetByIdAsync(request.CategoryId);
         if (category == null)
         {
@@ -110,7 +108,6 @@ public class CourseService(
 
     public async Task<Result<CourseSummaryResponse>> UpdateAsync(Guid id, CourseUpdateRequest request)
     {
-        // RESOLVED: Work item 143#17488893
         var course = await courseRepository.GetByIdAsync(id);
         if (course == null)
         {
@@ -129,8 +126,7 @@ public class CourseService(
                     Conflict);
             }
         }
-
-        // RESOLVED: Work item 250#17489379
+        
         var category = await categoryRepository.GetByIdAsync(request.CategoryId);
         if (category == null)
         {
