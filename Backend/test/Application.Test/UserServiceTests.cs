@@ -10,6 +10,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using System.Linq.Expressions;
 using System.Net;
@@ -22,6 +23,7 @@ namespace Application.Test
         private Mock<IUserRepository> _mockUserRepository;
         private Mock<IEmailService> _emailServiceMock;
         private Mock<IWebHostEnvironment> _mockWebHostService;
+        private Mock<ILogger<UserService>> _mockLogger;
         private UserService _userService;
         private string _tempImagesFolder;
 
@@ -34,7 +36,8 @@ namespace Application.Test
             _tempImagesFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_tempImagesFolder);
             _mockWebHostService.Setup(e => e.WebRootPath).Returns(_tempImagesFolder);
-            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object);
+            _mockLogger = new Mock<ILogger<UserService>>();
+            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object, _mockLogger.Object);
 
         }
 
@@ -470,7 +473,7 @@ namespace Application.Test
         public void RemoveAvatar_ImageUrlIsNullOrWhiteSpace_ReturnsBadRequest(string? imageUrl)
         {
             // Arrange
-            var service = new UserService(null!, null!, _mockWebHostService.Object);
+            var service = new UserService(null!, null!, _mockWebHostService.Object, _mockLogger.Object);
 
             // Act
             var result = service.RemoveAvatar(imageUrl);
@@ -490,7 +493,7 @@ namespace Application.Test
         public void RemoveAvatar_InvalidUrlFormat_ReturnsBadRequest(string imageUrl)
         {
             // Arrange
-            var service = new UserService(null!, null!, _mockWebHostService.Object);
+            var service = new UserService(null!, null!, _mockWebHostService.Object, _mockLogger.Object);
 
             // Act
             var result = service.RemoveAvatar(imageUrl);
@@ -509,7 +512,7 @@ namespace Application.Test
         {
             // Arrange
             var imageUrl = "http://localhost/images/avatar.jpg";
-            var service = new UserService(null!, null!, _mockWebHostService.Object);
+            var service = new UserService(null!, null!, _mockWebHostService.Object, _mockLogger.Object);
             var filePath = Path.Combine(_mockWebHostService.Object.WebRootPath, "images", "avatar.jpg");
 
             if (File.Exists(filePath))
@@ -540,7 +543,7 @@ namespace Application.Test
             File.WriteAllText(filePath, "dummy data");
 
             var imageUrl = $"http://localhost/images/{fileName}";
-            var service = new UserService(null!, null!, _mockWebHostService.Object);
+            var service = new UserService(null!, null!, _mockWebHostService.Object, _mockLogger.Object);
 
             // Act
             var result = service.RemoveAvatar(imageUrl);
