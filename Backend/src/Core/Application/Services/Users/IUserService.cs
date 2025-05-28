@@ -19,5 +19,5 @@ public interface IUserService
     Task<Result<string>> UploadAvatarAsync(Guid userId, HttpRequest request, IFormFile file);
     Result<bool> RemoveAvatar(string imageUrl);
     Task<Result<string>> UploadDocumentAsync(Guid userId, HttpRequest request, IFormFile file);
-    Result<bool> RemoveDocument(string documentUrl);
+    Task<Result<bool>> RemoveDocumentAsync(Guid userId, string documentUrl);
 }

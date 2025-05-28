@@ -10,9 +10,9 @@
             // Images
             "image/jpeg", "image/png",
             // Video
-            "video/mp4", "video/quicktime", "video/x-msvideo", "video/x-ms-wmv", "video/mpeg",
+            "video/mp4", "video/x-msvideo", "video/mpeg",
             // Audio
-            "audio/mpeg", "audio/wav", "audio/mp3", "audio/ogg", "audio/mp4", "audio/x-wav"
+            "audio/mpeg", "audio/wav", "audio/aac"
         };
     }
 }
