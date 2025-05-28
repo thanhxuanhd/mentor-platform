@@ -2,6 +2,7 @@ using System.Net;
 using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.MentorApplication.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
@@ -9,7 +10,7 @@ using Domain.Enums;
 
 namespace Application.Services.MentorApplication;
 
-public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository) : IMentorApplicationService
+public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
 {
     public async Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request)
     {
@@ -87,7 +88,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             ReviewedAt = applicationDetails.ReviewedAt,
             Note = applicationDetails.Note,
             ReviewBy = applicationDetails.Admin?.FullName,
-            Documents = applicationDetails.ApplicationDocuments.Select(doc => new DocumentResponse
+            Documents = applicationDetails.ApplicationDocuments.Select(doc => new Document
             {
                 DocumentId = doc.Id,
                 DocumentType = doc.DocumentType.ToString(),
@@ -100,7 +101,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
     public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)
     {
-        var application = await mentorApplicationRepository.GetByIdAsync(applicationId);
+        var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin!);
         if (application == null)
         {
             return Result.Failure<bool>("Mentor application not found.", HttpStatusCode.NotFound);
@@ -120,7 +121,12 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Id);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin!.FullName, application.MentorId);
+
+        var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
+
+        if (!emailSent)
+            return Result.Failure<bool>("Failed to send notification email.", HttpStatusCode.InternalServerError);
 
         return Result.Success(true, HttpStatusCode.OK);
     }

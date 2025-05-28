@@ -11,6 +11,7 @@ namespace MentorPlatformAPI.Controllers;
 [ApiController]
 public class MentorApplicationController(IMentorApplicationService mentorApplicationService) : ControllerBase
 {
+    [Authorize(Roles = "Admin, Mentor")]
     [HttpGet("mentor-applications")]
     public async Task<IActionResult> GetAllMentorApplications([FromQuery] FilterMentorApplicationRequest request)
     {
@@ -27,7 +28,7 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [Authorize(Roles = "Admin,Mentor")]
+    [Authorize(Roles = "Mentor")]
     [HttpPut("mentor-applications/{applicationId}")]
     public async Task<IActionResult> EditMentorApplication(Guid applicationId, [FromBody] UpdateMentorApplicationRequest request)
     {

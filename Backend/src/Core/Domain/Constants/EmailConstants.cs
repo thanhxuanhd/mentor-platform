@@ -21,12 +21,13 @@
             Support Team";
         }
 
-        public static string BodyUpdatedNotificationApplication(Guid id)
+        public static string BodyUpdatedNotificationApplication(string adminName, Guid mentorId)
         {
             return $@"
-            Hello Admin,
+            Hello {adminName},
             {Environment.NewLine}
-            Mentor with ID {id} has updated their application.
+            Mentor with ID {mentorId} has updated their application.
+            {Environment.NewLine}
             Thank you,
             Support Team";
         }
