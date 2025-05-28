@@ -49,9 +49,4 @@ export class SignUpPage extends BasePage {
             await this.CBX_TERM_LOCATOR.check();
         }
     }
-
-    async expectMessage(message: string) {
-        const locator: Locator = this.page.getByText(message);
-        await this.isVisible(locator);
-    }
 }

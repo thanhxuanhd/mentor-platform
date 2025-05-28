@@ -1,0 +1,20 @@
+{
+  "search_empty_category_keyword": {
+    "search_term": " "
+  },
+  "search_category_keyword_no_results": {
+    "search_term": "nonexistentkeyword"
+  },
+  "search_category_multiple_keyword": {
+    "search_term": "Time Management"
+  },
+  "search_category_one_keyword": {
+    "search_term": "coaching"
+  },
+  "search_category_wilcard_characters": {
+    "search_term": "pe"
+  },
+  "search_category_extra_spaces_characters": {
+    "search_term": "pe   "
+  }
+}
