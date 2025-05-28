@@ -12,7 +12,7 @@ import { renderStatusTag } from "./utils/renderStatusTag"
 import DefaultAvatar from "../../assets/images/default-account.svg"
 
 const defaultMentorApplicationFilter: MentorApplicationFilterProp = {
-  pageSize: 2,
+  pageSize: 3,
   pageIndex: 1,
   status: ApplicationStatus.Submitted,
   keyword: "",
