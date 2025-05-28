@@ -117,11 +117,4 @@ export class UserProfileSetupPage extends BasePage {
   async clickOnNextStepButton() {
     await this.click(this.BTN_NEXT_STEP);
   }
-
-  async expectMessage(message: string) {
-    if (message) {
-      const locator: Locator = this.page.getByText(message);
-      await this.isVisible(locator);
-    }
-  }
 }
