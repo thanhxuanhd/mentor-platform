@@ -35,7 +35,7 @@ export function WeekNavigation({ currentWeekStart, onWeekChange, onTodayClick }:
         onClick={onTodayClick}
         className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
       >
-        Go to current week
+        Today
       </Button>
     </div>
   );
