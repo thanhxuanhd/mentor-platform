@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import weekday from 'dayjs/plugin/weekday';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
 // Import components
 import { WeekNavigation } from "./components/WeekNavigation";
@@ -17,13 +18,14 @@ import { WeekCalendar } from "./components/WeekCalendar";
 import { TimeBlocks } from "./components/TimeBlocks";
 
 // Import types and mock data
-import type { DayAvailability, TimeSlot, WeekDay } from "./types";
+import type { DayAvailability, TimeBlock, WeekDay } from "./types";
 import { generateInitialAvailability, mockSaveAvailability } from "./mock";
 
 // Configure dayjs plugins
 dayjs.extend(weekday);
 dayjs.extend(isoWeek);
 dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
 
 export default function AvailabilityManager() {
   // Settings state
@@ -35,7 +37,7 @@ export default function AvailabilityManager() {
   // Calendar state
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [currentWeekStart, setCurrentWeekStart] = useState<Dayjs>(
-    dayjs().startOf('week').weekday(0) // Start from Sunday
+    dayjs().startOf('week').weekday(0) // Start from Sunday 
   );
   
   // Availability data
@@ -45,16 +47,22 @@ export default function AvailabilityManager() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   
-  // Check if any sessions are booked
+  // Check if any future sessions are booked
   const hasBookedSessions = React.useMemo(() => {
-    return Object.values(availability).some(slots => 
-      slots.some(slot => slot.booked)
-    );
+    const today = dayjs().startOf('day');
+    
+    return Object.entries(availability).some(([dateKey, slots]) => {
+      const slotDate = dayjs(dateKey);
+      // Only consider dates today or in the future
+      if (slotDate.isSameOrAfter(today)) {
+        return slots.some(slot => slot.booked);
+      }
+      return false;
+    });
   }, [availability]);
-
   // Generate time slots based on work hours and session settings
-  const generateTimeSlots = (): TimeSlot[] => {
-    const slots: TimeSlot[] = [];
+  const generateTimeBlocks = React.useCallback((): TimeBlock[] => {
+    const slots: TimeBlock[] = [];
     const start = dayjs(`2024-01-01 ${startTime}`);
     const end = dayjs(`2024-01-01 ${endTime}`);
     
@@ -73,21 +81,54 @@ export default function AvailabilityManager() {
     }
 
     return slots;
-  };
-
+  }, [startTime, endTime, sessionDuration, bufferTime]);
   // Get time slots for the currently selected date
-  const getCurrentDateSlots = (): TimeSlot[] => {
+  const getCurrentDateSlots = React.useCallback((): TimeBlock[] => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
-    return availability[dateKey] || generateTimeSlots();
-  };
-
+    return availability[dateKey] || generateTimeBlocks();
+  }, [selectedDate, availability, generateTimeBlocks]);
   // Current time slots based on selected date
-  const [currentSlots, setCurrentSlots] = useState<TimeSlot[]>([]);
-
+  const [currentSlots, setCurrentSlots] = useState<TimeBlock[]>([]);
   // Update current slots when selected date or availability changes
   useEffect(() => {
     setCurrentSlots(getCurrentDateSlots());
-  }, [selectedDate, availability]);
+  }, [getCurrentDateSlots]);
+
+  // Generate slots when settings change and update availability
+  useEffect(() => {
+    const updatedSlots = generateTimeBlocks();
+    
+    // Update availability data with new slot structure
+    setAvailability(prevAvailability => {
+      const updatedAvailability: DayAvailability = {};
+      Object.keys(prevAvailability).forEach(dateKey => {
+        updatedAvailability[dateKey] = updatedSlots.map(slot => ({
+          ...slot,
+          id: uuidv4(), // Generate new ID for each slot
+          // Try to preserve existing availability selections
+          available: prevAvailability[dateKey]?.some(
+            existing => 
+              existing.startTime === slot.startTime && 
+              existing.endTime === slot.endTime && 
+              existing.available
+          ) || false,
+          // Preserve booked status
+          booked: prevAvailability[dateKey]?.some(
+            existing => 
+              existing.startTime === slot.startTime && 
+              existing.endTime === slot.endTime && 
+              existing.booked
+          ) || false
+        }));
+      });
+      return updatedAvailability;
+    });
+  }, [generateTimeBlocks]);
+
+  // Initialize availability on mount
+  useEffect(() => {
+    setAvailability(generateInitialAvailability());
+  }, []);
 
   // Toggle availability for a specific time slot
   const toggleSlotAvailability = (slotId: string) => {
@@ -237,49 +278,21 @@ export default function AvailabilityManager() {
       setIsSaving(false);
     }
   };
-
-  // Apply settings changes and regenerate time slots
-  const applySettingsChanges = () => {
-    const updatedSlots = generateTimeSlots();
-    
-    // Update availability data with new slot structure
-    const updatedAvailability: DayAvailability = {};
-    Object.keys(availability).forEach(dateKey => {
-      updatedAvailability[dateKey] = updatedSlots.map(slot => ({
-        ...slot,
-        // Try to preserve existing availability selections
-        available: availability[dateKey]?.some(
-          existing => 
-            existing.startTime === slot.startTime && 
-            existing.endTime === slot.endTime && 
-            existing.available
-        ) || false
-      }));
-    });
-    
-    setAvailability(updatedAvailability);
-    setCurrentSlots(updatedSlots);
-  };
-
   // Update settings with validation
   const updateStartTime = (time: string) => {
     setStartTime(time);
-    applySettingsChanges();
   };
 
   const updateEndTime = (time: string) => {
     setEndTime(time);
-    applySettingsChanges();
   };
 
   const updateSessionDuration = (duration: number) => {
     setSessionDuration(duration);
-    applySettingsChanges();
   };
 
   const updateBufferTime = (buffer: number) => {
     setBufferTime(buffer);
-    applySettingsChanges();
   };
 
   const weekDays = getWeekDays();
@@ -394,12 +407,11 @@ export default function AvailabilityManager() {
 
           {/* Time Blocks */}
           <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">
-              <Spin spinning={isSaving}>
+            <div className="text-white">              <Spin spinning={isSaving}>
                 <TimeBlocks
                   selectedDate={selectedDate}
-                  timeSlots={currentSlots}
-                  onToggleSlot={toggleSlotAvailability}
+                  timeBlocks={currentSlots}
+                  onToggleBlock={toggleSlotAvailability}
                 />
               </Spin>
             </div>

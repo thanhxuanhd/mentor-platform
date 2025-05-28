@@ -1,6 +1,6 @@
 // Types for Mentor Availability Management
 
-export interface TimeSlot {
+export interface TimeBlock {
   id: string;
   time: string;
   startTime: string;
@@ -10,7 +10,7 @@ export interface TimeSlot {
 }
 
 export interface DayAvailability {
-  [date: string]: TimeSlot[];
+  [date: string]: TimeBlock[];
 }
 
 export interface WeekDay {

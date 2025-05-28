@@ -60,13 +60,12 @@ export function ScheduleSettings({
   };
 
   return (
-    <div className="space-y-6">
-      {hasBookedSessions && (
+    <div className="space-y-6">      {hasBookedSessions && (
         <Alert
           icon={<LockOutlined />}
           type="warning"
           message="Settings Locked"
-          description="You have booked sessions. Contact admin to change work hours or session settings."
+          description="You have upcoming booked sessions. Contact admin to change work hours or session settings."
           showIcon
           className="mb-4"
         />
@@ -115,9 +114,6 @@ export function ScheduleSettings({
             <Form.Item label={
               <span className="text-slate-300">
                 Session duration (minutes)
-                <Tooltip title="Duration of each mentoring session">
-                  <InfoCircleOutlined className="ml-1 text-slate-400" />
-                </Tooltip>
               </span>
             }>
               <InputNumber
@@ -134,9 +130,6 @@ export function ScheduleSettings({
             <Form.Item label={
               <span className="text-slate-300">
                 Buffer time (minutes)
-                <Tooltip title="Break time between consecutive sessions">
-                  <InfoCircleOutlined className="ml-1 text-slate-400" />
-                </Tooltip>
               </span>
             }>
               <InputNumber
