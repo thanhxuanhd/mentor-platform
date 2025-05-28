@@ -1,4 +1,4 @@
-export interface CUCourse {
+export interface CreateAndEditCourse {
     title: string;
     category: string;
     difficulty: string;

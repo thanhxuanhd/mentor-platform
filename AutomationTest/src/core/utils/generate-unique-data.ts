@@ -37,7 +37,7 @@ export function withTimestampEmail(data: any) {
   };
 }
 
-export function withFutureDate(data: any, daysOffset: number = 1) {
+export function withTimestampTitleAndFutureDate(data: any, daysOffset: number = 1) {
   const timestamp = new Date().toISOString();
 
   let updatedDueDate = data.dueDate;
