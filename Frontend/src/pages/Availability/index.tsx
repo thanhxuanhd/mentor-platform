@@ -108,13 +108,18 @@ export default function AvailabilityManager() {
       `Time slot ${updatedSlot?.time} ${updatedSlot?.available ? 'enabled' : 'disabled'}`
     );
   };
-
   // Week navigation
   const navigateWeek = (direction: "prev" | "next") => {
     const newWeekStart = direction === "prev" 
       ? currentWeekStart.subtract(1, "week") 
       : currentWeekStart.add(1, "week");
     setCurrentWeekStart(newWeekStart);
+    
+    // Update selected date to be within the new week
+    // If current selected date is not in the new week, move it to the same day of week in new week
+    const currentDayOfWeek = selectedDate.day(); // 0 = Sunday, 1 = Monday, etc.
+    const newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
+    setSelectedDate(newSelectedDate);
   };
 
   // Go to current week
@@ -315,10 +320,15 @@ export default function AvailabilityManager() {
           {/* Date Picker */}
           <Card className="bg-slate-700 border-slate-600">
             <div className="text-white">
-              <h3 className="text-lg font-medium mb-4">Select Date</h3>
-              <DatePicker
+              <h3 className="text-lg font-medium mb-4">Select Date</h3>              <DatePicker
                 value={selectedDate}
-                onChange={(date) => date && setSelectedDate(date)}
+                onChange={(date) => {
+                  if (date) {
+                    setSelectedDate(date);
+                    // Update the week to show the week containing the selected date
+                    setCurrentWeekStart(date.startOf('week').weekday(0));
+                  }
+                }}
                 className="w-full"
                 format="YYYY-MM-DD"
                 suffixIcon={<CalendarOutlined className="text-slate-400" />}

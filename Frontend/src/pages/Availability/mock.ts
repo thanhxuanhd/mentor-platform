@@ -29,7 +29,7 @@ export const generateInitialAvailability = (): DayAvailability => {
         startTime: "11:30", 
         endTime: "12:30", 
         available: true,
-        booked: false 
+        booked: true 
       },
       { 
         id: uuidv4(), 
@@ -37,7 +37,7 @@ export const generateInitialAvailability = (): DayAvailability => {
         startTime: "12:45", 
         endTime: "13:45", 
         available: true,
-        booked: true 
+        booked: false 
       },
       { 
         id: uuidv4(), 
