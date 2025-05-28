@@ -25,9 +25,9 @@
         {
             return $@"
             Hello {adminName},
-            {Environment.NewLine}
+            <br>
             Mentor with ID {mentorId} has updated their application.
-            {Environment.NewLine}
+            <br><br>
             Thank you,
             Support Team";
         }
