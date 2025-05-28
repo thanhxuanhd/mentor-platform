@@ -121,18 +121,22 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
 
-                    b.Property<int>("MediaType")
-                        .HasColumnType("int");
+                    b.Property<string>("MediaType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("WebAddress")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.HasKey("Id");
 
@@ -202,7 +206,8 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .UseCollation("SQL_Latin1_General_CP1_CS_AS");
 
                     b.HasKey("Id");
 
@@ -431,8 +436,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasOne("Domain.Entities.Category", "Category")
                         .WithMany("Courses")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Domain.Entities.User", "Mentor")
                         .WithMany()
@@ -448,7 +452,7 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.CourseItem", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
-                        .WithMany()
+                        .WithMany("Items")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -577,6 +581,8 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.Course", b =>
                 {
                     b.Navigation("CourseTags");
+
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Domain.Entities.Expertise", b =>
