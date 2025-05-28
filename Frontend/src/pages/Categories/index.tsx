@@ -238,7 +238,7 @@ export default function CategoriesPage() {
       width: 120,
       render: (_: any, record: Category) => (
         <Space size="small">
-          {user?.role !== applicationRole.ADMIN && (
+          {user?.role === applicationRole.ADMIN && (
             <Tooltip title="Edit Category">
               <Button
                 icon={<EditOutlined />}
@@ -248,7 +248,7 @@ export default function CategoriesPage() {
               />
             </Tooltip>
           )}
-          {user?.role !== applicationRole.ADMIN && (
+          {user?.role === applicationRole.ADMIN && (
             <Tooltip title="Delete Category">
               <Popconfirm
                 title="Are you sure to delete this category?"
@@ -280,7 +280,7 @@ export default function CategoriesPage() {
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Category Management</h2>
-        {user?.role !== applicationRole.ADMIN && (
+        {user?.role === applicationRole.ADMIN && (
           <Button
             type="primary"
             icon={<PlusOutlined />}
