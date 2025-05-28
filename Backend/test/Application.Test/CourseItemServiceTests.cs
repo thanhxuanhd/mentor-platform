@@ -57,7 +57,7 @@ public class CourseItemServiceTests
                 Id = Guid.NewGuid(),
                 Title = "Item 1",
                 Description = "Description 1",
-                MediaType = CourseMediaType.Video,
+                MediaType = FileType.Video,
                 WebAddress = "https://example.com/1",
                 CourseId = courseId
             }
@@ -124,7 +124,7 @@ public class CourseItemServiceTests
             Id = itemId,
             Title = "Test Item",
             Description = "Test Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "https://example.com"
         };
 
@@ -151,7 +151,7 @@ public class CourseItemServiceTests
         {
             Title = "New Item",
             Description = "Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "https://example.com"
         };
 
@@ -178,7 +178,7 @@ public class CourseItemServiceTests
         {
             Title = "New Item",
             Description = "Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "https://example.com"
         };
 
@@ -226,7 +226,7 @@ public class CourseItemServiceTests
         {
             Title = "Updated Item",
             Description = "Updated Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "https://example.com/updated"
         };
 
@@ -253,7 +253,7 @@ public class CourseItemServiceTests
             Id = itemId,
             Title = "Old Title",
             Description = "Old Description",
-            MediaType = CourseMediaType.Pdf,
+            MediaType = FileType.Pdf,
             WebAddress = "https://example.com/old",
             CourseId = Guid.NewGuid()
         };
@@ -261,7 +261,7 @@ public class CourseItemServiceTests
         {
             Title = "Updated Item",
             Description = "Updated Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "https://example.com/updated"
         };
 
@@ -315,7 +315,7 @@ public class CourseItemServiceTests
             Id = itemId,
             Title = "Item to Delete",
             Description = "Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "https://example.com",
             CourseId = Guid.NewGuid()
         };
@@ -349,7 +349,7 @@ public class CourseItemServiceTests
                 Id = Guid.NewGuid(),
                 Title = "Item 2",
                 Description = "Description 2",
-                MediaType = CourseMediaType.Video,
+                MediaType = FileType.Video,
                 WebAddress = "https://example.com/2",
                 CourseId = courseId
             },
@@ -358,7 +358,7 @@ public class CourseItemServiceTests
                 Id = Guid.NewGuid(),
                 Title = "Item 1",
                 Description = "Description 1",
-                MediaType = CourseMediaType.Pdf,
+                MediaType = FileType.Pdf,
                 WebAddress = "https://example.com/1",
                 CourseId = courseId
             }
