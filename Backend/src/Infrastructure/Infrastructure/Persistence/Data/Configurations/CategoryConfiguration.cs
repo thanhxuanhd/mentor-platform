@@ -9,6 +9,12 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     public void Configure(EntityTypeBuilder<Category> builder)
     {
         builder.HasKey(c => c.Id);
+        
+        builder.HasMany(c => c.Courses)
+            .WithOne(c => c.Category)
+            .HasForeignKey(c => c.CategoryId)
+            .IsRequired(false);
+        
         builder.HasQueryFilter(c => !c.IsDeleted);
 
         builder.Property(c => c.Name)

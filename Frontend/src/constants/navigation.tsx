@@ -39,7 +39,7 @@ export const menuItems: MenuItemProps[] = [
     icon: <AppstoreOutlined />,
     label: "Categories",
     link: "categories",
-    role: [applicationRole.ADMIN, applicationRole.LEARNER],
+    role: [applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR],
   },
   {
     key: "courses",

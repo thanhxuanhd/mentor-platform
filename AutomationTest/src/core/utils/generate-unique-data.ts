@@ -36,3 +36,21 @@ export function withTimestampEmail(data: any) {
     email: `${timestamp}${data.email}`,
   };
 }
+
+export function withTimestampTitleAndFutureDate(data: any, daysOffset: number = 1) {
+  const timestamp = new Date().toISOString();
+
+  let updatedDueDate = data.dueDate;
+  if (data.dueDate && typeof data.dueDate === 'string') {
+    const now = new Date();
+    now.setDate(now.getDate() + daysOffset);
+    updatedDueDate = now.toISOString().split('T')[0];
+  }
+
+  return {
+    ...data,
+    dueDate: updatedDueDate,
+    title: `${data.title} ${timestamp}`,
+  };
+}
+
