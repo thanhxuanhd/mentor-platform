@@ -1,4 +1,4 @@
-namespace Contract.Dtos.MentorApplication.Responses;
+namespace Contract.Dtos.MentorApplications.Responses;
 
 public class UpdateApplicationStatusResponse
 {

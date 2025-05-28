@@ -1,5 +1,5 @@
-using Contract.Dtos.MentorApplication.Requests;
-using Contract.Dtos.MentorApplication.Responses;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
 using Contract.Dtos.Users.Requests;
 using Contract.Shared;
 

@@ -1,6 +1,4 @@
 using Application.Services.MentorApplications;
-using Contract.Dtos.MentorApplication.Requests;
-using Contract.Dtos.MentorApplication.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
@@ -10,6 +8,8 @@ using Domain.Enums;
 using Moq;
 using System.Linq.Expressions;
 using System.Net;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
 
 namespace Application.Test;
 

@@ -113,10 +113,10 @@ public class UsersController(IUserService userService) : ControllerBase
 
     [Authorize(Roles = "Mentor")]
     [HttpDelete("mentor-documents")]
-    public IActionResult RemoveMentorDocument(string documentUrl)
+    public async Task<IActionResult> RemoveMentorDocument(string documentUrl)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = userService.RemoveDocument(documentUrl);
+        var result = await userService.RemoveDocumentAsync(Guid.Parse(userId), documentUrl);
 
         return StatusCode((int)result.StatusCode, result);
     }

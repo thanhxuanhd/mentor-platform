@@ -1,12 +1,15 @@
 using System.Net;
-using Contract.Dtos.MentorApplication.Requests;
-using Contract.Dtos.MentorApplication.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
-using System.Net;
+using Application.Exceptions;
+using Application.Helpers;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
+using Contract.Dtos.Users.Requests;
+using Domain.Constants;
 
 namespace Application.Services.MentorApplications;
 
@@ -231,17 +234,19 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
     public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request)
     {
-        var user = userRepository.GetByIdAsync(userId);
+        var user = await userRepository.GetByIdAsync(userId);
         if (user == null)
         {
             return Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
         }
 
+        user.Experiences = request.WorkExperience;
+        userRepository.Update(user);
+
         var mentorApplication = new MentorApplication
         {
             MentorId = userId,
             SubmittedAt = DateTime.UtcNow,
-
         };
         request.ToMentorApplication(mentorApplication);
 
@@ -252,8 +257,8 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
                 mentorApplication.ApplicationDocuments = request.DocumentURLs.Select(url => new ApplicationDocument
                 {
                     MentorApplicationId = mentorApplication.Id,
-                    DocumentUrl = url,
-                    DocumentType = GetFileTypeFromUrl(url)
+                    DocumentUrl = FileHelper.VerifyFileUrl(userId.ToString(), url),
+                    DocumentType = FileHelper.GetFileTypeFromUrl(url)
                 }).ToList();
             }
             catch (InvalidOperationException ex)
@@ -264,11 +269,15 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             {
                 return Result.Failure<bool>(ex.Message, HttpStatusCode.BadRequest);
             }
+            catch (ForbiddenAccessException ex)
+            {
+                return Result.Failure<bool>(ex.Message, HttpStatusCode.Forbidden);
+            }
         }
 
         await mentorApplicationRepository.AddAsync(mentorApplication);
         await mentorApplicationRepository.SaveChangesAsync();
 
-        return Result.Success<bool>(true, HttpStatusCode.OK);
+        return Result.Success(true, HttpStatusCode.OK);
     }
 }

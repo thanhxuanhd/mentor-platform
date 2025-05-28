@@ -321,7 +321,9 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         try
         {
             var fileName = Path.GetFileName(uri.LocalPath);
+
             var imagesPath = Path.Combine(env.WebRootPath, "images");
+
             var filePath = Path.Combine(imagesPath, fileName);
 
             if (!File.Exists(filePath))
@@ -364,36 +366,36 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
         }
 
-        var imagesPath = Path.Combine(env.WebRootPath, "documents");
+        var path = Directory.GetCurrentDirectory();
 
-        if (!Directory.Exists(imagesPath))
+        logger.LogInformation($"RootPath: {env.WebRootPath}");
+
+        if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
         {
-            Directory.CreateDirectory(imagesPath);
+            Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
         }
+        var documentsPath = Path.Combine(path, env.WebRootPath, "documents", $"{userId}");
+
+        if (!Directory.Exists(documentsPath))
+        {
+            Directory.CreateDirectory(documentsPath);
+        }
+
+        long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        string fileName = $"{epoch}_{file.FileName}";
+
+        var filePath = Path.Combine(documentsPath, fileName);
 
         try
         {
-            var userIdStr = userId.ToString();
-
-            long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            string fileName;
-
-            if (fileContentType == "application/pdf")
-            {
-                fileName = $"{fileContentType.Split("/")[1]}-{userIdStr}_{epoch}{Path.GetExtension(file.FileName)}";
-            }
-            else
-            {
-                fileName = $"{fileContentType.Split("/")[0]}-{userIdStr}_{epoch}{Path.GetExtension(file.FileName)}";
-            }
-
-            var filePath = Path.Combine(imagesPath, fileName);
-
             using var stream = new FileStream(filePath, FileMode.Create);
 
-            await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
+            await file.CopyToAsync(stream);
 
-            var fileUrl = $"{baseUrl}/documents/{fileName}";
+            var baseUrl = $"{request?.Scheme}://{request?.Host}";
+
+            var fileUrl = $"{baseUrl}/documents/{userId}/{fileName}";
 
             return Result.Success(fileUrl, HttpStatusCode.OK);
         }
@@ -402,8 +404,14 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
     }
-    public Result<bool> RemoveDocument(string documentUrl)
+    public async Task<Result<bool>> RemoveDocumentAsync(Guid userId, string documentUrl)
     {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<bool>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
         if (string.IsNullOrWhiteSpace(documentUrl))
         {
             return Result.Failure<bool>("Document URL is required.", HttpStatusCode.BadRequest);
@@ -414,12 +422,23 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<bool>("Invalid document URL format.", HttpStatusCode.BadRequest);
         }
 
+        var fileName = Path.GetFileName(uri.LocalPath);
+
+        var documentsPath = Path.Combine(env.WebRootPath, "documents", $"{userId}");
+
+        var filePath = Path.Combine(documentsPath, fileName);
+
+        var segments = uri.Segments;
+
+        string userIdString = segments[2].TrimEnd('/');
+
+        if (!userId.ToString().Equals(userIdString, StringComparison.OrdinalIgnoreCase))
+        {
+            return Result.Failure<bool>("You are not allowed to delete this file.", HttpStatusCode.Forbidden);
+        }
+
         try
         {
-            var fileName = Path.GetFileName(uri.LocalPath);
-            var documentsPath = Path.Combine(env.WebRootPath, "documents");
-            var filePath = Path.Combine(documentsPath, fileName);
-
             if (!File.Exists(filePath))
             {
                 return Result.Failure<bool>("Document file not found.", HttpStatusCode.NotFound);

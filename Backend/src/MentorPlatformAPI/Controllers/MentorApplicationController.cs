@@ -1,9 +1,9 @@
 using Application.Services.MentorApplications;
-using Contract.Dtos.MentorApplication.Requests;
 using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Contract.Dtos.MentorApplications.Requests;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -17,6 +17,15 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     public async Task<IActionResult> GetAllMentorApplications([FromQuery] FilterMentorApplicationRequest request)
     {
         var result = await mentorApplicationService.GetAllMentorApplicationsAsync(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [Authorize(Roles = "Admin,Mentor")]
+    [HttpGet("{applicationId}")]
+    public async Task<IActionResult> GetMentorApplicationById(Guid applicationId)
+    {
+        var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var result = await mentorApplicationService.GetMentorApplicationByIdAsync(currentUserId, applicationId);
         return StatusCode((int)result.StatusCode, result);
     }
 
