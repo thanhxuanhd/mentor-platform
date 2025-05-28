@@ -84,7 +84,7 @@ test.describe("@Category Category browsing tests", () => {
   test(`@SmokeTest Verifying that category list updated after deleting a category`, async () => {
     await test.step("Verify category is deleted", async () => {
       const beforeDeleteCategory =
-        await categoryBrowsingPage.getFirstCategoryValueInRow();
+        await categoryBrowsingPage.getAllCategoryValue();
       await categoryPage.clickDeleteCategoryButton();
       await categoryPage.clickConfirmDeleteButton();
       await categoryPage.expectSucessDeleteMessage();
@@ -104,8 +104,8 @@ test.describe("@Category Category browsing tests", () => {
       });
       await categoryPage.goToCategoryPage();
       const afterDeleteCategory =
-        await categoryBrowsingPage.getFirstCategoryValueInRow();
-      expect(beforeDeleteCategory).not.toEqual(afterDeleteCategory);
+        await categoryBrowsingPage.getAllCategoryValue();
+      expect(afterDeleteCategory.includes(beforeDeleteCategory[0])).toBeFalsy();
     });
   });
 });
