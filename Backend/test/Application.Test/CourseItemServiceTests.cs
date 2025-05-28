@@ -335,4 +335,57 @@ public class CourseItemServiceTests
             _courseItemRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         }
     }
+
+    [Test]
+    public async Task GetAllByCourseIdAsync_ReturnsItemsInOrder()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var course = new Course { Id = courseId };
+        var items = new List<CourseItem>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Item 2",
+                Description = "Description 2",
+                MediaType = CourseMediaType.Video,
+                WebAddress = "https://example.com/2",
+                CourseId = courseId
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Title = "Item 1",
+                Description = "Description 1",
+                MediaType = CourseMediaType.Pdf,
+                WebAddress = "https://example.com/1",
+                CourseId = courseId
+            }
+        };
+
+        _courseRepositoryMock.Setup(repo => repo.GetByIdAsync(courseId, null))
+            .ReturnsAsync(course);
+
+        var query = items.AsQueryable();
+        _courseItemRepositoryMock.Setup(repo => repo.GetAll())
+            .Returns(query);
+
+        _courseItemRepositoryMock.Setup(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseItemResponse>>()))
+            .ReturnsAsync(items.OrderBy(i => i.Id).Select(i => i.ToCourseItemResponse()).ToList());
+
+        // Act
+        var result = await _courseItemService.GetAllByCourseIdAsync(courseId);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(result.Value, Has.Count.EqualTo(2));
+            // Verify items are ordered by Id
+            Assert.That(result.Value, Is.Ordered.By("Id"));
+        }
+    }
+
 }

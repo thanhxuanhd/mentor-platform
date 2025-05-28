@@ -394,6 +394,46 @@ public class CourseServiceTests
     }
 
     [Test]
+    public async Task CreateAsync_InactiveCategory_ReturnsBadRequest()
+    {
+        // Arrange
+        var mentorId = Guid.NewGuid();
+        var categoryId = Guid.NewGuid();
+        var request = new CourseCreateRequest
+        {
+            Title = "New Course",
+            Description = "Course Description",
+            CategoryId = categoryId,
+            DueDate = DateTime.UtcNow.AddDays(30),
+            Difficulty = CourseDifficulty.Beginner,
+            Tags = ["tag1", "tag2"]
+        };
+
+        var inactiveCategory = new Category
+        {
+            Id = categoryId,
+            Name = "Inactive Category",
+            IsDeleted = true,
+            Status = false
+        };
+
+        _categoryRepositoryMock.Setup(repo => repo.GetByIdAsync(categoryId, null))
+            .ReturnsAsync(inactiveCategory);
+
+        // Act
+        var result = await _courseService.CreateAsync(mentorId, request);
+
+        // Assert
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(result.IsSuccess, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.Error, Does.Contain("Category is not active"));
+        }
+    }
+
+
+    [Test]
     public async Task UpdateAsync_CourseExists_ReturnsCourseWithUpdatedStatus()
     {
         // Arrange

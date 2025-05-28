@@ -75,7 +75,7 @@ public class CourseService(
 
         if (category.Status == false || category.IsDeleted)
             return Result.Failure<CourseSummaryResponse>(
-                $"Category {category.Id} is reserved.",
+                $"Category is not active.",
                 BadRequest);
 
         return await CreateAsyncInternal(mentorId, request);
