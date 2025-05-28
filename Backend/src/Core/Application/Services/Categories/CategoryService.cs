@@ -70,7 +70,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Difficulty = c.Difficulty.ToString(),
             DueDate = c.DueDate,
             Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
-        });
+        }).OrderBy(c => c.Title);
 
         List<FilterCourseByCategoryResponse> courseList = await categoryRepository.ToListAsync(courseInfos);
 
