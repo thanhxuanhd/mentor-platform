@@ -7,14 +7,17 @@ import { CategoryPage } from "../../../pages/categories/categories-page";
 import { CategoryBrowsingPage } from "../../../pages/categories/category-browsing-page";
 import categorySearchTermData from "../../test-data/category-browsing-data.json";
 import categoryData from "../../test-data/category-data.json";
+import { LoginPage } from "../../../pages/authentication/login-page";
 
 test.describe("@Category Category browsing tests", () => {
   let categoryBrowsingPage: CategoryBrowsingPage;
   let categoryPage: CategoryPage;
+  let loginPage: LoginPage;
 
   test.beforeEach(async ({ loggedInPage, page }) => {
     categoryBrowsingPage = new CategoryBrowsingPage(page);
     categoryPage = new CategoryPage(page);
+    loginPage = new LoginPage(page);
     await categoryBrowsingPage.navigateToCategoryPage();
   });
 
@@ -55,10 +58,25 @@ test.describe("@Category Category browsing tests", () => {
         categoryData.update_valid_category.description
       );
     });
-    await test.step("Confirm update selected category", async () => {
+    await test.step("Update selected category", async () => {
       await categoryPage.clickUpdateButton();
     });
+    await test.step("Signup to Learner account", async () => {
+      await loginPage.clickOnLogoutButton();
+      await loginPage.inputEmail(
+        categorySearchTermData.learner_role_account.email
+      );
+      await loginPage.inputPassword(
+        categorySearchTermData.learner_role_account.password
+      );
+    });
+
+    await test.step("Click Signin button", async () => {
+      await loginPage.clickSignInButton();
+      await loginPage.expectLogoutButton();
+    });
     await test.step("Verify category is updated", async () => {
+      await categoryPage.goToCategoryPage();
       await categoryPage.expectMessage(categoryUniqueName.name);
     });
   });
@@ -66,13 +84,28 @@ test.describe("@Category Category browsing tests", () => {
   test(`@SmokeTest Verifying that category list updated after deleting a category`, async () => {
     await test.step("Verify category is deleted", async () => {
       const beforeDeleteCategory =
-        await categoryBrowsingPage.getNumberOfCategoryRow();
+        await categoryBrowsingPage.getAllCategoryValue();
       await categoryPage.clickDeleteCategoryButton();
       await categoryPage.clickConfirmDeleteButton();
       await categoryPage.expectSucessDeleteMessage();
+      await test.step("Signup to Learner account", async () => {
+        await loginPage.clickOnLogoutButton();
+        await loginPage.inputEmail(
+          categorySearchTermData.learner_role_account.email
+        );
+        await loginPage.inputPassword(
+          categorySearchTermData.learner_role_account.password
+        );
+      });
+
+      await test.step("Click Signin button", async () => {
+        await loginPage.clickSignInButton();
+        await loginPage.expectLogoutButton();
+      });
+      await categoryPage.goToCategoryPage();
       const afterDeleteCategory =
-        await categoryBrowsingPage.getNumberOfCategoryRow();
-      expect(beforeDeleteCategory).not.toEqual(afterDeleteCategory);
+        await categoryBrowsingPage.getAllCategoryValue();
+      expect(afterDeleteCategory.includes(beforeDeleteCategory[0])).toBeFalsy();
     });
   });
 });

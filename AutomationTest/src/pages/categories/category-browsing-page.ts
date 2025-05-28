@@ -46,8 +46,8 @@ export class CategoryBrowsingPage extends BasePage {
     }
   }
 
-  async getNumberOfCategoryRow() {
-    const categoryRowCount = await this.LBL_CATEGORY_NAME.count();
-    return categoryRowCount;
+  async getAllCategoryValue() {
+    const categoryText = await this.LBL_CATEGORY_NAME.allTextContents();
+    return categoryText;
   }
 }
