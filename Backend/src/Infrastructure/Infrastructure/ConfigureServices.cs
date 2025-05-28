@@ -47,6 +47,7 @@ public static class ConfigureServices
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
+        services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

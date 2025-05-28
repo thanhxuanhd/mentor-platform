@@ -4,6 +4,7 @@ using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250526085906_CreateMentorApplication")]
+    partial class CreateMentorApplication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -46,7 +49,7 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasIndex("MentorApplicationId");
 
-                    b.ToTable("ApplicationDocuments");
+                    b.ToTable("ApplicationDocument");
                 });
 
             modelBuilder.Entity("Domain.Entities.Availability", b =>
@@ -148,22 +151,18 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)");
-
-                    b.Property<string>("MediaType")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MediaType")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WebAddress")
                         .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -212,17 +211,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("AdminId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Certifications")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Education")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
                     b.Property<Guid>("MentorId")
                         .HasColumnType("uniqueidentifier");
 
@@ -248,11 +236,9 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AdminId");
-
                     b.HasIndex("MentorId");
 
-                    b.ToTable("MentorApplications");
+                    b.ToTable("MentorApplication");
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>
@@ -282,8 +268,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .UseCollation("SQL_Latin1_General_CP1_CS_AS");
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
@@ -523,7 +508,8 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasOne("Domain.Entities.Category", "Category")
                         .WithMany("Courses")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Domain.Entities.User", "Mentor")
                         .WithMany()
@@ -539,7 +525,7 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.CourseItem", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
-                        .WithMany("Items")
+                        .WithMany()
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -568,18 +554,11 @@ namespace Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.MentorApplication", b =>
                 {
-                    b.HasOne("Domain.Entities.User", "Admin")
-                        .WithMany("ReviewedMentorApplications")
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.HasOne("Domain.Entities.User", "Mentor")
                         .WithMany("MentorApplications")
                         .HasForeignKey("MentorId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Admin");
 
                     b.Navigation("Mentor");
                 });
@@ -686,8 +665,6 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.Course", b =>
                 {
                     b.Navigation("CourseTags");
-
-                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Domain.Entities.Expertise", b =>
@@ -718,8 +695,6 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Navigation("MentorApplications");
-
-                    b.Navigation("ReviewedMentorApplications");
 
                     b.Navigation("UserAvailabilities");
 

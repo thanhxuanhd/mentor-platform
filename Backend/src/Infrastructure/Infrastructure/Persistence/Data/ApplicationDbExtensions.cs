@@ -123,24 +123,34 @@ public static class ApplicationDbExtensions
         {
             dbContext.Categories.AddRange(new Category
             {
-                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
-                Description = "Courses related to developing leadership skills and strategies", Status = true
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
-                Description = "Effective communication in professional settings", Status = true
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                Name = "Communication Skills",
+                Description = "Effective communication in professional settings",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
-                Description = "Techniques to improve public speaking and presentation skills", Status = true
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
-                Description = "Strategies for better time management and productivity", Status = false
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                Name = "Time Management",
+                Description = "Strategies for better time management and productivity",
+                Status = false
             }, new Category
             {
-                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
-                Description = "Resources for career advancement and job hunting", Status = false
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"),
+                Name = "Career Development",
+                Description = "Resources for career advancement and job hunting",
+                Status = false
             });
             dbContext.SaveChanges();
         }
