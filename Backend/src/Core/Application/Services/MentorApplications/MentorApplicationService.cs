@@ -36,7 +36,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             SubmittedAt = x.SubmittedAt,
             Status = x.Status.ToString(),
             Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
-        });
+        }).OrderByDescending(x => x.SubmittedAt);
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
             applicationInfos,
