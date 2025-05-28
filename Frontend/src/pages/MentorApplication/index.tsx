@@ -18,7 +18,7 @@ const defaultMentorApplicationFilter: MentorApplicationFilterProp = {
   keyword: "",
 }
 
-export default function MentorApplications() {
+export default function MentorApplicationPage() {
   const [filters, setFilters] = useState<MentorApplicationFilterProp>(defaultMentorApplicationFilter);
   const [mentorApplications, setMentorApplications] = useState<MentorApplicationListItemProp[]>([]);
   const [pagination, setPagination] = useState({

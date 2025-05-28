@@ -16,7 +16,7 @@ import ForbiddenPage from "../pages/Forbidden";
 import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
-import MentorApplication from "../pages/MentorApplication";
+import MentorApplicationPage from "../pages/MentorApplication";
 
 const AppRoutes = () => {
   return (
@@ -47,7 +47,7 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
-        <Route path="applications" element={<MentorApplication />}></Route>
+        <Route path="applications" element={<MentorApplicationPage />}></Route>
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
