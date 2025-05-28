@@ -387,5 +387,4 @@ public class CourseItemServiceTests
             Assert.That(result.Value, Is.Ordered.By("Id"));
         }
     }
-
 }

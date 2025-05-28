@@ -25,19 +25,37 @@ public class CourseService(
         var query = courseRepository.GetAll();
 
         if (!string.IsNullOrWhiteSpace(keyword))
+        {
             query = query.Where(c => c.Title.Contains(keyword) || c.Description.Contains(keyword));
+        }
 
-        if (categoryId.HasValue) query = query.Where(c => c.CategoryId == categoryId);
+        if (categoryId.HasValue)
+        {
+            query = query.Where(c => c.CategoryId == categoryId);
+        }
 
-        if (difficulty.HasValue) query = query.Where(c => c.Difficulty == difficulty);
+        if (difficulty.HasValue)
+        {
+            query = query.Where(c => c.Difficulty == difficulty);
+        }
 
         if (effectiveStatus.HasValue)
+        {
             query = query.Where(c => c.Status == effectiveStatus);
-        else if (userRole == UserRole.Learner) query = query.Where(c => c.Status != CourseStatus.Draft);
+        }
+        else if (userRole == UserRole.Learner)
+        {
+            query = query.Where(c => c.Status != CourseStatus.Draft);
+        }
 
         if (userRole == UserRole.Mentor)
+        {
             query = query.Where(c => c.MentorId == userId);
-        else if (mentorId.HasValue) query = query.Where(c => c.MentorId == mentorId);
+        }
+        else if (mentorId.HasValue)
+        {
+            query = query.Where(c => c.MentorId == mentorId);
+        }
 
         var courseSummaries = await courseRepository.ToPaginatedListAsync(
             query.Select(t => t.ToCourseSummaryResponse()),
@@ -50,7 +68,10 @@ public class CourseService(
     public async Task<Result<CourseSummaryResponse>> GetByIdAsync(Guid id)
     {
         var course = await courseRepository.GetByIdAsync(id);
-        if (course == null) return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
+        if (course == null)
+        {
+            return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
+        }
 
         var response = course.ToCourseSummaryResponse();
         return Result.Success(response, OK);
@@ -62,21 +83,27 @@ public class CourseService(
         var courseWithSameTitle = await courseRepository.GetByTitleAsync(request.Title);
 
         if (courseWithSameTitle?.CategoryId == request.CategoryId)
+        {
             return Result.Failure<CourseSummaryResponse>(
                 "Already have this course",
                 Conflict);
+        }
 
         // RESOLVED: Work item 250#17489379
         var category = await categoryRepository.GetByIdAsync(request.CategoryId);
         if (category == null)
+        {
             return Result.Failure<CourseSummaryResponse>(
                 "Category not found.",
                 BadRequest);
+        }
 
         if (category.Status == false || category.IsDeleted)
+        {
             return Result.Failure<CourseSummaryResponse>(
                 $"Category is not active.",
                 BadRequest);
+        }
 
         return await CreateAsyncInternal(mentorId, request);
     }
@@ -86,30 +113,38 @@ public class CourseService(
         // RESOLVED: Work item 143#17488893
         var course = await courseRepository.GetByIdAsync(id);
         if (course == null)
+        {
             return Result.Failure<CourseSummaryResponse>(
                 "Course not found",
                 NotFound);
+        }
 
         if (request.Title != course.Title)
         {
             var courseWithSameTitle = await courseRepository.GetByTitleAsync(request.Title);
             if (courseWithSameTitle?.CategoryId == request.CategoryId)
+            {
                 return Result.Failure<CourseSummaryResponse>(
                     "Already have this course",
                     Conflict);
+            }
         }
 
         // RESOLVED: Work item 250#17489379
         var category = await categoryRepository.GetByIdAsync(request.CategoryId);
         if (category == null)
+        {
             return Result.Failure<CourseSummaryResponse>(
                 "Category not found.",
                 BadRequest);
+        }
 
         if (category.Status == false || category.IsDeleted)
+        {
             return Result.Failure<CourseSummaryResponse>(
                 $"Category {category.Id} is reserved.",
                 BadRequest);
+        }
 
         return await UpdateAsyncInternal(course, request);
     }
@@ -117,7 +152,10 @@ public class CourseService(
     public async Task<Result<bool>> DeleteAsync(Guid id)
     {
         var course = await courseRepository.GetByIdAsync(id);
-        if (course == null) return Result.Failure<bool>("Course not found", NotFound);
+        if (course == null)
+        {
+            return Result.Failure<bool>("Course not found", NotFound);
+        }
 
         courseRepository.Delete(course);
         await courseRepository.SaveChangesAsync();
@@ -129,10 +167,14 @@ public class CourseService(
     {
         var course = await courseRepository.GetByIdAsync(id);
         if (course == null)
+        {
             return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
+        }
 
         if (course.Status == CourseStatus.Published)
+        {
             return Result.Failure<CourseSummaryResponse>("Course is already published", BadRequest);
+        }
 
         course.Status = CourseStatus.Published;
         await courseRepository.SaveChangesAsync();
@@ -145,10 +187,14 @@ public class CourseService(
     {
         var course = await courseRepository.GetByIdAsync(id);
         if (course == null)
+        {
             return Result.Failure<CourseSummaryResponse>("Course not found", NotFound);
+        }
 
         if (course.Status == CourseStatus.Archived)
+        {
             return Result.Failure<CourseSummaryResponse>("Course is already archived", BadRequest);
+        }
 
         course.Status = CourseStatus.Archived;
         await courseRepository.SaveChangesAsync();

@@ -57,11 +57,17 @@ public class CourseController(
     public async Task<IActionResult> Delete(Guid courseId)
     {
         var course = await courseService.GetByIdAsync(courseId);
-        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
 
         var authorization =
             await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, UserCanEditCoursePolicyName);
-        if (!authorization.Succeeded) return Forbid();
+        if (!authorization.Succeeded)
+        {
+            return Forbid();
+        }
 
         var serviceResult = await courseService.DeleteAsync(courseId);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
@@ -79,11 +85,17 @@ public class CourseController(
     public async Task<IActionResult> ArchiveCourse(Guid courseId)
     {
         var course = await courseService.GetByIdAsync(courseId);
-        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
 
         var authorization =
             await authorizationService.AuthorizeAsync(HttpContext.User, course.Value, UserCanEditCoursePolicyName);
-        if (!authorization.Succeeded) return Forbid();
+        if (!authorization.Succeeded)
+        {
+            return Forbid();
+        }
 
         var serviceResult = await courseService.ArchiveCourseAsync(courseId);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
@@ -93,7 +105,10 @@ public class CourseController(
     public async Task<IActionResult> GetAllCourseItem(Guid courseId)
     {
         var course = await courseService.GetByIdAsync(courseId);
-        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
 
         var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var roleName = HttpContext.User.FindFirstValue(ClaimTypes.Role)!;
@@ -113,7 +128,10 @@ public class CourseController(
     public async Task<IActionResult> GetCourseItemById(Guid courseId, Guid courseItemId)
     {
         var course = await courseService.GetByIdAsync(courseId);
-        if (!course.IsSuccess) return StatusCode((int)course.StatusCode, course);
+        if (!course.IsSuccess)
+        {
+            return StatusCode((int)course.StatusCode, course);
+        }
 
         var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var roleName = HttpContext.User.FindFirstValue(ClaimTypes.Role)!;

@@ -12,7 +12,11 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public async Task<Result<GetCategoryResponse>> GetCategoryByIdAsync(Guid id)
     {
         var category = await categoryRepository.GetByIdAsync(id, category => category.Courses!);
-        if (category == null) return Result.Failure<GetCategoryResponse>("Category not found", HttpStatusCode.NotFound);
+        if (category == null)
+        {
+            return Result.Failure<GetCategoryResponse>("Category not found", HttpStatusCode.NotFound);
+        }
+
         var categoryInfo = new GetCategoryResponse
         {
             Id = category.Id,
@@ -29,11 +33,15 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         var categories = categoryRepository.GetAll();
 
         if (!string.IsNullOrEmpty(request.Keyword))
+        {
             categories = categories.Where(c => c.Name.Contains(request.Keyword));
+        }
 
+        // RESOLVED: 250#17489379
         if (request.Status.HasValue)
-            // RESOLVED: 250#17489379
+        {
             categories = categories.Where(c => c.Status == request.Status);
+        }
 
         var categoryInfos = categories.Select(c => new GetCategoryResponse
         {
@@ -44,7 +52,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Status = c.Status
         });
 
-        var paginatedCategories =
+        PaginatedList<GetCategoryResponse> paginatedCategories =
             await categoryRepository.ToPaginatedListAsync(categoryInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCategories, HttpStatusCode.OK);
@@ -56,8 +64,10 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         var category = await categoryRepository.GetByIdAsync(id);
 
         if (category == null)
+        {
             return Result.Failure<PaginatedList<FilterCourseByCategoryResponse>>("Category not found",
                 HttpStatusCode.NotFound);
+        }
 
         var courses = categoryRepository.FilterCourseByCategory(id);
 
@@ -73,7 +83,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
         });
 
-        var paginatedCourses =
+        PaginatedList<FilterCourseByCategoryResponse> paginatedCourses =
             await categoryRepository.ToPaginatedListAsync(courseInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCourses, HttpStatusCode.OK);
@@ -82,7 +92,10 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public async Task<Result<GetCategoryResponse>> CreateCategoryAsync(CategoryRequest request)
     {
         if (await categoryRepository.ExistByNameAsync(request.Name))
+        {
             return Result.Failure<GetCategoryResponse>("Already have this category", HttpStatusCode.BadRequest);
+        }
+
         var category = new Category
         {
             Name = request.Name,
@@ -104,10 +117,16 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     public async Task<Result<bool>> EditCategoryAsync(Guid categoryId, CategoryRequest request)
     {
         if (await categoryRepository.ExistByNameExcludeAsync(categoryId, request.Name))
+        {
             return Result.Failure<bool>("Already have this category", HttpStatusCode.BadRequest);
+        }
+
         var category = await categoryRepository.GetByIdAsync(categoryId);
         if (category == null)
+        {
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
+        }
+
         category.Name = request.Name;
         category.Description = request.Description;
         category.Status = request.Status;
@@ -120,7 +139,10 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
     {
         var category = await categoryRepository.GetByIdAsync(categoryId);
         if (category == null)
+        {
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
+        }
+
         category.IsDeleted = true;
         categoryRepository.Update(category);
         var result = await categoryRepository.SaveChangesAsync();
