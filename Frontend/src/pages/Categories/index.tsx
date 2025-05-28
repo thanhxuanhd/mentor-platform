@@ -10,6 +10,8 @@ import type { PaginatedList } from '../../types/Pagination';
 import PaginationControls from '../../components/shared/Pagination';
 import { createCategory, deleteCategory, editCategory, getCategoryById, getCoursesByCategoryId, getListCategories } from '../../services/category/categoryServices';
 import DisplayCourseModal from './components/DisplayCoursesModal';
+import { useAuth } from '../../hooks';
+import { applicationRole } from '../../constants/role';
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -34,7 +36,7 @@ export default function CategoriesPage() {
   const [isCreating, setIsCreating] = useState(true);
   const { notification } = App.useApp();
   const [courses, setCourses] = useState<CategoryFilterCourse[]>([]);
-
+  const { user } = useAuth();
 
   const fetchData = async () => {
     try {
@@ -66,8 +68,8 @@ export default function CategoriesPage() {
   const fetchCourses = async (categoryId: string) => {
     try {
       const response = await getCoursesByCategoryId(categoryId);
-      setCourses(response.items || []);
-      return response.items || [];
+      setCourses(response || []);
+      return response || [];
     } catch (error) {
       console.error("Error fetching courses:", error);
       setCourses([]);
@@ -236,29 +238,32 @@ export default function CategoriesPage() {
       width: 120,
       render: (_: any, record: Category) => (
         <Space size="small">
-          <Tooltip title="Edit Category">
-            <Button
-              icon={<EditOutlined />}
-              size="small"
-              className="text-green-600"
-              onClick={() => handleEditClick(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete Category">
-            <Popconfirm
-              title="Are you sure to delete this category?"
-              onConfirm={() => handleModelDelete(record.id)}
-              okText="Yes"
-              cancelText="No"
-            >
+          {user?.role !== applicationRole.ADMIN && (
+            <Tooltip title="Edit Category">
               <Button
-                icon={<DeleteOutlined />}
+                icon={<EditOutlined />}
                 size="small"
-                danger
-                className="text-red-600"
+                className="text-green-600"
+                onClick={() => handleEditClick(record)}
               />
-            </Popconfirm>
-          </Tooltip>
+            </Tooltip>
+          )}
+          {user?.role !== applicationRole.ADMIN && (
+            <Tooltip title="Delete Category">
+              <Popconfirm
+                title="Are you sure to delete this category?"
+                onConfirm={() => handleModelDelete(record.id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                  className="text-red-600"
+                />
+              </Popconfirm>
+            </Tooltip>)}
           <Tooltip title="View List Courses">
             <Button
               icon={<EyeOutlined />}
@@ -275,14 +280,16 @@ export default function CategoriesPage() {
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Category Management</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => handleCreateClick()}
-          name=""
-        >
-          Add Category
-        </Button>
+        {user?.role !== applicationRole.ADMIN && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => handleCreateClick()}
+            name=""
+          >
+            Add Category
+          </Button>
+        )}
       </div>
       <Search
         placeholder="Search by category name..."

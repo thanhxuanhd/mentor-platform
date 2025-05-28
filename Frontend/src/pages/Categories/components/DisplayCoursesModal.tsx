@@ -46,6 +46,7 @@ export default function DisplayCourseModal({ visible, courses, onClose }: { visi
       onCancel={onClose}
       footer={null}
       width={1200}
+      height={300}
       centered
     >
       <Table
