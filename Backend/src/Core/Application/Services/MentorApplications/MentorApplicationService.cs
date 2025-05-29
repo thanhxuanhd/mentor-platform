@@ -10,7 +10,9 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Net;
 
 namespace Application.Services.MentorApplications;
@@ -245,7 +247,8 @@ public class MentorApplicationService(IUserRepository userRepository,
 
     public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)
     {
-        var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin!);
+        var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin);
+
         if (application == null)
         {
             return Result.Failure<bool>("Mentor application not found.", HttpStatusCode.NotFound);
@@ -255,17 +258,83 @@ public class MentorApplicationService(IUserRepository userRepository,
             return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
         }
 
-        application.ApplicationDocuments = [.. request.Documents!.Select(doc => new ApplicationDocument
+        var mentor = await userRepository.GetByIdAsync(application.MentorId);
+
+        if (mentor == null)
         {
-            DocumentType = doc.DocumentType,
-            DocumentUrl = doc.DocumentUrl
-        })];
+            return Result.Failure<bool>("Mentor not found.", HttpStatusCode.NotFound);
+        }
+
+        mentor.Experiences = request.Experiences;
+        application.Certifications = request.Certifications;
+        application.Education = request.Education;
+        application.Statement = request.Statement;
+
+        if (request.Documents != null && request.Documents.Any())
+        {
+            var uploadPath = Path.Combine(env.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            var fileNames = request.Documents.Select(f => f.FileName).ToList();
+            var duplicateFiles = fileNames.GroupBy(f => f, StringComparer.OrdinalIgnoreCase)
+                                         .Where(g => g.Count() > 1)
+                                         .Select(g => g.Key)
+                                         .ToList();
+            if (duplicateFiles.Any())
+            {
+                return Result.Failure<bool>($"Duplicate files detected in request: {string.Join(", ", duplicateFiles)}", HttpStatusCode.BadRequest);
+            }
+
+
+            foreach (var doc in application.ApplicationDocuments.Where(d => d.DocumentType != FileType.ExternalWebAddress).ToList())
+            {
+                var oldFilePath = Path.Combine(env.WebRootPath, doc.DocumentUrl.TrimStart('/'));
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+            }
+            application.ApplicationDocuments.Clear();
+
+            foreach (var file in request.Documents)
+            {
+                if (file.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(env.WebRootPath, "uploads", fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    FileType documentType = file.ContentType switch
+                    {
+                        string ct when ct.Contains("pdf") => FileType.Pdf,
+                        string ct when ct.Contains("video") => FileType.Video,
+                        string ct when ct.Contains("audio") => FileType.Audio,
+                        string ct when ct.Contains("image") => FileType.Image,
+                        _ => throw new InvalidOperationException($"Unsupported file type: {file.FileName}")
+                    };
+
+                    application.ApplicationDocuments.Add(new ApplicationDocument
+                    {
+                        MentorApplicationId = application.Id,
+                        DocumentType = documentType,
+                        DocumentUrl = $"/uploads/{fileName}"
+                    });
+                }
+            }
+        }
         application.Status = ApplicationStatus.Submitted;
         mentorApplicationRepository.Update(application);
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin!.FullName, application.MentorId);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.Mentor.FullName);
 
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 

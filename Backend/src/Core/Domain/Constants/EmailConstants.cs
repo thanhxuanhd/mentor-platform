@@ -52,7 +52,7 @@
             Mentor Platform Team";
         }
 
-        public static string BodyUpdatedNotificationApplication(string adminName, Guid mentorId)
+        public static string BodyUpdatedNotificationApplication(string adminName, string mentorName)
         {
             return $@"
             Hello {adminName},
