@@ -133,6 +133,27 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
                 Directory.CreateDirectory(uploadPath);
             }
 
+            var fileNames = request.Documents.Select(f => f.FileName).ToList();
+            var duplicateFiles = fileNames.GroupBy(f => f, StringComparer.OrdinalIgnoreCase)
+                                         .Where(g => g.Count() > 1)
+                                         .Select(g => g.Key)
+                                         .ToList();
+            if (duplicateFiles.Any())
+            {
+                return Result.Failure<bool>($"Duplicate files detected in request: {string.Join(", ", duplicateFiles)}", HttpStatusCode.BadRequest);
+            }
+
+
+            foreach (var doc in application.ApplicationDocuments.Where(d => d.DocumentType != FileType.ExternalWebAddress).ToList())
+            {
+                var oldFilePath = Path.Combine(environment.WebRootPath, doc.DocumentUrl.TrimStart('/'));
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+            }
+            application.ApplicationDocuments.Clear();
+
             foreach (var file in request.Documents)
             {
                 if (file.Length > 0)
