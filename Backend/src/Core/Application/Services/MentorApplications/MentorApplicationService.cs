@@ -1,4 +1,3 @@
-using Application.Exceptions;
 using Application.Helpers;
 using Contract.Dtos.MentorApplications.Requests;
 using Contract.Dtos.MentorApplications.Responses;
@@ -6,15 +5,23 @@ using Contract.Dtos.Users.Requests;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace Application.Services.MentorApplications;
 
-public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
+public class MentorApplicationService(IUserRepository userRepository,
+    IMentorApplicationRepository mentorApplicationRepository,
+    IEmailService emailService,
+    IWebHostEnvironment env,
+    ILogger<MentorApplicationService> logger) : IMentorApplicationService
 {
-    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request)
+    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request, HttpRequest httpRequest)
     {
         var user = await userRepository.GetByIdAsync(userId);
         if (user == null)
@@ -32,28 +39,59 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         };
         request.ToMentorApplication(mentorApplication);
 
-        if (request.DocumentURLs != null && request.DocumentURLs.Any())
+        if (request.Documents != null && request.Documents.Any())
         {
-            try
+            mentorApplication.ApplicationDocuments = new List<ApplicationDocument>();
+            var path = Directory.GetCurrentDirectory();
+            logger.LogInformation($"RootPath: {env.WebRootPath}");
+
+            var documentsPath = Path.Combine(path, env.WebRootPath, "documents", $"{userId}");
+            if (!Directory.Exists(documentsPath))
             {
-                mentorApplication.ApplicationDocuments = request.DocumentURLs.Select(url => new ApplicationDocument
+                Directory.CreateDirectory(documentsPath);
+            }
+
+            foreach (var file in request.Documents)
+            {
+                if (file == null || file.Length == 0)
                 {
-                    MentorApplicationId = mentorApplication.Id,
-                    DocumentUrl = FileHelper.VerifyFileUrl(userId.ToString(), url),
-                    DocumentType = FileHelper.GetFileTypeFromUrl(url)
-                }).ToList();
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Result.Failure<bool>(ex.Message, HttpStatusCode.BadRequest);
-            }
-            catch (ArgumentException ex)
-            {
-                return Result.Failure<bool>(ex.Message, HttpStatusCode.BadRequest);
-            }
-            catch (ForbiddenAccessException ex)
-            {
-                return Result.Failure<bool>(ex.Message, HttpStatusCode.Forbidden);
+                    return Result.Failure<bool>("File not selected", HttpStatusCode.BadRequest);
+                }
+
+                var fileContentType = file.ContentType;
+                if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+                {
+                    return Result.Failure<bool>("File content type is not allowed.", HttpStatusCode.BadRequest);
+                }
+
+                if (file.Length > FileConstants.MAX_FILE_SIZE)
+                {
+                    return Result.Failure<bool>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
+                }
+
+                long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                string fileName = $"{epoch}_{file.FileName}";
+                var filePath = Path.Combine(documentsPath, fileName);
+
+                try
+                {
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await file.CopyToAsync(stream);
+
+                    var baseUrl = $"{httpRequest?.Scheme}://{httpRequest?.Host}";
+                    var fileUrl = $"{baseUrl}/documents/{userId}/{fileName}";
+
+                    mentorApplication.ApplicationDocuments.Add(new ApplicationDocument
+                    {
+                        MentorApplicationId = mentorApplication.Id,
+                        DocumentUrl = fileUrl,
+                        DocumentType = FileHelper.GetFileTypeFromUrl(fileUrl)
+                    });
+                }
+                catch (Exception ex)
+                {
+                    return Result.Failure<bool>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+                }
             }
         }
 
