@@ -5,7 +5,8 @@ namespace Domain.Entities;
 public class Schedule : BaseEntity<Guid>
 {
     public Guid MentorId { get; set; }
-    public DayOfWeek DayOfWeek { get; set; } 
+    public DateOnly WeekStartDate { get; set; }
+    public DateOnly WeekEndDate { get; set; }
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public int SessionDuration { get; set; } 

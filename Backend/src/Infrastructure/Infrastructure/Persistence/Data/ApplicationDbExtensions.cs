@@ -229,7 +229,9 @@ public static class ApplicationDbExtensions
                 new Schedule
                 {
                     MentorId = mentor1Id,
-                    DayOfWeek = DayOfWeek.Monday,
+                    // start 25/5/2025
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartTime = new TimeOnly(09, 00),
                     EndTime = new TimeOnly(17, 00),
                     SessionDuration = 60, 
@@ -239,7 +241,8 @@ public static class ApplicationDbExtensions
                 new Schedule
                 {
                     MentorId = mentor1Id,
-                    DayOfWeek = DayOfWeek.Wednesday, 
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartTime = new TimeOnly(10, 00),
                     EndTime = new TimeOnly(18, 00),
                     SessionDuration = 45, 
@@ -249,7 +252,8 @@ public static class ApplicationDbExtensions
                 new Schedule
                 {
                     MentorId = mentor2Id,
-                    DayOfWeek = DayOfWeek.Tuesday, 
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartTime = new TimeOnly(13, 00),
                     EndTime = new TimeOnly(21, 00),
                     SessionDuration = 30, 
@@ -259,7 +263,8 @@ public static class ApplicationDbExtensions
                 new Schedule
                 {
                     MentorId = mentor2Id,
-                    DayOfWeek = DayOfWeek.Friday, 
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartTime = new TimeOnly(09, 00),
                     EndTime = new TimeOnly(12, 00),
                     SessionDuration = 60, 

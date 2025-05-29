@@ -8,18 +8,19 @@ namespace Application.Services.Schedule;
 
 public class ScheduleService(IScheduleRepository scheduleRepository) : IScheduleService
 {
-    public async Task<Result<GetScheduleResponse>> GetScheduleByIdAsync(Guid id)
+    public async Task<Result<GetScheduleSettingsResponse>> GetScheduleByIdAsync(Guid id)
     {
         var schedule = await scheduleRepository.GetByIdAsync(id);
         if (schedule == null)
         {
-            return Result.Failure<GetScheduleResponse>("Schedule not found", HttpStatusCode.NotFound);
+            return Result.Failure<GetScheduleSettingsResponse>("Schedule not found", HttpStatusCode.NotFound);
         }
 
-        var response = new GetScheduleResponse
+        var response = new GetScheduleSettingsResponse
         {
             Id = schedule.Id,
-            DayOfWeek = schedule.DayOfWeek,
+            WeekStartDate = schedule.WeekStartDate,
+            WeekEndDate = schedule.WeekEndDate, 
             StartTime = schedule.StartTime.ToString("HH:mm"),
             EndTime = schedule.EndTime.ToString("HH:mm"),
             SessionDuration = schedule.SessionDuration,
@@ -30,13 +31,14 @@ public class ScheduleService(IScheduleRepository scheduleRepository) : ISchedule
         return Result.Success(response, HttpStatusCode.OK);
     }
 
-    public async Task<Result<List<GetScheduleResponse>>> GetAllAsync()
+    public async Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync()
     {
         var schedules = await scheduleRepository.ToListAsync(
-            scheduleRepository.GetAll().Select(x => new GetScheduleResponse
+            scheduleRepository.GetAll().Select(x => new GetScheduleSettingsResponse
             {
                 Id = x.Id,
-                DayOfWeek = x.DayOfWeek,
+                WeekStartDate = x.WeekStartDate,
+                WeekEndDate = x.WeekEndDate,
                 StartTime = x.StartTime.ToString("HH:mm"),
                 EndTime = x.EndTime.ToString("HH:mm"),
                 SessionDuration = x.SessionDuration,
@@ -47,12 +49,13 @@ public class ScheduleService(IScheduleRepository scheduleRepository) : ISchedule
         return Result.Success(schedules, HttpStatusCode.OK);
     }
 
-    public async Task<Result<GetScheduleResponse>> CreateAsync(ScheduleRequest request)
+    public async Task<Result<GetScheduleSettingsResponse>> CreateAsync(ScheduleRequest request)
     {
         var schedule = new Domain.Entities.Schedule
         {
             Id = Guid.NewGuid(),
-            DayOfWeek = request.DayOfWeek,
+            WeekStartDate = request.WeekStartDate,
+            WeekEndDate = request.WeekEndDate,
             StartTime = request.StartTime,
             EndTime = request.EndTime,
             SessionDuration = request.SessionDuration,
@@ -63,10 +66,11 @@ public class ScheduleService(IScheduleRepository scheduleRepository) : ISchedule
         await scheduleRepository.AddAsync(schedule);
         await scheduleRepository.SaveChangesAsync();
 
-        var response = new GetScheduleResponse
+        var response = new GetScheduleSettingsResponse
         {
             Id = schedule.Id,
-            DayOfWeek = schedule.DayOfWeek,
+            WeekStartDate = schedule.WeekStartDate,
+            WeekEndDate = schedule.WeekEndDate,
             StartTime = schedule.StartTime.ToString("HH:mm"),
             EndTime = schedule.EndTime.ToString("HH:mm"),
             SessionDuration = schedule.SessionDuration,
@@ -85,7 +89,8 @@ public class ScheduleService(IScheduleRepository scheduleRepository) : ISchedule
             return Result.Failure<bool>("Schedule not found", HttpStatusCode.NotFound);
         }
 
-        schedule.DayOfWeek = request.DayOfWeek;
+        schedule.WeekStartDate = request.WeekStartDate;
+        schedule.WeekEndDate = request.WeekEndDate;
         schedule.StartTime = request.StartTime;
         schedule.EndTime = request.EndTime;
         schedule.SessionDuration = request.SessionDuration;

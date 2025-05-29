@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿// filepath: Backend\src\Infrastructure\Infrastructure\Persistence\Data\Configurations\ScheduleConfiguration.cs
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,12 +12,15 @@ public class ScheduleConfiguration : IEntityTypeConfiguration<Schedule>
         builder.HasKey(s => s.Id);
 
         builder.HasOne(s => s.User)
-               .WithMany() 
+               .WithMany()
                .HasForeignKey(s => s.MentorId)
-               .OnDelete(DeleteBehavior.Cascade); 
+               .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(s => s.DayOfWeek)
-               .IsRequired();
+        builder.Property(s => s.WeekStartDate) 
+               .IsRequired();                 
+
+        builder.Property(s => s.WeekEndDate)   
+               .IsRequired();                 
 
         builder.Property(s => s.StartTime)
                .IsRequired();
@@ -31,7 +35,7 @@ public class ScheduleConfiguration : IEntityTypeConfiguration<Schedule>
                .IsRequired();
 
         builder.Property(s => s.IsLocked)
-               .HasDefaultValue(false); 
+               .HasDefaultValue(false);
 
         builder.HasQueryFilter(s => !s.IsLocked);
     }
