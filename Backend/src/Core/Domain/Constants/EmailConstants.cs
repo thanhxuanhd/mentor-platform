@@ -57,7 +57,7 @@
             return $@"
             Hello {adminName},
             <br>
-            Mentor with ID {mentorId} has updated their application.
+            Mentor {mentorName} has updated their application.
             <br><br>
             Thank you,
             Support Team";
