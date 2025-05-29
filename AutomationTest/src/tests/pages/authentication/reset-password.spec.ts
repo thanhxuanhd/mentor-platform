@@ -4,7 +4,7 @@ import { ResetPasswordUser } from '../../../models/user/user';
 import { ResetPasswordPage } from '../../../pages/authentication/reset-password-page';
 import testData from '../../test-data/reset-password-data.json'
 
-test.describe('@ResetPassword Reset Password Test', () => {
+test.describe.serial('@ResetPassword Reset Password Test', () => {
     let resetPasswordPage: ResetPasswordPage;
 
     test.beforeEach(async ({ page }) => {
@@ -12,8 +12,7 @@ test.describe('@ResetPassword Reset Password Test', () => {
         await resetPasswordPage.goToForgotPasswordModal();
     });
 
-    const userData: { [label: string]: ResetPasswordUser } = {
-        '@SmokeTest Valid Case': testData.valid_case,
+    const invalidData: { [label: string]: ResetPasswordUser } = {
         'Empty new password': testData.empty_new_password,
         'Over max length new password': testData.over_max_length_new_password
     };
@@ -28,9 +27,38 @@ test.describe('@ResetPassword Reset Password Test', () => {
         'Disable/Deleted Email': testData.disabled_deleted_notexist_email
     };
 
-    for (const [label, data] of Object.entries(userData)) {
+    test('@SmokeTest Valid Case - Reset Password', async ({ request }) => {
+        const data = testData.valid_case;
+        let currentPassword: string;
+
+        await test.step('Send new password to email', async () => {
+            await resetPasswordPage.inputEmail(data.email);
+            await resetPasswordPage.clickSendNewPasswordButton();
+            await Promise.any([
+                await resetPasswordPage.expectSendSuccess(),
+                await resetPasswordPage.expectSendFail()
+            ]);
+        });
+
+        await test.step('Input details data and submit', async () => {
+            currentPassword = await requestNewPasswordFromEmail(request, data.email);
+            await resetPasswordPage.inputEmail(data.email);
+            await resetPasswordPage.inputCurrentPassword(currentPassword);
+            await resetPasswordPage.inputNewPassword(data.newPassword);
+            await resetPasswordPage.clickResetPasswordButton();
+        });
+
+        await test.step('Verify system behavior', async () => {
+            await resetPasswordPage.expectMessage(data.expectedMessage);
+        });
+    });
+
+    for (const [label, data] of Object.entries(invalidData)) {
+        if (label === '@SmokeTest Valid Case') continue;
+
         test(`${label} - Reset Password`, async ({ request }) => {
             let currentPassword: string;
+
             await test.step('Send new password to email', async () => {
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.clickSendNewPasswordButton();
@@ -41,7 +69,7 @@ test.describe('@ResetPassword Reset Password Test', () => {
             });
 
             await test.step('Input details data and submit', async () => {
-                currentPassword = await requestNewPasswordFromEmail(request, data.email)
+                currentPassword = await requestNewPasswordFromEmail(request, data.email);
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.inputCurrentPassword(currentPassword);
                 await resetPasswordPage.inputNewPassword(data.newPassword);
@@ -57,6 +85,7 @@ test.describe('@ResetPassword Reset Password Test', () => {
     for (const [label, data] of Object.entries(invalidUserData)) {
         test(`${label} - Reset Password`, async ({ request }) => {
             let currentPassword: string;
+
             await test.step('Send new password to email', async () => {
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.clickSendNewPasswordButton();
@@ -67,7 +96,7 @@ test.describe('@ResetPassword Reset Password Test', () => {
             });
 
             await test.step('Input details data and submit', async () => {
-                currentPassword = data.currentPassword
+                currentPassword = data.currentPassword;
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.inputCurrentPassword(currentPassword);
                 await resetPasswordPage.inputNewPassword(data.newPassword);
@@ -77,7 +106,6 @@ test.describe('@ResetPassword Reset Password Test', () => {
             await test.step('Verify system behavior', async () => {
                 await resetPasswordPage.expectMessage(data.expectedMessage);
             });
-
         });
     }
 
@@ -86,8 +114,9 @@ test.describe('@ResetPassword Reset Password Test', () => {
             await test.step('Send new password to email', async () => {
                 await resetPasswordPage.inputEmail(data.email);
                 await resetPasswordPage.clickSendNewPasswordButton();
-                await resetPasswordPage.expectSendFail()
+                await resetPasswordPage.expectSendFail();
             });
         });
     }
 });
+

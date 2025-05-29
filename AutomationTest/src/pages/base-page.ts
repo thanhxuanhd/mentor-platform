@@ -29,7 +29,7 @@ export class BasePage {
 
     async isLocatorVisible(locator: Locator): Promise<boolean> {
         try {
-            await locator.waitFor({ state: 'visible', timeout: 5000 });
+            await locator.waitFor({ state: "visible", timeout: 5000 });
             return true;
         } catch {
             return false;
@@ -49,5 +49,12 @@ export class BasePage {
     async assertURL(expected: string) {
         await expect(this.page).toHaveURL(expected);
         return this;
+    }
+
+    async expectMessage(message: string) {
+        if (message) {
+            const locator: Locator = this.page.getByText(message);
+            await this.isVisible(locator);
+        }
     }
 }

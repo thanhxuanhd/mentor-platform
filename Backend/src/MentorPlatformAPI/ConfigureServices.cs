@@ -1,8 +1,8 @@
-﻿using Contract.Dtos.Users.Requests;
+﻿using System.Text.Json.Serialization;
+using Contract.Dtos.Users.Requests;
 using FluentValidation;
 using MentorPlatformAPI.ExceptionHandler;
 using MentorPlatformAPI.Extensions;
-using System.Text.Json.Serialization;
 
 namespace MentorPlatformAPI;
 

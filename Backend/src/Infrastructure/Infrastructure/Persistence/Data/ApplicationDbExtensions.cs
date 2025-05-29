@@ -8,17 +8,17 @@ namespace Infrastructure.Persistence.Data;
 
 public static class ApplicationDbExtensions
 {
-    public static IApplicationBuilder SeedData(this IApplicationBuilder app)
+    public static void SeedData(this IApplicationBuilder app)
     {
         using var scope = app.ApplicationServices.CreateScope();
         var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
         dbContext!.Database.EnsureCreated();
 
+        // Seeding logic moved directly here
         if (!dbContext.Roles.Any())
         {
             dbContext.Roles.AddRange(new Role { Name = UserRole.Admin }, new Role { Name = UserRole.Mentor },
                 new Role { Name = UserRole.Learner });
-
             dbContext.SaveChanges();
         }
 
@@ -31,7 +31,6 @@ public static class ApplicationDbExtensions
                 new Availability { Name = "Afternoons" },
                 new Availability { Name = "Evenings" }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -47,7 +46,6 @@ public static class ApplicationDbExtensions
                 new Expertise { Name = "Project Management" },
                 new Expertise { Name = "Communication" }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -59,53 +57,65 @@ public static class ApplicationDbExtensions
                 new TeachingApproach { Name = "Project Based" },
                 new TeachingApproach { Name = "Lecture Style" }
             );
-
             dbContext.SaveChanges();
         }
 
         if (!dbContext.Users.Any())
         {
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
-            if (mentorRole is null)
-            {
-                throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-            }
+            var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
+            var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
+            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
+            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
 
             dbContext.Users.AddRange(
                 new User
                 {
                     Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                    FullName = "MySuperKawawiiMentorXxX@at.local",
-                    Email = "MySuperKawaiiMentorXxX@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("http://localhost:8080/register"),
-                    RoleId = mentorRole.Id
+                    FullName = "Alice Wonderland",
+                    Email = "alice.wonderland@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("password123"),
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
                     Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
-                    FullName = "DuongSenpai@at.local",
-                    Email = "DuongSenpai@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("RollRoyce420$$$"),
-                    RoleId = mentorRole.Id
+                    FullName = "Bob Builder",
+                    Email = "bob.builder@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("securepassword"),
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
                     Id = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
-                    FullName = "AnhDoSkibidi@at.local",
-                    Email = "AnhDoSkibidi@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
-                    RoleId = mentorRole.Id
+                    FullName = "Charlie Chaplin",
+                    Email = "charlie.chaplin@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("anotherpassword"),
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
                 },
                 new User
                 {
-                    Id = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
-                    FullName = "John Doe",
-                    Email = "johndoe@at.local",
-                    PasswordHash = PasswordHelper.HashPassword("!@#$%^&*{%item_04%}"),
-                    RoleId = mentorRole.Id
+                    Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
+                    FullName = "David Copperfield",
+                    Email = "david.copperfield@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("mypassword"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
+                    FullName = "The Administrator",
+                    Email = "mini@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
+                    RoleId = adminRole.Id,
+                    Status = UserStatus.Active
                 }
             );
-
             dbContext.SaveChanges();
         }
 
@@ -142,7 +152,6 @@ public static class ApplicationDbExtensions
                 Description = "Resources for career advancement and job hunting",
                 Status = false
             });
-
             dbContext.SaveChanges();
         }
 
@@ -151,55 +160,55 @@ public static class ApplicationDbExtensions
             dbContext.Courses.AddRange(new Course
             {
                 Id = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe"),
-                Title = "Introduction to Leadership",
+                Title = "Foundations of Effective Leadership",
                 CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
                 Status = CourseStatus.Published,
                 DueDate = DateTime.UtcNow.AddMonths(3),
-                Description = "Learn the principles of effective leadership.",
+                Description = "Explore the fundamental principles and practices of effective leadership.",
                 Difficulty = CourseDifficulty.Beginner
             }, new Course
             {
                 Id = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f"),
-                Title = "Advanced Communication Techniques",
+                Title = "Mastering Business Communication",
                 CategoryId = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
                 MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
                 Status = CourseStatus.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(2),
-                Description = "Master advanced communication skills for the workplace.",
+                Description = "Develop advanced skills in professional communication for various business contexts.",
                 Difficulty = CourseDifficulty.Intermediate
             }, new Course
             {
                 Id = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a"),
-                Title = "Public Speaking Mastery",
+                Title = "Confident Public Speaking",
                 CategoryId = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
                 Status = CourseStatus.Published,
                 DueDate = DateTime.UtcNow.AddMonths(1),
-                Description = "Become a confident public speaker.",
+                Description = "Build confidence and refine your techniques for impactful public speaking.",
                 Difficulty = CourseDifficulty.Advanced
             }, new Course
             {
                 Id = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
-                Title = "Time Management for Professionals",
+                Title = "Productivity with Time Management",
                 CategoryId = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
                 MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
                 Status = CourseStatus.Draft,
                 DueDate = DateTime.UtcNow.AddMonths(4),
-                Description = "Learn effective time management strategies.",
+                Description =
+                    "Learn and apply proven strategies to manage your time effectively and increase productivity.",
                 Difficulty = CourseDifficulty.Beginner
             }, new Course
             {
                 Id = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a"),
-                Title = "Effective Team Leadership",
+                Title = "Leading High-Performing Teams",
                 CategoryId = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
                 MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
                 Status = CourseStatus.Archived,
                 DueDate = DateTime.UtcNow.AddMonths(5),
-                Description = "Learn how to lead and manage teams effectively.",
+                Description = "Discover how to build, motivate, and lead high-performing teams.",
                 Difficulty = CourseDifficulty.Advanced
             });
-
             dbContext.SaveChanges();
         }
 
@@ -211,7 +220,6 @@ public static class ApplicationDbExtensions
                 new Tag { Id = Guid.Parse("4e21ccd5-5b36-4f2b-9472-d1ab4cf95ab6"), Name = "Public Speaking" },
                 new Tag { Id = Guid.Parse("66382d29-a177-4d1b-b6cf-747ccea33bce"), Name = "Time Management" },
                 new Tag { Id = Guid.Parse("3a6c27f3-1518-4575-8790-54764c2851a7"), Name = "Career Development" });
-
             dbContext.SaveChanges();
         }
 
@@ -307,6 +315,69 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
-        return app;
+        if (!dbContext.CourseItems.Any())
+        {
+            dbContext.CourseItems.Add(new CourseItem
+            {
+                Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
+                Title = "Introduction to Leadership Concepts",
+                Description = "Understand the core principles and theories of leadership.",
+                MediaType = CourseMediaType.ExternalWebAddress,
+                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 1),
+                CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
+            });
+
+            dbContext.CourseItems.Add(new CourseItem
+            {
+                Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
+                Title = "Non-Verbal Communication Essentials",
+                Description = "Learn about the importance of body language and other non-verbal cues in communication.",
+                MediaType = CourseMediaType.Pdf,
+                WebAddress = GetMediaUrl(CourseMediaType.Pdf, 1),
+                CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
+            });
+
+            dbContext.CourseItems.Add(new CourseItem
+            {
+                Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
+                Title = "Structuring Your Speech",
+                Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
+                MediaType = CourseMediaType.Video,
+                WebAddress = GetMediaUrl(CourseMediaType.Video, 1),
+                CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
+            });
+
+            dbContext.CourseItems.Add(new CourseItem
+            {
+                Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
+                Title = "Prioritization Techniques",
+                Description = "Effective methods for prioritizing tasks and managing workloads.",
+                MediaType = CourseMediaType.ExternalWebAddress,
+                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 2),
+                CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
+            });
+
+            dbContext.CourseItems.Add(new CourseItem
+            {
+                Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
+                Title = "Building Trust and Rapport",
+                Description = "Strategies for establishing trust and positive relationships within a team.",
+                MediaType = CourseMediaType.Video,
+                WebAddress = GetMediaUrl(CourseMediaType.Video, 2),
+                CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
+            });
+            dbContext.SaveChanges();
+        }
+    }
+
+    private static string GetMediaUrl(CourseMediaType mediaType, int moduleNumber)
+    {
+        return mediaType switch
+        {
+            CourseMediaType.Video => $"/content/videos/module{moduleNumber}.mp4",
+            CourseMediaType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
+            CourseMediaType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
+            _ => $"/content/other/module{moduleNumber}"
+        };
     }
 }

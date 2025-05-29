@@ -26,7 +26,7 @@ namespace Application.Test
         private Mock<IWebHostEnvironment> _mockWebHostService;
         private Mock<ILogger<UserService>> _mockLogger;
         private UserService _userService;
-        private string _tempImagesFolder;       
+        private string _tempImagesFolder;
 
         [SetUp]
         public void Setup()
