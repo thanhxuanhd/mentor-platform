@@ -29,9 +29,9 @@ export class CourseListingAndBrowsingPage extends BasePage {
 
     this.DDL_MENTOR_OPTIONS = page.getByLabel("Mentor");
 
-    this.BTN_PREVIOUS_LOC = page.locator(".ant-pagination-prev");
+    this.BTN_PREVIOUS_LOC = page.locator(".ant-pagination-prev  button.ant-pagination-item-link");
 
-    this.BTN_NEXT_LOC = page.locator(".ant-pagination-next");
+    this.BTN_NEXT_LOC = page.locator(".ant-pagination-next  button.ant-pagination-item-link");
 
     this.BTN_NAVIGATION_LOC = page.locator(
       "ul.ant-pagination .ant-pagination-item"
@@ -78,12 +78,15 @@ export class CourseListingAndBrowsingPage extends BasePage {
   }
 
   //Pagination function
+
   async getPreviousButtonStatus() {
-    await this.BTN_PREVIOUS_LOC.click();
+    const isEnable = await this.BTN_PREVIOUS_LOC.isEnabled();
+    return isEnable;
   }
 
   async getNextButtonStatus() {
-    await this.BTN_NEXT_LOC.click();
+    const isEnable = await this.BTN_NEXT_LOC.isEnabled();
+    return isEnable;
   }
 
   async clickOnNavigationButton(index: number) {

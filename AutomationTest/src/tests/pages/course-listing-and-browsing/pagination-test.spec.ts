@@ -15,15 +15,15 @@ test.describe("@SmokeTest Check pagination function", async () => {
   //Pagination function
   test("Verify that the Previous button is disable when user is in the first page", async () => {
     await courseListingAndBrowsing.clickOnNavigationButton(0);
-    const isTrue = await courseListingAndBrowsing.getPreviousButtonStatus();
-    expect(isTrue).toBeFalsy();
+    const result = await courseListingAndBrowsing.getPreviousButtonStatus();
+    expect(result).toBeFalsy();
   });
 
   test("Verify that the Next button is disable when user is in the last page", async () => {
     const totalPaging = await courseListingAndBrowsing.getAllPagingCount();
     await courseListingAndBrowsing.clickOnNavigationButton(totalPaging - 1);
-    const isTrue = await courseListingAndBrowsing.getNextButtonStatus();
-    expect(isTrue).toBeFalsy();
+    const result = await courseListingAndBrowsing.getNextButtonStatus();
+    expect(result).toBeFalsy();
   });
 
 
