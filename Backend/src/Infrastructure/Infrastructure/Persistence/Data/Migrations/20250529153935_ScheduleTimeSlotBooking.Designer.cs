@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250528115852_mádasdna")]
-    partial class mádasdna
+    [Migration("20250529153935_ScheduleTimeSlotBooking")]
+    partial class ScheduleTimeSlotBooking
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -37,6 +37,28 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Availabilities");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("LearnerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TimeSlotId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TimeSlotId");
+
+                    b.ToTable("bookings");
                 });
 
             modelBuilder.Entity("Domain.Entities.Category", b =>
@@ -178,6 +200,36 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("Expertises");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ScheduleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MentorId");
+
+                    b.HasIndex("ScheduleId");
+
+                    b.ToTable("timeSlots");
+                });
+
             modelBuilder.Entity("Domain.Entities.Role", b =>
                 {
                     b.Property<int>("Id")
@@ -212,7 +264,12 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("time");
 
                     b.Property<bool>("IsLocked")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("MentorId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("SessionDuration")
                         .HasColumnType("int");
@@ -220,12 +277,9 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("MentorId");
 
                     b.ToTable("Schedules");
                 });
@@ -463,6 +517,17 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("UserTeachingApproaches");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Booking", b =>
+                {
+                    b.HasOne("Domain.Entities.MentorAvailableTimeSlot", "TimeSlot")
+                        .WithMany("Bookings")
+                        .HasForeignKey("TimeSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TimeSlot");
+                });
+
             modelBuilder.Entity("Domain.Entities.Course", b =>
                 {
                     b.HasOne("Domain.Entities.Category", "Category")
@@ -512,11 +577,30 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Mentor")
+                        .WithMany()
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Schedule", "Schedule")
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mentor");
+
+                    b.Navigation("Schedule");
+                });
+
             modelBuilder.Entity("Domain.Entities.Schedule", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("MentorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -630,6 +714,11 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.Expertise", b =>
                 {
                     b.Navigation("UserExpertises");
+                });
+
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("Domain.Entities.Role", b =>

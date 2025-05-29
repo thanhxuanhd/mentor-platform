@@ -5,7 +5,7 @@
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class mádasdna : Migration
+    public partial class addmigrationMentorAvailibilityDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

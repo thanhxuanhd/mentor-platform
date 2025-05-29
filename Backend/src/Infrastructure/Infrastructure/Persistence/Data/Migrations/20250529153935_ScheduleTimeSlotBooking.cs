@@ -6,24 +6,34 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class minhdz : Migration
+    public partial class ScheduleTimeSlotBooking : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Schedules_Users_UserId",
-                table: "Schedules");
-
-            migrationBuilder.RenameColumn(
-                name: "UserId",
-                table: "Schedules",
-                newName: "MentorId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_Schedules_UserId",
-                table: "Schedules",
-                newName: "IX_Schedules_MentorId");
+            migrationBuilder.CreateTable(
+                name: "Schedules",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MentorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DayOfWeek = table.Column<int>(type: "int", nullable: false),
+                    StartTime = table.Column<TimeOnly>(type: "time", nullable: false),
+                    EndTime = table.Column<TimeOnly>(type: "time", nullable: false),
+                    SessionDuration = table.Column<int>(type: "int", nullable: false),
+                    BufferTime = table.Column<int>(type: "int", nullable: false),
+                    IsLocked = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Schedules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Schedules_Users_MentorId",
+                        column: x => x.MentorId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateTable(
                 name: "timeSlots",
@@ -79,6 +89,11 @@ namespace Infrastructure.Persistence.Data.Migrations
                 column: "TimeSlotId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Schedules_MentorId",
+                table: "Schedules",
+                column: "MentorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_timeSlots_MentorId",
                 table: "timeSlots",
                 column: "MentorId");
@@ -87,46 +102,19 @@ namespace Infrastructure.Persistence.Data.Migrations
                 name: "IX_timeSlots_ScheduleId",
                 table: "timeSlots",
                 column: "ScheduleId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Schedules_Users_MentorId",
-                table: "Schedules",
-                column: "MentorId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_Schedules_Users_MentorId",
-                table: "Schedules");
-
             migrationBuilder.DropTable(
                 name: "bookings");
 
             migrationBuilder.DropTable(
                 name: "timeSlots");
 
-            migrationBuilder.RenameColumn(
-                name: "MentorId",
-                table: "Schedules",
-                newName: "UserId");
-
-            migrationBuilder.RenameIndex(
-                name: "IX_Schedules_MentorId",
-                table: "Schedules",
-                newName: "IX_Schedules_UserId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Schedules_Users_UserId",
-                table: "Schedules",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+            migrationBuilder.DropTable(
+                name: "Schedules");
         }
     }
 }
