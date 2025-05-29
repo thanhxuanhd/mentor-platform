@@ -28,4 +28,13 @@ public class MentorApplicationRepository(ApplicationDbContext context) : BaseRep
             .FirstOrDefaultAsync(ma => ma.Id == applicationId);
     }
 
+    public IQueryable<MentorApplication> GetMentorApplicationByMentorIdAsync(Guid mentorId)
+    {
+        return GetAll()
+            .Include(ma => ma.Mentor)
+            .ThenInclude(m => m.UserExpertises)
+            .ThenInclude(ue => ue.Expertise)
+            .Where(u => u.MentorId.Equals(mentorId));
+    }
+
 }

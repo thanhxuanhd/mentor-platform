@@ -11,4 +11,5 @@ public interface IMentorApplicationService
     Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request);
     Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid adminId, Guid applicationId, RequestApplicationInfoRequest request);
     Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid adminId, Guid applicationId, UpdateApplicationStatusRequest request);
+    Task<Result<List<FilterMentorApplicationResponse>>> GetListMentorApplicationByMentorIdAsync(Guid currentUserId);
 }

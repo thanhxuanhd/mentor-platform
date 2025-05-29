@@ -28,6 +28,15 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [Authorize(Roles = "Mentor")]
+    [HttpGet("{mentorId}/mentor")]
+    public async Task<IActionResult> GetMentorApplicationByMentorId(Guid mentorId)
+    {
+        var result = await mentorApplicationService.GetListMentorApplicationByMentorIdAsync(mentorId);
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPut("{applicationId}/request-info")]
     public async Task<IActionResult> RequestApplicationInfo(Guid applicationId, RequestApplicationInfoRequest request)

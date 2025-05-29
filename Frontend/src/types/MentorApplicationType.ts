@@ -26,6 +26,9 @@ export interface MentorApplicationDetailItemProp {
   expertises: string[];
   experiences?: string;
   applicationStatus: string;
+  education: string;
+  certifications: string;
+  statement: string;
   submittedAt: string;
   reviewedAt: string;
   reviewBy: string;

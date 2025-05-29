@@ -7,6 +7,7 @@ using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Application.Services.MentorApplications;
 
@@ -99,6 +100,37 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
                 DocumentUrl = doc.DocumentUrl
             }).ToList()
         };
+
+        return Result.Success(response, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<List<FilterMentorApplicationResponse>>> GetListMentorApplicationByMentorIdAsync(Guid currentUserId)
+    {
+        var user = await userRepository.GetByIdAsync(currentUserId, user => user.Role);
+
+        if (user!.Role.Name == UserRole.Learner)
+        {
+            return Result.Failure<List<FilterMentorApplicationResponse>>(
+                "You do not have permission to view this mentor application.", HttpStatusCode.Forbidden
+            );
+        }
+
+        var applicationDetails = mentorApplicationRepository
+            .GetMentorApplicationByMentorIdAsync(currentUserId)
+            .Select(application => new FilterMentorApplicationResponse
+            {
+                MentorApplicationId = application.Id,
+                ProfilePhotoUrl = application.Mentor.ProfilePhotoUrl,
+                MentorName = application.Mentor.FullName,
+                Email = application.Mentor.Email,
+                Bio = application.Mentor.Bio,
+                Experiences = application.Mentor.Experiences,
+                Expertises = application.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
+                Status = application.Status.ToString(),
+                SubmittedAt = application.SubmittedAt
+            });
+
+        var response = await mentorApplicationRepository.ToListAsync(applicationDetails);
 
         return Result.Success(response, HttpStatusCode.OK);
     }

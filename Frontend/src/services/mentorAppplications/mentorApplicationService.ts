@@ -60,4 +60,15 @@ export const mentorApplicationService = {
       throw error;
     }
   },
+
+  getMentorApplicationByMentorId: async (id: string) => {
+    try {
+      const response = await axiosClient.get(
+        `mentor-applications/${id}/mentor`,
+      );
+      return response.data.value;
+    } catch (error) {
+      throw error;
+    }
+  },
 };

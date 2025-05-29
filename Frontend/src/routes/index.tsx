@@ -17,6 +17,7 @@ import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
+import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 
 const AppRoutes = () => {
   return (
@@ -62,6 +63,17 @@ const AppRoutes = () => {
         }
       >
         <Route path="users" element={<UsersPage />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.MENTOR]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="mentor-status" element={<MentorStatusTrackingPage />} />
       </Route>
     </Routes>
   );

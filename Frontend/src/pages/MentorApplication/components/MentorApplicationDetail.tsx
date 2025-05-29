@@ -14,25 +14,8 @@ interface ApplicationDetailsProps {
   onNoteChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
-const applications: MentorApplicationDetailItemProp = {
-  mentorApplicationId: "1",
-  mentorName: "Sarah Johnson",
-  email: "sarah.j@example.com",
-  profilePhotoUrl: "/placeholder.svg?height=48&width=48",
-  expertises: ["Data Science", "Machine Learning", "Python"],
-  experiences: "8+ years in data science and AI research",
-  applicationStatus: "Submitted",
-  submittedAt: "9/10/2023",
-  reviewedAt: "9/11/2023",
-  reviewBy: "John Doe",
-  documents: [
-    { documentId: "1", documentUrl: "Resume.pdf", documentType: "pdf" },
-    { documentId: "2", documentUrl: "Portfolio.pdf", documentType: "pdf" },
-  ],
-}
-
 export default function MentorApplicationDetail({
-  application = applications,
+  application,
   onApprove,
   onReject,
   onRequestInfo,
