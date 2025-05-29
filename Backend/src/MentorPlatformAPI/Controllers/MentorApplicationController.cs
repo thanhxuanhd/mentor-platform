@@ -1,8 +1,9 @@
-using System.Security.Claims;
 using Application.Services.MentorApplications;
-using Contract.Dtos.MentorApplication.Requests;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -25,6 +26,15 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     {
         var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
         var result = await mentorApplicationService.GetMentorApplicationByIdAsync(currentUserId, applicationId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [Authorize(Roles = "Mentor")]
+    [HttpPost("mentor-submission")]
+    public async Task<IActionResult> MentorSubmission([FromForm] MentorSubmissionRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var result = await mentorApplicationService.CreateMentorApplicationAsync(Guid.Parse(userId), request, Request);
         return StatusCode((int)result.StatusCode, result);
     }
 

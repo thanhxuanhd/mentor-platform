@@ -1,6 +1,6 @@
 using Application.Services.MentorApplications;
-using Contract.Dtos.MentorApplication.Requests;
-using Contract.Dtos.MentorApplication.Responses;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
 using Contract.Shared;
 using MentorPlatformAPI.Controllers;
 using Microsoft.AspNetCore.Http;

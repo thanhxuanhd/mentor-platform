@@ -101,8 +101,23 @@ export default function MentorApplicationPage() {
     await fetchApplicationDetail(application.mentorApplicationId)
   }
 
+  const handleNoteEmpty = () => {
+    if (!selectedApplication) return false;
+    const isEmpty = selectedApplication.note?.trim() === '';
+    debugger;
+    return isEmpty;
+  }
+
   const handleApprove = async () => {
     if (!selectedApplication) return;
+    if (handleNoteEmpty()) {
+      setNotify({
+        type: "warning",
+        message: "Note Required",
+        description: "Please provide a note before approving the application.",
+      });
+      return;
+    }
     try {
       await mentorApplicationService.updateMentorApplicationStatus(selectedApplication.mentorApplicationId, ApplicationStatus.Approved, selectedApplication.note || '');
       setNotify({
@@ -124,6 +139,14 @@ export default function MentorApplicationPage() {
 
   const handleReject = async () => {
     if (!selectedApplication) return;
+    if (handleNoteEmpty()) {
+      setNotify({
+        type: "warning",
+        message: "Note Required",
+        description: "Please provide a note before rejecting the application.",
+      });
+      return;
+    }
     try {
       await mentorApplicationService.updateMentorApplicationStatus(selectedApplication.mentorApplicationId, ApplicationStatus.Rejected, selectedApplication.note || '');
       setNotify({
@@ -145,6 +168,14 @@ export default function MentorApplicationPage() {
 
   const handleRequestInfo = async () => {
     if (!selectedApplication) return;
+    if (handleNoteEmpty()) {
+      setNotify({
+        type: "warning",
+        message: "Note Required",
+        description: "Please provide a note before requesting additional info.",
+      });
+      return;
+    }
     try {
       await mentorApplicationService.requestMentorApplicationInfo(selectedApplication.mentorApplicationId, selectedApplication.note || '');
       setNotify({

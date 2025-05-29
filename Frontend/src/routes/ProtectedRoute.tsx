@@ -1,36 +1,40 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks';
-import Loading from '../components/Loading';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../hooks";
+import Loading from "../components/Loading";
 
 interface ProtectedRouteProps {
   requiredRole: string | string[];
   children?: React.ReactNode;
+  checkMentorApplication?: boolean;
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole, children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  requiredRole,
+  children,
+}) => {
   const { user, isAuthenticated, loading } = useAuth();
   const currentPath = window.location.pathname;
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: currentPath }} replace />;
   }
 
-  const hasAccess = user && (
-    Array.isArray(requiredRole)
+  const hasAccess =
+    user &&
+    (Array.isArray(requiredRole)
       ? requiredRole.includes(user.role)
-      : user.role === requiredRole
-  );
+      : user.role === requiredRole);
 
   if (!hasAccess) {
     return <Navigate to="/forbidden" replace />;
   }
 
-  return (<>{children}</>);
+  return <>{children}</>;
 };
 
 export default ProtectedRoute;

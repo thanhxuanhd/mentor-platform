@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace Contract.Dtos.MentorApplication.Requests;
+namespace Contract.Dtos.MentorApplications.Requests;
 
 public class RequestApplicationInfoRequest
 {
