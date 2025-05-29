@@ -4,6 +4,6 @@ namespace Contract.Repositories;
 
 public interface IScheduleRepository : IBaseRepository<Schedule, Guid>
 {
-
+    
 }
 

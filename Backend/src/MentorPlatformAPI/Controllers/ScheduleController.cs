@@ -1,6 +1,5 @@
 ﻿using Contract.Dtos.Schedule.Requests;
 using Application.Services.Schedule;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
@@ -10,6 +9,7 @@ namespace MentorPlatformAPI.Controllers;
 public class ScheduleController : ControllerBase
 {
     private readonly IScheduleService _scheduleService;
+
 
     public ScheduleController(IScheduleService scheduleService)
     {
@@ -49,5 +49,4 @@ public class ScheduleController : ControllerBase
         var result = await _scheduleService.DeleteAsync(id);
         return StatusCode((int)result.StatusCode, result);
     }
-
 }

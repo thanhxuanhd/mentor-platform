@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+namespace Application.Services.Booking;
 
-namespace Application.Services.Booking
+public class BookingService
 {
-    internal class BookingService
-    {
-    }
+
 }

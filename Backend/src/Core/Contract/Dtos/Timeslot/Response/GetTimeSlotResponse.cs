@@ -1,9 +1,13 @@
-﻿using Domain.Abstractions;
-using System.Runtime.CompilerServices;
+﻿using Domain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Domain.Entities;
+namespace Contract.Dtos.Timeslot.Response;
 
-public class MentorAvailableTimeSlot : BaseEntity<Guid>
+public class GetTimeSlotResponse
 {
     public Guid MentorId { get; set; }
     public Guid ScheduleId { get; set; }
@@ -12,7 +16,4 @@ public class MentorAvailableTimeSlot : BaseEntity<Guid>
     public TimeOnly EndTime { get; set; }
     public virtual User? Mentor { get; set; }
     public virtual ICollection<Booking>? Bookings { get; set; }
-    public virtual Schedule Schedule { get; set; } = null!;
 }
-
-

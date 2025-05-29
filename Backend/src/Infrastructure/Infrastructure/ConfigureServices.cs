@@ -1,5 +1,6 @@
 ﻿using Contract.Repositories;
 using Contract.Services;
+using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Settings;
@@ -46,6 +47,7 @@ public static class ConfigureServices
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
 
         services.AddHostedService(provider =>
         new UserProfilePhotoCleanupService(
