@@ -37,4 +37,10 @@ export interface ApplicationDocumentProp {
   documentId: string;
   documentUrl: string;
   documentType: "pdf" | "jpg";
+export interface MentorApplicationType {
+  education: string | null;
+  workExperience: string | null;
+  certifications: string | null;
+  statement: string;
+  documents: FileList;
 }

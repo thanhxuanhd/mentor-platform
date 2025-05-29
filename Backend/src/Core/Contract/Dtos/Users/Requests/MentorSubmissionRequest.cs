@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 
 namespace Contract.Dtos.Users.Requests
 {
@@ -8,7 +9,7 @@ namespace Contract.Dtos.Users.Requests
         string? WorkExperience,
         string? Certifications,
         string? Statement,
-        List<string> DocumentURLs
+        List<IFormFile> Documents
         )
     {
         public void ToMentorApplication(MentorApplication application)
@@ -40,7 +41,7 @@ namespace Contract.Dtos.Users.Requests
                 .MaximumLength(300).WithMessage("Statement must be less than 300 characters.")
                 .When(x => !string.IsNullOrWhiteSpace(x.Statement));
 
-            RuleFor(x => x.DocumentURLs)
+            RuleFor(x => x.Documents)
                 .Must(list => list.Count <= 5).WithMessage("You can upload a maximum of 5 documents.");
 
         }
