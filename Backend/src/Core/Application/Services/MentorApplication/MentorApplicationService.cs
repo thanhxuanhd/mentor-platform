@@ -7,10 +7,11 @@ using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Application.Services.MentorApplication;
 
-public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
+public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService, IWebHostEnvironment environment) :  IMentorApplicationService
 {
     public async Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request)
     {
@@ -101,7 +102,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
     public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)
     {
-        var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin!);
+        var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin);
         if (application == null)
         {
             return Result.Failure<bool>("Mentor application not found.", HttpStatusCode.NotFound);
@@ -111,17 +112,52 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
         }
 
-        application.ApplicationDocuments = [.. request.Documents!.Select(doc => new ApplicationDocument
+        application.Certifications = request.Certifications;
+        application.Education = request.Education;
+        application.Statement = request.Statement;
+
+        if (request.Documents != null && request.Documents.Any())
         {
-            DocumentType = doc.DocumentType,
-            DocumentUrl = doc.DocumentUrl
-        })];
+            var uploadPath = Path.Combine(environment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadPath))
+            {
+                Directory.CreateDirectory(uploadPath);
+            }
+
+            foreach (var file in request.Documents)
+            {
+                if (file.Length > 0)
+                {
+                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    var filePath = Path.Combine(environment.WebRootPath, "uploads", fileName);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    FileType documentType = file.ContentType switch
+                    {
+                        string ct when ct.Contains("pdf") => FileType.Pdf,
+                        string ct when ct.Contains("video") => FileType.Video,
+                        _ => throw new InvalidOperationException("Unsupported file type.")
+                    };
+
+                    application.ApplicationDocuments.Add(new ApplicationDocument
+                    {
+                        MentorApplicationId = application.Id,
+                        DocumentType = documentType,
+                        DocumentUrl = $"/uploads/{fileName}"
+                    });
+                }
+            }
+        }
         application.Status = ApplicationStatus.Submitted;
         mentorApplicationRepository.Update(application);
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin!.FullName, application.MentorId);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.MentorId);
 
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 

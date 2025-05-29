@@ -30,7 +30,7 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
 
     [Authorize(Roles = "Mentor")]
     [HttpPut("mentor-applications/{applicationId}")]
-    public async Task<IActionResult> EditMentorApplication(Guid applicationId, [FromBody] UpdateMentorApplicationRequest request)
+    public async Task<IActionResult> EditMentorApplication(Guid applicationId, [FromForm] UpdateMentorApplicationRequest request)
     {
         var result = await mentorApplicationService.EditMentorApplicationAsync(applicationId, request);
         return StatusCode((int)result.StatusCode, result);
