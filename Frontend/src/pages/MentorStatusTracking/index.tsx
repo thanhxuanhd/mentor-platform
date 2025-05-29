@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
-import { Avatar, List, Card, App } from "antd"
-import { CalendarOutlined, UserOutlined, TagOutlined } from "@ant-design/icons"
+import { Avatar, List, Card, App, Button } from "antd"
+import { CalendarOutlined, UserOutlined, TagOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons"
 import MentorStatusTrackingDetail from "./components/MentorTrackingDetail"
 import { renderStatusTag } from "../MentorApplication/utils/renderStatusTag"
 import { formatDate } from "../../utils/DateFormat"
@@ -9,6 +9,7 @@ import { mentorApplicationService } from "../../services/mentorAppplications/men
 import type { NotificationProps } from "../../types/Notification"
 import { useAuth } from "../../hooks"
 import DefaultAvatar from "../../assets/images/default-account.svg"
+import { useNavigate } from "react-router-dom"
 
 export default function MentorStatusTrackingPage() {
   const [selectedApplication, setSelectedApplication] = useState<MentorApplicationDetailItemProp | null>(null);
@@ -18,6 +19,7 @@ export default function MentorStatusTrackingPage() {
   const [applicationCount, setApplicationCount] = useState(0);
   const { notification } = App.useApp();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const handleViewDetails = async (applicationId: string) => {
     if (!applicationId) return;
@@ -86,12 +88,30 @@ export default function MentorStatusTrackingPage() {
     )
   }
 
+  function handleClickAdd(): void {
+    navigate('/mentor-application')
+  }
+
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       {/* Header */}
-      <div className="flex flex-col justify-between items-start mb-6">
-        <h2 className="text-2xl font-semibold">Application History Tracking</h2>
-        <p className="text-slate-300 text-sm">View your mentor application submissions</p>
+      <div className="flex justify-between items-center">
+        <div className="flex flex-col justify-between items-start mb-6">
+          <h2 className="text-2xl font-semibold">Application History Tracking</h2>
+          <p className="text-slate-300 text-sm">View your mentor application submissions</p>
+        </div>
+
+        <div className="flex justify-end mb-4">
+          {applicationHistory?.every(app => app.status === 'Rejected') && (
+            <Button
+              type="primary"
+              onClick={() => handleClickAdd()}
+              className="bg-orange-500 hover:bg-orange-600 transition-all duration-300 text-base px-6 py-2 rounded-lg"
+            >
+              <PlusOutlined /> Create New Application
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Applications List */}

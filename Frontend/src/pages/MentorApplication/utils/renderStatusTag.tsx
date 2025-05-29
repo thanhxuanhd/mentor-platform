@@ -13,7 +13,7 @@ export const renderStatusTag = (status: string) => {
       color={statusColors[status]}
       className="text-xs px-3 py-1 rounded-full m-0 font-medium shadow-lg"
     >
-      {status}
+      {status !== "WaitingInfo" ? status : "Waiting Info"}
     </Tag>
   );
 };

@@ -37,4 +37,12 @@ public class MentorApplicationRepository(ApplicationDbContext context) : BaseRep
             .Where(u => u.MentorId.Equals(mentorId));
     }
 
+    public async Task<MentorApplication?> GetMentorApplicationsToUpdate(Guid applicationId)
+    {
+        return await GetAll()
+            .Include(ma => ma.Mentor)
+            .Include(ma => ma.Admin)
+            .Include(ma => ma.ApplicationDocuments)
+            .FirstOrDefaultAsync(ma => ma.Id == applicationId);
+    }
 }

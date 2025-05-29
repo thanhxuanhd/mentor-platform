@@ -4,9 +4,10 @@ import type { RcFile } from "antd/es/upload/interface";
 import { userService } from "../../../services/user/userService";
 import type { NotificationProps } from "../../../types/Notification";
 import type { MentorApplicationType, MentorApplicationDetailItemProp } from "../../../types/MentorApplicationType";
-import { postMentorSubmission } from "../../../services/mentor/mentorServices";
 import { useAuth } from "../../../hooks";
 import { normalizeServerFiles } from "../../../utils/InputNormalizer";
+import { mentorApplicationService } from "../../../services/mentorAppplications/mentorApplicationService";
+import { useNavigate } from "react-router-dom";
 
 const { TextArea } = Input;
 
@@ -28,6 +29,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
     experiences?: string;
   }>({});
   const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMentorInfo = async () => {
@@ -58,7 +60,6 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
 
   useEffect(() => {
     if (isEditMode && application) {
-      // Pre-populate form with application data
       form.setFieldsValue({
         education: application.education || "",
         workExperience: application.experiences || "",
@@ -71,7 +72,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
           url: doc.documentUrl,
         })) || [],
       });
-      // Initialize progress for edit mode
+
       handleFieldChange();
     } else if (mentorInfo.experiences !== undefined) {
       form.setFieldsValue({ workExperience: mentorInfo.experiences });
@@ -110,14 +111,14 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
 
     try {
       if (isEditMode && application?.mentorApplicationId) {
-        //await updateMentorSubmission(application.mentorApplicationId, formData);
+        await mentorApplicationService.editMentorApplication(application.mentorApplicationId, formData);
         setNotify({
           type: "success",
           message: "Application Updated",
           description: "Your application has been successfully updated.",
         });
       } else {
-        await postMentorSubmission(formData);
+        await mentorApplicationService.postMentorSubmission(formData);
         setNotify({
           type: "success",
           message: "Application Submitted",
@@ -126,6 +127,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
       }
       form.resetFields();
       setProgress(0);
+      navigate(-1)
     } catch (error) {
       console.error("Error submitting application:", error);
       setNotify({

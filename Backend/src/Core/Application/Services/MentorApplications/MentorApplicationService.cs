@@ -245,9 +245,9 @@ public class MentorApplicationService(IUserRepository userRepository,
         return Result.Success(result, HttpStatusCode.OK);
     }
 
-    public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)
+    public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request, HttpRequest httpRequest)
     {
-        var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin);
+        var application = await mentorApplicationRepository.GetMentorApplicationsToUpdate(applicationId);
 
         if (application == null)
         {
@@ -258,36 +258,32 @@ public class MentorApplicationService(IUserRepository userRepository,
             return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
         }
 
-        var mentor = await userRepository.GetByIdAsync(application.MentorId);
-
-        if (mentor == null)
-        {
-            return Result.Failure<bool>("Mentor not found.", HttpStatusCode.NotFound);
-        }
-
-        mentor.Experiences = request.Experiences;
+        application.Mentor.Experiences = request.Experiences;
         application.Certifications = request.Certifications;
         application.Education = request.Education;
         application.Statement = request.Statement;
 
+        
+
         if (request.Documents != null && request.Documents.Any())
         {
-            var uploadPath = Path.Combine(env.WebRootPath, "uploads");
-            if (!Directory.Exists(uploadPath))
+            var path = Directory.GetCurrentDirectory();
+            var documentsPath = Path.Combine(path, env.WebRootPath, "documents", $"{application.MentorId}");
+
+            if (!Directory.Exists(documentsPath))
             {
-                Directory.CreateDirectory(uploadPath);
+                Directory.CreateDirectory(documentsPath);
             }
 
             var fileNames = request.Documents.Select(f => f.FileName).ToList();
             var duplicateFiles = fileNames.GroupBy(f => f, StringComparer.OrdinalIgnoreCase)
-                                         .Where(g => g.Count() > 1)
-                                         .Select(g => g.Key)
-                                         .ToList();
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key).ToList();
+
             if (duplicateFiles.Any())
             {
                 return Result.Failure<bool>($"Duplicate files detected in request: {string.Join(", ", duplicateFiles)}", HttpStatusCode.BadRequest);
             }
-
 
             foreach (var doc in application.ApplicationDocuments.Where(d => d.DocumentType != FileType.ExternalWebAddress).ToList())
             {
@@ -303,28 +299,22 @@ public class MentorApplicationService(IUserRepository userRepository,
             {
                 if (file.Length > 0)
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-                    var filePath = Path.Combine(env.WebRootPath, "uploads", fileName);
+                    string fileName = $"{file.FileName}";
+                    var filePath = Path.Combine(documentsPath, fileName);
+
+                    var baseUrl = $"{httpRequest?.Scheme}://{httpRequest?.Host}";
+                    var fileUrl = $"{baseUrl}/documents/{application.MentorId}/{fileName}";
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(stream);
                     }
 
-                    FileType documentType = file.ContentType switch
-                    {
-                        string ct when ct.Contains("pdf") => FileType.Pdf,
-                        string ct when ct.Contains("video") => FileType.Video,
-                        string ct when ct.Contains("audio") => FileType.Audio,
-                        string ct when ct.Contains("image") => FileType.Image,
-                        _ => throw new InvalidOperationException($"Unsupported file type: {file.FileName}")
-                    };
-
                     application.ApplicationDocuments.Add(new ApplicationDocument
                     {
                         MentorApplicationId = application.Id,
-                        DocumentType = documentType,
-                        DocumentUrl = $"/uploads/{fileName}"
+                        DocumentType = FileHelper.GetFileTypeFromUrl(fileUrl),
+                        DocumentUrl = fileUrl
                     });
                 }
             }
@@ -418,8 +408,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                     return Result.Failure<bool>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
                 }
 
-                long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                string fileName = $"{epoch}_{file.FileName}";
+                string fileName = $"{file.FileName}";
                 var filePath = Path.Combine(documentsPath, fileName);
 
                 try

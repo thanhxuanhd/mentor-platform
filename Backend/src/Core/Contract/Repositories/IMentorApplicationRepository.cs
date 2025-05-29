@@ -7,4 +7,5 @@ public interface IMentorApplicationRepository : IBaseRepository<MentorApplicatio
     public IQueryable<MentorApplication> GetAllApplicationsAsync();
     Task<MentorApplication?> GetMentorApplicationByIdAsync(Guid applicationId);
     IQueryable<MentorApplication> GetMentorApplicationByMentorIdAsync(Guid applicationId);
+    Task<MentorApplication?> GetMentorApplicationsToUpdate(Guid applicationId);
 }

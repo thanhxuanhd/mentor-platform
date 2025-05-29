@@ -34,21 +34,6 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
-
-        <Route
-          path="mentor-submission"
-          element={
-            <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
-              <MentorApplicationForm />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="mentor-application/edit"
-          element={
-            <MentorApplicationForm isEditMode={location.state?.isEditMode} application={location.state?.application} />
-          }
-        />
       </Route>
 
       <Route
@@ -72,7 +57,6 @@ const AppRoutes = () => {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
-        <Route path="mentor-status" element={<MentorStatusTrackingPage />} />
       </Route>
 
       <Route
@@ -85,6 +69,20 @@ const AppRoutes = () => {
         }
       >
         <Route path="users" element={<UsersPage />} />
+      </Route>
+
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.MENTOR]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="my-applications" element={<MentorStatusTrackingPage />} />
+        <Route path="mentor-application/edit" element={<MentorApplicationForm isEditMode={location.state?.isEditMode} application={location.state?.application} />} />
+        <Route path="mentor-application" element={<MentorApplicationForm />} />
       </Route>
     </Routes>
   );

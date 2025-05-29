@@ -71,4 +71,29 @@ export const mentorApplicationService = {
       throw error;
     }
   },
+
+  postMentorSubmission: async (data: FormData) => {
+    const response = await axiosClient.post(
+      `mentor-applications/mentor-submission`,
+      data,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    return response.data.value;
+  },
+
+  editMentorApplication: async (applicationId: string, data: FormData) => {
+    const response = await axiosClient.put(
+      `mentor-applications/${applicationId}`,
+      data,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    return response.data;
+  },
 };
