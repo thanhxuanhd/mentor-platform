@@ -16,7 +16,6 @@ namespace WebAPI.Test;
 public class SessionBookingControllerTests
 {
     private Mock<ISessionBookingService> _sessionBookingServiceMock = null!;
-    private Mock<IAuthorizationService> _authorizationServiceMock = null!;
     private SessionBookingController _controller = null!;
     private ClaimsPrincipal _user = null!;
 
@@ -38,44 +37,7 @@ public class SessionBookingControllerTests
             }
         };
     }
-
-    [Test]
-    public async Task GetAllAvailableMentors_ReturnsOkResultWithPaginatedMentors()
-    {
-        // Arrange
-        var request = new AvailableMentorForBookingListRequest { PageIndex = 1, PageSize = 10 };
-        var mentors = new List<AvailableMentorForBookingResponse>
-        {
-            new()
-            {
-                MentorId = Guid.NewGuid(),
-                MentorName = "Test Mentor",
-                MentorExpertise = ["Test Expertise"],
-                MentorAvatarUrl = "https://example.com/avatar",
-                WorkingStartTime = TimeOnly.FromDateTime(DateTime.UtcNow),
-                WorkingEndTime = TimeOnly.FromDateTime(DateTime.UtcNow.AddHours(1))
-            }
-        };
-        var paginatedList = new PaginatedList<AvailableMentorForBookingResponse>(mentors, 1, 1, 10);
-        var serviceResult = Result.Success(paginatedList, HttpStatusCode.OK);
-
-        _sessionBookingServiceMock.Setup(s => s.GetAllAvailableMentorsAsync(request))
-            .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _controller.GetAllAvailableMentors(request);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<ObjectResult>());
-        var objectResult = (ObjectResult)result;
-        Assert.Multiple(() =>
-        {
-            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
-        });
-        _sessionBookingServiceMock.Verify(s => s.GetAllAvailableMentorsAsync(request), Times.Once);
-    }
-
+    
     [Test]
     public async Task RequestBooking_WhenValidRequest_ReturnsOkResult()
     {

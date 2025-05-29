@@ -1,5 +1,5 @@
 ﻿
-namespace Contract.Dtos.Schedule.Requests
+namespace Contract.Dtos.Scheduling.Requests
 {
     public class ScheduleRequest
     {

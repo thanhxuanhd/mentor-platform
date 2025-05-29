@@ -1,6 +1,5 @@
-﻿using Contract.Dtos.Schedule.Requests;
-using Application.Services.Schedule;
-using Microsoft.AspNetCore.Authorization;
+﻿using Application.Services.Schedule;
+using Contract.Dtos.Scheduling.Requests;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;

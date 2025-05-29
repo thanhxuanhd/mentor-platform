@@ -4,7 +4,9 @@ namespace Contract.Repositories;
 
 public interface IMentorAvailableTimeSlotRepository : IBaseRepository<MentorAvailableTimeSlot, Guid>
 {
-    IQueryable<MentorAvailableTimeSlot> GetAvailableMentorsAsync();
+    IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot();
+    IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking();
+
     Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id);
     Booking AddNewBookingSession(MentorAvailableTimeSlot timeSlot, Guid learnerId);
 }

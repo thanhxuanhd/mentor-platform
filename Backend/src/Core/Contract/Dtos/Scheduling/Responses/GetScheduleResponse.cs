@@ -1,4 +1,4 @@
-﻿namespace Contract.Dtos.Schedule.Responses;
+﻿namespace Contract.Dtos.Scheduling.Responses;
 
 public class GetScheduleResponse
 {

@@ -14,13 +14,31 @@ public class SessionBookingController(
     ISessionBookingService sessionBookingService)
     : ControllerBase
 {
-    [HttpGet("available-mentors")]
-    public async Task<IActionResult> GetAllAvailableMentors([FromQuery] AvailableMentorForBookingListRequest request)
+    [HttpGet("available-timeslots")]
+    [Authorize(Policy = RequiredRole.Admin)]
+    public async Task<IActionResult> GetAllAvailableTimeSlot([FromQuery] AvailableTimeSlotListRequest request)
     {
-        var result = await sessionBookingService.GetAllAvailableMentorsAsync(request);
+        var result = await sessionBookingService.GetAllAvailableTimeSlotAsync(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [HttpGet("available-timeslots/{mentorId:guid}")]
+    public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAsync(Guid mentorId,
+        [FromQuery] AvailableTimeSlotListRequest request)
+    {
+        var result = await sessionBookingService.GetAllAvailableTimeSlotByMentorAsync(mentorId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    
+    [HttpGet("available-mentors")]
+    public async Task<IActionResult> GetAllAvailableMentorForBooking(
+        [FromQuery] AvailableMentorForBookingListRequest request)
+    {
+        var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+    
     [HttpPost("request")]
     [Authorize(Policy = RequiredRole.Learner)]
     public async Task<IActionResult> RequestBooking([FromBody] CreateSessionBookingRequest request)

@@ -4,17 +4,30 @@ namespace Contract.Dtos.SessionBooking.Response;
 
 public static class SessionBookingExtensions
 {
-    public static AvailableMentorForBookingResponse ToAvailableMentorForBookingResponse(
+    public static AvailableTimeSlotResponse ToAvailableTimeSlotResponse(
         this MentorAvailableTimeSlot mats)
     {
-        return new AvailableMentorForBookingResponse
+        return new AvailableTimeSlotResponse
         {
             MentorId = mats.MentorId,
             MentorName = mats.Mentor.FullName,
-            MentorExpertise = mats.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
-            MentorAvatarUrl = mats.Mentor.ProfilePhotoUrl,
-            WorkingEndTime = mats.Schedule.StartTime,
-            WorkingStartTime = mats.Schedule.EndTime
+            StartTime = mats.StartTime,
+            EndTime = mats.EndTime,
+            Status = mats.Status
+        };
+    }
+
+    public static AvailableMentorForBookingResponse CreateAvailableMentorForBookingResponse(
+        User user, Schedule earliestSchedule)
+    {
+        return new AvailableMentorForBookingResponse
+        {
+            MentorId = user.Id,
+            MentorName = user.FullName,
+            MentorExpertise = user.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
+            MentorAvatarUrl = user.ProfilePhotoUrl,
+            WorkingEndTime = earliestSchedule.StartTime,
+            WorkingStartTime = earliestSchedule.EndTime
         };
     }
 

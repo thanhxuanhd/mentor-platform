@@ -10,18 +10,31 @@ namespace Infrastructure.Repositories;
 public class MentorAvailableTimeSlotRepository(ApplicationDbContext context)
     : BaseRepository<MentorAvailableTimeSlot, Guid>(context), IMentorAvailableTimeSlotRepository
 {
-    public IQueryable<MentorAvailableTimeSlot> GetAvailableMentorsAsync()
+    public IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot()
     {
         var query = _context.TimeSlots
             .OrderBy(mats => mats.Id)
             .Where(mats => mats.Status == SessionStatus.Available)
             .Include(mats => mats.Mentor)
-            .ThenInclude(u => u.UserExpertises)
-            .ThenInclude(ue => ue.Expertise)
-            .Where(mats => mats.Mentor.Status == UserStatus.Active)
-            .Include(mats => mats.Schedule);
+            .Where(mats => mats.Mentor.Status == UserStatus.Active);
 
-        return query.AsSplitQuery().AsQueryable();
+        return query.AsQueryable();
+    }
+
+    public IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking()
+    {
+        var query = _context.TimeSlots
+            .Where(mats => mats.Status == SessionStatus.Available)
+            .Where(mats => mats.Mentor.Status == UserStatus.Active)
+            .GroupBy(
+                mats => mats.MentorId,
+                mats => mats,
+                (mentorId, timeSlots) => timeSlots
+                    .OrderBy(ts => ts.StartTime)
+                    .First()
+            );
+
+        return query.AsQueryable();
     }
 
     public async Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id)
@@ -41,6 +54,7 @@ public class MentorAvailableTimeSlotRepository(ApplicationDbContext context)
 
         var bookingSession = new Booking
         {
+            BookedDateTime = DateTime.Now,
             Status = BookingStatus.Pending,
             LearnerId = learnerId,
             TimeSlot = timeSlot

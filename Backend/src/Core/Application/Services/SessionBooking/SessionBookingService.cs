@@ -13,19 +13,61 @@ namespace Application.Services.SessionBooking;
 public class SessionBookingService(
     IUserRepository userRepository,
     IBookingRepository bookingRepository,
+    IScheduleRepository scheduleRepository,
     IMentorAvailableTimeSlotRepository mentorAvailableTimeSlotRepository,
     IEmailService emailService) : ISessionBookingService
 {
-    public async Task<Result<PaginatedList<AvailableMentorForBookingResponse>>> GetAllAvailableMentorsAsync(
-        AvailableMentorForBookingListRequest request)
+    public async Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotAsync(
+        AvailableTimeSlotListRequest request)
     {
-        var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableMentorsAsync();
-        var availableMentorForBooking =
+        var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
+        var availableTimeSlot =
             await mentorAvailableTimeSlotRepository.ToPaginatedListAsync(
-                mentorAvailableTimeSlots.Select(mats => mats.ToAvailableMentorForBookingResponse()),
+                mentorAvailableTimeSlots.Select(mats => mats.ToAvailableTimeSlotResponse()),
                 request.PageSize, request.PageIndex);
 
-        return Result.Success(availableMentorForBooking, HttpStatusCode.OK);
+        return Result.Success(availableTimeSlot, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotByMentorAsync(
+        Guid mentorId, AvailableTimeSlotListRequest request)
+    {
+        var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
+
+        var availableTimeSlot =
+            await mentorAvailableTimeSlotRepository.ToPaginatedListAsync(
+                mentorAvailableTimeSlots
+                    .Where(mats => mats.MentorId == mentorId)
+                    .Select(mats => mats.ToAvailableTimeSlotResponse()),
+                request.PageSize, request.PageIndex);
+
+        return Result.Success(availableTimeSlot, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<PaginatedList<AvailableMentorForBookingResponse>>> GetAllAvailableMentorForBookingAsync(
+        AvailableMentorForBookingListRequest request)
+    {
+        var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableMentorForBooking();
+
+        var availableMentorForBooking =
+            await mentorAvailableTimeSlotRepository.ToPaginatedListAsync(mentorAvailableTimeSlots, request.PageSize,
+                request.PageIndex);
+
+        List<AvailableMentorForBookingResponse> availableMentorForBookingWithMentorDetails = [];
+        foreach (var mentorAvailableTimeSlot in availableMentorForBooking.Items)
+        {
+            var user = await userRepository.GetUserDetailAsync(mentorAvailableTimeSlot.MentorId);
+            var schedule = await scheduleRepository.GetByIdAsync(mentorAvailableTimeSlot.ScheduleId);
+            availableMentorForBookingWithMentorDetails.Add(
+                SessionBookingExtensions.CreateAvailableMentorForBookingResponse(user!, schedule!));
+        }
+
+        return Result.Success(
+            new PaginatedList<AvailableMentorForBookingResponse>(availableMentorForBookingWithMentorDetails,
+                availableMentorForBooking.TotalCount,
+                availableMentorForBooking.PageIndex,
+                availableMentorForBooking.PageSize),
+            HttpStatusCode.OK);
     }
 
     public async Task<Result<SessionSlotStatusResponse>> RequestBookingAsync(CreateSessionBookingRequest request,

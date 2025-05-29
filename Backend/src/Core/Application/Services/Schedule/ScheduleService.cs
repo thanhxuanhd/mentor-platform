@@ -1,5 +1,5 @@
-﻿using Contract.Dtos.Schedule.Requests;
-using Contract.Dtos.Schedule.Responses;
+﻿using Contract.Dtos.Scheduling.Requests;
+using Contract.Dtos.Scheduling.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 
