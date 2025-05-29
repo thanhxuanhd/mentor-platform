@@ -65,9 +65,20 @@ public static class ApplicationDbExtensions
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
             var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
             var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
-            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
-            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            if (mentorRole is null)
+            {
+                throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            }
+
+            if (learnerRole is null)
+            {
+                throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
+            }
+
+            if (adminRole is null)
+            {
+                throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            }
 
             dbContext.Users.AddRange(
                 new User
@@ -279,7 +290,7 @@ public static class ApplicationDbExtensions
             new MentorApplication
             {
                 Id = Guid.Parse("f64b84ef-5807-4a81-8ee4-9e92f6303916"),
-                MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                MentorId = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                 Status = ApplicationStatus.Approved,
                 SubmittedAt = DateTime.UtcNow,
                 ReviewedAt = null,
@@ -291,7 +302,7 @@ public static class ApplicationDbExtensions
             new MentorApplication
             {
                 Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
-                MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                MentorId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
                 Status = ApplicationStatus.Rejected,
                 SubmittedAt = new DateTime(2000, 1, 1),
                 ReviewedAt = null,
@@ -322,8 +333,8 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
                 Title = "Introduction to Leadership Concepts",
                 Description = "Understand the core principles and theories of leadership.",
-                MediaType = CourseMediaType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 1),
+                MediaType = FileType.ExternalWebAddress,
+                WebAddress = GetMediaUrl(FileType.ExternalWebAddress, 1),
                 CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
             });
 
@@ -332,8 +343,8 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
                 Title = "Non-Verbal Communication Essentials",
                 Description = "Learn about the importance of body language and other non-verbal cues in communication.",
-                MediaType = CourseMediaType.Pdf,
-                WebAddress = GetMediaUrl(CourseMediaType.Pdf, 1),
+                MediaType = FileType.Pdf,
+                WebAddress = GetMediaUrl(FileType.Pdf, 1),
                 CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
             });
 
@@ -342,8 +353,8 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
                 Title = "Structuring Your Speech",
                 Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
-                MediaType = CourseMediaType.Video,
-                WebAddress = GetMediaUrl(CourseMediaType.Video, 1),
+                MediaType = FileType.Video,
+                WebAddress = GetMediaUrl(FileType.Video, 1),
                 CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
             });
 
@@ -352,8 +363,8 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
                 Title = "Prioritization Techniques",
                 Description = "Effective methods for prioritizing tasks and managing workloads.",
-                MediaType = CourseMediaType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 2),
+                MediaType = FileType.ExternalWebAddress,
+                WebAddress = GetMediaUrl(FileType.ExternalWebAddress, 2),
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
             });
 
@@ -362,21 +373,21 @@ public static class ApplicationDbExtensions
                 Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
                 Title = "Building Trust and Rapport",
                 Description = "Strategies for establishing trust and positive relationships within a team.",
-                MediaType = CourseMediaType.Video,
-                WebAddress = GetMediaUrl(CourseMediaType.Video, 2),
+                MediaType = FileType.Video,
+                WebAddress = GetMediaUrl(FileType.Video, 2),
                 CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
             });
             dbContext.SaveChanges();
         }
     }
 
-    private static string GetMediaUrl(CourseMediaType mediaType, int moduleNumber)
+    private static string GetMediaUrl(FileType mediaType, int moduleNumber)
     {
         return mediaType switch
         {
-            CourseMediaType.Video => $"/content/videos/module{moduleNumber}.mp4",
-            CourseMediaType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
-            CourseMediaType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
+            FileType.Video => $"/content/videos/module{moduleNumber}.mp4",
+            FileType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
+            FileType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
             _ => $"/content/other/module{moduleNumber}"
         };
     }
