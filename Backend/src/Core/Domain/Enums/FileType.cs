@@ -7,5 +7,7 @@ public enum FileType
 {
     Pdf = 0,
     Video = 1,
-    ExternalWebAddress = 2
+    Audio = 3,
+    Image = 4,
+    ExternalWebAddress = 5
 }

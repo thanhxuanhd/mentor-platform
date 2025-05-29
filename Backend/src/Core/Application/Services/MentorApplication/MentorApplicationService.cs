@@ -103,6 +103,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
     public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)
     {
         var application = await mentorApplicationRepository.GetByIdAsync(applicationId, ad => ad.Admin);
+       
         if (application == null)
         {
             return Result.Failure<bool>("Mentor application not found.", HttpStatusCode.NotFound);
@@ -112,6 +113,14 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
         }
 
+        var mentor = await userRepository.GetByIdAsync(application.MentorId);
+
+        if (mentor == null)
+        {
+            return Result.Failure<bool>("Mentor not found.", HttpStatusCode.NotFound);
+        }
+
+        mentor.Experiences = request.Experiences;
         application.Certifications = request.Certifications;
         application.Education = request.Education;
         application.Statement = request.Statement;
@@ -140,7 +149,9 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
                     {
                         string ct when ct.Contains("pdf") => FileType.Pdf,
                         string ct when ct.Contains("video") => FileType.Video,
-                        _ => throw new InvalidOperationException("Unsupported file type.")
+                        string ct when ct.Contains("audio") => FileType.Audio,
+                        string ct when ct.Contains("image") => FileType.Image,
+                        _ => throw new InvalidOperationException($"Unsupported file type: {file.FileName}")
                     };
 
                     application.ApplicationDocuments.Add(new ApplicationDocument
@@ -157,7 +168,7 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.MentorId);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.Mentor.FullName);
 
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 
@@ -166,4 +177,6 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
         return Result.Success(true, HttpStatusCode.OK);
     }
+
+
 }
