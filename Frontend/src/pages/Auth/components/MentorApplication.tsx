@@ -43,11 +43,11 @@ const MentorApplicationForm: React.FC = () => {
             experiences: userProfile.experiences ?? "",
           });
         }
-      } catch (error) {
-        console.error("Error fetching mentor profile:", error);
-        notification.error({
+      } catch {
+        setNotify({
+          type: "error",
           message: "Error",
-          description: "Failed to load mentor information.",
+          description: "Failed to fetch availabilities",
         });
       }
     };
@@ -91,15 +91,24 @@ const MentorApplicationForm: React.FC = () => {
       });
     }
 
-    await postMentorSubmission(formData);
-    setNotify({
-      type: "success",
-      message: "Application Submitted",
-      description: "Thank you! We'll review your application soon.",
-    });
-    form.resetFields();
-    setProgress(0);
-    setUploadedFileNames([]);
+    try {
+      await postMentorSubmission(formData);
+      setNotify({
+        type: "success",
+        message: "Application Submitted",
+        description: "Thank you! We'll review your application soon.",
+      });
+      form.resetFields();
+      setProgress(0);
+      setUploadedFileNames([]);
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description:
+          error?.response?.data?.error || "Error submitting application",
+      });
+    }
   };
 
   const beforeUpload = (file: RcFile) => {
@@ -203,7 +212,7 @@ const MentorApplicationForm: React.FC = () => {
               },
             ]}
           >
-            <Input style={{ width: "100%" }} placeholder="Education" />
+            <TextArea rows={4} placeholder="Your education..." />
           </Form.Item>
         </Form.Item>
 
@@ -217,7 +226,7 @@ const MentorApplicationForm: React.FC = () => {
             },
           ]}
         >
-          <TextArea rows={3} placeholder="Describe your work experience..." />
+          <TextArea rows={4} placeholder="Describe your work experience..." />
         </Form.Item>
 
         <Form.Item
@@ -231,7 +240,7 @@ const MentorApplicationForm: React.FC = () => {
           ]}
         >
           <TextArea
-            rows={2}
+            rows={4}
             placeholder="List your certifications (optional)"
           />
         </Form.Item>

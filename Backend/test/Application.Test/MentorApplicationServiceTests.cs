@@ -47,7 +47,7 @@ namespace Application.Test
             // Arrange
             Guid userId = Guid.NewGuid();
             MentorSubmissionRequest request = new MentorSubmissionRequest(null, null, null, null, null);
-            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync((User)null);
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync((User)null);
 
             // Act
             var result = await _mentorApplicationService.CreateMentorApplicationAsync(userId, request, _httpRequestMock.Object);
@@ -69,7 +69,7 @@ namespace Application.Test
             MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", null);
             var user = new User { Id = userId, Experiences = "old experience" };
 
-            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
             _userRepositoryMock.Setup(x => x.Update(It.IsAny<User>()));
             _mentorApplicationRepositoryMock.Setup(x => x.AddAsync(It.IsAny<MentorApplication>()));
             _mentorApplicationRepositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
@@ -108,11 +108,10 @@ namespace Application.Test
             MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", fileList);
             var user = new User { Id = userId };
 
-            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
             _userRepositoryMock.Setup(x => x.Update(It.IsAny<User>()));
             _mentorApplicationRepositoryMock.Setup(x => x.AddAsync(It.IsAny<MentorApplication>()));
             _mentorApplicationRepositoryMock.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
-            // _webHostEnvironmentMock.Setup(x => x.WebRootPath).Returns("wwwroot"); // Moved to Setup
             _httpRequestMock.Setup(x => x.Scheme).Returns("http");
             _httpRequestMock.Setup(x => x.Host).Returns(new HostString("localhost"));
 
@@ -140,7 +139,7 @@ namespace Application.Test
             MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", fileList);
             var user = new User { Id = userId };
 
-            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
 
             // Act
             var result = await _mentorApplicationService.CreateMentorApplicationAsync(userId, request, _httpRequestMock.Object);
@@ -167,7 +166,7 @@ namespace Application.Test
             MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", fileList);
             var user = new User { Id = userId };
 
-            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+            _userRepositoryMock.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
 
             // Act
             var result = await _mentorApplicationService.CreateMentorApplicationAsync(userId, request, _httpRequestMock.Object);
