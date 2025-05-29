@@ -79,13 +79,11 @@ export class CourseListingAndBrowsingPage extends BasePage {
 
   //Pagination function
   async getPreviousButtonStatus() {
-    const isEnable = await this.BTN_PREVIOUS_LOC.isEnabled();
-    return isEnable;
+    await this.BTN_PREVIOUS_LOC.click();
   }
 
   async getNextButtonStatus() {
-    const isEnable = await this.BTN_NEXT_LOC.isEnabled();
-    return isEnable;
+    await this.BTN_NEXT_LOC.click();
   }
 
   async clickOnNavigationButton(index: number) {

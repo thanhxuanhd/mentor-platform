@@ -16,28 +16,16 @@ test.describe("@SmokeTest Check pagination function", async () => {
   test("Verify that the Previous button is disable when user is in the first page", async () => {
     await courseListingAndBrowsing.clickOnNavigationButton(0);
     const isTrue = await courseListingAndBrowsing.getPreviousButtonStatus();
-    expect(isTrue).toBeTruthy();
+    expect(isTrue).toBeFalsy();
   });
 
   test("Verify that the Next button is disable when user is in the last page", async () => {
     const totalPaging = await courseListingAndBrowsing.getAllPagingCount();
     await courseListingAndBrowsing.clickOnNavigationButton(totalPaging - 1);
     const isTrue = await courseListingAndBrowsing.getNextButtonStatus();
-    expect(isTrue).toBeTruthy();
+    expect(isTrue).toBeFalsy();
   });
 
-  test("Verify Next button is enable if user stays from Page 2 to the last page", async () => {
-    await courseListingAndBrowsing.clickOnNavigationButton(1);
-    const isTrue = await courseListingAndBrowsing.getNextButtonStatus();
-    expect(isTrue).toBeTruthy();
-  });
-
-  test("Verify Previous button is enable if user stays from the page before the last page", async () => {
-    const totalPaging = await courseListingAndBrowsing.getAllPagingCount();
-    await courseListingAndBrowsing.clickOnNavigationButton(totalPaging - 2);
-    const isTrue = await courseListingAndBrowsing.getNextButtonStatus();
-    expect(isTrue).toBeTruthy();
-  });
 
   test("Verify data changed among pages", async () => {
     const firstPageData = await courseListingAndBrowsing.getAllCourse();

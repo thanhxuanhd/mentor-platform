@@ -1,5 +1,5 @@
 {
-  "search_course_with_invalid_keyword": {
+  "search_course_with_non_existence_keyword": {
     "searchText": "Sample Course",
     "difficulty": "Beginner",
     "category": "Time Management",
@@ -29,7 +29,7 @@
     "category": "",
     "mentor": ""
   },
-  "search_course_with_wildcard_data": {
+  "search_course_with_substrings_data": {
     "searchText": "Public",
     "difficulty": "Beginner",
     "category": "Public Speaking",
