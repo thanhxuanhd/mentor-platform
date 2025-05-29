@@ -1,21 +1,25 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Upload, Button, App, Progress } from "antd";
 import type { RcFile } from "antd/es/upload/interface";
-
 import { userService } from "../../../services/user/userService";
-import { AuthContext } from "../../../contexts/AuthContext";
 import type { NotificationProps } from "../../../types/Notification";
-import type { MentorApplicationType } from "../../../types/MentorApplicationType";
+import type { MentorApplicationType, MentorApplicationDetailItemProp } from "../../../types/MentorApplicationType";
 import { postMentorSubmission } from "../../../services/mentor/mentorServices";
+import { useAuth } from "../../../hooks";
+import { normalizeServerFiles } from "../../../utils/InputNormalizer";
 
 const { TextArea } = Input;
 
-const MentorApplicationForm: React.FC = () => {
+interface MentorApplicationFormProps {
+  isEditMode?: boolean;
+  application?: MentorApplicationDetailItemProp;
+}
+
+const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMode = false, application }) => {
   const [form] = Form.useForm<MentorApplicationType>();
   const [notify, setNotify] = useState<NotificationProps | null>(null);
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const { notification } = App.useApp();
-
   const [mentorInfo, setMentorInfo] = useState<{
     fullName?: string;
     email?: string;
@@ -23,7 +27,6 @@ const MentorApplicationForm: React.FC = () => {
     profilePhotoUrl?: string;
     experiences?: string;
   }>({});
-
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
@@ -54,10 +57,26 @@ const MentorApplicationForm: React.FC = () => {
   }, [user, notification]);
 
   useEffect(() => {
-    if (mentorInfo.experiences !== undefined) {
+    if (isEditMode && application) {
+      // Pre-populate form with application data
+      form.setFieldsValue({
+        education: application.education || "",
+        workExperience: application.experiences || "",
+        certifications: application.certifications || "",
+        statement: application.statement || "",
+        documents: application.documents?.map((doc) => ({
+          uid: doc.documentId,
+          name: normalizeServerFiles(doc.documentUrl),
+          status: 'done',
+          url: doc.documentUrl,
+        })) || [],
+      });
+      // Initialize progress for edit mode
+      handleFieldChange();
+    } else if (mentorInfo.experiences !== undefined) {
       form.setFieldsValue({ workExperience: mentorInfo.experiences });
     }
-  }, [mentorInfo.experiences, form]);
+  }, [mentorInfo, application, isEditMode, form]);
 
   useEffect(() => {
     if (notify) {
@@ -89,14 +108,32 @@ const MentorApplicationForm: React.FC = () => {
       });
     }
 
-    await postMentorSubmission(formData);
-    setNotify({
-      type: "success",
-      message: "Application Submitted",
-      description: "Thank you! We'll review your application soon.",
-    });
-    form.resetFields();
-    setProgress(0); // Reset progress after submission
+    try {
+      if (isEditMode && application?.mentorApplicationId) {
+        //await updateMentorSubmission(application.mentorApplicationId, formData);
+        setNotify({
+          type: "success",
+          message: "Application Updated",
+          description: "Your application has been successfully updated.",
+        });
+      } else {
+        await postMentorSubmission(formData);
+        setNotify({
+          type: "success",
+          message: "Application Submitted",
+          description: "Thank you! We'll review your application soon.",
+        });
+      }
+      form.resetFields();
+      setProgress(0);
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: isEditMode ? "Failed to update application." : "Failed to submit application.",
+      });
+    }
   };
 
   const beforeUpload = (file: RcFile) => {
@@ -105,15 +142,14 @@ const MentorApplicationForm: React.FC = () => {
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 1MB!",
+        description: "File must be smaller than 1MB!",
       });
     }
-
     return isLt1M ? false : Upload.LIST_IGNORE;
   };
 
   const handleFieldChange = async () => {
-    let currentProgress = mentorInfo.experiences !== "" ? 25 : 0;
+    let currentProgress = 0;
     const values = form.getFieldsValue();
 
     try {
@@ -122,7 +158,7 @@ const MentorApplicationForm: React.FC = () => {
         currentProgress += 25;
       }
     } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+      console.log("Invalid education:", errorInfo);
     }
 
     try {
@@ -131,7 +167,7 @@ const MentorApplicationForm: React.FC = () => {
         currentProgress += 25;
       }
     } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+      console.log("Invalid workExperience:", errorInfo);
     }
 
     try {
@@ -140,7 +176,7 @@ const MentorApplicationForm: React.FC = () => {
         currentProgress += 25;
       }
     } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+      console.log("Invalid certifications:", errorInfo);
     }
 
     try {
@@ -149,7 +185,7 @@ const MentorApplicationForm: React.FC = () => {
         currentProgress += 25;
       }
     } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+      console.log("Invalid statement:", errorInfo);
     }
 
     setProgress(currentProgress);
@@ -157,7 +193,9 @@ const MentorApplicationForm: React.FC = () => {
 
   return (
     <div className="text-white p-6 rounded-xl max-w-3xl my-6 mx-auto shadow-lg bg-gray-800">
-      <h1 className="text-2xl font-semibold mb-6">Mentor Application</h1>
+      <h1 className="text-2xl font-semibold mb-6">
+        {isEditMode ? "Edit Mentor Application" : "Mentor Application"}
+      </h1>
 
       <div className="mb-8 p-4 rounded-lg bg-gray-700 shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gray-600 overflow-hidden border border-gray-500 shadow">
@@ -284,7 +322,7 @@ const MentorApplicationForm: React.FC = () => {
 
         <Form.Item>
           <Button type="primary" htmlType="submit" className="bg-orange-500">
-            Submit
+            {isEditMode ? "Update" : "Submit"}
           </Button>
         </Form.Item>
       </Form>

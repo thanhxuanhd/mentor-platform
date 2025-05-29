@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
 import DashboardPage from "../pages/Dashboard";
 import UsersPage from "../pages/Users";
@@ -21,6 +21,8 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 
 const AppRoutes = () => {
+  const location = useLocation();
+
   return (
     <Routes>
       <Route element={<AuthLayout />}>
@@ -39,6 +41,12 @@ const AppRoutes = () => {
             <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
               <MentorApplicationForm />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="mentor-application/edit"
+          element={
+            <MentorApplicationForm isEditMode={location.state?.isEditMode} application={location.state?.application} />
           }
         />
       </Route>
@@ -64,6 +72,7 @@ const AppRoutes = () => {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
+        <Route path="mentor-status" element={<MentorStatusTrackingPage />} />
       </Route>
 
       <Route
@@ -76,18 +85,6 @@ const AppRoutes = () => {
         }
       >
         <Route path="users" element={<UsersPage />} />
-      </Route>
-      <Route
-        element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.MENTOR, applicationRole.LEARNER]}
-          >
-            <MainLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
     </Routes>
   );
