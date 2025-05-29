@@ -323,6 +323,9 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
         </Form.Item>
 
         <Form.Item>
+          <Button type="default" className="bg-orange-500 mr-2" onClick={() => navigate(-1)}>
+            Back
+          </Button>
           <Button type="primary" htmlType="submit" className="bg-orange-500">
             {isEditMode ? "Update" : "Submit"}
           </Button>

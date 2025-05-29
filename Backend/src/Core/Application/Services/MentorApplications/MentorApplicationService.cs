@@ -258,12 +258,10 @@ public class MentorApplicationService(IUserRepository userRepository,
             return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
         }
 
-        application.Mentor.Experiences = request.Experiences;
+        application.Mentor.Experiences = request.WorkExperience;
         application.Certifications = request.Certifications;
         application.Education = request.Education;
         application.Statement = request.Statement;
-
-        
 
         if (request.Documents != null && request.Documents.Any())
         {
