@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NUnit.Framework.Internal;
 using System.Linq.Expressions;
 using System.Net;
 
@@ -25,7 +26,7 @@ namespace Application.Test
         private Mock<IWebHostEnvironment> _mockWebHostService;
         private Mock<ILogger<UserService>> _mockLogger;
         private UserService _userService;
-        private string _tempImagesFolder;
+        private string _tempImagesFolder;       
 
         [SetUp]
         public void Setup()
@@ -33,12 +34,13 @@ namespace Application.Test
             _mockUserRepository = new Mock<IUserRepository>();
             _emailServiceMock = new Mock<IEmailService>();
             _mockWebHostService = new Mock<IWebHostEnvironment>();
-            _tempImagesFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(_tempImagesFolder);
+            _mockLogger = new Mock<ILogger<UserService>>();
+            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object, _mockLogger.Object); _tempImagesFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _mockWebHostService.Setup(e => e.WebRootPath).Returns(_tempImagesFolder);
             _mockLogger = new Mock<ILogger<UserService>>();
             _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object, _mockLogger.Object);
 
+            Directory.CreateDirectory(_tempImagesFolder);
         }
 
         private IFormFile CreateMockFormFile(string fileName, string contentType, long size)
@@ -425,7 +427,7 @@ namespace Application.Test
         [Test]
         public async Task UploadAvatar_TooLarge_ReturnsBadRequest()
         {
-            var file = CreateMockFormFile("file.jpg", "image/jpeg", FileConstants.MAX_IMAGE_SIZE + 1);
+            var file = CreateMockFormFile("file.jpg", "image/jpeg", FileConstants.MAX_FILE_SIZE + 1);
             _mockUserRepository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), null))
             .ReturnsAsync(new User { Id = Guid.NewGuid() });
 

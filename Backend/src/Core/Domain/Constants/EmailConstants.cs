@@ -9,14 +9,14 @@
         {
             return $@"
             Hi {email},
-            {Environment.NewLine}
+            <br>
             Your password has been reset successfully.
             Your new password is:
-            {Environment.NewLine}
+            <br>
             {newPassword}
-            {Environment.NewLine}
+            <br>
             Please login and change it as soon as possible for security reasons.
-            {Environment.NewLine}
+            <br>
             Thank you,
             Support Team";
         }

@@ -1,17 +1,25 @@
-using System.Net;
-using Contract.Dtos.MentorApplication.Requests;
-using Contract.Dtos.MentorApplication.Responses;
+using Application.Helpers;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
+using Contract.Dtos.Users.Requests;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
-using static System.Net.Mime.MediaTypeNames;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Application.Services.MentorApplications;
 
-public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
+public class MentorApplicationService(IUserRepository userRepository,
+    IMentorApplicationRepository mentorApplicationRepository,
+    IEmailService emailService,
+    IWebHostEnvironment env,
+    ILogger<MentorApplicationService> logger) : IMentorApplicationService
 {
     public async Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request)
     {
@@ -263,6 +271,112 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
 
         if (!emailSent)
             return Result.Failure<bool>("Failed to send notification email.", HttpStatusCode.InternalServerError);
+
+        return Result.Success(true, HttpStatusCode.OK);
+    }
+
+    private static FileType GetFileTypeFromUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            throw new ArgumentException("URL cannot be null or empty", nameof(url));
+        }
+
+        if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+        {
+            throw new InvalidOperationException("Invalid document URL format.");
+        }
+
+        var path = uri.IsAbsoluteUri ? uri.LocalPath : url;
+        var fileName = Path.GetFileName(path);
+        var fileTypeString = fileName.Split("-")[0];
+
+        return fileTypeString.ToLower() switch
+        {
+            "pdf" => FileType.Pdf,
+            "video" => FileType.Video,
+            "audio" => FileType.Audio,
+            "image" => FileType.Image,
+            _ => throw new InvalidOperationException($"Unknown file type: {fileTypeString}")
+        };
+    }
+
+    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request, HttpRequest httpRequest)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
+        }
+
+        user.Experiences = request.WorkExperience;
+        userRepository.Update(user);
+
+        var mentorApplication = new MentorApplication
+        {
+            MentorId = userId,
+            SubmittedAt = DateTime.UtcNow,
+        };
+        request.ToMentorApplication(mentorApplication);
+
+        if (request.Documents != null && request.Documents.Any())
+        {
+            mentorApplication.ApplicationDocuments = new List<ApplicationDocument>();
+            var path = Directory.GetCurrentDirectory();
+            logger.LogInformation($"RootPath: {env.WebRootPath}");
+
+            var documentsPath = Path.Combine(path, env.WebRootPath, "documents", $"{userId}");
+            if (!Directory.Exists(documentsPath))
+            {
+                Directory.CreateDirectory(documentsPath);
+            }
+
+            foreach (var file in request.Documents)
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return Result.Failure<bool>("File not selected", HttpStatusCode.BadRequest);
+                }
+
+                var fileContentType = file.ContentType;
+                if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+                {
+                    return Result.Failure<bool>("File content type is not allowed.", HttpStatusCode.BadRequest);
+                }
+
+                if (file.Length > FileConstants.MAX_FILE_SIZE)
+                {
+                    return Result.Failure<bool>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
+                }
+
+                long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                string fileName = $"{epoch}_{file.FileName}";
+                var filePath = Path.Combine(documentsPath, fileName);
+
+                try
+                {
+                    using var stream = new FileStream(filePath, FileMode.Create);
+                    await file.CopyToAsync(stream);
+
+                    var baseUrl = $"{httpRequest?.Scheme}://{httpRequest?.Host}";
+                    var fileUrl = $"{baseUrl}/documents/{userId}/{fileName}";
+
+                    mentorApplication.ApplicationDocuments.Add(new ApplicationDocument
+                    {
+                        MentorApplicationId = mentorApplication.Id,
+                        DocumentUrl = fileUrl,
+                        DocumentType = FileHelper.GetFileTypeFromUrl(fileUrl)
+                    });
+                }
+                catch (Exception ex)
+                {
+                    return Result.Failure<bool>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+                }
+            }
+        }
+
+        await mentorApplicationRepository.AddAsync(mentorApplication);
+        await mentorApplicationRepository.SaveChangesAsync();
 
         return Result.Success(true, HttpStatusCode.OK);
     }

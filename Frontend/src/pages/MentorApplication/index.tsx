@@ -105,7 +105,6 @@ export default function MentorApplicationPage() {
     if (!selectedApplication) return false;
     const isEmpty = selectedApplication.note?.trim() === '';
     debugger;
-    console.log("Note is empty:", isEmpty);
     return isEmpty;
   }
 
@@ -173,13 +172,12 @@ export default function MentorApplicationPage() {
       setNotify({
         type: "warning",
         message: "Note Required",
-        description: "Please provide a note before send request info to the application.",
+        description: "Please provide a note before requesting additional info.",
       });
       return;
     }
     try {
-      await mentorApplicationService.requestMentorApplicationInfo(selectedApplication.mentorApplicationId, selectedApplication.note!);
-
+      await mentorApplicationService.requestMentorApplicationInfo(selectedApplication.mentorApplicationId, selectedApplication.note || '');
       setNotify({
         type: "success",
         message: "Requested Additional Info",

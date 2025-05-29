@@ -1,6 +1,6 @@
 ﻿using Domain.Enums;
 
-namespace Contract.Dtos.MentorApplication.Requests;
+namespace Contract.Dtos.MentorApplications.Requests;
 
 public class UpdateMentorApplicationRequest
 {
