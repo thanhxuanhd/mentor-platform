@@ -1,0 +1,50 @@
+﻿@MentorConnectAPI_HostAddress = https://localhost:5000
+
+### Authorize
+POST {{MentorConnectAPI_HostAddress}}/api/Auth/sign-in
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+ client.global.set("auth_token", response.body.value);
+%}
+
+### GetAllCourse
+GET {{MentorConnectAPI_HostAddress}}/api/Course?pageIndex={{pageIndex}}&pageSize={{pageSize}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### GetCourseById
+GET {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### DeleteCourse
+DELETE {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### PublishCourse
+PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/publish
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### ArchiveCourse
+PUT {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/archive
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### GetAllCourseItems
+GET {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### GetCourseItemById
+GET {{MentorConnectAPI_HostAddress}}/api/Course/{{courseId}}/resource/{{courseItemId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}

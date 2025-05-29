@@ -1,4 +1,4 @@
-import type { Course } from "./types.tsx";
+import type { Course } from "../types.tsx";
 import type { TableProps } from "antd";
 import { Button, Space, Table, Tag } from "antd";
 import {
@@ -7,18 +7,10 @@ import {
   EyeOutlined,
   FolderOutlined,
 } from "@ant-design/icons";
+import type { CourseTableProps } from "../../../types/pages/courses/types.ts";
+import type { FC } from "react";
 
-type CourseTableProps = {
-  courses: Course[];
-  states: Record<string, string>;
-  onResourceView: (course: Course) => void;
-  onView: (course: Course) => void;
-  onEdit: (course: Course) => void;
-  onDelete: (course: Course) => void;
-  tableProps: TableProps;
-};
-
-export const CourseTable = ({
+export const CourseTable: FC<CourseTableProps> = ({
   courses,
   states,
   onResourceView,
@@ -26,7 +18,7 @@ export const CourseTable = ({
   onEdit,
   onDelete,
   tableProps,
-}: CourseTableProps) => {
+}) => {
   const columns: TableProps<Course>["columns"] = [
     {
       title: "Title",

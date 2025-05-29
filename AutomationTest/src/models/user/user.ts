@@ -32,3 +32,17 @@ export interface UserProfileCreation {
   objective?: string;
   expectedMessage: string;
 }
+
+export interface UserPreferencesSetup {
+  topics: string[];
+  frequence: number;
+  duration: number;
+  learningStyle: number;
+  teachApproach: string[];
+  isPrivateProfile: boolean;
+  isAllowMessage: boolean;
+  isReceiveNotification: boolean;
+  expectedMessage: string;
+}
+
+

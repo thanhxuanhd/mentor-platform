@@ -11,11 +11,12 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace Application.Services.Users;
 
-public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env) : IUserService
+public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env, ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<GetUserResponse>> GetUserByEmailAsync(string email)
     {
@@ -259,7 +260,13 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
         }
 
-        var imagesPath = Path.Combine(env.WebRootPath, "images");
+        var path = Directory.GetCurrentDirectory();
+        logger.LogInformation($"RootPath: {env.WebRootPath}");
+        if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
+        {
+            Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
+        }
+        var imagesPath = Path.Combine(path, env.WebRootPath, "images");
 
         if (!Directory.Exists(imagesPath))
         {

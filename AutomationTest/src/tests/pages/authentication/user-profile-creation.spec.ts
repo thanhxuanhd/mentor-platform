@@ -1,71 +1,58 @@
 import { test } from "../../../core/fixture/authFixture";
 import { withTimestampEmail } from "../../../core/utils/generate-unique-data";
-import { UserProfileCreation } from "../../../models/user/user";
+import { SignUpUser, UserProfileCreation } from "../../../models/user/user";
 import { SignUpPage } from "../../../pages/authentication/sign-up-page";
-import testDataStep2 from "../../test-data/user-profile-creation-data.json";
-import testDataStep1 from "../../test-data/sign-up-user-data.json";
+import profileSetupData from "../../test-data/user-profile-creation-data.json";
+import signUpData from '../../test-data/sign-up-user-data.json'
 import { UserProfileSetupPage } from "../../../pages/authentication/user-profile-creation-page";
+import { fillAndSubmitRegistrationStep1 } from "../../../core/utils/registration-helper";
 
 test.describe("@Registration Sign Up test", () => {
-  let registrationstep1Page: SignUpPage;
-  let registrationstep2Page: UserProfileSetupPage;
-  const validRegisterStep1Data = testDataStep1.valid_case;
+  let signUpPage: SignUpPage;
+  let profileSetupPage: UserProfileSetupPage;
+  const validSignUpData: SignUpUser = withTimestampEmail(signUpData.valid_case);
 
   test.beforeEach(async ({ page }) => {
-    registrationstep1Page = new SignUpPage(page);
-    registrationstep2Page = new UserProfileSetupPage(page);
-    await registrationstep1Page.goToRegistrationStep1Modal();
+    signUpPage = new SignUpPage(page);
+    profileSetupPage = new UserProfileSetupPage(page);
 
-    await test.step("Input details data and submit", async () => {
-      const randomEmail = withTimestampEmail(validRegisterStep1Data);
-      await registrationstep1Page.inputEmail(randomEmail.email);
-      await registrationstep1Page.inputPassword(
-        validRegisterStep1Data.password
-      );
-      await registrationstep1Page.inputConfirmPassword(
-        validRegisterStep1Data.confirmPassword
-      );
-      await registrationstep1Page.checkOnTermCheckBox(
-        validRegisterStep1Data.isTermCheck
-      );
-      await registrationstep1Page.clickContinueToProfileSetupButton();
-    });
+    await fillAndSubmitRegistrationStep1(signUpPage, validSignUpData);
   });
 
   const userData: { [label: string]: UserProfileCreation } = {
-    "Verify create user profile successfully": testDataStep2.valid_case,
-    "Empty fullname": testDataStep2.empty_fullname,
-    "Empty phone number": testDataStep2.empty_phone_number,
-    "Incorrect phone number format": testDataStep2.wrong_phone_number_format,
-    "Empty availability": testDataStep2.empty_availability,
+    "Verify create user profile successfully": profileSetupData.valid_case,
+    "Empty fullname": profileSetupData.empty_fullname,
+    "Empty phone number": profileSetupData.empty_phone_number,
+    "Incorrect phone number format": profileSetupData.wrong_phone_number_format,
+    "Empty availability": profileSetupData.empty_availability,
     "Verify user can search for expertise value":
-      testDataStep2.search_expertise,
+      profileSetupData.search_expertise,
     "Verify display error message when skills exceed 200 characters":
-      testDataStep2.professional_skills_exceed_200_characters,
+      profileSetupData.professional_skills_exceed_200_characters,
     "Verify display error message when experience exceed 200 characters":
-      testDataStep2.industry_experience_exceed_200_characters,
+      profileSetupData.industry_experience_exceed_200_characters,
   };
 
   for (const [label, data] of Object.entries(userData)) {
     test(`${label} - Registration Step 2`, async ({ page }) => {
       await test.step("Input details data and submit", async () => {
-        await registrationstep2Page.fillInFullnameField(data.fullname);
-        await registrationstep2Page.fillInPhoneField(data.phoneNumber);
-        await registrationstep2Page.fillInBioField(data.bio!);
-        await registrationstep2Page.selectUserRole(data.role!);
-        await registrationstep2Page.selectExpertise(data.expertise!);
-        await registrationstep2Page.fillProfessionalSkillsField(data.skills!);
-        await registrationstep2Page.fillExperienceField(data.experience!);
-        await registrationstep2Page.selectAvailbilityOptions(data.availbility);
-        await registrationstep2Page.selectCommunicationMethod(
+        await profileSetupPage.fillInFullnameField(data.fullname);
+        await profileSetupPage.fillInPhoneField(data.phoneNumber);
+        await profileSetupPage.fillInBioField(data.bio!);
+        await profileSetupPage.selectUserRole(data.role!);
+        await profileSetupPage.selectExpertise(data.expertise!);
+        await profileSetupPage.fillProfessionalSkillsField(data.skills!);
+        await profileSetupPage.fillExperienceField(data.experience!);
+        await profileSetupPage.selectAvailbilityOptions(data.availbility);
+        await profileSetupPage.selectCommunicationMethod(
           data.communication_method!
         );
-        await registrationstep2Page.fillObjectiveField(data.objective!);
-        await registrationstep2Page.clickOnNextStepButton();
+        await profileSetupPage.fillObjectiveField(data.objective!);
+        await profileSetupPage.clickOnNextStepButton();
       });
 
       await test.step("Verify system behavior", async () => {
-        await registrationstep2Page.expectMessage(data.expectedMessage);
+        await profileSetupPage.expectMessage(data.expectedMessage);
       });
     });
   }

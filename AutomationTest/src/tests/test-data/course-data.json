@@ -1,0 +1,92 @@
+{
+  "create_valid_course": {
+    "title": "Introduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-30",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Create successfully!"
+  },
+  "create_empty_title": {
+    "title": "",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Please enter course title"
+  },
+  "create_over_length_title": {
+    "title": "Introduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign LanguageIntroduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Course title should not exceed 256 characters"
+  },
+  "create_duplicate_course": {
+    "title": "Introduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Already have this course"
+  },
+  "create_empty_due_date": {
+    "title": "Introduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Please select a due date!"
+  },
+  "create_over_length_description": {
+    "title": "Introduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Course description should not exceed 256 characters"
+  },
+  "update_valid_course": {
+    "title": "New Update Course",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-30",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Update successfully!"
+  },
+  "update_duplicate_course": {
+    "title": "Introduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Already have this course"
+  },
+  "update_empty_course_title": {
+    "title": "",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Please enter course title"
+  },
+  "update_over_length_description": {
+    "title": "Introduction to Sign Language",
+    "category": "Communication Skills",
+    "difficulty": "Advanced",
+    "dueDate": "2025-06-15T00:00:00.000Z",
+    "tags": ["Sign Language", "ASL", "Basic Communication"],
+    "description": "This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.This course introduces basic concepts and vocabulary in sign language.",
+    "expectedMessage": "Course description should not exceed 256 characters"
+  }
+}

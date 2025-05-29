@@ -1,22 +1,17 @@
 import { type ChangeEvent, type FC, useState } from "react";
-import type { Category, Mentor } from "./types.tsx";
-import type { CourseDifficulty } from "./initial-values.tsx";
+
+import type { SearchBarProps } from "../../../types/pages/courses/types.ts";
 
 export type SearchBarOptions = {
   keyword?: string;
   difficulty?: string;
+  status?: string;
   categoryId?: string;
   mentorId?: string;
 };
 
-type SearchBarProps = {
-  categories: Category[];
-  mentors: Mentor[];
-  difficulties: Record<CourseDifficulty, string>;
-  onChange: (options: SearchBarOptions) => void;
-};
-
 export const SearchBar: FC<SearchBarProps> = ({
+  states,
   categories,
   mentors,
   difficulties,
@@ -26,6 +21,7 @@ export const SearchBar: FC<SearchBarProps> = ({
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
+  const [status, setStatus] = useState<string | undefined>();
 
   const updateSearchBar = (props: Record<string, string>) => {
     onChange({
@@ -54,7 +50,7 @@ export const SearchBar: FC<SearchBarProps> = ({
   function handleDifficultyChange(event: ChangeEvent<HTMLSelectElement>) {
     setDifficulty(event.target.value);
     updateSearchBar({
-      state: event.target.value,
+      difficulty: event.target.value,
     });
   }
 
@@ -62,6 +58,13 @@ export const SearchBar: FC<SearchBarProps> = ({
     setMentorId(event.target.value);
     updateSearchBar({
       mentorId: event.target.value,
+    });
+  }
+
+  function handleStatusChange(event: ChangeEvent<HTMLSelectElement>) {
+    setStatus(event.target.value);
+    updateSearchBar({
+      status: event.target.value,
     });
   }
 
@@ -129,7 +132,25 @@ export const SearchBar: FC<SearchBarProps> = ({
           <option value="">-</option>
           {mentors.map((mentor) => (
             <option key={mentor.id} value={mentor.id}>
-              {mentor.name}
+              {mentor.fullName}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="status" className="block text-sm font-medium mb-1">
+          Status
+        </label>
+        <select
+          id="status"
+          value={status}
+          onChange={handleStatusChange}
+          className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="">-</option>
+          {Object.entries(states).map(([key, value]) => (
+            <option key={key} value={value}>
+              {value}
             </option>
           ))}
         </select>

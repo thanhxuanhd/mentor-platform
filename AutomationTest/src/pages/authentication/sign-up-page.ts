@@ -12,7 +12,7 @@ export class SignUpPage extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.LNK_REGISTRATION1_URL = PAGE_ENDPOINT_URL.REGISTRATION_STEP_1;
+        this.LNK_REGISTRATION1_URL = PAGE_ENDPOINT_URL.SIGN_UP;
         this.TXT_EMAIL_LOCATOR = page.getByPlaceholder('Enter your email');
         this.BTN_CONTINUETOSTEP2_LOCATOR = page.getByRole("button", { name: "Continue to Profile Setup" });
         this.TXT_PASSWORD_LOCATOR = page.getByPlaceholder("Enter your password");
@@ -48,10 +48,5 @@ export class SignUpPage extends BasePage {
         if (isCheck) {
             await this.CBX_TERM_LOCATOR.check();
         }
-    }
-
-    async expectMessage(message: string) {
-        const locator: Locator = this.page.getByText(message);
-        await this.isVisible(locator);
     }
 }
