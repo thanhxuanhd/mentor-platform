@@ -220,6 +220,56 @@ public static class ApplicationDbExtensions
 
             dbContext.SaveChanges();
         }
+        if (!dbContext.Schedules.Any())
+        {
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+
+            dbContext.Schedules.AddRange(
+                new Schedule
+                {
+                    MentorId = mentor1Id,
+                    DayOfWeek = DayOfWeek.Monday,
+                    StartTime = new TimeOnly(09, 00),
+                    EndTime = new TimeOnly(17, 00),
+                    SessionDuration = 60, 
+                    BufferTime = 15,    
+                    IsLocked = false
+                },
+                new Schedule
+                {
+                    MentorId = mentor1Id,
+                    DayOfWeek = DayOfWeek.Wednesday, 
+                    StartTime = new TimeOnly(10, 00),
+                    EndTime = new TimeOnly(18, 00),
+                    SessionDuration = 45, 
+                    BufferTime = 10,    
+                    IsLocked = false
+                },
+                new Schedule
+                {
+                    MentorId = mentor2Id,
+                    DayOfWeek = DayOfWeek.Tuesday, 
+                    StartTime = new TimeOnly(13, 00),
+                    EndTime = new TimeOnly(21, 00),
+                    SessionDuration = 30, 
+                    BufferTime = 5,     
+                    IsLocked = false
+                },
+                new Schedule
+                {
+                    MentorId = mentor2Id,
+                    DayOfWeek = DayOfWeek.Friday, 
+                    StartTime = new TimeOnly(09, 00),
+                    EndTime = new TimeOnly(12, 00),
+                    SessionDuration = 60, 
+                    BufferTime = 0,     
+                    IsLocked = false
+                }
+            );
+
+            dbContext.SaveChanges();
+        }
 
         return app;
     }
