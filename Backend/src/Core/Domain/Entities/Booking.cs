@@ -5,8 +5,10 @@ namespace Domain.Entities;
 
 public class Booking : BaseEntity<Guid>
 {
+    public SessionType SessionType { get; init; }
+    public BookingStatus Status { get; set; }
+    public DateTime BookedDateTime { get; set; }
     public Guid TimeSlotId { get; set; }
+    public MentorAvailableTimeSlot TimeSlot { get; set; } = null!;
     public Guid LearnerId { get; set; }
-    public SessionStatus Status { get; set; }
-    public virtual MentorAvailableTimeSlot? TimeSlot { get; set; }
 }

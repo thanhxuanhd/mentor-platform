@@ -1,16 +1,16 @@
 ﻿using Domain.Abstractions;
-using System.Runtime.CompilerServices;
+using Domain.Enums;
 
 namespace Domain.Entities;
 
 public class MentorAvailableTimeSlot : BaseEntity<Guid>
 {
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
+    public SessionStatus Status { get; set; }
     public Guid MentorId { get; set; }
-    public Guid SessionId { get; set; }
-    public TimeOnly StartTime { get; set; }
-    public TimeOnly EndTime { get; set; }
-    public virtual User Mentor { get; set; }
-    public virtual ICollection<Booking>? Bookings { get; set; }
+    public User Mentor { get; set; } = null!;
+    public Guid ScheduleId { get; set; }
+    public Schedule Schedule { get; set; } = null!;
+    public List<Booking> Bookings { get; set; } = [];
 }
-
-

@@ -5,7 +5,8 @@ using Infrastructure.Repositories.Base;
 
 namespace Infrastructure.Repositories;
 
-public class ScheduleRepository(ApplicationDbContext context) : BaseRepository<Schedule, Guid>(context), IScheduleRepository
+public class ScheduleRepository(ApplicationDbContext context)
+    : BaseRepository<Schedule, Guid>(context), IScheduleRepository
 {
-
+    
 }

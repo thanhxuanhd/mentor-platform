@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 > {%
- client.global.set("auth_token", response.body.value);
+ client.global.set("auth_token", response.body.value.token);
 %}
 
 ### GetAllCourse
