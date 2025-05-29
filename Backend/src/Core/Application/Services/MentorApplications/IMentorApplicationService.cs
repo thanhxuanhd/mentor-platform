@@ -8,6 +8,6 @@ namespace Application.Services.MentorApplications;
 
 public interface IMentorApplicationService
 {
-    Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request, HttpRequest httpRequest);
+    Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest submission, HttpRequest httpRequest);
     Task<Result<PaginatedList<FilterMentorApplicationResponse>>> GetAllMentorApplicationsAsync(FilterMentorApplicationRequest request);
 }

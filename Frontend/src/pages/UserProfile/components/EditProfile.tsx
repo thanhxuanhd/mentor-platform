@@ -65,11 +65,6 @@ const communicationMethodOptions: CheckboxGroupProps<string>["options"] = [
   },
 ];
 
-const roleMap: Record<string, number> = {
-  learner: 3,
-  mentor: 2,
-};
-
 const reverseAvailabilityMap: Record<string, string> = {};
 const reverseTeachingApproachMap: Record<string, string> = {};
 const reverseCategoryMap: Record<string, string> = {};
@@ -333,7 +328,6 @@ export default function EditProfile() {
       const updateData: UpdateProfileRequest = {
         fullName: values.fullname,
         phoneNumber: values.phone,
-        roleId: roleMap[values.roleSelect] || 3,
         bio: values.bio || "",
         skills: values.skills || "",
         experiences: values.experience || "",
@@ -469,7 +463,8 @@ export default function EditProfile() {
                         },
                         {
                           pattern: /^[A-Za-z\s]+$/,
-                          message: "Full name can only contain letters and spaces!",
+                          message:
+                            "Full name can only contain letters and spaces!",
                         },
                         {
                           validator: (_, value) =>
@@ -551,7 +546,6 @@ export default function EditProfile() {
                   }
                 />
               </Form.Item>
-
             </div>
             <div className="flex gap-4 items-center justify-center">
               <div className="flex-1">
@@ -586,12 +580,16 @@ export default function EditProfile() {
               </div>
             </div>
             <div className="flex gap-4 items-center justify-center"></div>
-            <Form.Item name="availability" label="Your Availability" rules={[
+            <Form.Item
+              name="availability"
+              label="Your Availability"
+              rules={[
                 {
                   required: true,
                   message: "Please select your availability!",
                 },
-              ]}>
+              ]}
+            >
               <div className="flex gap-2 items-center justify-center flex-wrap">
                 {availabilityOptions.map((item) => (
                   <Button
@@ -635,11 +633,11 @@ export default function EditProfile() {
                 options={teachingApproachOptions}
                 fieldNames={{ label: "label", value: "value" }}
                 filterOption={(input, option) =>
-                String(option?.label)
-                  .replace(/\s/g, "")
-                  .toLowerCase()
-                  .includes(input.replace(/\s/g, "").toLowerCase())
-              }
+                  String(option?.label)
+                    .replace(/\s/g, "")
+                    .toLowerCase()
+                    .includes(input.replace(/\s/g, "").toLowerCase())
+                }
               />
             </Form.Item>
 

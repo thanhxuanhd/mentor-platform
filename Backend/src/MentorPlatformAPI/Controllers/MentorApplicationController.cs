@@ -22,10 +22,10 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
 
     [Authorize(Roles = "Mentor")]
     [HttpPost("mentor-submission")]
-    public async Task<IActionResult> MentorSubmission([FromForm] MentorSubmissionRequest request)
+    public async Task<IActionResult> MentorSubmission([FromForm] MentorSubmissionRequest submission)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await mentorApplicationService.CreateMentorApplicationAsync(Guid.Parse(userId), request, Request);
+        var result = await mentorApplicationService.CreateMentorApplicationAsync(Guid.Parse(userId), submission, Request);
 
         return StatusCode((int)result.StatusCode, result);
     }

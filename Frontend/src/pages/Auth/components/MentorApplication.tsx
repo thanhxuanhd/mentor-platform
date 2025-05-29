@@ -1,6 +1,6 @@
 import React, { useEffect, useContext, useState } from "react";
 import { Form, Input, Upload, Button, App, Progress } from "antd";
-import type { RcFile } from "antd/es/upload/interface";
+import type { RcFile, UploadFile } from "antd/es/upload/interface";
 
 import { userService } from "../../../services/user/userService";
 import { AuthContext } from "../../../contexts/AuthContext";
@@ -15,6 +15,8 @@ const MentorApplicationForm: React.FC = () => {
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const { user } = useContext(AuthContext);
   const { notification } = App.useApp();
+  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
+  const [fileCount, setFileCount] = useState(0);
 
   const [mentorInfo, setMentorInfo] = useState<{
     fullName?: string;
@@ -96,10 +98,19 @@ const MentorApplicationForm: React.FC = () => {
       description: "Thank you! We'll review your application soon.",
     });
     form.resetFields();
-    setProgress(0); // Reset progress after submission
+    setProgress(0);
+    setUploadedFileNames([]);
   };
 
   const beforeUpload = (file: RcFile) => {
+    if (uploadedFileNames.includes(file.name)) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "File name already exists. Please rename your file.",
+      });
+      return Upload.LIST_IGNORE;
+    }
     const isLt1M = file.size / 1024 / 1024 < 1;
     if (!isLt1M) {
       setNotify({
@@ -113,46 +124,28 @@ const MentorApplicationForm: React.FC = () => {
   };
 
   const handleFieldChange = async () => {
-    let currentProgress = mentorInfo.experiences !== "" ? 25 : 0;
+    let currentProgress = 0;
     const values = form.getFieldsValue();
 
-    try {
-      await form.validateFields(["education"]);
-      if (values.education && values.education !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+    if (values.education) {
+      currentProgress += 25;
     }
-
-    try {
-      await form.validateFields(["workExperience"]);
-      if (values.workExperience && values.workExperience !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+    if (values.workExperience) {
+      currentProgress += 25;
     }
-
-    try {
-      await form.validateFields(["certifications"]);
-      if (values.certifications && values.certifications !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+    if (values.certifications) {
+      currentProgress += 25;
     }
-
-    try {
-      await form.validateFields(["statement"]);
-      if (values.statement && values.statement !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid:", errorInfo);
+    if (values.statement) {
+      currentProgress += 25;
     }
 
     setProgress(currentProgress);
+  };
+
+  const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
+    setFileCount((prev) => prev + 1);
+    setUploadedFileNames(fileList.map((f) => f.name));
   };
 
   return (
@@ -183,10 +176,13 @@ const MentorApplicationForm: React.FC = () => {
           <p>
             <strong>Phone:</strong> {mentorInfo.phoneNumber || "N/A"}
           </p>
+          <Progress
+            percent={progress}
+            strokeColor={"#f97316"}
+            className="mb-4"
+          />
         </div>
       </div>
-
-      <Progress percent={progress} status="active" className="mb-4" />
 
       <Form<MentorApplicationType>
         form={form}
@@ -275,18 +271,33 @@ const MentorApplicationForm: React.FC = () => {
             maxCount={5}
             beforeUpload={beforeUpload}
             accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
+            onChange={handleChange}
           >
-            <button style={{ border: 0, background: "none" }} type="button">
-              Upload
-            </button>
+            {fileCount < 5 && (
+              <button style={{ border: 0, background: "none" }} type="button">
+                Upload
+              </button>
+            )}
           </Upload>
         </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" className="bg-orange-500">
-            Submit
+        <div className="flex gap-4">
+          <Button className="bg-gray-500" size="large">
+            Back
           </Button>
-        </Form.Item>
+          <div className="flex-1">
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                className="w-full bg-orange-500"
+              >
+                Submit
+              </Button>
+            </Form.Item>
+          </div>
+        </div>
       </Form>
     </div>
   );

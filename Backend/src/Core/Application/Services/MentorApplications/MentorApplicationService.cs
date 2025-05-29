@@ -21,15 +21,20 @@ public class MentorApplicationService(IUserRepository userRepository,
     IWebHostEnvironment env,
     ILogger<MentorApplicationService> logger) : IMentorApplicationService
 {
-    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request, HttpRequest httpRequest)
+    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest submission, HttpRequest httpRequest)
     {
-        var user = await userRepository.GetByIdAsync(userId);
+        var user = await userRepository.GetByIdAsync(userId, u => u.MentorApplications);
         if (user == null)
         {
             return Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
         }
 
-        user.Experiences = request.WorkExperience;
+        if (user.MentorApplications != null && user.MentorApplications.Any(x => x.Status != ApplicationStatus.Rejected))
+        {
+            return Result.Failure<bool>("User has an active or pending mentor application.", HttpStatusCode.BadRequest);
+        }
+
+        user.Experiences = submission.WorkExperience;
         userRepository.Update(user);
 
         var mentorApplication = new MentorApplication
@@ -37,9 +42,9 @@ public class MentorApplicationService(IUserRepository userRepository,
             MentorId = userId,
             SubmittedAt = DateTime.UtcNow,
         };
-        request.ToMentorApplication(mentorApplication);
+        submission.ToMentorApplication(mentorApplication);
 
-        if (request.Documents != null && request.Documents.Any())
+        if (submission.Documents != null && submission.Documents.Any())
         {
             mentorApplication.ApplicationDocuments = new List<ApplicationDocument>();
             var path = Directory.GetCurrentDirectory();
@@ -51,7 +56,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 Directory.CreateDirectory(documentsPath);
             }
 
-            foreach (var file in request.Documents)
+            foreach (var file in submission.Documents)
             {
                 if (file == null || file.Length == 0)
                 {
@@ -69,9 +74,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                     return Result.Failure<bool>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
                 }
 
-                long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                string fileName = $"{epoch}_{file.FileName}";
-                var filePath = Path.Combine(documentsPath, fileName);
+                var filePath = Path.Combine(documentsPath, file.FileName);
 
                 try
                 {
@@ -79,7 +82,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                     await file.CopyToAsync(stream);
 
                     var baseUrl = $"{httpRequest?.Scheme}://{httpRequest?.Host}";
-                    var fileUrl = $"{baseUrl}/documents/{userId}/{fileName}";
+                    var fileUrl = $"{baseUrl}/documents/{userId}/{file.FileName}";
 
                     mentorApplication.ApplicationDocuments.Add(new ApplicationDocument
                     {
