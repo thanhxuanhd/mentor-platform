@@ -1,7 +1,7 @@
 import { expect } from "@playwright/test";
 import { UserRoleManagementPage } from "../../../pages/user-role-management-page/user-role-management-page";
-import { requestCreateNewUser } from "../../../core/utils/create-new-user-api";
-import { test } from "../../../core/fixture/authFixture";
+import { requestCreateNewUser } from "../../../core/utils/api-helper";
+import { test } from "../../../core/fixture/auth-fixture";
 import userData from "../../test-data/user-role-management.json";
 
 test.describe("@UserRoleManagement All user role management pagination function", async () => {
@@ -12,7 +12,7 @@ test.describe("@UserRoleManagement All user role management pagination function"
     await requestCreateNewUser(request);
   });
 
-  test.beforeEach(async ({ loggedInPage, page }) => {
+  test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();
