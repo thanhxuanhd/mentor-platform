@@ -1,4 +1,3 @@
-using System.Net;
 using Application.Helpers;
 using Contract.Dtos.MentorApplications.Requests;
 using Contract.Dtos.MentorApplications.Responses;
@@ -6,17 +5,13 @@ using Contract.Dtos.Users.Requests;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
+using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
-using Application.Exceptions;
-using Application.Helpers;
-using Contract.Dtos.MentorApplications.Requests;
-using Contract.Dtos.MentorApplications.Responses;
-using Contract.Dtos.Users.Requests;
-using Domain.Constants;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Net;
 
 namespace Application.Services.MentorApplications;
 
