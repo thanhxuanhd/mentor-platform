@@ -1,0 +1,41 @@
+{
+  "valid_case": {
+    "topics": [
+      "Time Management",
+      "Communication Skills",
+      "Career Development",
+      "Public Speaking",
+      "Leadership Coaching"
+    ],
+    "frequence": 2,
+    "duration": 30,
+    "learningStyle": 1,
+    "teachApproach": ["Discussion Based", "Hands-on Practice"],
+    "isPrivateProfile": true,
+    "isAllowMessage": true,
+    "isReceiveNotification": true,
+    "expectedMessage": "Logout"
+  },
+  "empty_topics": {
+    "topics": [],
+    "frequence": 2,
+    "duration": 30,
+    "learningStyle": 1,
+    "teachApproach": ["Discussion Based", "Hands-on Practice"],
+    "isPrivateProfile": true,
+    "isAllowMessage": true,
+    "isReceiveNotification": true,
+    "expectedMessage": "Please select your field of topics!"
+  },
+  "empty_teaching_approach": {
+    "topics": [],
+    "frequence": 2,
+    "duration": 30,
+    "learningStyle": 1,
+    "teachApproach": [],
+    "isPrivateProfile": true,
+    "isAllowMessage": true,
+    "isReceiveNotification": true,
+    "expectedMessage": "As a mentor, please choose at least a Teaching Approach"
+  }
+}

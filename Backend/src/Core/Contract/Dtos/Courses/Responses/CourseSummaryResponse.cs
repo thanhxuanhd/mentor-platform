@@ -2,7 +2,7 @@ using Domain.Enums;
 
 namespace Contract.Dtos.Courses.Responses;
 
-public class CourseSummary
+public class CourseSummaryResponse
 {
     public Guid Id { get; set; }
     public string Title { get; set; } = null!;
@@ -13,5 +13,7 @@ public class CourseSummary
     public string? MentorName { get; set; }
     public CourseDifficulty Difficulty { get; set; }
     public DateTime? DueDate { get; set; }
+    public List<CourseItemResponse> Items { get; init; } = [];
+    public List<string> Tags { get; init; } = [];
     public CourseStatus Status { get; set; }
 }

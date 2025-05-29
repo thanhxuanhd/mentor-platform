@@ -1,9 +1,9 @@
-﻿using Contract.Dtos.Categories.Requests;
+﻿using System.Net;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
-using System.Net;
 
 namespace Application.Services.Categories;
 
@@ -16,6 +16,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             return Result.Failure<GetCategoryResponse>("Category not found", HttpStatusCode.NotFound);
         }
+
         var categoryInfo = new GetCategoryResponse
         {
             Id = category.Id,
@@ -26,6 +27,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         };
         return Result.Success(categoryInfo, HttpStatusCode.OK);
     }
+
     public async Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(FilterCategoryRequest request)
     {
         var categories = categoryRepository.GetAll();
@@ -33,6 +35,11 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         if (!string.IsNullOrEmpty(request.Keyword))
         {
             categories = categories.Where(c => c.Name.Contains(request.Keyword));
+        }
+        
+        if (request.Status.HasValue)
+        {
+            categories = categories.Where(c => c.Status == request.Status);
         }
 
         var categoryInfos = categories.Select(c => new GetCategoryResponse
@@ -44,7 +51,8 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Status = c.Status
         }).OrderBy(c => c.Name);
 
-        PaginatedList<GetCategoryResponse> paginatedCategories = await categoryRepository.ToPaginatedListAsync(categoryInfos, request.PageSize, request.PageIndex);
+        PaginatedList<GetCategoryResponse> paginatedCategories =
+            await categoryRepository.ToPaginatedListAsync(categoryInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCategories, HttpStatusCode.OK);
     }
@@ -83,6 +91,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             return Result.Failure<GetCategoryResponse>("Already have this category", HttpStatusCode.BadRequest);
         }
+
         var category = new Category
         {
             Name = request.Name,
@@ -103,16 +112,17 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
 
     public async Task<Result<bool>> EditCategoryAsync(Guid categoryId, CategoryRequest request)
     {
-
         if (await categoryRepository.ExistByNameExcludeAsync(categoryId, request.Name))
         {
             return Result.Failure<bool>("Already have this category", HttpStatusCode.BadRequest);
         }
+
         var category = await categoryRepository.GetByIdAsync(categoryId);
         if (category == null)
         {
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
         }
+
         category.Name = request.Name;
         category.Description = request.Description;
         category.Status = request.Status;
@@ -128,10 +138,10 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
         }
+
         category.IsDeleted = true;
         categoryRepository.Update(category);
         var result = await categoryRepository.SaveChangesAsync();
         return Result.Success(true, HttpStatusCode.OK);
     }
 }
-

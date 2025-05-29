@@ -1,3 +1,4 @@
+using System.Net;
 using Application.Services.Categories;
 using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
@@ -6,22 +7,21 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
-using System.Net;
 
 namespace Application.Test;
 
 [TestFixture]
 public class CategoryServiceTest
 {
-    private Mock<ICategoryRepository> _categoryRepositoryMock;
-    private CategoryService _categoryService;
-
     [SetUp]
     public void Setup()
     {
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
         _categoryService = new CategoryService(_categoryRepositoryMock.Object);
     }
+
+    private Mock<ICategoryRepository> _categoryRepositoryMock;
+    private CategoryService _categoryService;
 
     [Test]
     public async Task GetCategoriesAsync_WithoutKeyword_ReturnsPaginatedCategories()
@@ -31,20 +31,32 @@ public class CategoryServiceTest
         var pageSize = 10;
         var categories = new List<Category>
         {
-            new Category { Id = Guid.NewGuid(), Name = "Category 1", Description = "Desc 1", Status = true, Courses = new List<Course>() },
-            new Category { Id = Guid.NewGuid(), Name = "Category 2", Description = "Desc 2", Status = false, Courses = new List<Course>() }
+            new()
+            {
+                Id = Guid.NewGuid(), Name = "Category 1", Description = "Desc 1", Status = true,
+                Courses = new List<Course>()
+            },
+            new()
+            {
+                Id = Guid.NewGuid(), Name = "Category 2", Description = "Desc 2", Status = false,
+                Courses = new List<Course>()
+            }
         }.AsQueryable();
 
         var paginatedList = new PaginatedList<GetCategoryResponse>(
-            categories.Select(c => new GetCategoryResponse { Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status }).ToList(),
+            categories.Select(c => new GetCategoryResponse
+            {
+                Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status
+            }).ToList(),
             categories.Count(),
             pageIndex,
             pageSize
         );
 
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
-        _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex))
-            .ReturnsAsync(paginatedList);        // Act
+        _categoryRepositoryMock.Setup(repo =>
+                repo.ToPaginatedListAsync(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex))
+            .ReturnsAsync(paginatedList); // Act
         var request = new FilterCategoryRequest
         {
             PageIndex = pageIndex,
@@ -61,7 +73,9 @@ public class CategoryServiceTest
             Assert.That(result.Value, Is.Not.Null);
             Assert.That(result.Value.Items.Count, Is.EqualTo(2));
             _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex), Times.Once);
+            _categoryRepositoryMock.Verify(
+                repo => repo.ToPaginatedListAsync(It.IsAny<IQueryable<GetCategoryResponse>>(), pageSize, pageIndex),
+                Times.Once);
         });
     }
 
@@ -74,22 +88,36 @@ public class CategoryServiceTest
         var keyword = "Category 1";
         var categories = new List<Category>
         {
-            new Category { Id = Guid.NewGuid(), Name = "Category 1", Description = "Desc 1", Status = true, Courses = new List<Course>() },
-            new Category { Id = Guid.NewGuid(), Name = "Another Category", Description = "Desc 2", Status = false, Courses = new List<Course>() }
+            new()
+            {
+                Id = Guid.NewGuid(), Name = "Category 1", Description = "Desc 1", Status = true,
+                Courses = new List<Course>()
+            },
+            new()
+            {
+                Id = Guid.NewGuid(), Name = "Another Category", Description = "Desc 2", Status = false,
+                Courses = new List<Course>()
+            }
         }.AsQueryable();
 
         var filteredCategoriesQuery = categories.Where(c => c.Name.Contains(keyword));
 
         var paginatedList = new PaginatedList<GetCategoryResponse>(
-            filteredCategoriesQuery.Select(c => new GetCategoryResponse { Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status }).ToList(),
+            filteredCategoriesQuery.Select(c => new GetCategoryResponse
+            {
+                Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status
+            }).ToList(),
             filteredCategoriesQuery.Count(),
             pageIndex,
             pageSize
         );
 
         _categoryRepositoryMock.Setup(repo => repo.GetAll()).Returns(categories);
-        _categoryRepositoryMock.Setup(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex))
-            .ReturnsAsync(paginatedList);        // Act
+        _categoryRepositoryMock.Setup(repo =>
+                repo.ToPaginatedListAsync(
+                    It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize,
+                    pageIndex))
+            .ReturnsAsync(paginatedList); // Act
         var request = new FilterCategoryRequest
         {
             PageIndex = pageIndex,
@@ -107,7 +135,10 @@ public class CategoryServiceTest
             Assert.That(result.Value.Items.Count, Is.EqualTo(1));
             Assert.That(result.Value.Items.First().Name, Is.EqualTo("Category 1"));
             _categoryRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
-            _categoryRepositoryMock.Verify(repo => repo.ToPaginatedListAsync<GetCategoryResponse>(It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize, pageIndex), Times.Once);
+            _categoryRepositoryMock.Verify(
+                repo => repo.ToPaginatedListAsync(
+                    It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize,
+                    pageIndex), Times.Once);
         });
     }
 
@@ -138,8 +169,18 @@ public class CategoryServiceTest
         var category = new Category { Id = categoryId, Name = "Test Category", Courses = new List<Course>() };
         var coursesForCategory = new List<Course>
         {
-            new Course { Id = Guid.NewGuid(), Title = "Course 1", Description = "Desc 1", Status = CourseStatus.Published, Difficulty = CourseDifficulty.Beginner, DueDate = DateTime.UtcNow.AddDays(10), CourseTags = new List<CourseTag>(), CategoryId = categoryId, Category = category },
-            new Course { Id = Guid.NewGuid(), Title = "Course 2", Description = "Desc 2", Status = CourseStatus.Draft, Difficulty = CourseDifficulty.Intermediate, DueDate = DateTime.UtcNow.AddDays(20), CourseTags = new List<CourseTag>(), CategoryId = categoryId, Category = category }
+            new()
+            {
+                Id = Guid.NewGuid(), Title = "Course 1", Description = "Desc 1", Status = CourseStatus.Published,
+                Difficulty = CourseDifficulty.Beginner, DueDate = DateTime.UtcNow.AddDays(10),
+                CourseTags = new List<CourseTag>(), CategoryId = categoryId, Category = category
+            },
+            new()
+            {
+                Id = Guid.NewGuid(), Title = "Course 2", Description = "Desc 2", Status = CourseStatus.Draft,
+                Difficulty = CourseDifficulty.Intermediate, DueDate = DateTime.UtcNow.AddDays(20),
+                CourseTags = new List<CourseTag>(), CategoryId = categoryId, Category = category
+            }
         }.AsQueryable();
 
         var list = coursesForCategory
@@ -237,8 +278,5 @@ public class CategoryServiceTest
             _categoryRepositoryMock.Verify(r => r.Update(category), Times.Once);
             _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
         });
-
-
     }
-
 }

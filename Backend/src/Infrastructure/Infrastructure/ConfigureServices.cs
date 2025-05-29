@@ -1,4 +1,5 @@
-﻿using Contract.Repositories;
+﻿using System.Text;
+using Contract.Repositories;
 using Contract.Services;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
@@ -7,15 +8,13 @@ using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
-using Infrastructure.Services.Background;
+using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 namespace Infrastructure;
 
@@ -41,23 +40,19 @@ public static class ConfigureServices
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
         services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
 
-        services.AddHostedService(provider =>
-        new UserProfilePhotoCleanupService(
-        provider,
-        provider.GetRequiredService<IWebHostEnvironment>(),
-        provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
-        ));
-
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            // options.EnableSensitiveDataLogging();
+            options.EnableSensitiveDataLogging();
+            // options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
         });
         services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
         // Add JWT Authentication
@@ -81,12 +76,14 @@ public static class ConfigureServices
             };
         });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(UserRole.Admin.ToString()));
-            options.AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(UserRole.Mentor.ToString()));
-            options.AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(UserRole.Learner.ToString()));
-        });
+        services.AddAuthorizationBuilder()
+            .AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(nameof(UserRole.Admin)))
+            .AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(nameof(UserRole.Mentor)))
+            .AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(nameof(UserRole.Learner)))
+            .AddPolicy(CourseResourcePolicyName.UserCanEditCoursePolicyName,
+                policy => policy.Requirements.Add(new UserCanEditCourseRequirement()));
+
+        services.AddTransient<IAuthorizationHandler, UserCanEditCourseAccessHandler>();
 
         return services;
     }
