@@ -8,7 +8,7 @@ using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
 
-namespace Application.Services.MentorApplication;
+namespace Application.Services.MentorApplications;
 
 public class MentorApplicationService(IUserRepository userRepository, IMentorApplicationRepository mentorApplicationRepository, IEmailService emailService) : IMentorApplicationService
 {
@@ -37,13 +37,14 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             SubmittedAt = x.SubmittedAt,
             Status = x.Status.ToString(),
             Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
-        });
+        }).OrderByDescending(x => x.SubmittedAt);
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
             applicationInfos,
             request.PageSize,
             request.PageIndex
         );
+
         return Result.Success(result, HttpStatusCode.OK);
     }
 
@@ -82,21 +83,124 @@ public class MentorApplicationService(IUserRepository userRepository, IMentorApp
             Email = applicationDetails.Mentor.Email,
             Bio = applicationDetails.Mentor.Bio,
             Experiences = applicationDetails.Mentor.Experiences,
+            Statement = applicationDetails.Statement,
+            Certifications = applicationDetails.Certifications,
+            Education = applicationDetails.Education,
             Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
             ApplicationStatus = applicationDetails.Status.ToString(),
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
             Note = applicationDetails.Note,
             ReviewBy = applicationDetails.Admin?.FullName,
-            Documents = applicationDetails.ApplicationDocuments.Select(doc => new Document
+            Documents = applicationDetails.ApplicationDocuments.Select(doc => new DocumentResponse
             {
                 DocumentId = doc.Id,
                 DocumentType = doc.DocumentType.ToString(),
                 DocumentUrl = doc.DocumentUrl
-            }).ToList(),
+            }).ToList()
         };
 
         return Result.Success(response, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<RequestApplicationInfoResponse>> RequestApplicationInfoAsync(Guid adminId, Guid applicationId, RequestApplicationInfoRequest request)
+    {
+        var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
+
+        if (application == null)
+        {
+            return Result.Failure<RequestApplicationInfoResponse>(
+                "Mentor application not found.", HttpStatusCode.NotFound
+            );
+        }
+
+        if (application.Status != ApplicationStatus.Submitted)
+        {
+            return Result.Failure<RequestApplicationInfoResponse>(
+                "You can only request additional information for submitted applications.", HttpStatusCode.Conflict
+            );
+        }
+
+        application.ReviewedAt = DateTime.Now;
+        application.AdminId = adminId;
+        application.Status = ApplicationStatus.WaitingInfo;
+        application.Note = request.Note;
+
+        mentorApplicationRepository.Update(application);
+        await mentorApplicationRepository.SaveChangesAsync();
+
+        var subject = EmailConstants.SUBJECT_REQUEST_APPLICATION_INFO;
+        var body = EmailConstants.BodyRequestApplicationInfoEmail(application.Mentor.FullName);
+
+        var emailSent = await emailService.SendEmailAsync(
+            application.Mentor.Email,
+            subject,
+            body
+        );
+
+        if (!emailSent)
+        {
+            return Result.Failure<RequestApplicationInfoResponse>(
+                "Failed to send notification email.", HttpStatusCode.InternalServerError
+            );
+        }
+
+        var result = new RequestApplicationInfoResponse
+        {
+            Message = "Request for additional information has been sent successfully.",
+        };
+
+        return Result.Success(result, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<UpdateApplicationStatusResponse>> UpdateApplicationStatusAsync(Guid adminId, Guid applicationId, UpdateApplicationStatusRequest request)
+    {
+        var application = await mentorApplicationRepository.GetMentorApplicationByIdAsync(applicationId);
+
+        if (application == null)
+        {
+            return Result.Failure<UpdateApplicationStatusResponse>(
+                "Mentor application not found.", HttpStatusCode.NotFound
+            );
+        }
+
+        if (application.Status == ApplicationStatus.Approved || application.Status == ApplicationStatus.Rejected)
+        {
+            return Result.Failure<UpdateApplicationStatusResponse>(
+                "Application is already approved or rejected.", HttpStatusCode.Conflict
+            );
+        }
+
+        application.Status = request.Status;
+        application.Note = request.Note;
+        application.ReviewedAt = DateTime.Now;
+        application.AdminId = adminId;
+
+        mentorApplicationRepository.Update(application);
+        await mentorApplicationRepository.SaveChangesAsync();
+
+        var subject = EmailConstants.SUBJECT_MENTOR_APPLICATION_DECISION;
+        var body = EmailConstants.BodyMentorApplicationDecisionEmail(application.Mentor.FullName, request.Status.ToString(), request.Note);
+
+        var emailSent = await emailService.SendEmailAsync(
+            application.Mentor.Email,
+            subject,
+            body
+        );
+
+        if (!emailSent)
+        {
+            return Result.Failure<UpdateApplicationStatusResponse>(
+                "Failed to send notification email.", HttpStatusCode.InternalServerError
+            );
+        }
+
+        var result = new UpdateApplicationStatusResponse
+        {
+            Message = "Mentor application status updated successfully.",
+        };
+
+        return Result.Success(result, HttpStatusCode.OK);
     }
 
     public async Task<Result<bool>> EditMentorApplicationAsync(Guid applicationId, UpdateMentorApplicationRequest request)

@@ -31,7 +31,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         return Result.Success(userResponse, HttpStatusCode.OK);
     }
 
-
     public async Task<Result<GetUserResponse>> GetUserByIdAsync(Guid id)
     {
         var user = await userRepository.GetByIdAsync(id, user => user.Role);

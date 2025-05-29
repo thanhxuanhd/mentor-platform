@@ -16,6 +16,7 @@ import ForbiddenPage from "../pages/Forbidden";
 import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
+import MentorApplicationPage from "../pages/MentorApplication";
 
 const AppRoutes = () => {
   return (
@@ -29,7 +30,7 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
-      </Route>    
+      </Route>
       <Route
         element={
           <ProtectedRoute
@@ -46,30 +47,21 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
+        <Route path="applications" element={<MentorApplicationPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
       <Route
         element={
           <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}
+            requiredRole={[applicationRole.ADMIN]}
           >
             <MainLayout />
           </ProtectedRoute>
         }
       >
         <Route path="users" element={<UsersPage />} />
-        <Route path="categories" element={<CategoriesPage />} />
-      </Route>
-      <Route
-        element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.MENTOR, applicationRole.LEARNER]}
-          >
-            <MainLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
     </Routes>
   );
