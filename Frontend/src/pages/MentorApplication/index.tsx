@@ -104,6 +104,7 @@ export default function MentorApplicationPage() {
   const handleNoteEmpty = () => {
     if (!selectedApplication) return false;
     const isEmpty = selectedApplication.note?.trim() === '';
+    debugger;
     return isEmpty;
   }
 

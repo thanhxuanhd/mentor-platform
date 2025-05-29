@@ -3,6 +3,7 @@ import { FileTextOutlined, FilePdfOutlined, FileImageOutlined } from "@ant-desig
 import type { MentorApplicationDetailItemProp } from "../../../types/MentorApplicationType"
 import { formatDate } from "../../../utils/DateFormat"
 import DefaultAvatar from "../../../assets/images/default-account.svg"
+import { normalizeServerFiles } from "../../../utils/InputNormalizer"
 
 const { TextArea } = Input
 
@@ -14,25 +15,8 @@ interface ApplicationDetailsProps {
   onNoteChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
 }
 
-const applications: MentorApplicationDetailItemProp = {
-  mentorApplicationId: "1",
-  mentorName: "Sarah Johnson",
-  email: "sarah.j@example.com",
-  profilePhotoUrl: "/placeholder.svg?height=48&width=48",
-  expertises: ["Data Science", "Machine Learning", "Python"],
-  experiences: "8+ years in data science and AI research",
-  applicationStatus: "Submitted",
-  submittedAt: "9/10/2023",
-  reviewedAt: "9/11/2023",
-  reviewBy: "John Doe",
-  documents: [
-    { documentId: "1", documentUrl: "Resume.pdf", documentType: "pdf" },
-    { documentId: "2", documentUrl: "Portfolio.pdf", documentType: "pdf" },
-  ],
-}
-
 export default function MentorApplicationDetail({
-  application = applications,
+  application,
   onApprove,
   onReject,
   onRequestInfo,
@@ -57,6 +41,10 @@ export default function MentorApplicationDetail({
       default:
         return <FileTextOutlined className="text-slate-400" />
     }
+  }
+
+  const viewFileInBrowser = (fileUrl: string): void => {
+    window.open(fileUrl, '_blank');
   }
 
   return (
@@ -172,9 +160,9 @@ export default function MentorApplicationDetail({
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {getFileIcon(doc.documentType)}
-                      <span className="text-white text-sm">{doc.documentUrl}</span>
+                      <span className="text-white text-sm">{normalizeServerFiles(doc.documentUrl)}</span>
                     </div>
-                    <Button type="link" className="text-blue-400 hover:text-blue-300 p-0">
+                    <Button type="link" className="text-blue-400 hover:text-blue-300 p-0" onClick={() => viewFileInBrowser(doc.documentUrl)}>
                       View
                     </Button>
                   </div>
