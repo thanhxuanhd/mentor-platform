@@ -20,6 +20,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TeachingApproach> TeachingApproaches { get; set; }
     public DbSet<UserCategory> UserCategories { get; set; }
     public DbSet<UserTeachingApproach> UserTeachingApproaches { get; set; }
+    public DbSet<Schedule> Schedules { get; set; }
+    public DbSet<MentorAvailableTimeSlot> TimeSlots { get; set; }
+    public DbSet<Booking> Bookings { get; set; }
  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

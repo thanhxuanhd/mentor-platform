@@ -14,7 +14,6 @@ public static class ApplicationDbExtensions
         var dbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
         dbContext!.Database.EnsureCreated();
 
-        // Seeding logic moved directly here
         if (!dbContext.Roles.Any())
         {
             dbContext.Roles.AddRange(new Role { Name = UserRole.Admin }, new Role { Name = UserRole.Mentor },
@@ -62,12 +61,12 @@ public static class ApplicationDbExtensions
 
         if (!dbContext.Users.Any())
         {
-            var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
-            var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
-            var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
-            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
-            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            var mentorRole = dbContext.Roles.First(r => r.Name == UserRole.Mentor);
+            var learnerRole = dbContext.Roles.First(r => r.Name == UserRole.Learner);
+            var adminRole = dbContext.Roles.First(r => r.Name == UserRole.Admin);
+            var programmingExpertises = dbContext.Expertises.First(e => e.Name == "Programming");
+            var communicationExpertises = dbContext.Expertises.First(e => e.Name == "Communication");
+            var leadershipExpertises = dbContext.Expertises.First(e => e.Name == "Leadership");
 
             dbContext.Users.AddRange(
                 new User
@@ -77,7 +76,20 @@ public static class ApplicationDbExtensions
                     Email = "alice.wonderland@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("password123"),
                     RoleId = mentorRole.Id,
-                    Status = UserStatus.Active
+                    Status = UserStatus.Active,
+                    UserExpertises =
+                    [
+                        new UserExpertise
+                        {
+                            ExpertiseId = programmingExpertises.Id,
+                            UserId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE")
+                        },
+                        new UserExpertise
+                        {
+                            ExpertiseId = communicationExpertises.Id,
+                            UserId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE")
+                        }
+                    ]
                 },
                 new User
                 {
@@ -86,7 +98,20 @@ public static class ApplicationDbExtensions
                     Email = "bob.builder@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("securepassword"),
                     RoleId = mentorRole.Id,
-                    Status = UserStatus.Active
+                    Status = UserStatus.Active,
+                    UserExpertises =
+                    [
+                        new UserExpertise
+                        {
+                            ExpertiseId = leadershipExpertises.Id,
+                            UserId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE")
+                        },
+                        new UserExpertise
+                        {
+                            ExpertiseId = communicationExpertises.Id,
+                            UserId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE")
+                        }
+                    ]
                 },
                 new User
                 {
@@ -102,6 +127,15 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                     FullName = "David Copperfield",
                     Email = "david.copperfield@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("mypassword"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("2250C836-8275-4886-98B1-7FDAFE848AF1"),
+                    FullName = "Konstanze Joselevitz",
+                    Email = "kjoselevitz0@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("mypassword"),
                     RoleId = learnerRole.Id,
                     Status = UserStatus.Active
@@ -292,6 +326,128 @@ public static class ApplicationDbExtensions
             });
             dbContext.SaveChanges();
         }
+
+        if (!dbContext.Schedules.Any())
+        {
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+
+            var upcomingDaysOfWeek = GetUpcomingWeekView();
+            var schedules = new[]
+            {
+                new Schedule
+                {
+                    Id = Guid.Parse("89D1FD71-9F0F-4486-9B66-42AE06C5D9E0"),
+                    MentorId = mentor1Id,
+                    Day = upcomingDaysOfWeek[DayOfWeek.Monday],
+                    StartTime = new TimeOnly(09, 00),
+                    EndTime = new TimeOnly(12, 00),
+                    SessionDuration = 60,
+                    BufferTime = 0,
+                    IsLocked = false
+                },
+                new Schedule
+                {
+                    Id = Guid.Parse("F46BF2A2-532A-448B-A8E1-8BEA659A0603"),
+                    MentorId = mentor1Id,
+                    Day = upcomingDaysOfWeek[DayOfWeek.Tuesday],
+                    StartTime = new TimeOnly(10, 00),
+                    EndTime = new TimeOnly(18, 00),
+                    SessionDuration = 45,
+                    BufferTime = 10,
+                    IsLocked = false
+                },
+                new Schedule
+                {
+                    Id = Guid.Parse("D4A3E65D-8762-4CE9-91D8-01F6044C723C"),
+                    MentorId = mentor2Id,
+                    Day = upcomingDaysOfWeek[DayOfWeek.Friday],
+                    StartTime = new TimeOnly(13, 00),
+                    EndTime = new TimeOnly(21, 00),
+                    SessionDuration = 30,
+                    BufferTime = 5,
+                    IsLocked = false
+                },
+                new Schedule
+                {
+                    Id = Guid.Parse("A6A15D64-0A89-4E53-8285-7E634D5B18E9"),
+                    MentorId = mentor2Id,
+                    Day = upcomingDaysOfWeek[DayOfWeek.Wednesday].AddDays(-7),
+                    StartTime = new TimeOnly(09, 00),
+                    EndTime = new TimeOnly(12, 00),
+                    SessionDuration = 60,
+                    BufferTime = 0,
+                    IsLocked = false
+                }
+            };
+
+            dbContext.Schedules.AddRange(schedules);
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.TimeSlots.Any())
+        {
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+
+            var upcomingDaysOfWeek = GetUpcomingWeekView();
+            var monday = upcomingDaysOfWeek[DayOfWeek.Monday];
+            var tuesday = upcomingDaysOfWeek[DayOfWeek.Tuesday];
+            var friday = upcomingDaysOfWeek[DayOfWeek.Friday];
+
+            var schedules = dbContext.Schedules.ToList();
+
+            dbContext.TimeSlots.AddRange(
+                new MentorAvailableTimeSlot
+                {
+                    Id = Guid.Parse("0B41D813-4202-4B0C-B3D1-32E23A46744D"),
+                    MentorId = mentor1Id,
+                    ScheduleId = schedules[0].Id,
+                    StartTime = monday.ToDateTime(new TimeOnly(09, 00)),
+                    EndTime = monday.ToDateTime(new TimeOnly(10, 00)),
+                    Status = SessionStatus.Available
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = Guid.Parse("67A0038D-87B8-4389-AD35-75E6175738AF"),
+                    MentorId = mentor1Id,
+                    ScheduleId = schedules[1].Id,
+                    StartTime = tuesday.ToDateTime(new TimeOnly(10, 00)),
+                    EndTime = tuesday.ToDateTime(new TimeOnly(11, 00)),
+                    Status = SessionStatus.Available
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = Guid.Parse("9A5AF2B3-598D-4B3A-8421-06220778837E"),
+                    MentorId = mentor2Id,
+                    ScheduleId = schedules[2].Id,
+                    StartTime = friday.ToDateTime(new TimeOnly(13, 00)),
+                    EndTime = friday.ToDateTime(new TimeOnly(14, 00)),
+                    Status = SessionStatus.Available
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = Guid.Parse("07FDD33B-75B9-4046-BCFB-692C5255930F"),
+                    MentorId = mentor2Id,
+                    ScheduleId = schedules[2].Id,
+                    StartTime = friday.ToDateTime(new TimeOnly(14, 00)),
+                    EndTime = friday.ToDateTime(new TimeOnly(15, 00)),
+                    Status = SessionStatus.Processing,
+                    Bookings =
+                    [
+                        new Booking
+                        {
+                            BookedDateTime = DateTime.Now,
+                            Status = BookingStatus.Pending,
+                            LearnerId = Guid.Parse("2250C836-8275-4886-98B1-7FDAFE848AF1"),
+                            TimeSlotId = Guid.Parse("07FDD33B-75B9-4046-BCFB-692C5255930F"),
+                            SessionType = SessionType.OneOnOne
+                        }
+                    ]
+                }
+            );
+            dbContext.SaveChanges();
+        }
     }
 
     private static string GetMediaUrl(CourseMediaType mediaType, int moduleNumber)
@@ -303,5 +459,19 @@ public static class ApplicationDbExtensions
             CourseMediaType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
             _ => $"/content/other/module{moduleNumber}"
         };
+    }
+
+    private static Dictionary<DayOfWeek, DateOnly> GetUpcomingWeekView()
+    {
+        var weekView = new Dictionary<DayOfWeek, DateOnly>();
+        var currentDate = DateOnly.FromDateTime(DateTime.Today);
+
+        for (var i = 0; i < 7; i++)
+        {
+            var dayInWindow = currentDate.AddDays(i);
+            weekView[dayInWindow.DayOfWeek] = dayInWindow;
+        }
+
+        return weekView;
     }
 }
