@@ -9,76 +9,86 @@ namespace Application.Services.Schedule;
 
 public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository) : IScheduleService
 {
-    public async Task<Result<GetScheduleSettingsResponse>> GetScheduleByIdAsync(Guid id)
-    {
-        var schedule = await scheduleRepository.GetByIdAsync(id);
-        if (schedule == null)
-        {
-            return Result.Failure<GetScheduleSettingsResponse>("Schedule not found", HttpStatusCode.NotFound);
-        }
+    // TODO: possibly delete these methods
+    // public async Task<Result<GetScheduleSettingsResponse>> GetScheduleByIdAsync(Guid id)
+    // {
+    //     var schedule = await scheduleRepository.GetByIdAsync(id);
+    //     if (schedule == null)
+    //     {
+    //         return Result.Failure<GetScheduleSettingsResponse>("Schedule not found", HttpStatusCode.NotFound);
+    //     }
 
-        var response = new GetScheduleSettingsResponse
-        {
-            WeekStartDate = schedule.WeekStartDate,
-            WeekEndDate = schedule.WeekEndDate,
-            StartTime = schedule.StartTime.ToString("HH:mm"),
-            EndTime = schedule.EndTime.ToString("HH:mm"),
-            SessionDuration = schedule.SessionDuration,
-            BufferTime = schedule.BufferTime,
-            IsLocked = schedule.IsLocked
-        };
+    //     var response = new GetScheduleSettingsResponse
+    //     {
+    //         WeekStartDate = schedule.WeekStartDate,
+    //         WeekEndDate = schedule.WeekEndDate,
+    //         StartTime = schedule.StartTime.ToString("HH:mm"),
+    //         EndTime = schedule.EndTime.ToString("HH:mm"),
+    //         SessionDuration = schedule.SessionDuration,
+    //         BufferTime = schedule.BufferTime,
+    //         IsLocked = schedule.IsLocked
+    //     };
 
-        return Result.Success(response, HttpStatusCode.OK);
-    }
+    //     return Result.Success(response, HttpStatusCode.OK);
+    // }
 
-    public async Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync()
-    {
-        var schedules = await scheduleRepository.ToListAsync(
-            scheduleRepository.GetAll().Select(x => new GetScheduleSettingsResponse
-            {
-                WeekStartDate = x.WeekStartDate,
-                WeekEndDate = x.WeekEndDate,
-                StartTime = x.StartTime.ToString("HH:mm"),
-                EndTime = x.EndTime.ToString("HH:mm"),
-                SessionDuration = x.SessionDuration,
-                BufferTime = x.BufferTime,
-                IsLocked = x.IsLocked
-            }));
+    // public async Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync()
+    // {
+    //     var schedules = await scheduleRepository.ToListAsync(
+    //         scheduleRepository.GetAll().Select(x => new GetScheduleSettingsResponse
+    //         {
+    //             WeekStartDate = x.WeekStartDate,
+    //             WeekEndDate = x.WeekEndDate,
+    //             StartTime = x.StartTime.ToString("HH:mm"),
+    //             EndTime = x.EndTime.ToString("HH:mm"),
+    //             SessionDuration = x.SessionDuration,
+    //             BufferTime = x.BufferTime,
+    //             IsLocked = x.IsLocked
+    //         }));
 
-        return Result.Success(schedules, HttpStatusCode.OK);
-    }
+    //     return Result.Success(schedules, HttpStatusCode.OK);
+    // }
 
-    public async Task<Result<GetScheduleSettingsResponse>> CreateAsync(CreateScheduleSettings request)
-    {
-        var schedule = new Schedules
-        {
-            Id = Guid.NewGuid(),
-            WeekStartDate = request.WeekStartDate,
-            WeekEndDate = request.WeekEndDate,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            SessionDuration = request.SessionDuration,
-            BufferTime = request.BufferTime,
-        };
+    // public async Task<Result<GetScheduleSettingsResponse>> CreateAsync(CreateScheduleSettingsRequest request)
+    // {
+    //     var existingScheduleSettings = await scheduleRepository.GetScheduleSettingsAsync(request.MentorId, request.WeekStartDate, request.WeekEndDate);
 
-        await scheduleRepository.AddAsync(schedule);
-        await scheduleRepository.SaveChangesAsync();
+    //     Schedules schedule;
 
-        var response = new GetScheduleSettingsResponse
-        {
-            WeekStartDate = schedule.WeekStartDate,
-            WeekEndDate = schedule.WeekEndDate,
-            StartTime = schedule.StartTime.ToString("HH:mm"),
-            EndTime = schedule.EndTime.ToString("HH:mm"),
-            SessionDuration = schedule.SessionDuration,
-            BufferTime = schedule.BufferTime,
-            IsLocked = schedule.IsLocked
-        };
+    //     if (existingScheduleSettings != null)
+    //     {
 
-        return Result.Success(response, HttpStatusCode.Created);
-    }
+    //     }
 
-    public async Task<Result<bool>> UpdateAsync(Guid id, CreateScheduleSettings request)
+    //     schedule = new Schedules
+    //     {
+    //         Id = Guid.NewGuid(),
+    //         WeekStartDate = request.WeekStartDate,
+    //         WeekEndDate = request.WeekEndDate,
+    //         StartTime = request.StartTime,
+    //         EndTime = request.EndTime,
+    //         SessionDuration = request.SessionDuration,
+    //         BufferTime = request.BufferTime,
+    //     };
+
+    //     await scheduleRepository.AddAsync(schedule);
+    //     await scheduleRepository.SaveChangesAsync();
+
+    //     var response = new GetScheduleSettingsResponse
+    //     {
+    //         WeekStartDate = schedule.WeekStartDate,
+    //         WeekEndDate = schedule.WeekEndDate,
+    //         StartTime = schedule.StartTime.ToString("HH:mm"),
+    //         EndTime = schedule.EndTime.ToString("HH:mm"),
+    //         SessionDuration = schedule.SessionDuration,
+    //         BufferTime = schedule.BufferTime,
+    //         IsLocked = schedule.IsLocked
+    //     };
+
+    //     return Result.Success(response, HttpStatusCode.Created);
+    // }
+
+    public async Task<Result<bool>> UpdateAsync(Guid id, CreateScheduleSettingsRequest request)
     {
         var schedule = await scheduleRepository.GetByIdAsync(id);
         if (schedule == null)

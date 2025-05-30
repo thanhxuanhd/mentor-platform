@@ -13,9 +13,6 @@ public class GetScheduleSettingsRequestValidator : AbstractValidator<GetSchedule
 {
     public GetScheduleSettingsRequestValidator()
     {
-        RuleFor(x => x.MentorId)
-            .NotEmpty().WithMessage("MentorId is required.");
-
         RuleFor(x => x.WeekStartDate)
             .Must(date => !date.HasValue || date.Value.DayOfWeek == DayOfWeek.Sunday)
             .WithMessage("WeekStartDate must be a Sunday.");

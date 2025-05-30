@@ -40,14 +40,14 @@ public class ScheduleController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateScheduleSettings request)
+    public async Task<IActionResult> Create([FromBody] CreateScheduleSettingsRequest request)
     {
         var result = await _scheduleService.CreateAsync(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateScheduleSettings request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] CreateScheduleSettingsRequest request)
     {
         var result = await _scheduleService.UpdateAsync(id, request);
         return StatusCode((int)result.StatusCode, result);

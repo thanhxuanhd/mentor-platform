@@ -6,11 +6,11 @@ namespace Application.Services.Schedule;
 
 public interface IScheduleService
 {
-    Task<Result<GetScheduleSettingsResponse>> GetScheduleByIdAsync(Guid id);
-    Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync();
-    Task<Result<GetScheduleSettingsResponse>> CreateAsync(CreateScheduleSettings request);
-    Task<Result<bool>> UpdateAsync(Guid id, CreateScheduleSettings request);
-    Task<Result<bool>> DeleteAsync(Guid id);
+    // Task<Result<GetScheduleSettingsResponse>> GetScheduleByIdAsync(Guid id);
+    // Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync();
     Task<Result<GetScheduleSettingsResponse>> GetScheduleSettingsAsync(GetScheduleSettingsRequest request);
+    Task<Result<GetScheduleSettingsResponse>> CreateAsync(CreateScheduleSettingsRequest request);
+    Task<Result<bool>> UpdateAsync(Guid id, CreateScheduleSettingsRequest request);
+    Task<Result<bool>> DeleteAsync(Guid id);
 }
 
