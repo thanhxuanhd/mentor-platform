@@ -24,8 +24,9 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     [HttpGet("{applicationId}")]
     public async Task<IActionResult> GetMentorApplicationById(Guid applicationId)
     {
-        var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var currentUserId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await mentorApplicationService.GetMentorApplicationByIdAsync(currentUserId, applicationId);
+
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -35,6 +36,7 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var result = await mentorApplicationService.CreateMentorApplicationAsync(Guid.Parse(userId), request, Request);
+
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -51,8 +53,9 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     [HttpPut("{applicationId}/request-info")]
     public async Task<IActionResult> RequestApplicationInfo(Guid applicationId, RequestApplicationInfoRequest request)
     {
-        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
+
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -60,8 +63,9 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     [HttpPut("{applicationId}/status")]
     public async Task<IActionResult> UpdateApplicationStatus(Guid applicationId, UpdateApplicationStatusRequest request)
     {
-        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+        var adminId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
+
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -70,6 +74,7 @@ public class MentorApplicationController(IMentorApplicationService mentorApplica
     public async Task<IActionResult> EditMentorApplication(Guid applicationId, [FromForm] UpdateMentorApplicationRequest request)
     {
         var result = await mentorApplicationService.EditMentorApplicationAsync(applicationId, request, Request);
+
         return StatusCode((int)result.StatusCode, result);
     }
 }
