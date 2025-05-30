@@ -1,4 +1,4 @@
-import { test } from "../../../core/fixture/authFixture";
+import { test } from "../../../core/fixture/auth-fixture";
 import { withTimestampEmail } from "../../../core/utils/generate-unique-data";
 import { SignUpUser, UserProfileCreation } from "../../../models/user/user";
 import { SignUpPage } from "../../../pages/authentication/sign-up-page";

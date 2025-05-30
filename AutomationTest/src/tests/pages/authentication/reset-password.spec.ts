@@ -1,5 +1,5 @@
-import { test } from '../../../core/fixture/authFixture';
-import { requestNewPasswordFromEmail } from '../../../core/utils/get-new-password-from-email';
+import { test } from '../../../core/fixture/auth-fixture';
+import { requestNewPasswordFromEmail } from '../../../core/utils/api-helper';
 import { ResetPasswordUser } from '../../../models/user/user';
 import { ResetPasswordPage } from '../../../pages/authentication/reset-password-page';
 import testData from '../../test-data/reset-password-data.json'

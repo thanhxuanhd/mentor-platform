@@ -1,5 +1,5 @@
 import { SignUpPage } from "../../../pages/authentication/sign-up-page";
-import { test } from "../../../core/fixture/authFixture";
+import { test } from "../../../core/fixture/auth-fixture";
 import { SignUpUser } from "../../../models/user/user";
 import testData from "../../test-data/sign-up-user-data.json";
 import { withTimestampEmail } from "../../../core/utils/generate-unique-data";
