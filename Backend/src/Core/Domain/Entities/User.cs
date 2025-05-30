@@ -30,7 +30,7 @@ public class User : BaseEntity<Guid>
     public virtual ICollection<UserAvailability> UserAvailabilities { get; set; } = [];
     public virtual ICollection<UserExpertise> UserExpertises { get; set; } = [];
     public virtual Role Role { get; set; } = null!;
+
     public virtual ICollection<Schedules>? Schedules { get; set; } 
-    public virtual ICollection<MentorAvailableTimeSlot>? MentorAvailableTimeSlots { get; set; }
-    public virtual ICollection<Booking>? Bookings { get; set; }
+    public virtual ICollection<Sessions>? Sessions { get; set; }
 }

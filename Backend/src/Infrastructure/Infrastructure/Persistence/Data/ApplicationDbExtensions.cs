@@ -231,44 +231,40 @@ public static class ApplicationDbExtensions
                     MentorId = mentor1Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
-                    StartTime = new TimeOnly(09, 00),
-                    EndTime = new TimeOnly(17, 00),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
                     SessionDuration = 60, 
                     BufferTime = 15,    
-                    IsLocked = false
                 },
                 new Schedules
                 {
                     MentorId = mentor1Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
-                    StartTime = new TimeOnly(10, 00),
-                    EndTime = new TimeOnly(18, 00),
+                    StartHour = new TimeOnly(10, 00),
+                    EndHour = new TimeOnly(18, 00),
                     SessionDuration = 45, 
                     BufferTime = 10,    
-                    IsLocked = false
                 },
                 new Schedules
                 {
                     MentorId = mentor2Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
-                    StartTime = new TimeOnly(13, 00),
-                    EndTime = new TimeOnly(21, 00),
+                    StartHour = new TimeOnly(13, 00),
+                    EndHour = new TimeOnly(21, 00),
                     SessionDuration = 30, 
                     BufferTime = 5,     
-                    IsLocked = false
                 },
                 new Schedules
                 {
                     MentorId = mentor2Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
-                    StartTime = new TimeOnly(09, 00),
-                    EndTime = new TimeOnly(12, 00),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(12, 00),
                     SessionDuration = 60, 
                     BufferTime = 0,     
-                    IsLocked = false
                 }
             );
 

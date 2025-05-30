@@ -16,18 +16,13 @@ namespace Infrastructure.Persistence.Data.Configurations
             builder.Property(t => t.EndTime)
                 .IsRequired();
 
-            builder.HasOne(t => t.Mentor)
-                .WithMany()
-                .HasForeignKey(t => t.MentorId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasMany(t => t.Bookings)
+            builder.HasMany(t => t.Sessions)
                 .WithOne(b => b.TimeSlot)
                 .HasForeignKey(b => b.TimeSlotId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(t => t.Schedules)
-                .WithMany(s => s.TimeSlots)
+                .WithMany(s => s.AvailableTimeSlots)
                 .HasForeignKey(t => t.ScheduleId)
                 .OnDelete(DeleteBehavior.Cascade);
         }

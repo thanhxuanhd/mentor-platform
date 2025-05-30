@@ -16,7 +16,7 @@ public class ScheduleConfiguration : IEntityTypeConfiguration<Schedules>
               .HasForeignKey(s => s.MentorId)
               .OnDelete(DeleteBehavior.Cascade);
 
-       builder.HasMany(s => s.TimeSlots)
+       builder.HasMany(s => s.AvailableTimeSlots)
               .WithOne(ts => ts.Schedules)
               .HasForeignKey(ts => ts.ScheduleId)
               .OnDelete(DeleteBehavior.Cascade);
@@ -27,10 +27,10 @@ public class ScheduleConfiguration : IEntityTypeConfiguration<Schedules>
         builder.Property(s => s.WeekEndDate)   
               .IsRequired();                 
 
-        builder.Property(s => s.StartTime)
+        builder.Property(s => s.StartHour)
               .IsRequired();
 
-        builder.Property(s => s.EndTime)
+        builder.Property(s => s.EndHour)
               .IsRequired();
 
         builder.Property(s => s.SessionDuration)
@@ -38,10 +38,5 @@ public class ScheduleConfiguration : IEntityTypeConfiguration<Schedules>
 
         builder.Property(s => s.BufferTime)
               .IsRequired();
-
-        builder.Property(s => s.IsLocked)
-              .HasDefaultValue(false);
-
-        builder.HasQueryFilter(s => !s.IsLocked);
     }
 }

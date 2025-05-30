@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Data.Configurations;
 
-public class BookingConfiguration : IEntityTypeConfiguration<Booking>
+public class BookingConfiguration : IEntityTypeConfiguration<Sessions>
 {
-    public void Configure(EntityTypeBuilder<Booking> builder)
+    public void Configure(EntityTypeBuilder<Sessions> builder)
     {
         builder.HasKey(b => b.Id);
 
@@ -15,12 +15,12 @@ public class BookingConfiguration : IEntityTypeConfiguration<Booking>
             .IsRequired();
 
         builder.HasOne(b => b.TimeSlot)
-            .WithMany(ts => ts.Bookings)
+            .WithMany(ts => ts.Sessions)
             .HasForeignKey(b => b.TimeSlotId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(b => b.Learner)
-            .WithMany(u => u.Bookings)
+            .WithMany(u => u.Sessions)
             .HasForeignKey(b => b.LearnerId)
             .OnDelete(DeleteBehavior.Restrict);
     }

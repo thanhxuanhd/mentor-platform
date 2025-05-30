@@ -78,12 +78,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasForeignKey(s => s.MentorId) 
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(u => u.MentorAvailableTimeSlots)
-            .WithOne(ts => ts.Mentor) 
-            .HasForeignKey(ts => ts.MentorId) 
-            .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(u => u.Bookings)
+        builder.HasMany(u => u.Sessions)
             .WithOne(b => b.Learner) 
             .HasForeignKey(b => b.LearnerId) 
             .OnDelete(DeleteBehavior.Restrict);

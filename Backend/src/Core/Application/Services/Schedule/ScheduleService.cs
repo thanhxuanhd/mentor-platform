@@ -119,11 +119,10 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             {
                 WeekStartDate = weekStartDate,
                 WeekEndDate = weekEndDate,
-                StartTime = ScheduleSettingsConstants.DefaultStartTime,
-                EndTime = ScheduleSettingsConstants.DefaultEndTime,
+                StartHour = ScheduleSettingsConstants.DefaultStartTime,
+                EndHour = ScheduleSettingsConstants.DefaultEndTime,
                 SessionDuration = ScheduleSettingsConstants.DefaultSessionDuration,
                 BufferTime = ScheduleSettingsConstants.DefaultBufferTime,
-                IsLocked = false
             };
         }
 
@@ -131,11 +130,10 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         {
             WeekStartDate = scheduleSettings.WeekStartDate,
             WeekEndDate = scheduleSettings.WeekEndDate,
-            StartTime = scheduleSettings.StartTime.ToString("HH:mm"),
-            EndTime = scheduleSettings.EndTime.ToString("HH:mm"),
+            StartTime = scheduleSettings.StartHour.ToString("HH:mm"),
+            EndTime = scheduleSettings.EndHour.ToString("HH:mm"),
             SessionDuration = scheduleSettings.SessionDuration,
             BufferTime = scheduleSettings.BufferTime,
-            IsLocked = scheduleSettings.IsLocked
         };
         
         return Result.Success(response, HttpStatusCode.OK);
@@ -151,8 +149,8 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         schedule.WeekStartDate = request.WeekStartDate;
         schedule.WeekEndDate = request.WeekEndDate;
-        schedule.StartTime = request.StartTime;
-        schedule.EndTime = request.EndTime;
+        schedule.StartHour = request.StartTime;
+        schedule.EndHour = request.EndTime;
         schedule.SessionDuration = request.SessionDuration;
         schedule.BufferTime = request.BufferTime;
 
@@ -170,7 +168,6 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             return Result.Failure<bool>("Schedule not found", HttpStatusCode.NotFound);
         }
 
-        schedule.IsLocked = true;
         scheduleRepository.Update(schedule);
         await scheduleRepository.SaveChangesAsync();
 

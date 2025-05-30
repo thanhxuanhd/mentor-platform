@@ -9,5 +9,5 @@ public class TimeSlotRequest
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public virtual User? Mentor { get; set; }
-    public virtual ICollection<Booking>? Bookings { get; set; }
+    public virtual ICollection<Sessions>? Bookings { get; set; }
 }

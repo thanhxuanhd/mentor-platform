@@ -5,6 +5,6 @@ using Infrastructure.Repositories.Base;
 
 namespace Infrastructure.Repositories;
 
-public class BookingRepository(ApplicationDbContext context) : BaseRepository<Booking, Guid>(context), IBookRepository
+public class BookingRepository(ApplicationDbContext context) : BaseRepository<Sessions, Guid>(context), IBookRepository
 {
 }

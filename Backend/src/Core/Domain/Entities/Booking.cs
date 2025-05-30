@@ -3,7 +3,7 @@ using Domain.Enums;
 
 namespace Domain.Entities;
 
-public class Booking : BaseEntity<Guid>
+public class Sessions : BaseEntity<Guid>
 {
     public Guid TimeSlotId { get; set; }
     public Guid LearnerId { get; set; }

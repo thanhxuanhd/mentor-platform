@@ -2,6 +2,6 @@
 
 namespace Contract.Repositories;
 
-public interface IBookRepository : IBaseRepository<Booking, Guid>
+public interface IBookRepository : IBaseRepository<Sessions, Guid>
 {
 }
