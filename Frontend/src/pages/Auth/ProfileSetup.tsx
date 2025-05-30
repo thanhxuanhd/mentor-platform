@@ -16,18 +16,18 @@ const stepItems: {
   title: string;
   disabled?: boolean;
 }[] = [
-  {
-    status: "finish",
-    title: "Step 1",
-    disabled: true,
-  },
-  {
-    title: "Step 2",
-  },
-  {
-    title: "Step 3",
-  },
-];
+    {
+      status: "finish",
+      title: "Step 1",
+      disabled: true,
+    },
+    {
+      title: "Step 2",
+    },
+    {
+      title: "Step 3",
+    },
+  ];
 
 export default function ProfileSetup() {
   const { state } = useLocation();
@@ -119,11 +119,11 @@ export default function ProfileSetup() {
         message: "Success",
         description: "Your profile has been created successfully.",
       });
-    } catch {
+    } catch (error: any) {
       setNotify({
         type: "error",
         message: "Error",
-        description: "Failed to create new profile",
+        description: error.response?.data?.error || "Failed to create new profile",
       });
     }
   };

@@ -146,7 +146,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         if (request.CategoryIds is not null &&
             !await userRepository.CheckEntityListExist<Category, Guid>(request.CategoryIds))
         {
-            return Result.Failure("Invalid Category IDs", HttpStatusCode.BadRequest);
+            return Result.Failure("Categories is not found or is deleted, please reload the page for latest data", HttpStatusCode.BadRequest);
         }
 
         if (request.AvailabilityIds != null)
