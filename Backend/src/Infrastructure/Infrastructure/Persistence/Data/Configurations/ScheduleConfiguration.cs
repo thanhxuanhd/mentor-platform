@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Data.Configurations;
 
-public class ScheduleConfiguration : IEntityTypeConfiguration<Schedule>
+public class ScheduleConfiguration : IEntityTypeConfiguration<Schedules>
 {
-    public void Configure(EntityTypeBuilder<Schedule> builder)
+    public void Configure(EntityTypeBuilder<Schedules> builder)
     {
         builder.HasKey(s => s.Id);
 
         builder.HasOne(s => s.User)
-               .WithMany()
+               .WithMany(u => u.Schedules)
                .HasForeignKey(s => s.MentorId)
                .OnDelete(DeleteBehavior.Cascade);
 

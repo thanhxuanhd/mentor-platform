@@ -226,10 +226,9 @@ public static class ApplicationDbExtensions
             var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
 
             dbContext.Schedules.AddRange(
-                new Schedule
+                new Schedules
                 {
                     MentorId = mentor1Id,
-                    // start 25/5/2025
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartTime = new TimeOnly(09, 00),
@@ -238,7 +237,7 @@ public static class ApplicationDbExtensions
                     BufferTime = 15,    
                     IsLocked = false
                 },
-                new Schedule
+                new Schedules
                 {
                     MentorId = mentor1Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
@@ -249,7 +248,7 @@ public static class ApplicationDbExtensions
                     BufferTime = 10,    
                     IsLocked = false
                 },
-                new Schedule
+                new Schedules
                 {
                     MentorId = mentor2Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
@@ -260,7 +259,7 @@ public static class ApplicationDbExtensions
                     BufferTime = 5,     
                     IsLocked = false
                 },
-                new Schedule
+                new Schedules
                 {
                     MentorId = mentor2Id,
                     WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),

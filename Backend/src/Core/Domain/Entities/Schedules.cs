@@ -2,7 +2,7 @@
 
 namespace Domain.Entities;
 
-public class Schedule : BaseEntity<Guid>
+public class Schedules : BaseEntity<Guid>
 {
     public Guid MentorId { get; set; }
     public DateOnly WeekStartDate { get; set; }
