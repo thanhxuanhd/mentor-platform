@@ -55,15 +55,11 @@ const AppRoutes = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
 
       <Route
         element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN]}
-          >
+          <ProtectedRoute requiredRole={[applicationRole.ADMIN]}>
             <MainLayout />
           </ProtectedRoute>
         }
@@ -73,15 +69,23 @@ const AppRoutes = () => {
 
       <Route
         element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.MENTOR]}
-          >
+          <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
             <MainLayout />
           </ProtectedRoute>
         }
       >
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
         <Route path="my-applications" element={<MentorStatusTrackingPage />} />
-        <Route path="mentor-application/edit" element={<MentorApplicationForm isEditMode={location.state?.isEditMode} application={location.state?.application} />} />
+        <Route
+          path="mentor-application/edit"
+          element={
+            <MentorApplicationForm
+              isEditMode={location.state?.isEditMode}
+              application={location.state?.application}
+            />
+          }
+        />
         <Route path="mentor-application" element={<MentorApplicationForm />} />
       </Route>
     </Routes>

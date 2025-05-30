@@ -26,7 +26,7 @@ namespace Application.Test
         private Mock<IWebHostEnvironment> _mockWebHostService;
         private Mock<ILogger<UserService>> _mockLogger;
         private UserService _userService;
-        private string _tempImagesFolder;       
+        private string _tempImagesFolder;
 
         [SetUp]
         public void Setup()
@@ -37,9 +37,6 @@ namespace Application.Test
             _mockLogger = new Mock<ILogger<UserService>>();
             _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object, _mockLogger.Object); _tempImagesFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _mockWebHostService.Setup(e => e.WebRootPath).Returns(_tempImagesFolder);
-            _mockLogger = new Mock<ILogger<UserService>>();
-            _userService = new UserService(_mockUserRepository.Object, _emailServiceMock.Object, _mockWebHostService.Object, _mockLogger.Object);
-
             Directory.CreateDirectory(_tempImagesFolder);
         }
 

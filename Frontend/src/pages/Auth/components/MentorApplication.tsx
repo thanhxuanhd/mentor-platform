@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Form, Input, Upload, Button, App, Progress } from "antd";
-import type { RcFile } from "antd/es/upload/interface";
+import type { RcFile, UploadFile } from "antd/es/upload/interface";
 import { userService } from "../../../services/user/userService";
 import type { NotificationProps } from "../../../types/Notification";
-import type { MentorApplicationType, MentorApplicationDetailItemProp } from "../../../types/MentorApplicationType";
+import type {
+  MentorApplicationType,
+  MentorApplicationDetailItemProp,
+} from "../../../types/MentorApplicationType";
 import { useAuth } from "../../../hooks";
 import { normalizeServerFiles } from "../../../utils/InputNormalizer";
 import { mentorApplicationService } from "../../../services/mentorAppplications/mentorApplicationService";
@@ -16,11 +19,17 @@ interface MentorApplicationFormProps {
   application?: MentorApplicationDetailItemProp;
 }
 
-const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMode = false, application }) => {
+const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
+  isEditMode = false,
+  application,
+}) => {
   const [form] = Form.useForm<MentorApplicationType>();
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const { user } = useAuth();
   const { notification } = App.useApp();
+  const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
+  const [fileCount, setFileCount] = useState(0);
+
   const [mentorInfo, setMentorInfo] = useState<{
     fullName?: string;
     email?: string;
@@ -46,11 +55,11 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
             experiences: userProfile.experiences ?? "",
           });
         }
-      } catch (error) {
-        console.error("Error fetching mentor profile:", error);
-        notification.error({
+      } catch {
+        setNotify({
+          type: "error",
           message: "Error",
-          description: "Failed to load mentor information.",
+          description: "Failed to fetch availabilities",
         });
       }
     };
@@ -59,18 +68,26 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
   }, [user, notification]);
 
   useEffect(() => {
+    if (mentorInfo.experiences !== undefined) {
+      form.setFieldsValue({ workExperience: mentorInfo.experiences });
+      setProgress(25);
+    }
+  }, [mentorInfo.experiences, form]);
+
+  useEffect(() => {
     if (isEditMode && application) {
       form.setFieldsValue({
         education: application.education || "",
         workExperience: application.experiences || "",
         certifications: application.certifications || "",
         statement: application.statement || "",
-        documents: application.documents?.map((doc) => ({
-          uid: doc.documentId,
-          name: normalizeServerFiles(doc.documentUrl),
-          status: 'done',
-          url: doc.documentUrl,
-        })) || [],
+        documents:
+          application.documents?.map((doc) => ({
+            uid: doc.documentId,
+            name: normalizeServerFiles(doc.documentUrl),
+            status: "done",
+            url: doc.documentUrl,
+          })) || [],
       });
 
       handleFieldChange();
@@ -111,7 +128,10 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
 
     try {
       if (isEditMode && application?.mentorApplicationId) {
-        await mentorApplicationService.editMentorApplication(application.mentorApplicationId, formData);
+        await mentorApplicationService.editMentorApplication(
+          application.mentorApplicationId,
+          formData,
+        );
         setNotify({
           type: "success",
           message: "Application Updated",
@@ -127,26 +147,37 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
       }
       form.resetFields();
       setProgress(0);
-      navigate(-1)
+      navigate(-1);
     } catch (error) {
       console.error("Error submitting application:", error);
       setNotify({
         type: "error",
         message: "Error",
-        description: isEditMode ? "Failed to update application." : "Failed to submit application.",
+        description: isEditMode
+          ? "Failed to update application."
+          : "Failed to submit application.",
       });
     }
   };
 
   const beforeUpload = (file: RcFile) => {
+    if (uploadedFileNames.includes(file.name)) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "File name already exists. Please rename your file.",
+      });
+      return Upload.LIST_IGNORE;
+    }
     const isLt1M = file.size / 1024 / 1024 < 1;
     if (!isLt1M) {
       setNotify({
         type: "error",
         message: "Error",
-        description: "File must be smaller than 1MB!",
+        description: "Image must smaller than 1MB!",
       });
     }
+
     return isLt1M ? false : Upload.LIST_IGNORE;
   };
 
@@ -154,50 +185,30 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
     let currentProgress = 0;
     const values = form.getFieldsValue();
 
-    try {
-      await form.validateFields(["education"]);
-      if (values.education && values.education !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid education:", errorInfo);
+    if (values.education) {
+      currentProgress += 25;
     }
-
-    try {
-      await form.validateFields(["workExperience"]);
-      if (values.workExperience && values.workExperience !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid workExperience:", errorInfo);
+    if (values.workExperience) {
+      currentProgress += 25;
     }
-
-    try {
-      await form.validateFields(["certifications"]);
-      if (values.certifications && values.certifications !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid certifications:", errorInfo);
+    if (values.certifications) {
+      currentProgress += 25;
     }
-
-    try {
-      await form.validateFields(["statement"]);
-      if (values.statement && values.statement !== "") {
-        currentProgress += 25;
-      }
-    } catch (errorInfo) {
-      console.log("Invalid statement:", errorInfo);
+    if (values.statement) {
+      currentProgress += 25;
     }
 
     setProgress(currentProgress);
   };
 
+  const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
+    setFileCount(fileList.length);
+    setUploadedFileNames(fileList.map((f) => f.name));
+  };
+
   return (
     <div className="text-white p-6 rounded-xl max-w-3xl my-6 mx-auto shadow-lg bg-gray-800">
-      <h1 className="text-2xl font-semibold mb-6">
-        {isEditMode ? "Edit Mentor Application" : "Mentor Application"}
-      </h1>
+      <h1 className="text-2xl font-semibold mb-6">Mentor Application</h1>
 
       <div className="mb-8 p-4 rounded-lg bg-gray-700 shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gray-600 overflow-hidden border border-gray-500 shadow">
@@ -223,10 +234,13 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
           <p>
             <strong>Phone:</strong> {mentorInfo.phoneNumber || "N/A"}
           </p>
+          <Progress
+            percent={progress}
+            strokeColor={"#f97316"}
+            className="mb-4"
+          />
         </div>
       </div>
-
-      <Progress percent={progress} status="active" className="mb-4" />
 
       <Form<MentorApplicationType>
         form={form}
@@ -247,7 +261,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
               },
             ]}
           >
-            <Input style={{ width: "100%" }} placeholder="Education" />
+            <TextArea rows={4} placeholder="Your education..." />
           </Form.Item>
         </Form.Item>
 
@@ -261,7 +275,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
             },
           ]}
         >
-          <TextArea rows={3} placeholder="Describe your work experience..." />
+          <TextArea rows={4} placeholder="Describe your work experience..." />
         </Form.Item>
 
         <Form.Item
@@ -275,7 +289,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
           ]}
         >
           <TextArea
-            rows={2}
+            rows={4}
             placeholder="List your certifications (optional)"
           />
         </Form.Item>
@@ -315,21 +329,37 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({ isEditMod
             maxCount={5}
             beforeUpload={beforeUpload}
             accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
+            onChange={handleChange}
           >
-            <button style={{ border: 0, background: "none" }} type="button">
-              Upload
-            </button>
+            {fileCount < 5 && (
+              <button style={{ border: 0, background: "none" }} type="button">
+                Upload
+              </button>
+            )}
           </Upload>
         </Form.Item>
 
-        <Form.Item>
-          <Button type="default" className="bg-orange-500 mr-2" onClick={() => navigate(-1)}>
+        <div className="flex gap-4">
+          <Button
+            className="bg-gray-500"
+            size="large"
+            onClick={() => navigate(-1)}
+          >
             Back
           </Button>
-          <Button type="primary" htmlType="submit" className="bg-orange-500">
-            {isEditMode ? "Update" : "Submit"}
-          </Button>
-        </Form.Item>
+          <div className="flex-1">
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                className="w-full bg-orange-500"
+              >
+                {isEditMode ? "Update" : "Submit"}
+              </Button>
+            </Form.Item>
+          </div>
+        </div>
       </Form>
     </div>
   );

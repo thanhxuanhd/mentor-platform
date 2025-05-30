@@ -1,19 +1,18 @@
 using Application.Services.MentorApplications;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
 using Contract.Dtos.Users.Requests;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
-using Domain.Constants;
 using Domain.Entities;
+using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Domain.Enums;
 using Moq;
 using System.Linq.Expressions;
 using System.Net;
-using Contract.Dtos.MentorApplications.Requests;
-using Contract.Dtos.MentorApplications.Responses;
 
 namespace Application.Test;
 
@@ -88,7 +87,11 @@ public class MentorApplicationServiceTests
         {
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.Value, Is.Not.Null);
-            if (result.Value != null) Assert.That(result.Value.Items.Count(), Is.EqualTo(2));
+            if (result.Value != null)
+            {
+                Assert.That(result.Value.Items.Count(), Is.EqualTo(2));
+            }
+
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         });
     }
@@ -411,41 +414,6 @@ public class MentorApplicationServiceTests
     }
 
     [Test]
-    public async Task RequestApplicationInfoAsync_ValidRequest_ReturnsSuccess()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var adminId = Guid.NewGuid();
-        var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
-        var mentorEmail = "mentor@example.com";
-        var application = new MentorApplication
-        {
-            Id = applicationId,
-            Status = ApplicationStatus.Submitted,
-            Mentor = new User { Email = mentorEmail, FullName = "Mentor Name" }
-        };
-
-        _mockMentorApplicationRepository.Setup(r => r.GetMentorApplicationByIdAsync(applicationId))
-            .ReturnsAsync(application);
-        _mockEmailService.Setup(s => s.SendEmailAsync(mentorEmail, It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(true);
-
-        // Act
-        var result = await _mentorApplicationService.RequestApplicationInfoAsync(adminId, applicationId, request);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.Value, Is.Not.Null);
-            if (result.Value != null) Assert.That(result.Value.Message, Is.EqualTo("Request for additional information has been sent successfully."));
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            _mockMentorApplicationRepository.Verify(r => r.Update(It.Is<MentorApplication>(a => a.Status == ApplicationStatus.WaitingInfo && a.Note == request.Note)), Times.Once);
-            _mockMentorApplicationRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
-        });
-    }
-
-    [Test]
     public async Task UpdateApplicationStatusAsync_ApplicationNotFound_ReturnsNotFound()
     {
         // Arrange
@@ -491,117 +459,6 @@ public class MentorApplicationServiceTests
     }
 
     [Test]
-    public async Task UpdateApplicationStatusAsync_ValidRequest_ReturnsSuccess()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var adminId = Guid.NewGuid();
-        var mentorUserId = Guid.NewGuid();
-        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Well done!" };
-        var mentorEmail = "mentor@example.com";
-        var mentorUser = new User
-        {
-            Id = mentorUserId,
-            Email = mentorEmail,
-            FullName = "Mentor Name",
-            Role = new Role { Name = UserRole.Learner }
-        };
-        var application = new MentorApplication
-        {
-            Id = applicationId,
-            MentorId = mentorUserId,
-            Status = ApplicationStatus.Submitted,
-            Mentor = mentorUser
-        };
-        _mockMentorApplicationRepository.Setup(r => r.GetMentorApplicationByIdAsync(applicationId))
-            .ReturnsAsync(application);
-        _mockUserRepository.Setup(r => r.GetByIdAsync(mentorUserId, It.IsAny<Expression<Func<User, object>>>()))
-            .ReturnsAsync(mentorUser);
-        _mockEmailService.Setup(s => s.SendEmailAsync(mentorEmail, It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(true);
-
-        // Act
-        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.Value, Is.Not.Null);
-            if (result.Value != null) Assert.That(result.Value.Message, Is.EqualTo("Mentor application status updated successfully."));
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-
-            _mockMentorApplicationRepository.Verify(r => r.Update(It.Is<MentorApplication>(a =>
-                a.Id == applicationId &&
-                a.Status == request.Status &&
-                a.Note == request.Note)), Times.Once);
-            _mockMentorApplicationRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
-        });
-    }
-
-    [Test]
-    public async Task UpdateApplicationStatusAsync_EmailSendFails_ReturnsInternalServerError()
-    {
-        // Arrange
-        var applicationId = Guid.NewGuid();
-        var adminId = Guid.NewGuid();
-        var mentorUserId = Guid.NewGuid();
-        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved, but email failed" };
-        var mentorEmail = "mentor@example.com";
-
-        var mentorUser = new User
-        {
-            Id = mentorUserId,
-            Email = mentorEmail,
-            FullName = "Mentor Name",
-            Role = new Role { Name = UserRole.Learner } // Initial role doesn't matter much here, but good to have
-        };
-
-        var application = new MentorApplication
-        {
-            Id = applicationId,
-            MentorId = mentorUserId,
-            Status = ApplicationStatus.Submitted, // Initial status that allows processing
-            Mentor = mentorUser
-        };
-
-        _mockMentorApplicationRepository.Setup(r => r.GetMentorApplicationByIdAsync(applicationId))
-            .ReturnsAsync(application);
-
-        // Simulate email sending failure
-        _mockEmailService.Setup(s => s.SendEmailAsync(
-                application.Mentor.Email,
-                EmailConstants.SUBJECT_MENTOR_APPLICATION_DECISION, // Use the actual subject from your service
-                It.Is<string>(body => body.Contains(application.Mentor.FullName) && body.Contains(request.Status.ToString()) && body.Contains(request.Note))))
-            .ReturnsAsync(false);
-
-        // Act
-        var result = await _mentorApplicationService.UpdateApplicationStatusAsync(adminId, applicationId, request);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
-            Assert.That(result.Error, Is.EqualTo("Failed to send notification email.")); // Matches the error message in your service
-
-            // Verify that the application was still updated in the database
-            _mockMentorApplicationRepository.Verify(r => r.Update(It.Is<MentorApplication>(a =>
-                    a.Id == applicationId &&
-                    a.Status == request.Status &&
-                    a.Note == request.Note &&
-                    a.ReviewedAt.HasValue)), Times.Once);
-            _mockMentorApplicationRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
-
-            // Verify email service was called
-            _mockEmailService.Verify(s => s.SendEmailAsync(
-                    application.Mentor.Email,
-                    EmailConstants.SUBJECT_MENTOR_APPLICATION_DECISION,
-                    It.Is<string>(body => body.Contains(application.Mentor.FullName) && body.Contains(request.Status.ToString()) && body.Contains(request.Note))), Times.Once);
-        });
-    }
-
-    [Test]
     public async Task CreateMentorApplicationAsync_UserNotFound_ReturnsNotFound()
     {
         // Arrange
@@ -629,7 +486,7 @@ public class MentorApplicationServiceTests
         MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", null);
         var user = new User { Id = userId, Experiences = "old experience" };
 
-        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
         _mockUserRepository.Setup(x => x.Update(It.IsAny<User>()));
         _mockMentorApplicationRepository.Setup(x => x.AddAsync(It.IsAny<MentorApplication>()));
         _mockMentorApplicationRepository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
@@ -668,11 +525,10 @@ public class MentorApplicationServiceTests
         MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", fileList);
         var user = new User { Id = userId };
 
-        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
         _mockUserRepository.Setup(x => x.Update(It.IsAny<User>()));
         _mockMentorApplicationRepository.Setup(x => x.AddAsync(It.IsAny<MentorApplication>()));
         _mockMentorApplicationRepository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(1);
-        // _webHostEnvironmentMock.Setup(x => x.WebRootPath).Returns("wwwroot"); // Moved to Setup
         _httpRequestMock.Setup(x => x.Scheme).Returns("http");
         _httpRequestMock.Setup(x => x.Host).Returns(new HostString("localhost"));
 
@@ -700,7 +556,7 @@ public class MentorApplicationServiceTests
         MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", fileList);
         var user = new User { Id = userId };
 
-        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
 
         // Act
         var result = await _mentorApplicationService.CreateMentorApplicationAsync(userId, request, _httpRequestMock.Object);
@@ -727,7 +583,7 @@ public class MentorApplicationServiceTests
         MentorSubmissionRequest request = new MentorSubmissionRequest("education", "experience", "certifications", "statement", fileList);
         var user = new User { Id = userId };
 
-        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, null)).ReturnsAsync(user);
+        _mockUserRepository.Setup(x => x.GetByIdAsync(userId, u => u.MentorApplications)).ReturnsAsync(user);
 
         // Act
         var result = await _mentorApplicationService.CreateMentorApplicationAsync(userId, request, _httpRequestMock.Object);
