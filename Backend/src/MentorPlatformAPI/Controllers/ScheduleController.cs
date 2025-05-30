@@ -1,6 +1,7 @@
 ﻿using Contract.Dtos.Schedule.Requests;
 using Application.Services.Schedule;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -16,28 +17,37 @@ public class ScheduleController : ControllerBase
         _scheduleService = scheduleService;
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetScheduleById(Guid id)
+    // [HttpGet("{id}")]
+    // public async Task<IActionResult> GetScheduleById(Guid id)
+    // {
+    //     var result = await _scheduleService.GetScheduleByIdAsync(id);
+    //     return StatusCode((int)result.StatusCode, result);
+    // }
+    // [HttpGet]
+    // public async Task<IActionResult> GetAll()
+    // {
+    //     var result = await _scheduleService.GetAllAsync();
+    //     return StatusCode((int)result.StatusCode, result);
+    // }
+
+    [HttpGet("settings")]
+    public async Task<IActionResult> GetScheduleSettings(GetScheduleSettingsRequest request)
     {
-        var result = await _scheduleService.GetScheduleByIdAsync(id);
-        return StatusCode((int)result.StatusCode, result);
-    }
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var result = await _scheduleService.GetAllAsync();
+        var currentMentorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request.MentorId = Guid.TryParse(currentMentorId, out var mentorId) ? mentorId : Guid.Empty;
+        var result = await _scheduleService.GetScheduleSettingsAsync(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] ScheduleRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateScheduleSettings request)
     {
         var result = await _scheduleService.CreateAsync(request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] ScheduleRequest request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] CreateScheduleSettings request)
     {
         var result = await _scheduleService.UpdateAsync(id, request);
         return StatusCode((int)result.StatusCode, result);

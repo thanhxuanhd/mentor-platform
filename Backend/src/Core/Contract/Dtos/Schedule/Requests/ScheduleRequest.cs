@@ -1,6 +1,6 @@
 ﻿namespace Contract.Dtos.Schedule.Requests;
 
-public class ScheduleRequest
+public class CreateScheduleSettings
 {
     public Guid UserId { get; set; }
     public DateOnly WeekStartDate { get; set; }
@@ -9,5 +9,4 @@ public class ScheduleRequest
     public TimeOnly EndTime { get; set; }
     public int SessionDuration { get; set; }
     public int BufferTime { get; set; }
-    public bool IsLocked { get; set; }
 }

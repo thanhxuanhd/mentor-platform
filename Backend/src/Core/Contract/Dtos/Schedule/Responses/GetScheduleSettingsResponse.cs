@@ -2,7 +2,6 @@
 
 public class GetScheduleSettingsResponse
 {
-    public Guid Id { get; set; } 
     public DateOnly WeekStartDate { get; set; }
     public DateOnly WeekEndDate { get; set; }
     public string StartTime { get; set; } = string.Empty; 

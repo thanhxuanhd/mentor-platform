@@ -252,7 +252,6 @@ public class TimeSlotService(ITimeSlotRepository timeslotRepository) : ITimeSlot
            timeslotRepository.GetAll().Select(ts => new GetTimeSlotResponse
            {
                MentorId = ts.MentorId,
-               ScheduleId = ts.ScheduleId,
                SessionId = ts.SessionId,
                StartTime = ts.StartTime, 
                EndTime = ts.EndTime,  
@@ -274,7 +273,6 @@ public class TimeSlotService(ITimeSlotRepository timeslotRepository) : ITimeSlot
         var response = new GetTimeSlotResponse
         {
             MentorId = timeslot.MentorId,
-            ScheduleId = timeslot.ScheduleId,
             SessionId = timeslot.SessionId,
             StartTime = timeslot.StartTime,
             EndTime = timeslot.EndTime,
