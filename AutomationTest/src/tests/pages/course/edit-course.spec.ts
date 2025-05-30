@@ -1,13 +1,27 @@
 import { CreateAndEditCourse } from './../../../models/courses/course';
 import courseData from '../../test-data/course-data.json';
-import { test } from '../../../core/fixture/authFixture';
+import { test } from '../../../core/fixture/auth-fixture';
 import { CoursePage } from '../../../pages/courses/course-management-page';
-import { withTimestampTitleAndFutureDate } from '../../../core/utils/generate-unique-data';
+import { endWithTimestamp, withTimestampTitleAndFutureDate } from '../../../core/utils/generate-unique-data';
+import { createTestCourse, deleteTestCourse, getLatestCategory, getLatestCourse } from '../../../core/utils/api-helper';
 
 test.describe('@Course Edit course tests', () => {
     let coursePage: CoursePage;
+    let courseId: string | null = null;
 
-    test.beforeEach(async ({ loggedInPage, page }) => {
+    test.beforeEach(async ({ loggedInPageByMentorRole, page, request }, testInfo) => {
+        if (testInfo.title.includes('@SmokeTest')) {
+            const testData = courseData.create_valid_course;
+            const tempCourse = {
+                title: endWithTimestamp(testData.title),
+                description: testData.description,
+                categoryId: await getLatestCategory(request),
+                difficulty: testData.difficulty,
+                tags: testData.tags,
+                dueDate: testData.dueDate
+            };
+            courseId = await createTestCourse(request, tempCourse);
+        }
         coursePage = new CoursePage(page);
         await coursePage.goToCoursePage();
         await coursePage.clickUpdateCourseIcon();
@@ -36,4 +50,12 @@ test.describe('@Course Edit course tests', () => {
             });
         });
     }
+
+    test.afterEach("Clean up test data", async ({ request }, testInfo) => {
+        if (testInfo.title.includes('@SmokeTest')) {
+            courseId = await getLatestCourse(request);
+            await deleteTestCourse(request, courseId);
+            courseId = null;
+        }
+    });
 });

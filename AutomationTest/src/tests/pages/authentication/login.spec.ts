@@ -1,7 +1,7 @@
 import { LoginPage } from '../../../pages/authentication/login-page';
 import loginData from '../../test-data/login-data.json'
 import { LoginUser } from '../../../models/user/user';
-import { test } from '../../../core/fixture/authFixture';
+import { test } from '../../../core/fixture/auth-fixture';
 
 test('@SmokeTest @Login Login success with valid User', async ({ page }) => {
     const loginPage = new LoginPage(page);

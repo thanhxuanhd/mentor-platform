@@ -1,6 +1,6 @@
 {
   "create_valid_course": {
-    "title": "Introduction to Sign Language",
+    "title": "A New Valid Course",
     "category": "Communication Skills",
     "difficulty": "Advanced",
     "dueDate": "2025-06-30",
@@ -27,7 +27,7 @@
     "expectedMessage": "Course title should not exceed 256 characters"
   },
   "create_duplicate_course": {
-    "title": "Introduction to Sign Language",
+    "title": "Mastering Business Communication",
     "category": "Communication Skills",
     "difficulty": "Advanced",
     "dueDate": "2025-06-15T00:00:00.000Z",
@@ -63,7 +63,7 @@
     "expectedMessage": "Update successfully!"
   },
   "update_duplicate_course": {
-    "title": "Introduction to Sign Language",
+    "title": "Mastering Business Communication",
     "category": "Communication Skills",
     "difficulty": "Advanced",
     "dueDate": "2025-06-15T00:00:00.000Z",

@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { test } from "../../../core/fixture/authFixture";
+import { test } from "../../../core/fixture/auth-fixture";
 import { UserRoleManagementPage } from "../../../pages/user-role-management-page/user-role-management-page";
 import userData from "../../test-data/user-role-management.json";
 
@@ -10,7 +10,7 @@ test.skip("@UserRoleManagement All user role management testcase", async () => {
   const searchUserEmpty = userData.search_user.empty_keyword;
   const searchUserWithFilter = userData.search_with_filter;
 
-  test.beforeEach(async ({ loggedInPage, page }) => {
+  test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
     userRoleManagementPage = new UserRoleManagementPage(page);
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUserRoleManagementPage();
