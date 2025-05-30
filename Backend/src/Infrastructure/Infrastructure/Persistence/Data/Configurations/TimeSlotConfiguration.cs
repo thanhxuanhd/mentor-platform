@@ -10,6 +10,9 @@ namespace Infrastructure.Persistence.Data.Configurations
         {
             builder.HasKey(t => t.Id);
 
+            builder.Property(t => t.Date)
+                .IsRequired();
+
             builder.Property(t => t.StartTime)
                 .IsRequired();
 
