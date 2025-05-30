@@ -1,5 +1,5 @@
-import React, { useState } from "react"
-import { Button, Avatar } from "antd"
+import React, { useEffect, useState } from "react"
+import { Button, Avatar, App } from "antd"
 import {
   PlusOutlined,
   MessageOutlined,
@@ -10,6 +10,7 @@ import dayjs from "dayjs"
 import { MentorSelectionModal, type Mentor } from "./components/MentorSelectionModal"
 import { CalendarComponent } from "./components/Calendar"
 import { mentors, sessionTypes, timeSlots } from "./MockData"
+import type { NotificationProps } from "../../types/Notification"
 
 export default function MentorshipBooking() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor>(mentors[0])
@@ -18,6 +19,8 @@ export default function MentorshipBooking() {
   const [selectedSessionType, setSelectedSessionType] = useState<string>("")
   const [showMentorModal, setShowMentorModal] = useState(false)
   const [currentMonth, setCurrentMonth] = useState(dayjs())
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const { notification } = App.useApp();
 
   const handleDateSelect = (date: Dayjs) => {
     setSelectedDate(date)
@@ -40,6 +43,17 @@ export default function MentorshipBooking() {
     setShowMentorModal(false)
   }
 
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
   const handleConfirmBooking = () => {
     console.log("Booking confirmed:", {
       mentor: selectedMentor,
@@ -47,6 +61,11 @@ export default function MentorshipBooking() {
       time: selectedTime,
       sessionType: selectedSessionType,
     })
+    setNotify({
+      type: "success",
+      message: "Success",
+      description: "Book successfully! Please wait mentor to accept your booking.",
+    });
   }
 
   return (
