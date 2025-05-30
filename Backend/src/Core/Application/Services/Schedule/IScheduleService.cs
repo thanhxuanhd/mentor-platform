@@ -8,9 +8,9 @@ public interface IScheduleService
 {
     // Task<Result<GetScheduleSettingsResponse>> GetScheduleByIdAsync(Guid id);
     // Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync();
-    Task<Result<GetScheduleSettingsResponse>> GetScheduleSettingsAsync(GetScheduleSettingsRequest request);
-    Task<Result<GetScheduleSettingsResponse>> CreateAsync(CreateScheduleSettingsRequest request);
-    Task<Result<bool>> UpdateAsync(Guid id, CreateScheduleSettingsRequest request);
+    // Task<Result<ScheduleSettingsResponse>> CreateAsync(UpdateScheduleSettingsRequest request);
+    Task<Result<ScheduleSettingsResponse>> GetScheduleSettingsAsync(Guid mentorId, GetScheduleSettingsRequest request);
+    Task<Result<bool>> UpdateAsync(Guid id, UpdateScheduleSettingsRequest request);
     Task<Result<bool>> DeleteAsync(Guid id);
 }
 

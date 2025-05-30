@@ -4,7 +4,6 @@ namespace Contract.Dtos.Schedule.Requests;
 
 public class GetScheduleSettingsRequest
 {
-    public Guid MentorId { get; set; }
     public DateOnly? WeekStartDate { get; set; }
     public DateOnly? WeekEndDate { get; set; }
 }

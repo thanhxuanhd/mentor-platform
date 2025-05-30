@@ -11,31 +11,36 @@ public class ScheduleConfiguration : IEntityTypeConfiguration<Schedules>
     {
         builder.HasKey(s => s.Id);
 
-        builder.HasOne(s => s.User)
-               .WithMany(u => u.Schedules)
-               .HasForeignKey(s => s.MentorId)
-               .OnDelete(DeleteBehavior.Cascade);
+        builder.HasOne(s => s.Mentor)
+              .WithMany(u => u.Schedules)
+              .HasForeignKey(s => s.MentorId)
+              .OnDelete(DeleteBehavior.Cascade);
+
+       builder.HasMany(s => s.TimeSlots)
+              .WithOne(ts => ts.Schedules)
+              .HasForeignKey(ts => ts.ScheduleId)
+              .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(s => s.WeekStartDate) 
-               .IsRequired();                 
+              .IsRequired();                 
 
         builder.Property(s => s.WeekEndDate)   
-               .IsRequired();                 
+              .IsRequired();                 
 
         builder.Property(s => s.StartTime)
-               .IsRequired();
+              .IsRequired();
 
         builder.Property(s => s.EndTime)
-               .IsRequired();
+              .IsRequired();
 
         builder.Property(s => s.SessionDuration)
-               .IsRequired();
+              .IsRequired();
 
         builder.Property(s => s.BufferTime)
-               .IsRequired();
+              .IsRequired();
 
         builder.Property(s => s.IsLocked)
-               .HasDefaultValue(false);
+              .HasDefaultValue(false);
 
         builder.HasQueryFilter(s => !s.IsLocked);
     }

@@ -13,5 +13,6 @@ public class Schedules : BaseEntity<Guid>
     public int BufferTime { get; set; } 
     public bool IsLocked { get; set; }
 
-    public virtual User User { get; set; } = null!;
+    public virtual ICollection<MentorAvailableTimeSlot>? TimeSlots { get; set; } 
+    public virtual User Mentor { get; set; } = null!;
 }

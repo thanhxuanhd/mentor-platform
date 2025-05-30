@@ -74,7 +74,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(u => u.Schedules)
-            .WithOne(s => s.User) 
+            .WithOne(s => s.Mentor) 
             .HasForeignKey(s => s.MentorId) 
             .OnDelete(DeleteBehavior.Cascade);
 

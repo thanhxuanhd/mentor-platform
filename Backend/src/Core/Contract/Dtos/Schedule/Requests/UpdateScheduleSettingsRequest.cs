@@ -2,7 +2,7 @@
 
 namespace Contract.Dtos.Schedule.Requests;
 
-public class CreateScheduleSettingsRequest
+public class UpdateScheduleSettingsRequest
 {
     public Guid MentorId { get; set; }
     public DateOnly WeekStartDate { get; set; }
@@ -13,7 +13,7 @@ public class CreateScheduleSettingsRequest
     public int BufferTime { get; set; }
 }
 
-public class CreateScheduleSettingsRequestValidator : AbstractValidator<CreateScheduleSettingsRequest>
+public class CreateScheduleSettingsRequestValidator : AbstractValidator<UpdateScheduleSettingsRequest>
 {
     public CreateScheduleSettingsRequestValidator()
     {

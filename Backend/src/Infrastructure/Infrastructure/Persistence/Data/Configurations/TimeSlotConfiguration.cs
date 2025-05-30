@@ -24,7 +24,12 @@ namespace Infrastructure.Persistence.Data.Configurations
             builder.HasMany(t => t.Bookings)
                 .WithOne(b => b.TimeSlot)
                 .HasForeignKey(b => b.TimeSlotId)
-                .OnDelete(DeleteBehavior.Cascade);  
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasOne(t => t.Schedules)
+                .WithMany(s => s.TimeSlots)
+                .HasForeignKey(t => t.ScheduleId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

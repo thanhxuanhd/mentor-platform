@@ -2,10 +2,11 @@
 using Application.Services.Schedule;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
-
-[Route("api/[controller]")]
+[Authorize(Roles = "Mentor")]
+[Route("api/schedules")]
 [ApiController]
 public class ScheduleController : ControllerBase
 {
@@ -17,6 +18,7 @@ public class ScheduleController : ControllerBase
         _scheduleService = scheduleService;
     }
 
+    // TODO: Delete this
     // [HttpGet("{id}")]
     // public async Task<IActionResult> GetScheduleById(Guid id)
     // {
@@ -31,23 +33,15 @@ public class ScheduleController : ControllerBase
     // }
 
     [HttpGet("settings")]
-    public async Task<IActionResult> GetScheduleSettings(GetScheduleSettingsRequest request)
+    public async Task<IActionResult> GetScheduleSettings([FromQuery] GetScheduleSettingsRequest request)
     {
-        var currentMentorId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        request.MentorId = Guid.TryParse(currentMentorId, out var mentorId) ? mentorId : Guid.Empty;
-        var result = await _scheduleService.GetScheduleSettingsAsync(request);
-        return StatusCode((int)result.StatusCode, result);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateScheduleSettingsRequest request)
-    {
-        var result = await _scheduleService.CreateAsync(request);
+        var currentMentorId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var mentorId) ? mentorId : Guid.Empty;
+        var result = await _scheduleService.GetScheduleSettingsAsync(currentMentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] CreateScheduleSettingsRequest request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateScheduleSettingsRequest request)
     {
         var result = await _scheduleService.UpdateAsync(id, request);
         return StatusCode((int)result.StatusCode, result);

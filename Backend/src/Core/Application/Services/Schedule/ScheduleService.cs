@@ -2,6 +2,7 @@
 using Contract.Dtos.Schedule.Responses;
 using Contract.Repositories;
 using Contract.Shared;
+using Domain.Constants;
 using Domain.Entities;
 using System.Net;
 
@@ -88,7 +89,59 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     //     return Result.Success(response, HttpStatusCode.Created);
     // }
 
-    public async Task<Result<bool>> UpdateAsync(Guid id, CreateScheduleSettingsRequest request)
+    public async Task<Result<ScheduleSettingsResponse>> GetScheduleSettingsAsync(Guid mentorId, GetScheduleSettingsRequest request)
+    {
+        var mentor = await userRepository.GetByIdAsync(mentorId);
+        if (mentor == null)
+        {
+            return Result.Failure<ScheduleSettingsResponse>("Mentor not found", HttpStatusCode.NotFound);
+        }
+
+        DateOnly weekStartDate;
+
+        if (request.WeekStartDate.HasValue)
+        {
+            weekStartDate = request.WeekStartDate.Value;
+        }
+        else
+        {
+            var today = DateTime.Now;
+            int daysToSubtract = (int)today.DayOfWeek;
+            weekStartDate = DateOnly.FromDateTime(today.AddDays(-daysToSubtract));
+        }
+
+        DateOnly weekEndDate = request.WeekEndDate.HasValue ? request.WeekEndDate.Value : weekStartDate.AddDays(6);
+
+        Schedules? scheduleSettings = await scheduleRepository.GetScheduleSettingsAsync(mentorId, weekStartDate, weekEndDate);
+        if (scheduleSettings == null)
+        {
+            scheduleSettings = new Schedules
+            {
+                WeekStartDate = weekStartDate,
+                WeekEndDate = weekEndDate,
+                StartTime = ScheduleSettingsConstants.DefaultStartTime,
+                EndTime = ScheduleSettingsConstants.DefaultEndTime,
+                SessionDuration = ScheduleSettingsConstants.DefaultSessionDuration,
+                BufferTime = ScheduleSettingsConstants.DefaultBufferTime,
+                IsLocked = false
+            };
+        }
+
+        var response = new ScheduleSettingsResponse
+        {
+            WeekStartDate = scheduleSettings.WeekStartDate,
+            WeekEndDate = scheduleSettings.WeekEndDate,
+            StartTime = scheduleSettings.StartTime.ToString("HH:mm"),
+            EndTime = scheduleSettings.EndTime.ToString("HH:mm"),
+            SessionDuration = scheduleSettings.SessionDuration,
+            BufferTime = scheduleSettings.BufferTime,
+            IsLocked = scheduleSettings.IsLocked
+        };
+        
+        return Result.Success(response, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<bool>> UpdateAsync(Guid id, UpdateScheduleSettingsRequest request)
     {
         var schedule = await scheduleRepository.GetByIdAsync(id);
         if (schedule == null)
@@ -122,57 +175,5 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         await scheduleRepository.SaveChangesAsync();
 
         return Result.Success(true, HttpStatusCode.OK);
-    }
-
-    public async Task<Result<GetScheduleSettingsResponse>> GetScheduleSettingsAsync(GetScheduleSettingsRequest request)
-    {
-        var mentor = await userRepository.GetByIdAsync(request.MentorId);
-        if (mentor == null)
-        {
-            return Result.Failure<GetScheduleSettingsResponse>("Mentor not found", HttpStatusCode.NotFound);
-        }
-
-        DateOnly weekStartDate;
-
-        if (request.WeekStartDate.HasValue)
-        {
-            weekStartDate = request.WeekStartDate.Value;
-        }
-        else
-        {
-            var today = DateTime.Now;
-            int daysToSubtract = (int)today.DayOfWeek;
-            weekStartDate = DateOnly.FromDateTime(today.AddDays(-daysToSubtract));
-        }
-
-        DateOnly weekEndDate = request.WeekEndDate.HasValue ? request.WeekEndDate.Value : weekStartDate.AddDays(6);
-
-        Schedules? scheduleSettings = await scheduleRepository.GetScheduleSettingsAsync(request.MentorId, weekStartDate, weekEndDate);
-        if (scheduleSettings == null)
-        {
-            scheduleSettings = new Schedules
-            {
-                WeekStartDate = weekStartDate,
-                WeekEndDate = weekEndDate,
-                StartTime = new TimeOnly(09, 00),
-                EndTime = new TimeOnly(17, 00),
-                SessionDuration = 60,
-                BufferTime = 15,
-                IsLocked = false
-            };
-        }
-
-        var response = new GetScheduleSettingsResponse
-        {
-            WeekStartDate = scheduleSettings.WeekStartDate,
-            WeekEndDate = scheduleSettings.WeekEndDate,
-            StartTime = scheduleSettings.StartTime.ToString("HH:mm"),
-            EndTime = scheduleSettings.EndTime.ToString("HH:mm"),
-            SessionDuration = scheduleSettings.SessionDuration,
-            BufferTime = scheduleSettings.BufferTime,
-            IsLocked = scheduleSettings.IsLocked
-        };
-        
-        return Result.Success(response, HttpStatusCode.OK);
     }
 }
