@@ -101,27 +101,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       ],
     });
     setIsAuthenticated(true);
-
-    if (user?.role === applicationRole.MENTOR) {
-      try {
-        const response =
-          await mentorApplicationService.getMentorApplicationByMentorId(
-            user.id,
-          );
-
-        if (response && Array.isArray(response)) {
-          const approvedApplication = response.find(
-            (application) => application.status === "Approved",
-          );
-          setIsMentorApproved(!!approvedApplication);
-        }
-      } catch (error: any) {
-        console.error(error);
-      }
-    }
-
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (user?.role === applicationRole.MENTOR) {
+      const checkMentorStatus = async () => {
+        try {
+          const response =
+            await mentorApplicationService.getMentorApplicationByMentorId(
+              user.id,
+            );
+          if (response && Array.isArray(response)) {
+            const approvedApplication = response.find(
+              (application) => application.status === "Approved",
+            );
+            setIsMentorApproved(!!approvedApplication);
+          }
+        } catch (error) {
+          console.error("Error fetching mentor application:", error);
+        }
+      };
+      checkMentorStatus();
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchUserFromToken();
