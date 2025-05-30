@@ -1,0 +1,16 @@
+{
+  "mentor_role": {
+    "email": "alice.wonderland@mentorplatform.local",
+    "password": "password@123",
+    "mentor_name": "Alice Wonderland"
+  },
+  "admin_role": {
+    "email": "mini@mentorplatform.local",
+    "password": "mypassword88$"
+  },
+  "tracking_status": {
+    "waiting_info": "Request Info",
+    "approve": "Approve",
+    "reject": "Reject"
+  }
+}

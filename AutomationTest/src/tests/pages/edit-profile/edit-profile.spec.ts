@@ -34,7 +34,7 @@ test.describe("@Edit profile test", () => {
         await editUserProfile.selectExpertise(data.expertise!);
         await editUserProfile.fillProfessionalSkillsField(data.skills!);
         await editUserProfile.fillExperienceField(data.experience!);
-        await editUserProfile.unselectedAvailabilityOptions();
+        await editUserProfile.unselectAvailabilityOptions();
         await editUserProfile.selectAvailabilityOptions(data.availbility);
         await editUserProfile.selectTeaching(data.teaching!);
         await editUserProfile.selectCategory(data.category!);
