@@ -1,19 +1,31 @@
-import React, { useEffect, useContext, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Input, Upload, Button, App, Progress } from "antd";
 import type { RcFile, UploadFile } from "antd/es/upload/interface";
-
 import { userService } from "../../../services/user/userService";
-import { AuthContext } from "../../../contexts/AuthContext";
 import type { NotificationProps } from "../../../types/Notification";
-import type { MentorApplicationType } from "../../../types/MentorApplicationType";
-import { postMentorSubmission } from "../../../services/mentor/mentorServices";
+import type {
+  MentorApplicationType,
+  MentorApplicationDetailItemProp,
+} from "../../../types/MentorApplicationType";
+import { useAuth } from "../../../hooks";
+import { normalizeServerFiles } from "../../../utils/InputNormalizer";
+import { mentorApplicationService } from "../../../services/mentorAppplications/mentorApplicationService";
+import { useNavigate } from "react-router-dom";
 
 const { TextArea } = Input;
 
-const MentorApplicationForm: React.FC = () => {
+interface MentorApplicationFormProps {
+  isEditMode?: boolean;
+  application?: MentorApplicationDetailItemProp;
+}
+
+const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
+  isEditMode = false,
+  application,
+}) => {
   const [form] = Form.useForm<MentorApplicationType>();
   const [notify, setNotify] = useState<NotificationProps | null>(null);
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const { notification } = App.useApp();
   const [uploadedFileNames, setUploadedFileNames] = useState<string[]>([]);
   const [fileCount, setFileCount] = useState(0);
@@ -25,8 +37,8 @@ const MentorApplicationForm: React.FC = () => {
     profilePhotoUrl?: string;
     experiences?: string;
   }>({});
-
   const [progress, setProgress] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMentorInfo = async () => {
@@ -58,8 +70,31 @@ const MentorApplicationForm: React.FC = () => {
   useEffect(() => {
     if (mentorInfo.experiences !== undefined) {
       form.setFieldsValue({ workExperience: mentorInfo.experiences });
+      setProgress(25);
     }
   }, [mentorInfo.experiences, form]);
+
+  useEffect(() => {
+    if (isEditMode && application) {
+      form.setFieldsValue({
+        education: application.education || "",
+        workExperience: application.experiences || "",
+        certifications: application.certifications || "",
+        statement: application.statement || "",
+        documents:
+          application.documents?.map((doc) => ({
+            uid: doc.documentId,
+            name: normalizeServerFiles(doc.documentUrl),
+            status: "done",
+            url: doc.documentUrl,
+          })) || [],
+      });
+
+      handleFieldChange();
+    } else if (mentorInfo.experiences !== undefined) {
+      form.setFieldsValue({ workExperience: mentorInfo.experiences });
+    }
+  }, [mentorInfo, application, isEditMode, form]);
 
   useEffect(() => {
     if (notify) {
@@ -92,21 +127,35 @@ const MentorApplicationForm: React.FC = () => {
     }
 
     try {
-      await postMentorSubmission(formData);
-      setNotify({
-        type: "success",
-        message: "Application Submitted",
-        description: "Thank you! We'll review your application soon.",
-      });
+      if (isEditMode && application?.mentorApplicationId) {
+        await mentorApplicationService.editMentorApplication(
+          application.mentorApplicationId,
+          formData,
+        );
+        setNotify({
+          type: "success",
+          message: "Application Updated",
+          description: "Your application has been successfully updated.",
+        });
+      } else {
+        await mentorApplicationService.postMentorSubmission(formData);
+        setNotify({
+          type: "success",
+          message: "Application Submitted",
+          description: "Thank you! We'll review your application soon.",
+        });
+      }
       form.resetFields();
       setProgress(0);
-      setUploadedFileNames([]);
-    } catch (error: any) {
+      navigate(-1);
+    } catch (error) {
+      console.error("Error submitting application:", error);
       setNotify({
         type: "error",
         message: "Error",
-        description:
-          error?.response?.data?.error || "Error submitting application",
+        description: isEditMode
+          ? "Failed to update application."
+          : "Failed to submit application.",
       });
     }
   };
@@ -153,7 +202,7 @@ const MentorApplicationForm: React.FC = () => {
   };
 
   const handleChange = ({ fileList }: { fileList: UploadFile[] }) => {
-    setFileCount((prev) => prev + 1);
+    setFileCount(fileList.length);
     setUploadedFileNames(fileList.map((f) => f.name));
   };
 
@@ -291,7 +340,11 @@ const MentorApplicationForm: React.FC = () => {
         </Form.Item>
 
         <div className="flex gap-4">
-          <Button className="bg-gray-500" size="large">
+          <Button
+            className="bg-gray-500"
+            size="large"
+            onClick={() => navigate(-1)}
+          >
             Back
           </Button>
           <div className="flex-1">
@@ -302,7 +355,7 @@ const MentorApplicationForm: React.FC = () => {
                 size="large"
                 className="w-full bg-orange-500"
               >
-                Submit
+                {isEditMode ? "Update" : "Submit"}
               </Button>
             </Form.Item>
           </div>

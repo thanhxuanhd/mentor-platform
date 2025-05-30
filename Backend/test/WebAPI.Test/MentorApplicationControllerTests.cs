@@ -1,4 +1,6 @@
-﻿using Application.Services.MentorApplications;
+using Application.Services.MentorApplications;
+using Contract.Dtos.MentorApplications.Requests;
+using Contract.Dtos.MentorApplications.Responses;
 using Contract.Dtos.Users.Requests;
 using Contract.Shared;
 using MentorPlatformAPI.Controllers;
@@ -97,6 +99,45 @@ namespace MentorPlatformAPI.Tests.Controllers
                 Assert.That(actionResult.StatusCode, Is.EqualTo((int)expectedStatusCode));
                 Assert.That(actionResult.Value, Is.EqualTo(resultFromService));
             });
+        }
+
+
+        [Test]
+        public async Task GetAllMentorApplications_ReturnsOkResult_WithPaginatedApplications()
+        {
+            // Arrange
+            var request = new FilterMentorApplicationRequest();
+            var response = new PaginatedList<FilterMentorApplicationResponse>(new List<FilterMentorApplicationResponse>(), 0, 1, 10);
+            var result = Result.Success(response, HttpStatusCode.OK);
+            _mentorApplicationServiceMock.Setup(s => s.GetAllMentorApplicationsAsync(request)).ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.GetAllMentorApplications(request);
+
+            // Assert
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = (ObjectResult)actionResult;
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(result));
+        }
+
+        [Test]
+        public async Task GetMentorApplicationById_ReturnsOkResult_WithApplicationDetail()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var response = new MentorApplicationDetailResponse { MentorApplicationId = applicationId };
+            var result = Result.Success(response, HttpStatusCode.OK);
+            _mentorApplicationServiceMock.Setup(s => s.GetMentorApplicationByIdAsync(It.IsAny<Guid>(), applicationId)).ReturnsAsync(result);
+
+            // Act
+            var actionResult = await _controller.GetMentorApplicationById(applicationId);
+
+            // Assert
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = (ObjectResult)actionResult;
+            Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(result));
         }
     }
 }

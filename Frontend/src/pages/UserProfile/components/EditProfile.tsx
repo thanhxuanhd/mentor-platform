@@ -92,6 +92,7 @@ export default function EditProfile() {
   const [categoryOptions, setCategoryOptions] = useState<DefaultOptionType[]>(
     [],
   );
+  const [userRoleId, setUserRoleId] = useState(0);
 
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
@@ -181,12 +182,7 @@ export default function EditProfile() {
           fullname: userProfileData.fullName,
           phone: userProfileData.phoneNumber,
           bio: userProfileData.bio,
-          roleSelect:
-            userProfileData.roleId === 3
-              ? "learner"
-              : userProfileData.roleId === 2
-                ? "mentor"
-                : "learner",
+          roleId: userProfileData.roleId,
           expertise: userProfileData.expertiseIds || [],
           skills: userProfileData.skills,
           experience: userProfileData.experiences,
@@ -199,6 +195,8 @@ export default function EditProfile() {
           teachingApproach: userProfileData.teachingApproachIds || [],
           categoryIds: userProfileData.categoryIds || [],
         });
+
+        setUserRoleId(userProfileData.roleId);
 
         setSelectedAvailability(
           userProfileData.availabilityIds
@@ -328,6 +326,7 @@ export default function EditProfile() {
       const updateData: UpdateProfileRequest = {
         fullName: values.fullname,
         phoneNumber: values.phone,
+        roleId: userRoleId,
         bio: values.bio || "",
         skills: values.skills || "",
         experiences: values.experience || "",
