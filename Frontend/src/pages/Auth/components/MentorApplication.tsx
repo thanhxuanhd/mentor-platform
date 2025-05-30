@@ -67,28 +67,21 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
         fetchMentorInfo();
     }, [user, notification]);
 
-    useEffect(() => {
-        if (mentorInfo.experiences !== undefined) {
-            form.setFieldsValue({ workExperience: mentorInfo.experiences });
-            setProgress(25);
-        }
-    }, [mentorInfo.experiences, form]);
-
-    useEffect(() => {
-        if (isEditMode && application) {
-            form.setFieldsValue({
-                education: application.education || "",
-                workExperience: application.experiences || "",
-                certifications: application.certifications || "",
-                statement: application.statement || "",
-                documents:
-                    application.documents?.map((doc) => ({
-                        uid: doc.documentId,
-                        name: normalizeServerFiles(doc.documentUrl),
-                        status: "done",
-                        url: doc.documentUrl,
-                    })) || [],
-            });
+  useEffect(() => {
+    if (isEditMode && application) {
+      form.setFieldsValue({
+        education: application.education || "",
+        workExperience: application.experiences || "",
+        certifications: application.certifications || "",
+        statement: application.statement || "",
+        documents:
+          application.documents?.map((doc) => ({
+            uid: doc.documentId,
+            name: normalizeServerFiles(doc.documentUrl),
+            status: "done",
+            url: doc.documentUrl,
+          })) || [],
+      });
 
             handleFieldChange();
         } else if (mentorInfo.experiences !== undefined) {
@@ -160,23 +153,23 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
         }
     };
 
-    const beforeUpload = (file: RcFile) => {
-        if (uploadedFileNames.includes(file.name)) {
-            setNotify({
-                type: "error",
-                message: "Error",
-                description: "File name already exists. Please rename your file.",
-            });
-            return Upload.LIST_IGNORE;
-        }
-        const isLt1M = file.size / 1024 / 1024 < 1;
-        if (!isLt1M) {
-            setNotify({
-                type: "error",
-                message: "Error",
-                description: "Image must smaller than 1MB!",
-            });
-        }
+  const beforeUpload = (file: RcFile) => {
+    if (uploadedFileNames.includes(file.name)) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "File name already exists. Please rename your file.",
+      });
+      return Upload.LIST_IGNORE;
+    }
+    const isLt1M = file.size / 1024 / 1024 < 1;
+    if (!isLt1M) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "File size must smaller than 1MB!",
+      });
+    }
 
         return isLt1M ? false : Upload.LIST_IGNORE;
     };
@@ -291,104 +284,104 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
                     </Form.Item>
                 </Form.Item>
 
-                <Form.Item
-                    name="workExperience"
-                    label="Work Experience"
-                    rules={[
-                        {
-                            max: 300,
-                            message: "Work Experience must be less than 300 characters.",
-                        },
-                    ]}
-                >
-                    <TextArea rows={4} placeholder="Describe your work experience..." />
-                </Form.Item>
+        <Form.Item
+          name="workExperience"
+          label="Work Experience"
+          rules={[
+            {
+              max: 300,
+              message: "Work Experience must be less than 300 characters.",
+            },
+          ]}
+        >
+          <TextArea rows={4} placeholder="Describe your work experience..." />
+        </Form.Item>
 
-                <Form.Item
-                    name="certifications"
-                    label="Certifications"
-                    rules={[
-                        {
-                            max: 300,
-                            message: "Certifications must be less than 300 characters.",
-                        },
-                    ]}
-                >
-                    <TextArea
-                        rows={4}
-                        placeholder="List your certifications (optional)"
-                    />
-                </Form.Item>
+        <Form.Item
+          name="certifications"
+          label="Certifications"
+          rules={[
+            {
+              max: 300,
+              message: "Certifications must be less than 300 characters.",
+            },
+          ]}
+        >
+          <TextArea
+            rows={4}
+            placeholder="List your certifications (optional)"
+          />
+        </Form.Item>
 
-                <Form.Item
-                    name="statement"
-                    label="Motivation Statement"
-                    rules={[
-                        {
-                            max: 300,
-                            message: "Motivation Statement must be less than 300 characters.",
-                        },
-                    ]}
-                >
-                    <TextArea
-                        rows={4}
-                        placeholder="Tell us why you want to be a mentor and what you can offer."
-                    />
-                </Form.Item>
+        <Form.Item
+          name="statement"
+          label="Motivation Statement"
+          rules={[
+            {
+              max: 300,
+              message: "Motivation Statement must be less than 300 characters.",
+            },
+          ]}
+        >
+          <TextArea
+            rows={4}
+            placeholder="Tell us why you want to be a mentor and what you can offer."
+          />
+        </Form.Item>
 
-                <Form.Item
-                    name="documents"
-                    label="Upload Supporting Documents (max 5)"
-                    valuePropName="fileList"
-                    getValueFromEvent={(e) => {
-                        if (Array.isArray(e)) {
-                            return e;
-                        }
-                        return e && e.fileList;
-                    }}
-                >
-                    <Upload
-                        name="file"
-                        listType="picture-card"
-                        className="document-uploader"
-                        multiple
-                        maxCount={5}
-                        beforeUpload={beforeUpload}
-                        accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
-                        onChange={handleChange}
-                    >
-                        {fileCount < 5 && (
-                            <button style={{ border: 0, background: "none" }} type="button">
-                                Upload
-                            </button>
-                        )}
-                    </Upload>
-                </Form.Item>
+        <Form.Item
+          name="documents"
+          label="Upload Supporting Documents (max 5)"
+          valuePropName="fileList"
+          getValueFromEvent={(e) => {
+            if (Array.isArray(e)) {
+              return e;
+            }
+            return e && e.fileList;
+          }}
+        >
+          <Upload
+            name="file"
+            listType="picture-card"
+            className="document-uploader"
+            multiple
+            maxCount={5}
+            beforeUpload={beforeUpload}
+            accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
+            onChange={handleChange}
+          >
+            {fileCount < 5 && (
+              <button style={{ border: 0, background: "none" }} type="button">
+                Upload
+              </button>
+            )}
+          </Upload>
+        </Form.Item>
 
-                <div className="flex gap-4">
-                    <Button
-                        className="bg-gray-500"
-                        size="large"
-                        onClick={() => navigate(-1)}
-                    >
-                        Back
-                    </Button>
-                    <div className="flex-1">
-                        <Form.Item>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                size="large"
-                                className="w-full bg-orange-500"
-                            >
-                                {isEditMode ? "Update" : "Submit"}
-                            </Button>
-                        </Form.Item>
-                    </div>
-                </div>
-            </Form>
+        <div className="flex gap-4">
+          <Button
+            className="bg-gray-500"
+            size="large"
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
+          <div className="flex-1">
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                size="large"
+                className="w-full bg-orange-500"
+              >
+                {isEditMode ? "Update" : "Submit"}
+              </Button>
+            </Form.Item>
+          </div>
         </div>
-    );
+      </Form>
+    </div>
+  );
 };
 
 export default MentorApplicationForm;
