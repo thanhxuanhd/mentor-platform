@@ -172,7 +172,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 1MB!",
+        description: "File size must smaller than 1MB!",
       });
     }
 
