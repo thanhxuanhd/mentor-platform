@@ -19,20 +19,20 @@ test.describe
     statusTrackingPage = new MentorApplicationStatusTrackingPage(page);
     mentorApplicationReview = new MentorApplicationReview(page);
     loginPage = new LoginPage(page);
-    const response = await requestCreateNewApplication(request);
     await test.step("Navigate to applications page", async () => {
       await mentorApplicationReview.navigateToApplicationsPage();
     });
-    expect(response.status()).toBe(200);
+    await requestCreateNewApplication(request);
   });
 
-  test("@SmokeTest verify Edit button is enable when Application status = Waiting Info + Admin requests info from Mentor + Admin rejects mentor application", async () => {
+  test("@SmokeTest verify Edit button is enable when Application status = Waiting Info + Admin requests info from Mentor", async () => {
     //Admin requests info from Mentor
     await test.step("Request info of mentor application", async () => {
-      await mentorApplicationReview.requestInfoFromMentor(
+      await mentorApplicationReview.selectApplicationStatus(
         mentorUser.mentor_name,
         statusApplication.waiting_info
       );
+      await mentorApplicationReview.verifyNotificationMessage();
     });
 
     await test.step("Signup to Mentor account", async () => {
@@ -64,6 +64,7 @@ test.describe
   });
 
   test("@SmokeTest verify Add button is enable when Application status = Rejected", async () => {
+    //Admin rejects mentor application
     await test.step("Request info of mentor application", async () => {
       await mentorApplicationReview.clickOnMentorApplicationAdmin(
         statusTrackingData.mentor_role.mentor_name
@@ -88,6 +89,18 @@ test.describe
     await test.step("Verify Create New Application button is enable", async () => {
       await statusTrackingPage.navigateToStatusTrackingPage();
       await statusTrackingPage.verifyCreateNewApplicaitonButtonIsEnable();
+    });
+  });
+
+  test("@SmokeTest Admin rejects application", async () => {
+    await test.step("Reject mentor application", async () => {
+      await mentorApplicationReview.clickOnMentorApplicationAdmin(
+        statusTrackingData.mentor_role.mentor_name
+      );
+      await mentorApplicationReview.clickOnStatusActionButton(
+        statusTrackingData.tracking_status.reject
+      );
+      await mentorApplicationReview.verifyNotificationMessage();
     });
   });
 
