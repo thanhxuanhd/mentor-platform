@@ -138,7 +138,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 Expertises = application.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
                 Status = application.Status.ToString(),
                 SubmittedAt = application.SubmittedAt
-            }).OrderByDescending(application => application.SubmittedAt);
+            }).OrderBy(application => application.SubmittedAt);
 
         var response = await mentorApplicationRepository.ToListAsync(applicationDetails);
 
