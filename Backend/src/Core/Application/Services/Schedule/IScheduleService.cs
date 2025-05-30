@@ -10,7 +10,6 @@ public interface IScheduleService
     // Task<Result<List<GetScheduleSettingsResponse>>> GetAllAsync();
     // Task<Result<ScheduleSettingsResponse>> CreateAsync(UpdateScheduleSettingsRequest request);
     Task<Result<ScheduleSettingsResponse>> GetScheduleSettingsAsync(Guid mentorId, GetScheduleSettingsRequest request);
-    Task<Result<bool>> UpdateAsync(Guid id, UpdateScheduleSettingsRequest request);
-    Task<Result<bool>> DeleteAsync(Guid id);
+    Task<Result<SaveScheduleSettingsResponse>> SaveScheduleSettingsAsync(Guid id, SaveScheduleSettingsRequest request);
 }
 

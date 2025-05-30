@@ -5,7 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
-[Authorize(Roles = "Mentor")]
+// [Authorize(Roles = "Mentor")]
 [Route("api/schedules")]
 [ApiController]
 public class ScheduleController : ControllerBase
@@ -32,25 +32,22 @@ public class ScheduleController : ControllerBase
     //     return StatusCode((int)result.StatusCode, result);
     // }
 
-    [HttpGet("settings")]
-    public async Task<IActionResult> GetScheduleSettings([FromQuery] GetScheduleSettingsRequest request)
+    [HttpGet("{mentorId}/settings")]
+    public async Task<IActionResult> GetScheduleSettings(Guid mentorId, [FromQuery] GetScheduleSettingsRequest request)
     {
-        var currentMentorId = Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var mentorId) ? mentorId : Guid.Empty;
-        var result = await _scheduleService.GetScheduleSettingsAsync(currentMentorId, request);
+        var result = await _scheduleService.GetScheduleSettingsAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateScheduleSettingsRequest request)
+    
+    [HttpPost("{mentorId}/settings")]
+    public async Task<IActionResult> UpdateScheduleSettings(Guid mentorId, [FromBody] SaveScheduleSettingsRequest request)
     {
-        var result = await _scheduleService.UpdateAsync(id, request);
-        return StatusCode((int)result.StatusCode, result);
-    }
+        if (mentorId != Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)))
+        {
+            return Unauthorized("You are not authorized to update this schedule.");
+        }
 
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var result = await _scheduleService.DeleteAsync(id);
+        var result = await _scheduleService.SaveScheduleSettingsAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 }

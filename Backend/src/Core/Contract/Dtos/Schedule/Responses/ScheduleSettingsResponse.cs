@@ -1,4 +1,6 @@
-﻿namespace Contract.Dtos.Schedule.Responses;
+﻿using Contract.Dtos.Schedule.Extensions;
+
+namespace Contract.Dtos.Schedule.Responses;
 
 public class ScheduleSettingsResponse
 {
@@ -9,6 +11,7 @@ public class ScheduleSettingsResponse
     public int SessionDuration { get; set; }
     public int BufferTime { get; set; }
     public bool IsLocked { get; set; }
+    public Dictionary<DateOnly, List<TimeSlotResponse>> AvailableTimeSlots { get; set; } = new Dictionary<DateOnly, List<TimeSlotResponse>>();
 }
 
 
