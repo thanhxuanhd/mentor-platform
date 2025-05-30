@@ -78,7 +78,7 @@ export function CalendarComponent({ selectedDate, currentMonth, onDateSelect, on
               key={index}
               onClick={() => isClickable && onDateSelect(day)}
               className={`
-                h-10 w-10 rounded-lg text-sm font-medium transition-colors
+                flex items-center justify-center h-10 w-full rounded-lg text-sm font-medium transition-colors
                 ${!isCurrentMonth || isPastDate
                   ? "text-gray-600 cursor-not-allowed"
                   : "text-white hover:bg-slate-600 cursor-pointer"
