@@ -19,6 +19,7 @@ import { categoryService } from "../../../services/category";
 import { useAuth } from "../../../hooks";
 import type { CourseFormProps } from "../../../types/pages/courses/types.ts";
 import { isAxiosError } from "axios";
+import { getActiveCategories } from "../../../services/category/categoryServices.ts";
 
 export const CourseForm: FC<CourseFormProps> = ({
   formData,
@@ -35,15 +36,16 @@ export const CourseForm: FC<CourseFormProps> = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const fetchCategories = async () => {
     try {
-      const response = await categoryService.list({
-        pageIndex: 1,
-        pageSize: 5,
-        keyword: categoryKeyword.trim(),
-        status: true,
-      });
-      setMyCategories(response.items);
+      const response = await getActiveCategories();
+      // Lọc danh mục phía client dựa trên categoryKeyword
+      const filteredCategories = categoryKeyword
+        ? response.filter((category: { name: string }) =>
+          category.name.toLowerCase().includes(categoryKeyword.trim().toLowerCase())
+        )
+        : response;
+      setMyCategories(filteredCategories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
     }
   };
   useEffect(() => {
