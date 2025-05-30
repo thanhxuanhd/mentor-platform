@@ -1,5 +1,5 @@
-import { Form, Select, InputNumber, Tooltip, Alert } from 'antd';
-import { InfoCircleOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Select, Alert } from 'antd';
+import { LockOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 
@@ -26,23 +26,15 @@ export function ScheduleSettings({
   onBufferTimeChange,
   hasBookedSessions
 }: ScheduleSettingsProps) {
-  // Generate time options in 30-minute increments
+  // Generate time options in 30-minute increments in 24-hour format
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
       for (let minute of [0, 30]) {
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        const displayTime = hour === 0 
-          ? `12:${minute.toString().padStart(2, '0')} AM`
-          : hour < 12 
-            ? `${hour}:${minute.toString().padStart(2, '0')} AM`
-            : hour === 12
-              ? `12:${minute.toString().padStart(2, '0')} PM`
-              : `${hour - 12}:${minute.toString().padStart(2, '0')} PM`;
-              
         options.push(
           <Option key={timeString} value={timeString}>
-            {displayTime}
+            {timeString}
           </Option>
         );
       }
@@ -53,14 +45,19 @@ export function ScheduleSettings({
   const isEndTimeValid = () => {
     const [startHour, startMinute] = startTime.split(':').map(Number);
     const [endHour, endMinute] = endTime.split(':').map(Number);
-    
+
     if (startHour > endHour) return false;
     if (startHour === endHour && startMinute >= endMinute) return false;
     return true;
   };
 
+  // Fixed session duration and buffer time options
+  const sessionDurationOptions = [30, 45, 60, 90];
+  const bufferTimeOptions = [0, 15, 30, 60];
+
   return (
-    <div className="space-y-6">      {hasBookedSessions && (
+    <div className="space-y-6">
+      {hasBookedSessions && (
         <Alert
           icon={<LockOutlined />}
           type="warning"
@@ -75,7 +72,7 @@ export function ScheduleSettings({
         <h3 className="text-lg font-medium mb-4">Work Hours</h3>
         <Form layout="vertical">
           <div className="grid grid-cols-2 gap-4 mb-3">
-            <Form.Item 
+            <Form.Item
               label={<span className="text-slate-300">Start time</span>}
               validateStatus={isEndTimeValid() ? '' : 'error'}
               help={!isEndTimeValid() && "Start time must be before end time"}
@@ -89,8 +86,8 @@ export function ScheduleSettings({
                 {generateTimeOptions()}
               </Select>
             </Form.Item>
-            
-            <Form.Item 
+
+            <Form.Item
               label={<span className="text-slate-300">End time</span>}
               validateStatus={isEndTimeValid() ? '' : 'error'}
             >
@@ -110,37 +107,37 @@ export function ScheduleSettings({
       <div>
         <h3 className="text-lg font-medium mb-4">Session Settings</h3>
         <Form layout="vertical">
-          <div className="grid grid-cols-2 gap-4">
-            <Form.Item label={
-              <span className="text-slate-300">
-                Session duration (minutes)
-              </span>
-            }>
-              <InputNumber
-                min={15}
-                max={180}
-                step={15}
+          <div className="grid grid-cols-2 gap-4 items-end">
+            <Form.Item label={<span className="text-slate-300">Session duration (minutes)</span>} className="mb-0">
+              <Select
                 value={sessionDuration}
-                onChange={(value) => onSessionDurationChange(value as number)}
-                className="w-full"
+                onChange={onSessionDurationChange}
+                className="w-full h-10"
                 disabled={hasBookedSessions}
-              />
+                size="middle"
+              >
+                {sessionDurationOptions.map((duration) => (
+                  <Option key={duration} value={duration}>
+                    {duration} minutes
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
-            
-            <Form.Item label={
-              <span className="text-slate-300">
-                Buffer time (minutes)
-              </span>
-            }>
-              <InputNumber
-                min={0}
-                max={60}
-                step={5}
+
+            <Form.Item label={<span className="text-slate-300">Buffer time (minutes)</span>} className="mb-0">
+              <Select
                 value={bufferTime}
-                onChange={(value) => onBufferTimeChange(value as number)}
-                className="w-full"
+                onChange={onBufferTimeChange}
+                className="w-full h-10"
                 disabled={hasBookedSessions}
-              />
+                size="middle"
+              >
+                {bufferTimeOptions.map((buffer) => (
+                  <Option key={buffer} value={buffer}>
+                    {buffer} minutes
+                  </Option>
+                ))}
+              </Select>
             </Form.Item>
           </div>
         </Form>

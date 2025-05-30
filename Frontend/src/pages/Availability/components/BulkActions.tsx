@@ -13,7 +13,7 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
   return (
     <div className="space-y-3">
       <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>
-      
+
       <Button
         icon={<CheckOutlined />}
         onClick={onSelectAll}
@@ -21,7 +21,7 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
       >
         Select all slots for {selectedDate.format("ddd MMM D")}
       </Button>
-      
+
       <Button
         icon={<CloseOutlined />}
         onClick={onClearAll}
@@ -29,7 +29,7 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
       >
         Clear all slots for {selectedDate.format("ddd MMM D")}
       </Button>
-      
+
       <Button
         icon={<CopyOutlined />}
         onClick={onCopyToWeek}
