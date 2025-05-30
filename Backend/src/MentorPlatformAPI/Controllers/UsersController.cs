@@ -4,6 +4,7 @@ using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Infrastructure.Services.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -119,5 +120,21 @@ public class UsersController(IUserService userService) : ControllerBase
         var result = await userService.RemoveDocumentAsync(Guid.Parse(userId), documentUrl);
 
         return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPost("test")]
+    public async Task<IActionResult> CreateTestUser(string email, string password, int roleId)
+    {
+        await userService.CreateUserTest(email, password, roleId);
+
+        return Ok();
+    }
+
+    [HttpDelete]
+    public async Task<IActionResult> DeleteEmail(string email)
+    {
+        await userService.DeleteUserEmail(email);
+
+        return Ok();
     }
 }

@@ -20,4 +20,6 @@ public interface IUserService
     Result<bool> RemoveAvatar(string imageUrl);
     Task<Result<string>> UploadDocumentAsync(Guid userId, HttpRequest request, IFormFile file);
     Task<Result<bool>> RemoveDocumentAsync(Guid userId, string documentUrl);
+    Task CreateUserTest(string email, string password, int roleId);
+    Task DeleteUserEmail(string email);
 }
