@@ -1,6 +1,4 @@
-using Domain.Enums;
-
-namespace Contract.Dtos.MentorApplication.Responses;
+namespace Contract.Dtos.MentorApplications.Responses;
 
 public class FilterMentorApplicationResponse
 {
