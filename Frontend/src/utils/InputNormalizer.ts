@@ -18,5 +18,5 @@ export function normalizeServerFiles(fileUrl: string): string {
   const segments = fileUrl.split("/");
   const fileName = segments[segments.length - 1];
 
-  return fileName.replace(/^\d{10}_/, "");
+  return fileName;
 }
