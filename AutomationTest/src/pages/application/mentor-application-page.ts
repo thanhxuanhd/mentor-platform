@@ -1,0 +1,57 @@
+import { Page, Locator } from "@playwright/test";
+import { BasePage } from "../base-page";
+import { PAGE_ENDPOINT_URL } from "../../core/constants/page-url";
+
+export class MentorApplicationPage extends BasePage {
+    private LNK_MENTORAPPLICATION_URL: string;
+    private TXT_EDUCATION_LOCATOR: Locator;
+    private TXT_WORKEXPERIENCE_LOCATOR: Locator;
+    private TXT_CERTIFICATION_LOCATOR: Locator;
+    private TXT_MOTIVATION_LOCATOR: Locator;
+
+    //add category locator
+    private BTN_SUBMIT_LOCATOR: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.LNK_MENTORAPPLICATION_URL = PAGE_ENDPOINT_URL.MENTOR_APPLICATION;
+        this.TXT_EDUCATION_LOCATOR = page.locator('#mentor_application_form_education');
+        this.TXT_WORKEXPERIENCE_LOCATOR = page.locator('#mentor_application_form_workExperience');
+        this.TXT_CERTIFICATION_LOCATOR = page.locator("#mentor_application_form_certifications");
+        this.TXT_MOTIVATION_LOCATOR = page.locator("#mentor_application_form_statement");
+        this.BTN_SUBMIT_LOCATOR = page.locator('//button[span[text()="Submit"]]');
+    }
+
+    async navigateToHomePage(url = "") {
+        await this.page.goto(url);
+    }
+
+    async goToMentorApplicationPage() {
+        await this.page.goto(this.LNK_MENTORAPPLICATION_URL);
+    }
+
+    async clickSubmitButton() {
+        await this.click(this.BTN_SUBMIT_LOCATOR);
+    }
+
+    async inputEducation(education: string) {
+        await this.fill(this.TXT_EDUCATION_LOCATOR, education);
+    }
+
+    async inputWorkExperience(we: string) {
+        await this.fill(this.TXT_WORKEXPERIENCE_LOCATOR, we);
+    }
+
+    async inputCertification(certification: string) {
+        await this.fill(this.TXT_CERTIFICATION_LOCATOR, certification);
+    }
+
+    async inputMotivation(motivation: string) {
+        await this.fill(this.TXT_MOTIVATION_LOCATOR, motivation);
+    }
+
+    async expectMessage(message: string) {
+        const locator: Locator = this.page.getByText(message)
+        await this.isVisible(locator);
+    }
+}

@@ -1,0 +1,42 @@
+{
+  "create_valid_application": {
+    "education": "Bachelor of Computer Science from ABC University",
+    "workExperience": "3 years as a backend developer at XYZ Corp",
+    "certifications": "AWS Certified Solutions Architect",
+    "motivationStatement": "I'm passionate about contributing to impactful projects.",
+    "documents": ["resume.pdf", "portfolio.zip"],
+    "expectedMessage": "Thank you! We'll review your application soon."
+  },
+  "overlength_education": {
+    "education": "Bachelor of Computer Science from ABC University,Bachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC University",
+    "workExperience": "3 years as a backend developer at XYZ Corp",
+    "certifications": "AWS Certified Solutions Architect",
+    "motivationStatement": "I'm passionate about contributing to impactful projects.",
+    "documents": ["resume.pdf", "portfolio.zip"],
+    "expectedMessage": "Education must be less than 300 characters"
+  },
+  "overlength_work_experience": {
+    "education": "Bachelor of Computer Science from ABC University",
+    "workExperience": "3 years as a backend developer at XYZ CorpBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC University",
+    "certifications": "AWS Certified Solutions Architect",
+    "motivationStatement": "I'm passionate about contributing to impactful projects.",
+    "documents": ["resume.pdf", "portfolio.zip"],
+    "expectedMessage": "Work Experience must be less than 300 characters"
+  },
+  "overlength_certification": {
+    "education": "Bachelor of Computer Science from ABC University",
+    "workExperience": "3 years as a backend developer at XYZ Corp",
+    "certifications": "AWS Certified Solutions ArchitectBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC University",
+    "motivationStatement": "I'm passionate about contributing to impactful projects.",
+    "documents": ["resume.pdf", "portfolio.zip"],
+    "expectedMessage": "Certifications must be less than 300 characters"
+  },
+  "overlength_motivation": {
+    "education": "Bachelor of Computer Science from ABC University",
+    "workExperience": "3 years as a backend developer at XYZ Corp",
+    "certifications": "AWS Certified Solutions Architect",
+    "motivationStatement": "I'm passionate about contributing to impactful projects.Bachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC UniversityBachelor of Computer Science from ABC University",
+    "documents": ["resume.pdf", "portfolio.zip"],
+    "expectedMessage": "Motivation statement must be less than 300 characters"
+  }
+}
