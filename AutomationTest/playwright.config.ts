@@ -7,12 +7,12 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 2,
   reporter: [['junit', { outputFile: 'test-results/e2e-junit-results.xml' }]],
   use: {
-    baseURL: process.env.BASE_URL,
+    baseURL: process.env.BASE_FE_URL,
     trace: 'retain-on-failure',
-    headless: false,
+    headless: true,
     testIdAttribute: '',
     actionTimeout: 10000,
     extraHTTPHeaders: {
