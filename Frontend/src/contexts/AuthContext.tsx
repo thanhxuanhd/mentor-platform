@@ -26,12 +26,12 @@ export interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
-  setIsAuthenticated: () => {},
+  setIsAuthenticated: () => { },
   isMentorApproved: false,
-  setIsMentorApproved: () => {},
-  setUser: () => {},
-  setToken: () => {},
-  removeToken: () => {},
+  setIsMentorApproved: () => { },
+  setUser: () => { },
+  setToken: () => { },
+  removeToken: () => { },
   loading: true,
 });
 
@@ -94,34 +94,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email: decodedToken.email,
       fullName:
         decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ],
       role: decodedToken[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
       ],
     });
     setIsAuthenticated(true);
-
-    if (user?.role === applicationRole.MENTOR) {
-      try {
-        const response =
-          await mentorApplicationService.getMentorApplicationByMentorId(
-            user.id,
-          );
-
-        if (response && Array.isArray(response)) {
-          const approvedApplication = response.find(
-            (application) => application.status === "Approved",
-          );
-          setIsMentorApproved(!!approvedApplication);
-        }
-      } catch (error: any) {
-        console.error(error);
-      }
-    }
-
     setLoading(false);
   };
+
+  useEffect(() => {
+    if (user?.role === applicationRole.MENTOR) {
+      const checkMentorStatus = async () => {
+        try {
+          const response = await mentorApplicationService.getMentorApplicationByMentorId(user.id);
+          if (response && Array.isArray(response)) {
+            const approvedApplication = response.find(
+              (application) => application.status === "Approved"
+            );
+            setIsMentorApproved(!!approvedApplication);
+          }
+        } catch (error) {
+          console.error("Error fetching mentor application:", error);
+        }
+      };
+      checkMentorStatus();
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchUserFromToken();
