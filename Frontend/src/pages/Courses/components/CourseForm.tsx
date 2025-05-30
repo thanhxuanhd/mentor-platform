@@ -329,7 +329,7 @@ export const CourseForm: FC<CourseFormProps> = ({
               style={{ width: "100%" }}
               placeholder="Select due date"
               format="YYYY-MM-DD"
-              minDate={dayjs().add(1, "day")}
+              minDate={dayjs()}
               inputReadOnly={true}
             />
           </Form.Item>

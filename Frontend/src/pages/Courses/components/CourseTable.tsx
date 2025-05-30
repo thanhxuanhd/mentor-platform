@@ -1,14 +1,9 @@
 import type { Course } from "../types.tsx";
-import type { TableProps } from "antd";
-import { Button, Space, Table, Tag } from "antd";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  EyeOutlined,
-  FolderOutlined,
-} from "@ant-design/icons";
+import { Button, Space, Table, type TableProps, Tag } from "antd";
 import type { CourseTableProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
+import dayjs from "dayjs";
+import {DeleteOutlined, FolderOutlined, EyeOutlined, EditOutlined} from "@ant-design/icons";
 
 export const CourseTable: FC<CourseTableProps> = ({
   courses,
@@ -24,11 +19,12 @@ export const CourseTable: FC<CourseTableProps> = ({
       title: "Title",
       dataIndex: "title",
       key: "title",
-      width: "25%",
       render: (_: string, course: Course) => (
         <div>
           <div className="font-medium">{course.title}</div>
-          <div className="text-xs text-gray-400">{course.dueDate}</div>
+          <div className="text-xs text-gray-400">
+            {dayjs(course.dueDate).format("YYYY-MM-DD")}
+          </div>
           <div className="text-xs text-gray-400">{course.difficulty}</div>
         </div>
       ),
@@ -66,17 +62,6 @@ export const CourseTable: FC<CourseTableProps> = ({
       dataIndex: "difficulty",
       key: "difficulty",
     },
-    // {
-    //   title: "Students",
-    //   dataIndex: "enrolledStudents",
-    //   key: "enrolledStudents",
-    // },
-    // {
-    //   title: "Completion",
-    //   dataIndex: "completionRate",
-    //   key: "completionRate",
-    //   render: (text: number) => `${text}%`,
-    // },
     {
       title: "Action",
       key: "action",
@@ -100,6 +85,41 @@ export const CourseTable: FC<CourseTableProps> = ({
         </Space>
       ),
     },
+    // {
+    //   title: "",
+    //   key: "action",
+    //   render: (_: string, course: Course) => {
+    //     const items: MenuProps["items"] = [
+    //       {
+    //         key: "viewResource",
+    //         label: "View Resource",
+    //         onClick: () => onResourceView(course),
+    //       },
+    //       {
+    //         key: "viewCourse",
+    //         label: "View Course Details",
+    //         onClick: () => onView(course),
+    //       },
+    //       {
+    //         key: "editCourse",
+    //         label: "Edit Course",
+    //         onClick: () => onEdit(course),
+    //       },
+    //       {
+    //         key: "deleteCourse",
+    //         label: "Delete Course",
+    //         danger: true,
+    //         onClick: () => onDelete(course),
+    //       },
+    //     ];
+    //
+    //     return (
+    //       <Dropdown menu={{ items }} trigger={["click"]}>
+    //         <Button icon={<EllipsisOutlined />} />
+    //       </Dropdown>
+    //     );
+    //   },
+    // },
   ];
 
   return (
@@ -109,6 +129,7 @@ export const CourseTable: FC<CourseTableProps> = ({
       rowKey="id"
       loading={tableProps.loading}
       pagination={tableProps.pagination}
+      scroll={{x: "max-content"}}
     />
   );
 };
