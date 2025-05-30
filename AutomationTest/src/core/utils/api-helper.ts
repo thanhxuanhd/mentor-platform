@@ -137,3 +137,28 @@ export async function requestNewPasswordFromEmail(
     return body.value.newPassword;
 }
 
+//user
+export async function createTestUser(request: APIRequestContext, user: any): Promise<string> {
+    const requestBody = {
+        "email": user.email,
+        "password": user.password,
+        "roleId": user.roleId
+    }
+    await request.post(API_ENDPOINTS.SIGN_UP, {
+        params: requestBody
+    });
+    return requestBody.email;
+}
+
+export async function deleteTestUser(request: APIRequestContext, email: string): Promise<void> {
+    const token = await getAuthToken(request, admin);
+    await request.delete(API_ENDPOINTS.DELETE_USER, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: '*/*'
+        },
+        params: {
+            email: email
+        }
+    });
+}
