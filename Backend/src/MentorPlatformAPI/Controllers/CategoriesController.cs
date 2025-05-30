@@ -27,6 +27,14 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         return StatusCode((int)result.StatusCode, result);
     }
 
+    [HttpGet("active-categories")]
+    public async Task<IActionResult> GetActiveCategories()
+    {
+        var result = await categoryService.GetActiveCategoriesAsync();
+
+        return StatusCode((int)result.StatusCode, result);
+    }
+
     [Authorize]
     [HttpGet("{id}/courses")]
     public async Task<IActionResult> FilterCourseByCategory(Guid id)
