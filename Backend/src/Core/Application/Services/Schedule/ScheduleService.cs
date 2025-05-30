@@ -260,6 +260,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     }
 
     // Just a simple check to see if any of the future time slots are booked.
+    // kvp stands for KeyValuePair<DateOnly, List<TimeSlotResponse>> if anyone is wondering.
     public bool IsLocked(Dictionary<DateOnly, List<TimeSlotResponse>> availableTimeSlots)
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.Now);
