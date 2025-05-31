@@ -9,6 +9,8 @@ import {
 } from "@ant-design/icons";
 import type { CourseTableProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
+import { useAuth } from "../../../hooks/useAuth.ts";
+import { applicationRole } from "../../../constants/role.ts";
 
 export const CourseTable: FC<CourseTableProps> = ({
   courses,
@@ -19,6 +21,7 @@ export const CourseTable: FC<CourseTableProps> = ({
   onDelete,
   tableProps,
 }) => {
+  const { user } = useAuth();
   const columns: TableProps<Course>["columns"] = [
     {
       title: "Title",
@@ -87,16 +90,20 @@ export const CourseTable: FC<CourseTableProps> = ({
             onClick={() => onResourceView(course)}
           />
           <Button icon={<EyeOutlined />} onClick={() => onView(course)} />
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => onEdit(course)}
-          />
-          <Button
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => onDelete(course)}
-          />
+          {user?.role === applicationRole.MENTOR && (
+            <>
+              <Button
+                type="primary"
+                icon={<EditOutlined />}
+                onClick={() => onEdit(course)}
+              />
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => onDelete(course)}
+              />
+            </>
+          )}
         </Space>
       ),
     },

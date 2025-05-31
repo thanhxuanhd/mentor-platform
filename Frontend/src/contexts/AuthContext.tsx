@@ -1,6 +1,8 @@
 import { jwtDecode } from "jwt-decode";
 import React, { createContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { mentorApplicationService } from "../services/mentorAppplications/mentorApplicationService";
+import { applicationRole } from "../constants/role";
 
 interface User {
   id: string;
@@ -13,6 +15,8 @@ export interface AuthContextProps {
   user: User | null;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
+  isMentorApproved: boolean;
+  setIsMentorApproved: (value: boolean) => void;
   setUser: (value: User) => void;
   setToken: (value: string) => void;
   removeToken: () => void;
@@ -22,10 +26,12 @@ export interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
-  setIsAuthenticated: () => {},
-  setUser: () => {},
-  setToken: () => {},
-  removeToken: () => {},
+  setIsAuthenticated: () => { },
+  isMentorApproved: false,
+  setIsMentorApproved: () => { },
+  setUser: () => { },
+  setToken: () => { },
+  removeToken: () => { },
   loading: true,
 });
 
@@ -46,6 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isMentorApproved, setIsMentorApproved] = useState<boolean>(false);
 
   const setToken = (token: string) => {
     window.localStorage.setItem("token", token);
@@ -63,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return window.localStorage.getItem("token");
   };
 
-  const fetchUserFromToken = () => {
+  const fetchUserFromToken = async () => {
     const storedToken = getToken();
     if (!storedToken) {
       setUser(null);
@@ -87,7 +94,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email: decodedToken.email,
       fullName:
         decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ],
       role: decodedToken[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
@@ -98,6 +105,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    if (user?.role === applicationRole.MENTOR) {
+      const checkMentorStatus = async () => {
+        try {
+          const response = await mentorApplicationService.getMentorApplicationByMentorId(user.id);
+          if (response && Array.isArray(response)) {
+            const approvedApplication = response.find(
+              (application) => application.status === "Approved"
+            );
+            setIsMentorApproved(!!approvedApplication);
+          }
+        } catch (error) {
+          console.error("Error fetching mentor application:", error);
+        }
+      };
+      checkMentorStatus();
+    }
+  }, [user]);
+
+  useEffect(() => {
     fetchUserFromToken();
   }, []);
 
@@ -106,12 +132,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user,
       isAuthenticated,
       setIsAuthenticated,
+      isMentorApproved,
+      setIsMentorApproved,
       setUser,
       setToken,
       removeToken,
       loading,
     }),
-    [user, isAuthenticated, loading],
+    [user, isAuthenticated, isMentorApproved, setToken, loading],
   );
 
   return (

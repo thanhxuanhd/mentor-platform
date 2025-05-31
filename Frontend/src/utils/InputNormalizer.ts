@@ -13,3 +13,10 @@ export function normalizeName(name: string): string | null {
 
   return resultString === "" ? null : resultString;
 }
+
+export function normalizeServerFiles(fileUrl: string): string {
+  const segments = fileUrl.split("/");
+  const fileName = segments[segments.length - 1];
+
+  return fileName;
+}

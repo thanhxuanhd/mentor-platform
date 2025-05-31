@@ -77,7 +77,7 @@ public class EditUserDetailRequestValidator : AbstractValidator<EditUserProfileR
             .When(x => x.Skills != null);
 
         RuleFor(x => x.Experiences)
-            .MaximumLength(200).WithMessage("Experiences must not exceed 200 characters")
+            .MaximumLength(200).WithMessage("WorkExperience must not exceed 200 characters")
             .When(x => x.Experiences != null);
 
         RuleFor(x => x.Goal)
