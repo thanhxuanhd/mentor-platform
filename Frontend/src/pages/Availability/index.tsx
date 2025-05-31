@@ -115,14 +115,13 @@ export default function AvailabilityManager() {
     // Update current slots when selected date or availability changes
   useEffect(() => {
     setCurrentSlots(getCurrentDateSlots());
-  }, [getCurrentDateSlots]);
-  // Toggle availability for a specific time slot
+  }, [getCurrentDateSlots]);  // Toggle availability for a specific time slot
   const toggleSlotAvailability = (slotId: string) => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const targetSlot = currentSlots.find(slot => slot.id === slotId);
     
-    // Prevent modification of past slots, booked slots, or when locked
-    if (!targetSlot || targetSlot.booked || targetSlot.isPast || isLocked) {
+    // Prevent modification of past slots and booked slots only
+    if (!targetSlot || targetSlot.booked || targetSlot.isPast) {
       if (targetSlot?.isPast) {
         message.warning("Cannot modify time slots in the past");
       }

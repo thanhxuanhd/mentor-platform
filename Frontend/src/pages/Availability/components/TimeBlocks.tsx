@@ -26,24 +26,20 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock, isLocked =
                   ? "This slot is already booked" 
                   : block.isPast
                     ? "This time slot is in the past and cannot be modified"
-                    : isLocked 
-                      ? "Schedule is locked due to existing bookings"
-                      : null
+                    : null
               }
             >
               <button
-                onClick={() => !block.booked && !block.isPast && !isLocked && onToggleBlock(block.id)}
+                onClick={() => !block.booked && !block.isPast && onToggleBlock(block.id)}
                 className={`
                   p-4 rounded-lg text-center transition-colors relative
                   ${block.booked 
                     ? 'bg-slate-500 cursor-not-allowed text-slate-300' 
                     : block.isPast
                       ? 'bg-slate-700 cursor-not-allowed text-slate-400'
-                      : isLocked
-                        ? 'bg-slate-500 cursor-not-allowed text-slate-300'
-                        : block.available
-                          ? 'bg-orange-500 hover:bg-orange-600 text-white'
-                          : 'bg-slate-600 hover:bg-slate-500 text-slate-300'
+                      : block.available
+                        ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                        : 'bg-slate-600 hover:bg-slate-500 text-slate-300'
                   }
                 `}
               >
@@ -56,8 +52,7 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock, isLocked =
                       : (block.available ? 'Available' : 'Unavailable')
                   }
                 </div>
-                
-                {(block.booked || block.isPast || isLocked) && (
+                  {(block.booked || block.isPast) && (
                   <div className="absolute top-2 right-2">
                     <LockOutlined />
                   </div>

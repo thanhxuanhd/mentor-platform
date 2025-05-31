@@ -13,13 +13,10 @@ interface BulkActionsProps {
 export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWeek, isLocked = false }: BulkActionsProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>
-
-      <Button
+      <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>      <Button
         icon={<CheckOutlined />}
         onClick={onSelectAll}
-        disabled={isLocked}
-        className="w-full bg-blue-600 border-blue-600 text-white hover:bg-blue-700 disabled:bg-slate-500 disabled:border-slate-500 disabled:text-slate-300"
+        className="w-full bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
       >
         Select all slots for {selectedDate.format("ddd MMM D")}
       </Button>
@@ -27,8 +24,7 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
       <Button
         icon={<CloseOutlined />}
         onClick={onClearAll}
-        disabled={isLocked}
-        className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500 disabled:bg-slate-500 disabled:border-slate-500 disabled:text-slate-300"
+        className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
       >
         Clear all slots for {selectedDate.format("ddd MMM D")}
       </Button>
