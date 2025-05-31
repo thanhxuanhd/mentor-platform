@@ -21,7 +21,7 @@ import { TimeBlocks } from "./components/TimeBlocks";
 import type { DayAvailability, TimeBlock, WeekDay } from "./types";
 import { availabilityService } from "../../services/availability/availabilityService";
 import { AuthContext } from "../../contexts/AuthContext";
-import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat } from "./utils";
+import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat, generateTimeSlotsForWeek } from "./utils";
 
 // Configure dayjs plugins
 dayjs.extend(weekday);
@@ -275,29 +275,69 @@ export default function AvailabilityManager() {
     } catch (error) {
       setSaveError(true);
       message.error("An error occurred while saving your availability.");
-      console.error("Save error:", error);
-    } finally {
+      console.error("Save error:", error);    } finally {
       setIsSaving(false);
     }
-  };  // Update settings with validation
+  };  // Regenerate time slots based on current settings
+  const regenerateTimeSlots = React.useCallback((overrides?: {
+    startTime?: string;
+    endTime?: string;
+    sessionDuration?: number;
+    bufferTime?: number;
+  }) => {
+    try {
+      const weekStartDate = currentWeekStart.format('YYYY-MM-DD');
+      
+      // Use override values if provided, otherwise use current state
+      const effectiveStartTime = overrides?.startTime ?? startTime;
+      const effectiveEndTime = overrides?.endTime ?? endTime;
+      const effectiveSessionDuration = overrides?.sessionDuration ?? sessionDuration;
+      const effectiveBufferTime = overrides?.bufferTime ?? bufferTime;
+      
+      // Use functional update to get the latest availability state
+      setAvailability(currentAvailability => {
+        // Generate fresh time slots on the frontend with current settings
+        const freshAvailability = generateTimeSlotsForWeek(
+          weekStartDate,
+          effectiveStartTime,
+          effectiveEndTime,
+          effectiveSessionDuration,
+          effectiveBufferTime,
+          currentAvailability // Use the current availability from the state updater
+        );
+        
+        return freshAvailability;
+      });
+      
+      message.info('Time slots updated. Please reselect your available slots.');
+      
+    } catch (error) {
+      console.error('Failed to regenerate time slots:', error);
+      message.error('Failed to update time slots');
+    }
+  }, [currentWeekStart, startTime, endTime, sessionDuration, bufferTime]);  // Update settings with validation
   const updateStartTime = (time: string) => {
     setStartTime(time);
-    // Note: Settings changes will trigger a save when user clicks save
+    // Regenerate time slots when work hours change, passing the new value immediately
+    regenerateTimeSlots({ startTime: time });
   };
 
   const updateEndTime = (time: string) => {
     setEndTime(time);
-    // Note: Settings changes will trigger a save when user clicks save
+    // Regenerate time slots when work hours change, passing the new value immediately
+    regenerateTimeSlots({ endTime: time });
   };
 
   const updateSessionDuration = (duration: number) => {
     setSessionDuration(duration);
-    // Note: Settings changes will trigger a save when user clicks save
+    // Regenerate time slots when session settings change, passing the new value immediately
+    regenerateTimeSlots({ sessionDuration: duration });
   };
 
   const updateBufferTime = (buffer: number) => {
     setBufferTime(buffer);
-    // Note: Settings changes will trigger a save when user clicks save
+    // Regenerate time slots when session settings change, passing the new value immediately
+    regenerateTimeSlots({ bufferTime: buffer });
   };
 
   const weekDays = getWeekDays();
