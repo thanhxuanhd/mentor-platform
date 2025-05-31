@@ -22,7 +22,7 @@ namespace Infrastructure.Persistence.Data.Configurations
             builder.HasMany(t => t.Sessions)
                 .WithOne(b => b.TimeSlot)
                 .HasForeignKey(b => b.TimeSlotId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(t => t.Schedules)
                 .WithMany(s => s.AvailableTimeSlots)

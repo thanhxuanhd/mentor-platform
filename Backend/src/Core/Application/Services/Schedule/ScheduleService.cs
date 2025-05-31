@@ -80,8 +80,10 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         var scheduleSettings = await scheduleRepository.GetScheduleSettingsAsync(mentorId, request.WeekStartDate, request.WeekEndDate);
 
+        Dictionary<Guid, TimeSlotData> bookedTimeSlots = new();
         if (scheduleSettings != null)
         {
+            bookedTimeSlots = GetBookedTimeSlotsData(scheduleSettings);
             scheduleRepository.Delete(scheduleSettings);
         }
 
@@ -116,6 +118,32 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                 scheduleSettings.AvailableTimeSlots.Add(mentorAvailableTimeSlot);
             }
         }
+        foreach (var bookedSlot in bookedTimeSlots)
+        {
+            var timeSlotId = Guid.NewGuid();
+            var mentorAvailableTimeSlot = new MentorAvailableTimeSlot
+            {
+                Id = timeSlotId,
+                ScheduleId = scheduleSettings.Id,
+                Date = bookedSlot.Value.Date,
+                StartTime = bookedSlot.Value.StartTime,
+                EndTime = bookedSlot.Value.EndTime,
+                Sessions = new List<Sessions>
+                {
+                    new Sessions
+                    {
+                        Id = Guid.NewGuid(),
+                        LearnerId = bookedSlot.Key,
+                        Status = bookedSlot.Value.Status,
+                        TimeSlotId = timeSlotId
+                    }
+                }   
+            };
+
+            scheduleSettings.AvailableTimeSlots ??= new List<MentorAvailableTimeSlot>();
+            scheduleSettings.AvailableTimeSlots.Add(mentorAvailableTimeSlot);
+        }
+
         await scheduleRepository.AddAsync(scheduleSettings);
         await scheduleRepository.SaveChangesAsync();
 
@@ -142,10 +170,10 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         for (int dayIndex = 0; dayIndex < dayCount; dayIndex++)
         {
             List<TimeSlotResponse> dailyTimeSlots = new();
-            DateOnly currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);        
+            DateOnly currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
             DateTime currentDateTime = currentDate.ToDateTime(scheduleSettings.StartHour);
             DateTime endDateTime;
-            
+
             if (scheduleSettings.EndHour <= scheduleSettings.StartHour)
             {
                 endDateTime = currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour);
@@ -155,10 +183,14 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                 endDateTime = currentDate.ToDateTime(scheduleSettings.EndHour);
             }
 
+            endDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
+                ? currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour)
+                : currentDate.ToDateTime(scheduleSettings.EndHour);
+
             while (currentDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
             {
                 var sessionEndDateTime = currentDateTime.AddMinutes(scheduleSettings.SessionDuration);
-                
+
                 var timeSlot = new TimeSlotResponse
                 {
                     Id = Guid.NewGuid(),
@@ -282,15 +314,47 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             .Where(item => item.TimeSlot != null && item.TimeSlot.IsBooked)
             .Any(item =>
             {
-                // For future dates, all slots are considered
                 if (item.Date > today)
                     return true;
 
-                // For today, only consider slots that haven't started yet
                 if (item.Date == today && TimeOnly.TryParse(item.TimeSlot.StartTime, out TimeOnly slotStartTime))
                     return slotStartTime > currentTime;
 
                 return false;
             });
+    }
+
+    public Dictionary<Guid, TimeSlotData> GetBookedTimeSlotsData(Schedules scheduleSettings)
+    {
+        Dictionary<Guid, TimeSlotData> bookedTimeSlots = new();
+
+        if (scheduleSettings.AvailableTimeSlots == null || !scheduleSettings.AvailableTimeSlots.Any())
+        {
+            return bookedTimeSlots;
+        }
+
+        foreach (var timeSlot in scheduleSettings.AvailableTimeSlots)
+        {
+            if (timeSlot.Sessions != null && timeSlot.Sessions.Any())
+            {
+                foreach (var session in timeSlot.Sessions)
+                {
+                    if (session.Status == SessionStatus.Confirmed || 
+                        session.Status == SessionStatus.Completed)
+                    {
+                        // Only add confirmed or completed sessions to the booked time slots
+                        bookedTimeSlots[session.LearnerId] = new TimeSlotData
+                        {
+                            StartTime = timeSlot.StartTime,
+                            EndTime = timeSlot.EndTime,
+                            Date = timeSlot.Date,
+                            Status = session.Status
+                        };
+                    }
+                }
+            }
+        }
+
+        return bookedTimeSlots;
     }
 }
