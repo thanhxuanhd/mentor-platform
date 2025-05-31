@@ -89,20 +89,8 @@ export default function AvailabilityManager() {
   useEffect(() => {
     loadScheduleSettings();
   }, [user?.id, currentWeekStart]);
-
-  // Check if any future sessions are booked
-  const hasBookedSessions = React.useMemo(() => {
-    const today = dayjs().startOf('day');
-
-    return Object.entries(availability).some(([dateKey, slots]) => {
-      const slotDate = dayjs(dateKey);
-      // Only consider dates today or in the future
-      if (slotDate.isSameOrAfter(today)) {
-        return slots.some(slot => slot.booked);
-      }
-      return false;
-    });
-  }, [availability]);
+  // Use the backend's isLocked value instead of calculating locally
+  const hasBookedSessions = isLocked;
 
   // Get time slots for the currently selected date
   const getCurrentDateSlots = React.useCallback((): TimeBlock[] => {
@@ -354,14 +342,27 @@ export default function AvailabilityManager() {
   };
 
   const weekDays = getWeekDays();
-
   // Format data for availability preview
-  const previewData = weekDays.map(day => ({
-    day: day.shortDay,
-    date: day.date,
-    fullDate: day.fullDate,
-    availableSlots: availability[dayjs(day.fullDate).format("YYYY-MM-DD")]?.filter(slot => slot.available) || []
-  }));
+  const previewData = weekDays.map(day => {
+    const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
+    const daySlots = availability[dateKey] || [];
+    
+    // Only show future slots (not past slots)
+    const futureSlots = daySlots.filter(slot => !slot.isPast);
+    
+    // Separate available and booked slots for different styling
+    const availableSlots = futureSlots.filter(slot => slot.available && !slot.booked);
+    const bookedSlots = futureSlots.filter(slot => slot.booked);
+    
+    return {
+      day: day.shortDay,
+      date: day.date,
+      fullDate: day.fullDate,
+      availableSlots,
+      bookedSlots,
+      allVisibleSlots: [...availableSlots, ...bookedSlots].sort((a, b) => a.startTime.localeCompare(b.startTime))
+    };
+  });
   return (
     <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
       {/* Header */}
@@ -466,9 +467,7 @@ export default function AvailabilityManager() {
                 <h3 className="text-lg font-medium mb-2">Availability Preview</h3>
                 <p className="text-slate-400 text-sm mb-4">
                   This is how your availability will appear to learners:
-                </p>
-
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
+                </p>                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
                   {previewData.map((day, index) => (
                     <div key={index} className="bg-slate-600 rounded-lg p-3">
                       <div className="text-center mb-2">
@@ -476,14 +475,18 @@ export default function AvailabilityManager() {
                         <div className="text-xs text-slate-400">{day.date}</div>
                       </div>
                       <div className="space-y-1 max-h-48 overflow-y-auto">
-                        {day.availableSlots.length > 0 ? (
-                          day.availableSlots.map((slot, slotIndex) => (
+                        {day.allVisibleSlots.length > 0 ? (
+                          day.allVisibleSlots.map((slot, slotIndex) => (
                             <div
                               key={slotIndex}
-                              className="bg-orange-500 text-white text-xs px-2 py-1 rounded text-center truncate"
-                              title={slot.time}
+                              className={`text-white text-xs px-2 py-1 rounded text-center truncate ${
+                                slot.booked 
+                                  ? 'bg-slate-500' 
+                                  : 'bg-orange-500'
+                              }`}
+                              title={`${slot.time}${slot.booked ? ' (Booked)' : ' (Available)'}`}
                             >
-                              {slot.startTime}
+                              {slot.time}
                             </div>
                           ))
                         ) : (

@@ -266,17 +266,29 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             mergedTimeSlots.Add(date, finalSlotsForDate);
         }
         return mergedTimeSlots;
-    }
-
-    // Just a simple check to see if any of the future time slots are booked.
+    }    // Just a simple check to see if any of the future time slots are booked.
     // kvp stands for KeyValuePair<DateOnly, List<TimeSlotResponse>> if anyone is wondering.
     public bool IsLocked(Dictionary<DateOnly, List<TimeSlotResponse>> availableTimeSlots)
     {
-        DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+        DateTime now = DateTime.Now;
+        DateOnly today = DateOnly.FromDateTime(now);
+        TimeOnly currentTime = TimeOnly.FromDateTime(now);
 
         return availableTimeSlots
             .Where(kvp => kvp.Key >= today && kvp.Value != null)
-            .SelectMany(kvp => kvp.Value)
-            .Any(ts => ts != null && ts.IsBooked);
+            .SelectMany(kvp => kvp.Value.Select(ts => new { Date = kvp.Key, TimeSlot = ts }))
+            .Where(item => item.TimeSlot != null && item.TimeSlot.IsBooked)
+            .Any(item => 
+            {
+                // For future dates, all slots are considered
+                if (item.Date > today)
+                    return true;
+                
+                // For today, only consider slots that haven't started yet
+                if (item.Date == today && TimeOnly.TryParse(item.TimeSlot.StartTime, out TimeOnly slotStartTime))
+                    return slotStartTime > currentTime;
+                
+                return false;
+            });
     }
 }

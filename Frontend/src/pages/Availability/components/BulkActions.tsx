@@ -12,7 +12,8 @@ interface BulkActionsProps {
 export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWeek }: BulkActionsProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>      <Button
+      <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>      
+      <Button
         icon={<CheckOutlined />}
         onClick={onSelectAll}
         className="w-full bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
