@@ -1,17 +1,34 @@
-import { useState, useEffect } from 'react';
-import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from 'antd';
-import { EditOutlined, DeleteOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import Search from 'antd/es/input/Search';
-import EditCategoryModal from './components/EditCategoryModal';
-import type { Category, CategoryFilter, CategoryFilterCourse, CategoryRequest } from '../../types/CategoryTypes';
-import type { NotificationProps } from '../../types/Notification';
-import type { PaginatedList } from '../../types/Pagination';
-import PaginationControls from '../../components/shared/Pagination';
-import { createCategory, deleteCategory, editCategory, getCategoryById, getCoursesByCategoryId, getListCategories } from '../../services/category/categoryServices';
-import DisplayCourseModal from './components/DisplayCoursesModal';
-import { useAuth } from '../../hooks';
-import { applicationRole } from '../../constants/role';
+import { useState, useEffect } from "react";
+import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from "antd";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import Search from "antd/es/input/Search";
+import EditCategoryModal from "./components/EditCategoryModal";
+import type {
+  Category,
+  CategoryFilter,
+  CategoryFilterCourse,
+  CategoryRequest,
+} from "../../types/CategoryTypes";
+import type { NotificationProps } from "../../types/Notification";
+import type { PaginatedList } from "../../types/Pagination";
+import PaginationControls from "../../components/shared/Pagination";
+import {
+  createCategory,
+  deleteCategory,
+  editCategory,
+  getCategoryById,
+  getCoursesByCategoryId,
+  getListCategories,
+} from "../../services/category/categoryServices";
+import DisplayCourseModal from "./components/DisplayCoursesModal";
+import { useAuth } from "../../hooks";
+import { applicationRole } from "../../constants/role";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -142,11 +159,13 @@ export default function CategoriesPage() {
         description: "The category has been deleted successfully.",
       });
       await fetchData();
-    } catch {
+    } catch (error: any) {
       setNotify({
         type: "error",
         message: "Error",
-        description: "An error occurred while deleting the category.",
+        description:
+          error.response?.data?.error ||
+          "An error occurred while deleting the category.",
       });
     }
   };
@@ -181,11 +200,13 @@ export default function CategoriesPage() {
       setIsCreating(false);
     } catch (error: any) {
       setNotify({
-        type: 'error',
-        message: 'Error',
-        description: error.response?.data?.error || 'An error occurred while processing your request.',
+        type: "error",
+        message: "Error",
+        description:
+          error.response?.data?.error ||
+          "An error occurred while processing your request.",
       });
-      console.log('Error:', error);
+      console.log("Error:", error);
     }
   };
 
@@ -263,7 +284,8 @@ export default function CategoriesPage() {
                   className="text-red-600"
                 />
               </Popconfirm>
-            </Tooltip>)}
+            </Tooltip>
+          )}
           <Tooltip title="View List Courses">
             <Button
               icon={<EyeOutlined />}
@@ -304,7 +326,7 @@ export default function CategoriesPage() {
         dataSource={categories}
         rowKey="id"
         pagination={false}
-        className='mb-6'
+        className="mb-6"
       />
       <PaginationControls
         pageIndex={pagination.pageIndex}
@@ -321,11 +343,11 @@ export default function CategoriesPage() {
             ? { id: "", name: "", description: "", status: true }
             : selectedCategory
               ? {
-                id: selectedCategory.id,
-                name: selectedCategory.name.trimEnd().trimStart(),
-                description: selectedCategory.description?.trimEnd() || "",
-                status: selectedCategory.status,
-              }
+                  id: selectedCategory.id,
+                  name: selectedCategory.name.trimEnd().trimStart(),
+                  description: selectedCategory.description?.trimEnd() || "",
+                  status: selectedCategory.status,
+                }
               : { id: "", name: "", description: "", status: false }
         }
         onCancel={handleModalCancel}
@@ -341,6 +363,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-
-
-

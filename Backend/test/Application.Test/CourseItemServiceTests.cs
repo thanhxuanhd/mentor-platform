@@ -1,4 +1,3 @@
-using System.Net;
 using Application.Services.CourseItems;
 using Contract.Dtos.CourseItems.Requests;
 using Contract.Dtos.Courses.Responses;
@@ -6,6 +5,7 @@ using Contract.Repositories;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
+using System.Net;
 
 namespace Application.Test;
 

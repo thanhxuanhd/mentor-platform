@@ -4,6 +4,7 @@ using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Infrastructure.Services.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -106,7 +107,7 @@ public class UsersController(IUserService userService) : ControllerBase
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var request = Request;
-        var result = await userService.UploadDocumentAsync(Guid.Parse(userId), request, file);
+        var result = await userService.UploadDocumentAsync(Guid.Parse(userId!), request, file);
 
         return StatusCode((int)result.StatusCode, result);
     }
@@ -116,7 +117,7 @@ public class UsersController(IUserService userService) : ControllerBase
     public async Task<IActionResult> RemoveMentorDocument(string documentUrl)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var result = await userService.RemoveDocumentAsync(Guid.Parse(userId), documentUrl);
+        var result = await userService.RemoveDocumentAsync(Guid.Parse(userId!), documentUrl);
 
         return StatusCode((int)result.StatusCode, result);
     }

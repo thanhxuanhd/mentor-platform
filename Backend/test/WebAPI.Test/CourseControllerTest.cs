@@ -1,5 +1,3 @@
-using System.Net;
-using System.Security.Claims;
 using Application.Services.CourseItems;
 using Application.Services.Courses;
 using Contract.Dtos.CourseItems.Requests;
@@ -12,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Net;
+using System.Security.Claims;
 
 namespace WebAPI.Test;
 

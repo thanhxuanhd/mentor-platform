@@ -14,6 +14,7 @@ interface MenuItemProps {
   label: string;
   link: string;
   role: string[];
+  isMentorApprovedRequired?: boolean;
 }
 
 export const menuItems: MenuItemProps[] = [
@@ -27,6 +28,7 @@ export const menuItems: MenuItemProps[] = [
       applicationRole.LEARNER,
       applicationRole.MENTOR,
     ],
+    isMentorApprovedRequired: true,
   },
   {
     key: "users",
@@ -40,7 +42,12 @@ export const menuItems: MenuItemProps[] = [
     icon: <AppstoreOutlined />,
     label: "Categories",
     link: "categories",
-    role: [applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR],
+    role: [
+      applicationRole.ADMIN,
+      applicationRole.LEARNER,
+      applicationRole.MENTOR,
+    ],
+    isMentorApprovedRequired: true,
   },
   {
     key: "courses",
@@ -52,6 +59,7 @@ export const menuItems: MenuItemProps[] = [
       applicationRole.ADMIN,
       applicationRole.MENTOR,
     ],
+    isMentorApprovedRequired: true,
   },
   {
     key: "profile",
@@ -72,6 +80,6 @@ export const menuItems: MenuItemProps[] = [
     icon: <HddOutlined />,
     label: "My Applications",
     link: "my-applications",
-    role: [applicationRole.MENTOR]
-  }
+    role: [applicationRole.MENTOR],
+  },
 ];
