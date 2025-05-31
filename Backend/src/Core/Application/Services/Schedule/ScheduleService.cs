@@ -174,15 +174,6 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             DateTime currentDateTime = currentDate.ToDateTime(scheduleSettings.StartHour);
             DateTime endDateTime;
 
-            if (scheduleSettings.EndHour <= scheduleSettings.StartHour)
-            {
-                endDateTime = currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour);
-            }
-            else
-            {
-                endDateTime = currentDate.ToDateTime(scheduleSettings.EndHour);
-            }
-
             endDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
                 ? currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour)
                 : currentDate.ToDateTime(scheduleSettings.EndHour);
