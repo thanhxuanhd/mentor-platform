@@ -140,7 +140,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
         setNotify({
           type: "success",
           message: "Application Submitted",
-          description: "Thank you! We'll review your application soon.",
+          description: "Thank you! We will review your application soon.",
         });
       }
       form.resetFields();
