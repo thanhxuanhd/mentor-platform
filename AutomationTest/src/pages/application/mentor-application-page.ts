@@ -49,9 +49,4 @@ export class MentorApplicationPage extends BasePage {
     async inputMotivation(motivation: string) {
         await this.fill(this.TXT_MOTIVATION_LOCATOR, motivation);
     }
-
-    async expectMessage(message: string) {
-        const locator: Locator = this.page.getByText(message)
-        await this.isVisible(locator);
-    }
 }
