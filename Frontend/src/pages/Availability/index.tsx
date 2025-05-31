@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useContext } from "react";
-import { Button, Card, message, Spin } from "antd";
+import { Button, Card, message, Spin, App } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import { v4 as uuidv4 } from 'uuid';
@@ -31,6 +31,7 @@ dayjs.extend(isSameOrAfter);
 
 export default function AvailabilityManager() {
   const { user } = useContext(AuthContext);
+  const { notification } = App.useApp();
   
   // Settings state - these will be loaded from backend
   const [startTime, setStartTime] = useState("09:00");
@@ -52,6 +53,7 @@ export default function AvailabilityManager() {
   const [saveError, setSaveError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
+  const [notify, setNotify] = useState<{ type: "success" | "error" | "info" | "warning"; message: string; description: string; } | null>(null);
 
   // Load initial data from API
   const loadScheduleSettings = async (weekStart?: Dayjs) => {
@@ -84,11 +86,22 @@ export default function AvailabilityManager() {
     } finally {
       setIsLoading(false);
     }
-  };
-  // Load data on component mount and when week changes
+  };  // Load data on component mount and when week changes
   useEffect(() => {
     loadScheduleSettings();
   }, [user?.id, currentWeekStart]);
+
+  // Handle notifications
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
   // Use the backend's isLocked value instead of calculating locally
   const hasBookedSessions = isLocked;
 
@@ -266,17 +279,26 @@ export default function AvailabilityManager() {
       });      const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
 
       if (response.success) {
-        message.success(response.message);
+        setNotify({
+          type: "success",
+          message: "Schedule saved successfully!",
+          description: "",
+        });
         // Reload data to get updated time slots from backend
         await loadScheduleSettings(currentWeekStart);
       } else {
         setSaveError(true);
         message.error('Failed to save availability settings');
-      }
+      }    
     } catch (error) {
       setSaveError(true);
-      message.error("An error occurred while saving your availability.");
-      console.error("Save error:", error);    } finally {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "An error occurred while saving your availability.",
+      });
+      console.error("Save error:", error);
+    } finally {
       setIsSaving(false);
     }
   };  // Regenerate time slots based on current settings
@@ -367,13 +389,12 @@ export default function AvailabilityManager() {
     <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>
-        <Button
+        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>        <Button
           type="primary"
           icon={<SaveOutlined />}
           onClick={saveChanges}
           loading={isSaving}
-          disabled={isLoading || isLocked}
+          disabled={isLoading}
           className={`
             px-6 py-2 h-auto 
             ${saveError
@@ -424,9 +445,11 @@ export default function AvailabilityManager() {
 
               />
             </div>
-          </Card>          {/* Bulk Actions */}
+          </Card>          
+          {/* Bulk Actions */}
           <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">              <BulkActions
+            <div className="text-white">              
+              <BulkActions
                 selectedDate={selectedDate}
                 onSelectAll={selectAllSlots}
                 onClearAll={clearAllSlots}
@@ -450,11 +473,11 @@ export default function AvailabilityManager() {
 
           {/* Time Blocks */}
           <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">              <Spin spinning={isSaving}>              <TimeBlocks
+            <div className="text-white">              
+              <Spin spinning={isSaving}>                  <TimeBlocks
                 selectedDate={selectedDate}
                 timeBlocks={currentSlots}
                 onToggleBlock={toggleSlotAvailability}
-                isLocked={isLocked}
               />
             </Spin>
             </div>
@@ -467,7 +490,8 @@ export default function AvailabilityManager() {
                 <h3 className="text-lg font-medium mb-2">Availability Preview</h3>
                 <p className="text-slate-400 text-sm mb-4">
                   This is how your availability will appear to learners:
-                </p>                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
+                </p>                
+                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
                   {previewData.map((day, index) => (
                     <div key={index} className="bg-slate-600 rounded-lg p-3">
                       <div className="text-center mb-2">
@@ -513,7 +537,8 @@ export default function AvailabilityManager() {
                   </div>
                 </div>
               </div>
-            </div>          </Card>
+            </div>          
+          </Card>
         </div>
       </div>
       )}

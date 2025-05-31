@@ -81,9 +81,12 @@ export const convertAvailabilityToApiFormat = (
     isAvailable: boolean;
     isBooked: boolean;
   }>> = {};
-    Object.entries(availability).forEach(([date, timeBlocks]) => {
+  Object.entries(availability).forEach(([date, timeBlocks]) => {
     // Only include time slots that are available (selected by the user)
-    const availableSlots = timeBlocks.filter(slot => slot.available);
+    // Exclude booked, unavailable, and past slots
+    const availableSlots = timeBlocks.filter(slot => 
+      slot.available && !slot.booked && !slot.isPast
+    );
     if (availableSlots.length > 0) {
       availableTimeSlots[date] = availableSlots.map(convertTimeBlockToApiSlot);
     }

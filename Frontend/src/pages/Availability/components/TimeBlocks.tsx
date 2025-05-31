@@ -7,10 +7,9 @@ interface TimeBlocksProps {
   selectedDate: dayjs.Dayjs;
   timeBlocks: TimeBlock[];
   onToggleBlock: (blockId: string) => void;
-  isLocked?: boolean;
 }
 
-export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock, isLocked = false }: TimeBlocksProps) {
+export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBlocksProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-medium mb-4">
@@ -19,7 +18,8 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock, isLocked =
       
       {timeBlocks.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {timeBlocks.map((block) => (            <Tooltip 
+          {timeBlocks.map((block) => (           
+            <Tooltip 
               key={block.id} 
               title={
                 block.booked 
