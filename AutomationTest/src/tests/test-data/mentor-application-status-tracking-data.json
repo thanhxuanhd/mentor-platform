@@ -6,18 +6,11 @@
   },
   "admin_role": {
     "email": "mini@mentorplatform.local",
-    "password": "mypassword88$",
-    "admin_notes": "This is test note"
+    "password": "mypassword88$"
   },
   "tracking_status": {
     "waiting_info": "Request Info",
     "approve": "Approve",
     "reject": "Reject"
-  },
-  "status_filter": {
-    "waiting_info": "Waiting Info",
-    "approve": "Approve",
-    "reject": "Reject",
-    "submit": "Submit"
   }
 }

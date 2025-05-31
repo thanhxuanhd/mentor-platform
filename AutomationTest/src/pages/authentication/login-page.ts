@@ -59,4 +59,12 @@ export class LoginPage extends BasePage {
   async expectFailedLogin() {
     await this.isVisible(this.LBL_FAILEDMESSAGE_LOCATOR);
   }
+
+  async loginAsRole(email: string, password: string) {
+    await this.clickOnLogoutButton();
+    await this.inputEmail(email);
+    await this.inputPassword(password);
+    await this.clickSignInButton();
+    await this.expectLogoutButton();
+  }
 }

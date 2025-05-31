@@ -54,15 +54,19 @@ export class MentorApplicationReview extends BasePage {
     await this.waitUntilVisible(this.LBL_NOTIFICATION);
     await this.isVisible(this.LBL_NOTIFICATION);
   }
-  async adminMentorApplicationAction(
-    filter: string,
+  async selectApplicationStatus(mentorName: string, status: string) {
+    await this.clickOnMentorApplicationAdmin(mentorName);
+    await this.clickOnStatusActionButton(status);
+  }
+
+  async rejectMentorApplication(
     mentorName: string,
-    notes: string,
+    filter: string,
     status: string
   ) {
     await this.clickOnFilterStatus(filter);
     await this.clickOnMentorApplicationAdmin(mentorName);
-    await this.fillInAdminNotesField(notes);
+    await this.fillInAdminNotesField("This is test notes");
     await this.clickOnStatusActionButton(status);
   }
 }
