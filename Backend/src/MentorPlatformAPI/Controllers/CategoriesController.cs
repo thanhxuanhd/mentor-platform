@@ -58,7 +58,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [Route("{categoryId}")]
     public async Task<IActionResult> DeleteCategory(Guid categoryId)
     {
-        var result = await categoryService.SoftDeleteCategoryAsync(categoryId);
+        var result = await categoryService.DeleteCategoryAsync(categoryId);
         return StatusCode((int)result.StatusCode, result);
     }
 }
