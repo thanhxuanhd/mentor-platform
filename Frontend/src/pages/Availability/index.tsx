@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState, useEffect } from "react";
-import { Button, Card, DatePicker, message, Spin } from "antd";
-import { CalendarOutlined, SaveOutlined } from "@ant-design/icons";
+import React, { useState, useEffect, useContext } from "react";
+import { Button, Card, message, Spin } from "antd";
+import { SaveOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
 import { v4 as uuidv4 } from 'uuid';
 import weekday from 'dayjs/plugin/weekday';
@@ -17,9 +17,11 @@ import { BulkActions } from "./components/BulkActions";
 import { WeekCalendar } from "./components/WeekCalendar";
 import { TimeBlocks } from "./components/TimeBlocks";
 
-// Import types and mock data
+// Import types and services
 import type { DayAvailability, TimeBlock, WeekDay } from "./types";
-import { generateInitialAvailability, mockSaveAvailability } from "./mock";
+import { availabilityService } from "../../services/availability/availabilityService";
+import { AuthContext } from "../../contexts/AuthContext";
+import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat } from "./utils";
 
 // Configure dayjs plugins
 dayjs.extend(weekday);
@@ -28,7 +30,9 @@ dayjs.extend(isSameOrBefore);
 dayjs.extend(isSameOrAfter);
 
 export default function AvailabilityManager() {
-  // Settings state
+  const { user } = useContext(AuthContext);
+  
+  // Settings state - these will be loaded from backend
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [sessionDuration, setSessionDuration] = useState(60);
@@ -41,11 +45,50 @@ export default function AvailabilityManager() {
   );
 
   // Availability data
-  const [availability, setAvailability] = useState<DayAvailability>(generateInitialAvailability());
+  const [availability, setAvailability] = useState<DayAvailability>({});
 
   // UI state
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLocked, setIsLocked] = useState(false);
+
+  // Load initial data from API
+  const loadScheduleSettings = async (weekStart?: Dayjs) => {
+    if (!user?.id) return;
+    
+    try {
+      setIsLoading(true);
+      const weekStartDate = (weekStart || currentWeekStart).format('YYYY-MM-DD');
+      const weekEndDate = (weekStart || currentWeekStart).add(6, 'days').format('YYYY-MM-DD');
+      
+      const settings = await availabilityService.getScheduleSettings(user.id, {
+        weekStartDate,
+        weekEndDate
+      });
+      
+      // Update settings state
+      setStartTime(settings.startTime);
+      setEndTime(settings.endTime);
+      setSessionDuration(settings.sessionDuration);
+      setBufferTime(settings.bufferTime);
+      setIsLocked(settings.isLocked);
+      
+      // Convert and set availability data
+      const availabilityData = convertApiScheduleToAvailability(settings);
+      setAvailability(availabilityData);
+      
+    } catch (error) {
+      console.error('Failed to load schedule settings:', error);
+      message.error('Failed to load availability settings');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  // Load data on component mount and when week changes
+  useEffect(() => {
+    loadScheduleSettings();
+  }, [user?.id, currentWeekStart]);
 
   // Check if any future sessions are booked
   const hasBookedSessions = React.useMemo(() => {
@@ -60,75 +103,19 @@ export default function AvailabilityManager() {
       return false;
     });
   }, [availability]);
-  // Generate time slots based on work hours and session settings
-  const generateTimeBlocks = React.useCallback((): TimeBlock[] => {
-    const slots: TimeBlock[] = [];
-    const start = dayjs(`2024-01-01 ${startTime}`);
-    const end = dayjs(`2024-01-01 ${endTime}`);
 
-    let current = start;
-    while (current.add(sessionDuration, "minute").isSameOrBefore(end)) {
-      const slotEnd = current.add(sessionDuration, "minute");
-      slots.push({
-        id: uuidv4(),
-        time: `${current.format("HH:mm")} - ${slotEnd.format("HH:mm")}`,
-        startTime: current.format("HH:mm"),
-        endTime: slotEnd.format("HH:mm"),
-        available: false,
-        booked: false,
-      });
-      current = slotEnd.add(bufferTime, "minute");
-    }
-
-    return slots;
-  }, [startTime, endTime, sessionDuration, bufferTime]);
   // Get time slots for the currently selected date
   const getCurrentDateSlots = React.useCallback((): TimeBlock[] => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
-    return availability[dateKey] || generateTimeBlocks();
-  }, [selectedDate, availability, generateTimeBlocks]);
+    return availability[dateKey] || [];
+  }, [selectedDate, availability]);
+  
   // Current time slots based on selected date
   const [currentSlots, setCurrentSlots] = useState<TimeBlock[]>([]);
-  // Update current slots when selected date or availability changes
+    // Update current slots when selected date or availability changes
   useEffect(() => {
     setCurrentSlots(getCurrentDateSlots());
   }, [getCurrentDateSlots]);
-
-  // Generate slots when settings change and update availability
-  useEffect(() => {
-    const updatedSlots = generateTimeBlocks();
-
-    // Update availability data with new slot structure
-    setAvailability(prevAvailability => {
-      const updatedAvailability: DayAvailability = {};
-      Object.keys(prevAvailability).forEach(dateKey => {
-        updatedAvailability[dateKey] = updatedSlots.map(slot => ({
-          ...slot,
-          id: uuidv4(), // Generate new ID for each slot
-          // Try to preserve existing availability selections
-          available: prevAvailability[dateKey]?.some(
-            existing =>
-              existing.startTime === slot.startTime &&
-              existing.endTime === slot.endTime &&
-              existing.available
-          ) || false,
-          // Preserve booked status
-          booked: prevAvailability[dateKey]?.some(
-            existing =>
-              existing.startTime === slot.startTime &&
-              existing.endTime === slot.endTime &&
-              existing.booked
-          ) || false
-        }));
-      });
-      return updatedAvailability;
-    });
-  }, [generateTimeBlocks]);
-
-  // Initialize availability on mount
-  useEffect(() => {
-    setAvailability(generateInitialAvailability());
-  }, []);
 
   // Toggle availability for a specific time slot
   const toggleSlotAvailability = (slotId: string) => {
@@ -148,8 +135,7 @@ export default function AvailabilityManager() {
     message.success(
       `Time slot ${updatedSlot?.time} ${updatedSlot?.available ? 'enabled' : 'disabled'}`
     );
-  };
-  // Week navigation
+  };  // Week navigation
   const navigateWeek = (direction: "prev" | "next") => {
     const newWeekStart = direction === "prev"
       ? currentWeekStart.subtract(1, "week")
@@ -165,7 +151,8 @@ export default function AvailabilityManager() {
 
   // Go to current week
   const goToCurrentWeek = () => {
-    setCurrentWeekStart(dayjs().startOf("week").weekday(0)); // Start from Sunday
+    const newWeekStart = dayjs().startOf("week").weekday(0); // Start from Sunday
+    setCurrentWeekStart(newWeekStart);
     setSelectedDate(dayjs());
   };
 
@@ -216,7 +203,6 @@ export default function AvailabilityManager() {
 
     message.success("All time slots disabled for this date");
   };
-
   // Copy schedule to all days in current week
   const copyScheduleToAllDays = () => {
     const sourceSlots = getCurrentDateSlots();
@@ -255,20 +241,36 @@ export default function AvailabilityManager() {
     setAvailability(prev => ({ ...prev, ...updates }));
     message.success("Schedule copied to all days in current week");
   };
-
   // Save changes
   const saveChanges = async () => {
+    if (!user?.id) {
+      message.error('User not authenticated');
+      return;
+    }
+
     setIsSaving(true);
     setSaveError(false);
 
     try {
-      const response = await mockSaveAvailability(availability);
+      const weekStartDate = currentWeekStart.format('YYYY-MM-DD');
+      const weekEndDate = currentWeekStart.add(6, 'days').format('YYYY-MM-DD');
+      
+      const saveRequest = convertAvailabilityToApiFormat(availability, {
+        weekStartDate,
+        weekEndDate,
+        startTime,
+        endTime,
+        sessionDuration,
+        bufferTime
+      });      const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
 
       if (response.success) {
         message.success(response.message);
+        // Reload data to get updated time slots from backend
+        await loadScheduleSettings(currentWeekStart);
       } else {
         setSaveError(true);
-        message.error(response.message);
+        message.error('Failed to save availability settings');
       }
     } catch (error) {
       setSaveError(true);
@@ -277,22 +279,25 @@ export default function AvailabilityManager() {
     } finally {
       setIsSaving(false);
     }
-  };
-  // Update settings with validation
+  };  // Update settings with validation
   const updateStartTime = (time: string) => {
     setStartTime(time);
+    // Note: Settings changes will trigger a save when user clicks save
   };
 
   const updateEndTime = (time: string) => {
     setEndTime(time);
+    // Note: Settings changes will trigger a save when user clicks save
   };
 
   const updateSessionDuration = (duration: number) => {
     setSessionDuration(duration);
+    // Note: Settings changes will trigger a save when user clicks save
   };
 
   const updateBufferTime = (buffer: number) => {
     setBufferTime(buffer);
+    // Note: Settings changes will trigger a save when user clicks save
   };
 
   const weekDays = getWeekDays();
@@ -304,7 +309,6 @@ export default function AvailabilityManager() {
     fullDate: day.fullDate,
     availableSlots: availability[dayjs(day.fullDate).format("YYYY-MM-DD")]?.filter(slot => slot.available) || []
   }));
-
   return (
     <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
       {/* Header */}
@@ -315,6 +319,7 @@ export default function AvailabilityManager() {
           icon={<SaveOutlined />}
           onClick={saveChanges}
           loading={isSaving}
+          disabled={isLoading || isLocked}
           className={`
             px-6 py-2 h-auto 
             ${saveError
@@ -326,6 +331,13 @@ export default function AvailabilityManager() {
           {saveError ? 'Retry Saving' : 'Save Changes'}
         </Button>
       </div>
+
+      {/* Loading State */}
+      {isLoading ? (
+        <div className="flex justify-center items-center min-h-[400px]">
+          <Spin size="large" />
+        </div>
+      ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Sidebar */}
@@ -362,12 +374,12 @@ export default function AvailabilityManager() {
 
           {/* Bulk Actions */}
           <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">
-              <BulkActions
+            <div className="text-white">              <BulkActions
                 selectedDate={selectedDate}
                 onSelectAll={selectAllSlots}
                 onClearAll={clearAllSlots}
                 onCopyToWeek={copyScheduleToAllDays}
+                isLocked={isLocked}
               />
             </div>
           </Card>
@@ -387,11 +399,11 @@ export default function AvailabilityManager() {
 
           {/* Time Blocks */}
           <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">              <Spin spinning={isSaving}>
-              <TimeBlocks
+            <div className="text-white">              <Spin spinning={isSaving}>              <TimeBlocks
                 selectedDate={selectedDate}
                 timeBlocks={currentSlots}
                 onToggleBlock={toggleSlotAvailability}
+                isLocked={isLocked}
               />
             </Spin>
             </div>
@@ -448,10 +460,10 @@ export default function AvailabilityManager() {
                   </div>
                 </div>
               </div>
-            </div>
-          </Card>
+            </div>          </Card>
         </div>
       </div>
+      )}
     </div>
   );
 }

@@ -7,9 +7,10 @@ interface BulkActionsProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   onCopyToWeek: () => void;
+  isLocked?: boolean;
 }
 
-export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWeek }: BulkActionsProps) {
+export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWeek, isLocked = false }: BulkActionsProps) {
   return (
     <div className="space-y-3">
       <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>
@@ -17,7 +18,8 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
       <Button
         icon={<CheckOutlined />}
         onClick={onSelectAll}
-        className="w-full bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
+        disabled={isLocked}
+        className="w-full bg-blue-600 border-blue-600 text-white hover:bg-blue-700 disabled:bg-slate-500 disabled:border-slate-500 disabled:text-slate-300"
       >
         Select all slots for {selectedDate.format("ddd MMM D")}
       </Button>
@@ -25,7 +27,8 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
       <Button
         icon={<CloseOutlined />}
         onClick={onClearAll}
-        className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
+        disabled={isLocked}
+        className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500 disabled:bg-slate-500 disabled:border-slate-500 disabled:text-slate-300"
       >
         Clear all slots for {selectedDate.format("ddd MMM D")}
       </Button>
@@ -33,7 +36,8 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
       <Button
         icon={<CopyOutlined />}
         onClick={onCopyToWeek}
-        className="w-full bg-green-600 border-green-600 text-white hover:bg-green-700"
+        disabled={isLocked}
+        className="w-full bg-green-600 border-green-600 text-white hover:bg-green-700 disabled:bg-slate-500 disabled:border-slate-500 disabled:text-slate-300"
       >
         Copy schedule to all days in week
       </Button>
