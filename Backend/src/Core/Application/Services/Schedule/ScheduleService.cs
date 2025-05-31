@@ -142,26 +142,35 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         for (int dayIndex = 0; dayIndex < dayCount; dayIndex++)
         {
             List<TimeSlotResponse> dailyTimeSlots = new();
-            DateOnly currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
-
-            TimeOnly currentTime = scheduleSettings.StartHour;
-
-            TimeOnly endTime = scheduleSettings.EndHour;
-
-            while (currentTime.AddMinutes(scheduleSettings.SessionDuration) <= endTime)
+            DateOnly currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);            // Use DateTime to handle time arithmetic safely and avoid infinite loops
+            DateTime currentDateTime = currentDate.ToDateTime(scheduleSettings.StartHour);
+            DateTime endDateTime;
+            
+            if (scheduleSettings.EndHour <= scheduleSettings.StartHour)
             {
+                endDateTime = currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour);
+            }
+            else
+            {
+                endDateTime = currentDate.ToDateTime(scheduleSettings.EndHour);
+            }
+
+            while (currentDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
+            {
+                var sessionEndDateTime = currentDateTime.AddMinutes(scheduleSettings.SessionDuration);
+                
                 var timeSlot = new TimeSlotResponse
                 {
                     Id = Guid.NewGuid(),
-                    StartTime = currentTime.ToString("HH:mm"),
-                    EndTime = currentTime.AddMinutes(scheduleSettings.SessionDuration).ToString("HH:mm"),
+                    StartTime = TimeOnly.FromDateTime(currentDateTime).ToString("HH:mm"),
+                    EndTime = TimeOnly.FromDateTime(sessionEndDateTime).ToString("HH:mm"),
                     IsAvailable = false,
                     IsBooked = false
                 };
 
                 dailyTimeSlots.Add(timeSlot);
 
-                currentTime = currentTime.AddMinutes(scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
+                currentDateTime = currentDateTime.AddMinutes(scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
             }
 
             allTimeSlots.Add(currentDate, dailyTimeSlots);
