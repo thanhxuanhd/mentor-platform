@@ -39,7 +39,7 @@
             {
                 note = "No additional notes provided.";
             }
-            
+
             return $@"
             Dear {mentorName},<br><br>
 

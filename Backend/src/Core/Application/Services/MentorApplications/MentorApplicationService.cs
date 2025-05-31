@@ -47,7 +47,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             Experiences = x.Mentor.Experiences,
             SubmittedAt = x.SubmittedAt,
             Status = x.Status.ToString(),
-            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
+            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList()
         }).OrderByDescending(x => x.SubmittedAt);
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
@@ -97,7 +97,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             Statement = applicationDetails.Statement,
             Certifications = applicationDetails.Certifications,
             Education = applicationDetails.Education,
-            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
+            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
             ApplicationStatus = applicationDetails.Status.ToString(),
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
@@ -138,7 +138,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 Expertises = application.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
                 Status = application.Status.ToString(),
                 SubmittedAt = application.SubmittedAt
-            });
+            }).OrderByDescending(application => application.SubmittedAt);
 
         var response = await mentorApplicationRepository.ToListAsync(applicationDetails);
 
@@ -322,7 +322,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.Mentor.FullName);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin!.FullName, application.Mentor.FullName);
 
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 
@@ -332,41 +332,20 @@ public class MentorApplicationService(IUserRepository userRepository,
         return Result.Success(true, HttpStatusCode.OK);
     }
 
-    private static FileType GetFileTypeFromUrl(string url)
+    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest submission, HttpRequest httpRequest)
     {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            throw new ArgumentException("URL cannot be null or empty", nameof(url));
-        }
-
-        if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
-        {
-            throw new InvalidOperationException("Invalid document URL format.");
-        }
-
-        var path = uri.IsAbsoluteUri ? uri.LocalPath : url;
-        var fileName = Path.GetFileName(path);
-        var fileTypeString = fileName.Split("-")[0];
-
-        return fileTypeString.ToLower() switch
-        {
-            "pdf" => FileType.Pdf,
-            "video" => FileType.Video,
-            "audio" => FileType.Audio,
-            "image" => FileType.Image,
-            _ => throw new InvalidOperationException($"Unknown file type: {fileTypeString}")
-        };
-    }
-
-    public async Task<Result<bool>> CreateMentorApplicationAsync(Guid userId, MentorSubmissionRequest request, HttpRequest httpRequest)
-    {
-        var user = await userRepository.GetByIdAsync(userId);
+        var user = await userRepository.GetByIdAsync(userId, u => u.MentorApplications);
         if (user == null)
         {
             return Result.Failure<bool>("User not found", HttpStatusCode.NotFound);
         }
 
-        user.Experiences = request.WorkExperience;
+        if (user.MentorApplications != null && user.MentorApplications.Any(x => x.Status != ApplicationStatus.Rejected))
+        {
+            return Result.Failure<bool>("User has an active or pending mentor application.", HttpStatusCode.BadRequest);
+        }
+
+        user.Experiences = submission.WorkExperience;
         userRepository.Update(user);
 
         var mentorApplication = new MentorApplication
@@ -374,9 +353,9 @@ public class MentorApplicationService(IUserRepository userRepository,
             MentorId = userId,
             SubmittedAt = DateTime.UtcNow,
         };
-        request.ToMentorApplication(mentorApplication);
+        submission.ToMentorApplication(mentorApplication);
 
-        if (request.Documents != null && request.Documents.Any())
+        if (submission.Documents != null && submission.Documents.Any())
         {
             mentorApplication.ApplicationDocuments = new List<ApplicationDocument>();
             var path = Directory.GetCurrentDirectory();
@@ -388,7 +367,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 Directory.CreateDirectory(documentsPath);
             }
 
-            foreach (var file in request.Documents)
+            foreach (var file in submission.Documents)
             {
                 if (file == null || file.Length == 0)
                 {
@@ -406,8 +385,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                     return Result.Failure<bool>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
                 }
 
-                string fileName = $"{file.FileName}";
-                var filePath = Path.Combine(documentsPath, fileName);
+                var filePath = Path.Combine(documentsPath, file.FileName);
 
                 try
                 {
@@ -415,7 +393,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                     await file.CopyToAsync(stream);
 
                     var baseUrl = $"{httpRequest?.Scheme}://{httpRequest?.Host}";
-                    var fileUrl = $"{baseUrl}/documents/{userId}/{fileName}";
+                    var fileUrl = $"{baseUrl}/documents/{userId}/{file.FileName}";
 
                     mentorApplication.ApplicationDocuments.Add(new ApplicationDocument
                     {

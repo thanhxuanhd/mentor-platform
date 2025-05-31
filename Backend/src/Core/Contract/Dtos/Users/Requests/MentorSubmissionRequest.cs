@@ -9,7 +9,7 @@ namespace Contract.Dtos.Users.Requests
         string? WorkExperience,
         string? Certifications,
         string? Statement,
-        List<IFormFile> Documents
+        List<IFormFile>? Documents
         )
     {
         public void ToMentorApplication(MentorApplication application)
@@ -42,7 +42,8 @@ namespace Contract.Dtos.Users.Requests
                 .When(x => !string.IsNullOrWhiteSpace(x.Statement));
 
             RuleFor(x => x.Documents)
-                .Must(list => list.Count <= 5).WithMessage("You can upload a maximum of 5 documents.");
+                .Must(list => list.Count <= 5).WithMessage("You can upload a maximum of 5 documents.")
+                .When(x => x.Documents != null);
 
         }
     }

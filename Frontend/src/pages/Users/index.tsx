@@ -23,6 +23,7 @@ import EditUserModal from "./components/EditUserModal";
 import { userService } from "../../services/user/userService";
 import type { NotificationProps } from "../../types/Notification";
 import { normalizeName } from "../../utils/InputNormalizer";
+import { applicationRole } from "../../constants/role";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -78,7 +79,11 @@ export default function UsersPage() {
       render: (_, { role }) => (
         <Tag
           color={
-            role === "Admin" ? "pink" : role === "Mentor" ? "cyan" : "lime"
+            role === applicationRole.ADMIN
+              ? "pink"
+              : role === applicationRole.MENTOR
+                ? "cyan"
+                : "lime"
           }
         >
           {role}

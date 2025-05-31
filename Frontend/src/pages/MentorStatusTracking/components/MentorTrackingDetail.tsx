@@ -1,4 +1,4 @@
-import { Avatar, Button, Tag, Timeline } from "antd";
+import { Avatar, Button, Timeline } from "antd";
 import {
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -40,11 +40,13 @@ export default function MentorStatusTrackingDetail({
   };
 
   const viewFileInBrowser = (fileUrl: string): void => {
-    window.open(fileUrl, '_blank');
-  }
+    window.open(fileUrl, "_blank");
+  };
 
   const handleEdit = (application: MentorApplicationDetailItemProp) => {
-    navigate("/mentor-application/edit", { state: { application, isEditMode: true } });
+    navigate("/mentor-application/edit", {
+      state: { application, isEditMode: true },
+    });
   };
 
   const timeline = [
@@ -76,7 +78,9 @@ export default function MentorStatusTrackingDetail({
       <div className="flex justify-between items-center">
         <div className="flex flex-col justify-between items-start mb-6">
           <h2 className="text-2xl font-semibold">Application Status</h2>
-          <p className="text-gray-400 text-sm mt-1">Track your mentor application progress</p>
+          <p className="text-gray-400 text-sm mt-1">
+            Track your mentor application progress
+          </p>
         </div>
 
         <div className="flex justify-end mb-4">
@@ -92,7 +96,6 @@ export default function MentorStatusTrackingDetail({
         </div>
       </div>
 
-
       {/* Status Overview Section */}
       <div className="mb-4 bg-gray-800/50 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4">
@@ -103,14 +106,19 @@ export default function MentorStatusTrackingDetail({
               className="ring-4 ring-gray-600/20 transition-all duration-300"
             />
             <div>
-              <h2 className="text-2xl font-semibold text-white">{application.mentorName}</h2>
-              <p className="text-gray-300 text-sm">{application.email || "No email provided"}</p>
+              <h2 className="text-2xl font-semibold text-white">
+                {application.mentorName}
+              </h2>
+              <p className="text-gray-300 text-sm">
+                {application.email || "No email provided"}
+              </p>
             </div>
           </div>
           <div className="mt-4 sm:mt-0 text-right">
             {renderStatusTag(application.applicationStatus)}
             <p className="text-gray-400 text-sm mt-2">
-              Last reviewed: {formatDate(application.reviewedAt || application.submittedAt)}
+              Last reviewed:{" "}
+              {formatDate(application.reviewedAt || application.submittedAt)}
             </p>
           </div>
         </div>
@@ -121,23 +129,33 @@ export default function MentorStatusTrackingDetail({
               <CalendarOutlined className="text-blue-400" />
               <span className="text-gray-200 font-medium">Submitted</span>
             </div>
-            <p className="text-white text-base">{formatDate(application.submittedAt)}</p>
+            <p className="text-white text-base">
+              {formatDate(application.submittedAt)}
+            </p>
           </div>
 
           <div className="bg-gray-700/30 rounded-lg p-4 hover:bg-gray-700/50">
             <div className="flex items-center gap-2 mb-2">
               <UserOutlined className="text-green-400" />
-              <span className="text-gray-200 font-medium">Professional Experiences</span>
+              <span className="text-gray-200 font-medium">
+                Professional Experiences
+              </span>
             </div>
-            <p className="text-white text-base">{application.experiences || "No experience provided"}</p>
+            <p className="text-white text-base">
+              {application.experiences || "No experience provided"}
+            </p>
           </div>
 
           <div className="bg-gray-700/30 rounded-lg p-4 hover:bg-gray-700/50">
             <div className="flex items-center gap-2 mb-2">
               <FileTextOutlined className="text-purple-400" />
-              <span className="text-gray-200 font-medium">Uploaded Documents</span>
+              <span className="text-gray-200 font-medium">
+                Uploaded Documents
+              </span>
             </div>
-            <p className="text-white text-base">{application.documents?.length || 0} files uploaded</p>
+            <p className="text-white text-base">
+              {application.documents?.length || 0} files uploaded
+            </p>
           </div>
         </div>
       </div>
@@ -146,7 +164,9 @@ export default function MentorStatusTrackingDetail({
         {/* Application Timeline */}
         <div className="space-y-4">
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
-            <h3 className="text-xl font-semibold text-white mb-4">Application Timeline</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Application Timeline
+            </h3>
             <Timeline className="mt-4">
               {timeline.map((item) => (
                 <Timeline.Item
@@ -156,10 +176,16 @@ export default function MentorStatusTrackingDetail({
                 >
                   <div className="ml-4">
                     <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-white font-semibold">{item.status}</h4>
-                      <span className="text-gray-400 text-sm">{formatDate(item.date)}</span>
+                      <h4 className="text-white font-semibold">
+                        {item.status}
+                      </h4>
+                      <span className="text-gray-400 text-sm">
+                        {formatDate(item.date)}
+                      </span>
                     </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {item.description}
+                    </p>
                   </div>
                 </Timeline.Item>
               ))}
@@ -169,11 +195,15 @@ export default function MentorStatusTrackingDetail({
           {/* Admin Notes */}
           {application.note && (
             <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
-              <h3 className="text-xl font-semibold text-white mb-4">Admin Notes</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">
+                Admin Notes
+              </h3>
               <div className="bg-gray-700/30 border border-blue-500/20 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <InfoCircleOutlined className="text-blue-400 mt-1" />
-                  <p className="text-gray-200 leading-relaxed text-base">{application.note}</p>
+                  <p className="text-gray-200 leading-relaxed text-base">
+                    {application.note}
+                  </p>
                 </div>
               </div>
             </div>
@@ -192,7 +222,9 @@ export default function MentorStatusTrackingDetail({
 
           {/* Certifications */}
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
-            <h3 className="text-xl font-semibold text-white mb-4">Certifications</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Certifications
+            </h3>
             <p className="text-gray-200 text-base leading-relaxed">
               {application.certifications || "No certifications provided"}
             </p>
@@ -208,7 +240,9 @@ export default function MentorStatusTrackingDetail({
 
           {/* Uploaded Documents */}
           <div className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 backdrop-blur-sm">
-            <h3 className="text-xl font-semibold text-white mb-4">Uploaded Documents</h3>
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Uploaded Documents
+            </h3>
             <div className="space-y-3">
               {application.documents?.map((doc) => (
                 <div
@@ -218,11 +252,19 @@ export default function MentorStatusTrackingDetail({
                   <div className="flex items-center gap-3">
                     <FileTextOutlined className="text-blue-400" />
                     <div>
-                      <p className="text-white font-medium text-base">{normalizeServerFiles(doc.documentUrl)}</p>
-                      <p className="text-gray-400 text-sm">Uploaded: {formatDate(application.submittedAt)}</p>
+                      <p className="text-white font-medium text-base">
+                        {normalizeServerFiles(doc.documentUrl)}
+                      </p>
+                      <p className="text-gray-400 text-sm">
+                        Uploaded: {formatDate(application.submittedAt)}
+                      </p>
                     </div>
                   </div>
-                  <Button type="link" className="text-blue-400 hover:text-blue-300 p-0" onClick={() => viewFileInBrowser(doc.documentUrl)}>
+                  <Button
+                    type="link"
+                    className="text-blue-400 hover:text-blue-300 p-0"
+                    onClick={() => viewFileInBrowser(doc.documentUrl)}
+                  >
                     View
                   </Button>
                 </div>
@@ -234,7 +276,6 @@ export default function MentorStatusTrackingDetail({
 
       {/* Footer with Back and Edit Buttons */}
       <div className="mt-8 flex justify-end gap-4">
-
         <Button
           type="primary"
           onClick={onBackToList}

@@ -65,9 +65,20 @@ public static class ApplicationDbExtensions
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
             var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
             var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
-            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
-            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            if (mentorRole is null)
+            {
+                throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            }
+
+            if (learnerRole is null)
+            {
+                throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
+            }
+
+            if (adminRole is null)
+            {
+                throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            }
 
             dbContext.Users.AddRange(
                 new User

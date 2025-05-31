@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../hooks";
 import Loading from "../components/Loading";
+import { applicationRole } from "../constants/role";
 
 interface ProtectedRouteProps {
   requiredRole: string | string[];
@@ -12,8 +13,9 @@ interface ProtectedRouteProps {
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
   children,
+  checkMentorApplication,
 }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading, isMentorApproved } = useAuth();
   const currentPath = window.location.pathname;
 
   if (loading) {
@@ -32,6 +34,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (!hasAccess) {
     return <Navigate to="/forbidden" replace />;
+  }
+
+  if (
+    user.role === applicationRole.MENTOR &&
+    checkMentorApplication &&
+    !isMentorApproved
+  ) {
+    return <Navigate to="my-applications" replace />;
   }
 
   return <>{children}</>;

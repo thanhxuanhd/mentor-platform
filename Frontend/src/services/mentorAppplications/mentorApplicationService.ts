@@ -10,23 +10,15 @@ export const mentorApplicationService = {
   getMentorApplications: async (
     request: MentorApplicationFilterProp,
   ): Promise<PaginatedList<MentorApplicationListItemProp>> => {
-    try {
-      const response = await axiosClient.get(`mentor-applications`, {
-        params: request,
-      });
-      return response.data.value;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axiosClient.get(`mentor-applications`, {
+      params: request,
+    });
+    return response.data.value;
   },
 
   getMentorApplicationById: async (id: string) => {
-    try {
-      const response = await axiosClient.get(`mentor-applications/${id}`);
-      return response.data.value;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axiosClient.get(`mentor-applications/${id}`);
+    return response.data.value;
   },
 
   updateMentorApplicationStatus: async (
@@ -34,52 +26,31 @@ export const mentorApplicationService = {
     status: ApplicationStatus,
     note?: string,
   ) => {
-    try {
-      const response = await axiosClient.put(
-        `mentor-applications/${id}/status`,
-        {
-          status,
-          note,
-        },
-      );
-      return response.data.value;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axiosClient.put(`mentor-applications/${id}/status`, {
+      status,
+      note,
+    });
+    return response.data.value;
   },
 
   requestMentorApplicationInfo: async (
     id: string,
     note: string,
   ): Promise<void> => {
-    try {
-      await axiosClient.put(`mentor-applications/${id}/request-info`, {
-        note,
-      });
-    } catch (error) {
-      throw error;
-    }
+    await axiosClient.put(`mentor-applications/${id}/request-info`, {
+      note,
+    });
   },
 
   getMentorApplicationByMentorId: async (id: string) => {
-    try {
-      const response = await axiosClient.get(
-        `mentor-applications/${id}/mentor`,
-      );
-      return response.data.value;
-    } catch (error) {
-      throw error;
-    }
+    const response = await axiosClient.get(`mentor-applications/${id}/mentor`);
+    return response.data.value;
   },
 
   postMentorSubmission: async (data: FormData) => {
-    const response = await axiosClient.post(
-      `mentor-applications/mentor-submission`,
-      data,
-      {
-        headers: { "Content-Type": "multipart/form-data" },
-      },
-    );
+    const response = await axiosClient.post(`mentor-applications`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data.value;
   },
 

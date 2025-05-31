@@ -1,59 +1,73 @@
-import { Avatar, List, App, Pagination } from "antd"
-import { UserOutlined, CalendarOutlined, TagOutlined } from "@ant-design/icons"
-import { ApplicationStatus } from "../../types/enums/ApplicationStatus"
-import { useCallback, useEffect, useState } from "react"
-import MentorApplicationDetail from "./components/MentorApplicationDetail"
-import MentorApplicationFilter from "./components/MentorApplicationFilter"
-import type { MentorApplicationDetailItemProp, MentorApplicationFilterProp, MentorApplicationListItemProp } from "../../types/MentorApplicationType"
-import type { NotificationProps } from "../../types/Notification"
-import { formatDate } from "../../utils/DateFormat"
-import { mentorApplicationService } from "../../services/mentorAppplications/mentorApplicationService"
-import { renderStatusTag } from "./utils/renderStatusTag"
-import DefaultAvatar from "../../assets/images/default-account.svg"
+import { Avatar, List, App, Pagination } from "antd";
+import { UserOutlined, CalendarOutlined, TagOutlined } from "@ant-design/icons";
+import { ApplicationStatus } from "../../types/enums/ApplicationStatus";
+import { useCallback, useEffect, useState } from "react";
+import MentorApplicationDetail from "./components/MentorApplicationDetail";
+import MentorApplicationFilter from "./components/MentorApplicationFilter";
+import type {
+  MentorApplicationDetailItemProp,
+  MentorApplicationFilterProp,
+  MentorApplicationListItemProp,
+} from "../../types/MentorApplicationType";
+import type { NotificationProps } from "../../types/Notification";
+import { formatDate } from "../../utils/DateFormat";
+import { mentorApplicationService } from "../../services/mentorAppplications/mentorApplicationService";
+import { renderStatusTag } from "./utils/renderStatusTag";
+import DefaultAvatar from "../../assets/images/default-account.svg";
 
 const defaultMentorApplicationFilter: MentorApplicationFilterProp = {
   pageSize: 3,
   pageIndex: 1,
   status: ApplicationStatus.Submitted,
   keyword: "",
-}
+};
 
 export default function MentorApplicationPage() {
-  const [filters, setFilters] = useState<MentorApplicationFilterProp>(defaultMentorApplicationFilter);
-  const [mentorApplications, setMentorApplications] = useState<MentorApplicationListItemProp[]>([]);
+  const [filters, setFilters] = useState<MentorApplicationFilterProp>(
+    defaultMentorApplicationFilter,
+  );
+  const [mentorApplications, setMentorApplications] = useState<
+    MentorApplicationListItemProp[]
+  >([]);
   const [pagination, setPagination] = useState({
     pageIndex: filters.pageIndex || 1,
     totalCount: 3,
     pageSize: filters.pageSize || 3,
   });
-  const [selectedApplication, setSelectedApplication] = useState<MentorApplicationDetailItemProp | null>(null);
+  const [selectedApplication, setSelectedApplication] =
+    useState<MentorApplicationDetailItemProp | null>(null);
   const [loading, setLoading] = useState(false);
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [applicationCount, setApplicationCount] = useState(0);
   const { notification } = App.useApp();
 
-  const fetchApplications = useCallback(async (filters: MentorApplicationFilterProp) => {
-    try {
-      setLoading(true);
-      const response = await mentorApplicationService.getMentorApplications(filters);
-      setMentorApplications(response.items);
-      setPagination({
-        ...pagination,
-        pageIndex: response.pageIndex,
-        totalCount: response.totalCount,
-        pageSize: response.pageSize,
-      });
-      setApplicationCount(response.totalCount);
-    } catch (error: any) {
-      setNotify({
-        type: "error",
-        message: "Failed to fetch applications",
-        description: error?.response?.data?.error || "Error fetching applications.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters]);
+  const fetchApplications = useCallback(
+    async (filters: MentorApplicationFilterProp) => {
+      try {
+        setLoading(true);
+        const response =
+          await mentorApplicationService.getMentorApplications(filters);
+        setMentorApplications(response.items);
+        setPagination({
+          ...pagination,
+          pageIndex: response.pageIndex,
+          totalCount: response.totalCount,
+          pageSize: response.pageSize,
+        });
+        setApplicationCount(response.totalCount);
+      } catch (error: any) {
+        setNotify({
+          type: "error",
+          message: "Failed to fetch applications",
+          description:
+            error?.response?.data?.error || "Error fetching applications.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [filters],
+  );
 
   useEffect(() => {
     fetchApplications(filters);
@@ -76,13 +90,15 @@ export default function MentorApplicationPage() {
   const fetchApplicationDetail = useCallback(async (applicationId: string) => {
     try {
       setLoading(true);
-      const response = await mentorApplicationService.getMentorApplicationById(applicationId);
+      const response =
+        await mentorApplicationService.getMentorApplicationById(applicationId);
       setSelectedApplication(response);
     } catch (error: any) {
       setNotify({
         type: "error",
         message: "Failed to fetch application details",
-        description: error?.response?.data?.error || "Error fetching application details.",
+        description:
+          error?.response?.data?.error || "Error fetching application details.",
       });
     } finally {
       setLoading(false);
@@ -93,20 +109,22 @@ export default function MentorApplicationPage() {
     setFilters({
       ...filters,
       ...newFilters,
-      pageIndex: Object.keys(newFilters).some((key) => key !== "pageIndex") ? 1 : newFilters.pageIndex ?? filters.pageIndex,
+      pageIndex: Object.keys(newFilters).some((key) => key !== "pageIndex")
+        ? 1
+        : (newFilters.pageIndex ?? filters.pageIndex),
     });
+    setSelectedApplication(null)
   };
 
   const handleApplicationClick = async (application: any) => {
-    await fetchApplicationDetail(application.mentorApplicationId)
-  }
+    await fetchApplicationDetail(application.mentorApplicationId);
+  };
 
   const handleNoteEmpty = () => {
     if (!selectedApplication) return false;
-    const isEmpty = selectedApplication.note?.trim() === '';
-    debugger;
+    const isEmpty = selectedApplication.note?.trim() === "";
     return isEmpty;
-  }
+  };
 
   const handleApprove = async () => {
     if (!selectedApplication) return;
@@ -119,7 +137,11 @@ export default function MentorApplicationPage() {
       return;
     }
     try {
-      await mentorApplicationService.updateMentorApplicationStatus(selectedApplication.mentorApplicationId, ApplicationStatus.Approved, selectedApplication.note || '');
+      await mentorApplicationService.updateMentorApplicationStatus(
+        selectedApplication.mentorApplicationId,
+        ApplicationStatus.Approved,
+        selectedApplication.note || "",
+      );
       setNotify({
         type: "success",
         message: "Application Approved",
@@ -131,11 +153,12 @@ export default function MentorApplicationPage() {
       setNotify({
         type: "error",
         message: "Failed to approve application",
-        description: error?.response?.data?.error || "Error approving application.",
+        description:
+          error?.response?.data?.error || "Error approving application.",
       });
       return;
     }
-  }
+  };
 
   const handleReject = async () => {
     if (!selectedApplication) return;
@@ -148,7 +171,11 @@ export default function MentorApplicationPage() {
       return;
     }
     try {
-      await mentorApplicationService.updateMentorApplicationStatus(selectedApplication.mentorApplicationId, ApplicationStatus.Rejected, selectedApplication.note || '');
+      await mentorApplicationService.updateMentorApplicationStatus(
+        selectedApplication.mentorApplicationId,
+        ApplicationStatus.Rejected,
+        selectedApplication.note || "",
+      );
       setNotify({
         type: "success",
         message: "Application Rejected",
@@ -160,11 +187,12 @@ export default function MentorApplicationPage() {
       setNotify({
         type: "error",
         message: "Failed to reject application",
-        description: error?.response?.data?.error || "Error rejecting application.",
+        description:
+          error?.response?.data?.error || "Error rejecting application.",
       });
       return;
     }
-  }
+  };
 
   const handleRequestInfo = async () => {
     if (!selectedApplication) return;
@@ -177,7 +205,10 @@ export default function MentorApplicationPage() {
       return;
     }
     try {
-      await mentorApplicationService.requestMentorApplicationInfo(selectedApplication.mentorApplicationId, selectedApplication.note || '');
+      await mentorApplicationService.requestMentorApplicationInfo(
+        selectedApplication.mentorApplicationId,
+        selectedApplication.note || "",
+      );
       setNotify({
         type: "success",
         message: "Requested Additional Info",
@@ -189,17 +220,20 @@ export default function MentorApplicationPage() {
       setNotify({
         type: "error",
         message: "Failed to request additional info",
-        description: error?.response?.data?.error || "Error requesting additional info.",
+        description:
+          error?.response?.data?.error || "Error requesting additional info.",
       });
       return;
     }
-  }
+  };
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <div className="flex flex-col justify-between items-start mb-6">
         <h2 className="text-2xl font-semibold">Mentor Applications</h2>
-        <p className="text-slate-300 text-sm mb-6">Review and manage pending mentor applications</p>
+        <p className="text-slate-300 text-sm mb-6">
+          Review and manage pending mentor applications
+        </p>
         <MentorApplicationFilter onFilterChange={handleFilterChange} />
       </div>
 
@@ -209,7 +243,9 @@ export default function MentorApplicationPage() {
             <div className="bg-gradient-to-r from-slate-600 to-slate-650 px-3 py-2 border-b border-slate-500/30">
               <div className="flex items-center gap-2">
                 <UserOutlined className="text-slate-300" />
-                <h2 className="text-white font-semibold">Applications Review</h2>
+                <h2 className="text-white font-semibold">
+                  Applications Review
+                </h2>
                 <div className="ml-auto bg-orange-500/20 text-orange-300 px-3 py-1 rounded-full text-sm font-medium">
                   {applicationCount} applications
                 </div>
@@ -267,12 +303,17 @@ export default function MentorApplicationPage() {
                             {renderStatusTag(mentorApplication.status)}
                             <div className="flex items-center gap-1 text-slate-400 text-xs">
                               <CalendarOutlined />
-                              <span>Submitted: {formatDate(mentorApplication.submittedAt)}</span>
+                              <span>
+                                Submitted:{" "}
+                                {formatDate(mentorApplication.submittedAt)}
+                              </span>
                             </div>
                           </div>
 
                           <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                            <div className="text-blue-400 text-sm font-medium">Click to review →</div>
+                            <div className="text-blue-400 text-sm font-medium">
+                              Click to review →
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -284,7 +325,10 @@ export default function MentorApplicationPage() {
           </div>
 
           <div className="mt-6 mb-4 text-center">
-            <p className="text-slate-400 text-sm">Click on any application to view detailed information and take action</p>
+            <p className="text-slate-400 text-sm">
+              Click on any application to view detailed information and take
+              action
+            </p>
           </div>
 
           <Pagination
@@ -317,5 +361,5 @@ export default function MentorApplicationPage() {
         />
       </div>
     </div>
-  )
+  );
 }
