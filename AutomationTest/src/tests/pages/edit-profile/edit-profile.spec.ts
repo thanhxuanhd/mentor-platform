@@ -11,11 +11,12 @@ test.describe("@Edit profile test", () => {
   });
 
   const userData: { [label: string]: EditUserProfileInterface } = {
-    "Verify update user profile successfully": editUserProfileData.valid_case,
-    "Empty fullname": editUserProfileData.empty_fullname,
-    "Empty phone number": editUserProfileData.empty_phone_number,
-    "Empty availability": editUserProfileData.empty_availability,
-    "Incorrect phone number format":
+    "@SmokeTest Verify update user profile successfully":
+      editUserProfileData.valid_case,
+    "@SmokeTest Empty fullname": editUserProfileData.empty_fullname,
+    "@SmokeTest Empty phone number": editUserProfileData.empty_phone_number,
+    "@SmokeTest Empty availability": editUserProfileData.empty_availability,
+    "@SmokeTest Incorrect phone number format":
       editUserProfileData.wrong_phone_number_format,
     "Verify display error message when skills exceed 200 characters":
       editUserProfileData.professional_skills_exceed_200_characters,
