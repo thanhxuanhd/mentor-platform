@@ -1,0 +1,17 @@
+{
+  "test_admin": {
+    "email": "admin@gmail.com",
+    "password": "Bqt2112.",
+    "roleId": "1"
+  },
+  "test_learner": {
+    "email": "learner@gmail.com",
+    "password": "Bqt2112.",
+    "roleId": "3"
+  },
+  "test_mentor": {
+    "email": "mentor@gmail.com",
+    "password": "Bqt2112.",
+    "roleId": "2"
+  }
+}

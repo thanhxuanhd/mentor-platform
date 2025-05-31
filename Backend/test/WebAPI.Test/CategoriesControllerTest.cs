@@ -106,35 +106,25 @@ public class CategoriesControllerTest
     {
         // Arrange
         var categoryId = Guid.NewGuid();
-        var pageIndex = 1;
-        var pageSize = 5;
-        var serviceResult = Result.Failure<PaginatedList<FilterCourseByCategoryResponse>>("Category not found", HttpStatusCode.NotFound);
+        var serviceResult = Result.Failure<List<FilterCourseByCategoryResponse>>("Category not found", HttpStatusCode.NotFound);
 
-        var request = new FilterCourseByCategoryRequest
-        {
-            PageIndex = pageIndex,
-            PageSize = pageSize
-        };
-
-        _categoryServiceMock.Setup(s => s.FilterCourseByCategoryAsync(categoryId, It.Is<FilterCourseByCategoryRequest>(r => 
-            r.PageIndex == pageIndex && r.PageSize == pageSize)))
+        _categoryServiceMock.Setup(s => s.FilterCourseByCategoryAsync(categoryId))
             .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _categoriesController.FilterCourseByCategory(categoryId, request);
+        var result = await _categoriesController.FilterCourseByCategory(categoryId);
 
         // Assert
         Assert.Multiple(() =>
         {
             Assert.That(result, Is.InstanceOf<ObjectResult>());
-            var objectResult = result as ObjectResult;            Assert.That(objectResult, Is.Not.Null);
+            var objectResult = result as ObjectResult; 
+            Assert.That(objectResult, Is.Not.Null);
             Assert.That(objectResult?.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-            var returnedValue = objectResult?.Value as Result<PaginatedList<FilterCourseByCategoryResponse>>;
-            Assert.That(returnedValue, Is.Not.Null);
+            var returnedValue = objectResult?.Value as Result<List<FilterCourseByCategoryResponse>>;
             Assert.That(returnedValue?.IsSuccess, Is.False);
             Assert.That(returnedValue?.Error, Is.EqualTo("Category not found"));
-            _categoryServiceMock.Verify(s => s.FilterCourseByCategoryAsync(categoryId, It.Is<FilterCourseByCategoryRequest>(r => 
-                r.PageIndex == pageIndex && r.PageSize == pageSize)), Times.Once);
+            _categoryServiceMock.Verify(s => s.FilterCourseByCategoryAsync(categoryId), Times.Once);
         });
     }
 }

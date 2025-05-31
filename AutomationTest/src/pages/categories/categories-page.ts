@@ -84,11 +84,6 @@ export class CategoryPage extends BasePage {
         await this.isVisible(this.LBL_SUCCESSDELETE_LOCATOR);
     }
 
-    async expectMessage(message: string) {
-        const locator: Locator = this.page.getByText(message)
-        await this.isVisible(locator);
-    }
-
     async clickStatusButton(isActive: boolean) {
         const statusBtn = isActive ? this.BTN_ACTIVE_LOCATOR : this.BTN_INACTIVE_LOCATOR;
         await statusBtn.check();

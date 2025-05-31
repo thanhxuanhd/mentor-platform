@@ -57,4 +57,9 @@ export class BasePage {
             await this.isVisible(locator);
         }
     }
+
+    async uploadFile(selector: string | Locator, filePath: string | string[]) {
+        const input = typeof selector === 'string' ? this.page.locator(selector) : selector;
+        await input.setInputFiles(filePath);
+    }
 }

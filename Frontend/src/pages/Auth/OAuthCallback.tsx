@@ -18,12 +18,12 @@ export default function OAuthCallback() {
 
     if (!code) {
       console.error("Missing authorization code");
+      navigate("/login");
       return;
     }
 
     const sendCodeToBackend = async () => {
       try {
-        console.log(provider);
         const response = await authService.loginWithOAuth(code, provider);
         // setToken(response.token);
         // navigate("/");

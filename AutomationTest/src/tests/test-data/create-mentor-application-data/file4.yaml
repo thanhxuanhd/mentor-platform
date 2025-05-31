@@ -1,0 +1,464 @@
+openapi: 3.0.3
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  description: Test 
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: apiteam@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+  - url: https://test.swagger.io/api/v3
+
+paths:
+  /users:
+    get:
+      tags:
+        - User
+      summary: "Lấy danh sách người dùng"
+      description: "Trả về danh sách tất cả người dùng trong hệ thống."
+      operationId: "getUsers"
+      responses:
+        "200":
+          description: "Danh sách người dùng"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /regions:
+    get:
+      tags:
+        - Region
+      summary: "Lấy danh sách khu vực"
+      description: "Trả về danh sách các khu vực mà người dùng có thể chọn."
+      operationId: "getRegions"
+      responses:
+        "200":
+          description: "Danh sách khu vực"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Region"
+
+  /sections:
+    get:
+      tags:
+        - Section
+      summary: "Lấy danh sách chủ đề"
+      description: "Trả về danh sách các chủ đề học tập theo khu vực."
+      operationId: "getSections"
+      parameters:
+        - name: regionId
+          in: query
+          description: "ID của khu vực để lọc chủ đề"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách chủ đề"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Section"
+
+  /subsections:
+    get:
+      tags:
+        - Subsection
+      summary: "Lấy danh sách tiểu chủ đề"
+      description: "Trả về danh sách các tiểu chủ đề thuộc về một chủ đề cụ thể."
+      operationId: "getSubsections"
+      parameters:
+        - name: sectionId
+          in: query
+          description: "ID của chủ đề để lọc tiểu chủ đề"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách tiểu chủ đề"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Subsection"
+
+  /expressions:
+    get:
+      tags:
+        - Expression
+      summary: "Lấy danh sách biểu đạt"
+      description: "Trả về danh sách các biểu đạt theo một tiểu chủ đề cụ thể."
+      operationId: "getExpressions"
+      parameters:
+        - name: subsectionId
+          in: query
+          description: "ID của tiểu chủ đề để lọc biểu đạt"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách biểu đạt"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Expression"
+
+  /steps:
+    get:
+      tags:
+        - Step
+      summary: "Lấy danh sách bước luyện tập"
+      description: "Trả về danh sách các bước luyện tập cho một tiểu chủ đề."
+      operationId: "getSteps"
+      parameters:
+        - name: subsectionId
+          in: query
+          description: "ID của tiểu chủ đề để lọc bước luyện tập"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách bước luyện tập"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Step"
+
+  /questions:
+    get:
+      tags:
+        - Question
+      summary: "Lấy danh sách câu hỏi"
+      description: "Trả về danh sách các câu hỏi theo bước luyện tập hoặc loại câu hỏi."
+      operationId: "getQuestions"
+      parameters:
+        - name: stepId
+          in: query
+          description: "ID của bước luyện tập để lọc câu hỏi"
+          required: false
+          schema:
+            type: integer
+        - name: questionTypeId
+          in: query
+          description: "ID của loại câu hỏi để lọc"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách câu hỏi"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Question"
+
+  /questionexpressions:
+    get:
+      tags:
+        - Question Expression
+      summary: "Lấy danh sách câu hỏi - biểu đạt"
+      description: "Trả về danh sách mối quan hệ giữa câu hỏi và các biểu đạt liên quan."
+      operationId: "getQuestionExpressions"
+      parameters:
+        - name: questionId
+          in: query
+          description: "ID của câu hỏi để lọc"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách câu hỏi - biểu đạt"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuestionExpression"
+
+  /media:
+    get:
+      tags:
+        - Media
+      summary: "Lấy danh sách phương tiện"
+      description: "Trả về danh sách các phương tiện (video, hình ảnh) liên quan đến một biểu đạt."
+      operationId: "getMedia"
+      parameters:
+        - name: expressionId
+          in: query
+          description: "ID của biểu đạt để lọc phương tiện"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách phương tiện"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Media"
+
+  /practiceprogress:
+    get:
+      tags:
+        - Practice Progress
+      summary: "Lấy tiến trình luyện tập của người dùng"
+      description: "Trả về danh sách tiến trình luyện tập của một người dùng cụ thể."
+      operationId: "getPracticeProgress"
+      parameters:
+        - name: userId
+          in: query
+          description: "ID của người dùng để lọc tiến trình"
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: "Danh sách tiến trình luyện tập"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PracticeProgress"
+
+
+components:
+  schemas:
+    User:
+      example:
+        userId: 1
+        regionId: 100
+
+    Region:
+      example:
+        - regionId: 100
+          regionName: "Miền Bắc"
+        - regionId: 101
+          regionName: "Miền Trung"
+        - regionId: 102
+          regionName: "Miền Nam"
+        - regionId: 103
+          regionName: "Miền cực lạc"
+
+    Section:
+      example:
+        - sectionId: 101
+          sectionName: "Dấu hiệu cơ bản"
+          description: "Giới thiệu các dấu hiệu ngôn ngữ ký hiệu cơ bản"
+          regionId: 100
+        - sectionId: 102
+          sectionName: "Dấu hiệu nâng cao"
+          description: "Các dấu hiệu nâng cao dành cho người học tiếp theo"
+          regionId: 101
+
+    Subsection:
+      example:
+        - subsectionId: 201
+          subsectionName: "Chào hỏi"
+          description: "Các cách chào hỏi trong ngôn ngữ ký hiệu"
+          sectionId: 101
+        - subsectionId: 202
+          subsectionName: "Cảm xúc"
+          description: "Các biểu đạt về cảm xúc trong ngôn ngữ ký hiệu"
+          sectionId: 101
+        - subsectionId: 203
+          subsectionName: "Động từ thông dụng"
+          description: "Những động từ thường gặp trong giao tiếp"
+          sectionId: 102
+
+    ExpressionType:
+      example:
+        - expressionTypeId: 1
+          expressionTypeName: "Chào hỏi"
+        - expressionTypeId: 2
+          expressionTypeName: "Cảm xúc"
+        - expressionTypeId: 3
+          expressionTypeName: "Động từ"
+
+    Expression:
+      example:
+        - expressionId: 301
+          content: "Xin chào"
+          expressionTypeId: 1
+          mediaExpressionId: 401
+          subsectionId: 201
+        - expressionId: 302
+          content: "Tạm biệt"
+          expressionTypeId: 1
+          mediaExpressionId: 402
+          subsectionId: 201
+        - expressionId: 303
+          content: "Vui vẻ"
+          expressionTypeId: 2
+          mediaExpressionId: 403
+          subsectionId: 202
+        - expressionId: 304
+          content: "Buồn"
+          expressionTypeId: 2
+          mediaExpressionId: 404
+          subsectionId: 202
+        - expressionId: 305
+          content: "Yêu"
+          expressionTypeId: 2
+          mediaExpressionId: 405
+          subsectionId: 202
+        - expressionId: 306
+          content: "Ăn"
+          expressionTypeId: 3
+          mediaExpressionId: 406
+          subsectionId: 203
+        - expressionId: 307
+          content: "Uống"
+          expressionTypeId: 3
+          mediaExpressionId: 407
+          subsectionId: 203
+
+    MediaExpression:
+      example:
+        - mediaExpressionId: 401
+          expressionId: 301
+        - mediaExpressionId: 402
+          expressionId: 302
+        - mediaExpressionId: 403
+          expressionId: 303
+        - mediaExpressionId: 404
+          expressionId: 304
+        - mediaExpressionId: 405
+          expressionId: 305
+        - mediaExpressionId: 406
+          expressionId: 306
+        - mediaExpressionId: 407
+          expressionId: 307
+
+    Media:
+      example:
+        - mediaId: 501
+          mediaExpressionId: 401
+          mediaUrl: "https://example.com/xinchao.mp4"
+          isVideo: true
+        - mediaId: 502
+          mediaExpressionId: 402
+          mediaUrl: "https://example.com/tambiet.mp4"
+          isVideo: true
+        - mediaId: 503
+          mediaExpressionId: 403
+          mediaUrl: "https://example.com/vuive.mp4"
+          isVideo: true
+        - mediaId: 504
+          mediaExpressionId: 404
+          mediaUrl: "https://example.com/buon.mp4"
+          isVideo: true
+        - mediaId: 505
+          mediaExpressionId: 405
+          mediaUrl: "https://example.com/yeu.mp4"
+          isVideo: true
+        - mediaId: 506
+          mediaExpressionId: 406
+          mediaUrl: "https://example.com/an.mp4"
+          isVideo: true
+        - mediaId: 507
+          mediaExpressionId: 407
+          mediaUrl: "https://example.com/uong.mp4"
+          isVideo: true
+
+    Step:
+      example:
+        - stepId: 701
+          practiceStep: 1
+          subsectionId: 201
+        - stepId: 702
+          practiceStep: 2
+          subsectionId: 202
+        - stepId: 703
+          practiceStep: 3
+          subsectionId: 203
+
+    QuestionType:
+      example:
+        - questionTypeId: 1
+          questionTypeName: "Trắc nghiệm"
+        - questionTypeId: 2
+          questionTypeName: "Điền vào chỗ trống"
+
+    Question:
+      example:
+        - questionId: 601
+          stepId: 701
+          correctExpressionId: 301
+          questionTypeId: 1
+        - questionId: 602
+          stepId: 701
+          correctExpressionId: 302
+          questionTypeId: 1
+        - questionId: 603
+          stepId: 702
+          correctExpressionId: 303
+          questionTypeId: 1
+        - questionId: 604
+          stepId: 702
+          correctExpressionId: 304
+          questionTypeId: 2
+        - questionId: 605
+          stepId: 703
+          correctExpressionId: 306
+          questionTypeId: 1
+
+    QuestionExpression:
+      example:
+        - questionExpressionId: 701
+          expressionId: 301
+          questionId: 601
+        - questionExpressionId: 702
+          expressionId: 302
+          questionId: 602
+        - questionExpressionId: 703
+          expressionId: 303
+          questionId: 603
+        - questionExpressionId: 704
+          expressionId: 304
+          questionId: 604
+        - questionExpressionId: 705
+          expressionId: 306
+          questionId: 605
+
+    PracticeProgress:
+      example:
+        - practiceProgressId: 801
+          userId: 1
+          stepId: 701
+          totalCompletedStep: 3
+        - practiceProgressId: 802
+          userId: 1
+          stepId: 702
+          totalCompletedStep: 2
+        - practiceProgressId: 803
+          userId: 1
+          stepId: 703
+          totalCompletedStep: 1

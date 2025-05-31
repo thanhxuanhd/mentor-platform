@@ -6,4 +6,6 @@ export const API_ENDPOINTS = {
   CATEGORY: baseAPIUrl + "/api/Categories",
   SIGN_IN: baseAPIUrl + "/api/Auth/sign-in",
   COURSE: baseAPIUrl + "/api/Course",
+  SIGN_UP: baseAPIUrl + "/api/Users/test",
+  DELETE_USER: baseAPIUrl + "/api/Users"
 };
