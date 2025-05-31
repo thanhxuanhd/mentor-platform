@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { test } from "../../../core/fixture/authFixture";
+import { test } from "../../../core/fixture/auth-fixture";
 import { withTimestamp } from "../../../core/utils/generate-unique-data";
 import { CategoryBrowsingSearch } from "../../../models/categories/category-browsing";
 import { CUCategory } from "../../../models/categories/create-category";
@@ -14,7 +14,7 @@ test.describe("@Category Category browsing tests", () => {
   let categoryPage: CategoryPage;
   let loginPage: LoginPage;
 
-  test.beforeEach(async ({ loggedInPage, page }) => {
+  test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
     categoryBrowsingPage = new CategoryBrowsingPage(page);
     categoryPage = new CategoryPage(page);
     loginPage = new LoginPage(page);
