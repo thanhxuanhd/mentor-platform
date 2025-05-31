@@ -1,6 +1,6 @@
 import { UserProfileSetupPage } from './../../../pages/authentication/user-profile-creation-page';
 import { fillAndSubmitRegistrationStep1, fillAndSubmitRegistrationStep2, loginAgain } from '../../../core/utils/registration-helper';
-import { test } from '../../../core/fixture/authFixture';
+import { test } from '../../../core/fixture/auth-fixture';
 import { LoginUser, SignUpUser, UserPreferencesSetup, UserProfileCreation } from '../../../models/user/user';
 import signUpData from '../../test-data/sign-up-user-data.json';
 import profileSetupData from '../../test-data/user-profile-creation-data.json';
