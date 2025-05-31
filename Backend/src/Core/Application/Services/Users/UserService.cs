@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using Contract.Dtos.Authentication.Requests;
 
 namespace Application.Services.Users;
 
@@ -452,24 +451,5 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         {
             return Result.Failure<bool>($"Failed to remove file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
-    }
-
-    public async Task CreateUserTest(string email, string password, int roleId)
-    {
-        await userRepository.AddAsync(new User
-        {
-            Email = email,
-            PasswordHash = PasswordHelper.HashPassword(password),
-            RoleId = roleId,
-            Status = UserStatus.Active
-        });
-        await userRepository.SaveChangesAsync();
-    }
-
-    public async Task DeleteUserEmail(string email)
-    {
-        var user = await userRepository.GetByEmailAsync(email);
-        userRepository.Delete(user!);
-        await userRepository.SaveChangesAsync();
     }
 }

@@ -47,7 +47,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             Experiences = x.Mentor.Experiences,
             SubmittedAt = x.SubmittedAt,
             Status = x.Status.ToString(),
-            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
+            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList()
         }).OrderByDescending(x => x.SubmittedAt);
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
@@ -97,7 +97,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             Statement = applicationDetails.Statement,
             Certifications = applicationDetails.Certifications,
             Education = applicationDetails.Education,
-            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
+            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
             ApplicationStatus = applicationDetails.Status.ToString(),
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
@@ -322,7 +322,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.Mentor.FullName);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin!.FullName, application.Mentor.FullName);
 
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 
