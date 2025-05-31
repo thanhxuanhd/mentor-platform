@@ -423,16 +423,13 @@ export default function AvailabilityManager() {
 
               />
             </div>
-          </Card>
-
-          {/* Bulk Actions */}
+          </Card>          {/* Bulk Actions */}
           <Card className="bg-slate-700 border-slate-600">
             <div className="text-white">              <BulkActions
                 selectedDate={selectedDate}
                 onSelectAll={selectAllSlots}
                 onClearAll={clearAllSlots}
                 onCopyToWeek={copyScheduleToAllDays}
-                isLocked={isLocked}
               />
             </div>
           </Card>

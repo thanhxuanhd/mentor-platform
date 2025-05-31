@@ -7,10 +7,9 @@ interface BulkActionsProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   onCopyToWeek: () => void;
-  isLocked?: boolean;
 }
 
-export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWeek, isLocked = false }: BulkActionsProps) {
+export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWeek }: BulkActionsProps) {
   return (
     <div className="space-y-3">
       <h3 className="text-lg font-medium mb-4">Bulk Actions</h3>      <Button
@@ -27,13 +26,10 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
         className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
       >
         Clear all slots for {selectedDate.format("ddd MMM D")}
-      </Button>
-
-      <Button
+      </Button>      <Button
         icon={<CopyOutlined />}
         onClick={onCopyToWeek}
-        disabled={isLocked}
-        className="w-full bg-green-600 border-green-600 text-white hover:bg-green-700 disabled:bg-slate-500 disabled:border-slate-500 disabled:text-slate-300"
+        className="w-full bg-green-600 border-green-600 text-white hover:bg-green-700"
       >
         Copy schedule to all days in week
       </Button>

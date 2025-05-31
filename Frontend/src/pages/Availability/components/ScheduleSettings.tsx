@@ -108,7 +108,7 @@ export function ScheduleSettings({
         <h3 className="text-lg font-medium mb-4">Session Settings</h3>
         <Form layout="vertical">
           <div className="grid grid-cols-2 gap-4 items-end">
-            <Form.Item label={<span className="text-slate-300">Session duration (minutes)</span>} className="mb-0">
+            <Form.Item label={<span className="text-slate-300">Session duration</span>} className="mb-0">
               <Select
                 value={sessionDuration}
                 onChange={onSessionDurationChange}
@@ -124,7 +124,7 @@ export function ScheduleSettings({
               </Select>
             </Form.Item>
 
-            <Form.Item label={<span className="text-slate-300">Buffer time (minutes)</span>} className="mb-0">
+            <Form.Item label={<span className="text-slate-300">Buffer time</span>} className="mb-0">
               <Select
                 value={bufferTime}
                 onChange={onBufferTimeChange}
