@@ -1,5 +1,3 @@
-using System.Net;
-using System.Security.Claims;
 using Application.Services.CourseItems;
 using Application.Services.Courses;
 using Contract.Dtos.CourseItems.Requests;
@@ -12,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Net;
+using System.Security.Claims;
 
 namespace WebAPI.Test;
 
@@ -188,7 +188,7 @@ public class CourseControllerTest
                 Id = Guid.NewGuid(),
                 Title = "Item 1",
                 Description = "Description of Item 1",
-                MediaType = CourseMediaType.Video,
+                MediaType = FileType.Video,
                 WebAddress = "http://example.com/item1"
             }
         };
@@ -241,7 +241,7 @@ public class CourseControllerTest
             Id = itemId,
             Title = "Test Item",
             Description = "Description of Test Item",
-            MediaType = CourseMediaType.Pdf,
+            MediaType = FileType.Pdf,
             WebAddress = "http://example.com/testitem"
         };
         var serviceResult = Result.Success(item, HttpStatusCode.OK);
@@ -267,7 +267,7 @@ public class CourseControllerTest
         {
             Title = "New Item",
             Description = "New Item Description",
-            MediaType = CourseMediaType.Video,
+            MediaType = FileType.Video,
             WebAddress = "http://example.com/new"
         };
 
@@ -300,7 +300,7 @@ public class CourseControllerTest
         {
             Title = "Updated Item",
             Description = "Updated Item Description",
-            MediaType = CourseMediaType.Pdf,
+            MediaType = FileType.Pdf,
             WebAddress = "http://example.com/updated"
         };
 

@@ -7,7 +7,7 @@ public record CourseItemCreateRequest
 {
     public required string Title { get; init; }
     public required string Description { get; init; }
-    public required CourseMediaType MediaType { get; init; }
+    public required FileType MediaType { get; init; }
     public required string WebAddress { get; init; }
 }
 

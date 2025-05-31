@@ -87,7 +87,7 @@ public class CourseService(
                 "Already have this course",
                 Conflict);
         }
-        
+
         var category = await categoryRepository.GetByIdAsync(request.CategoryId);
         if (category == null)
         {
@@ -96,7 +96,7 @@ public class CourseService(
                 BadRequest);
         }
 
-        if (category.Status == false || category.IsDeleted)
+        if (category.Status == false)
         {
             return Result.Failure<CourseSummaryResponse>(
                 $"Category is not active.",
@@ -126,7 +126,7 @@ public class CourseService(
                     Conflict);
             }
         }
-        
+
         var category = await categoryRepository.GetByIdAsync(request.CategoryId);
         if (category == null)
         {
@@ -135,7 +135,7 @@ public class CourseService(
                 BadRequest);
         }
 
-        if (category.Status == false || category.IsDeleted)
+        if (category.Status == false)
         {
             return Result.Failure<CourseSummaryResponse>(
                 $"Category {category.Id} is reserved.",
