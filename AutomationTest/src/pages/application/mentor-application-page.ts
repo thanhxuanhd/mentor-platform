@@ -8,8 +8,7 @@ export class MentorApplicationPage extends BasePage {
     private TXT_WORKEXPERIENCE_LOCATOR: Locator;
     private TXT_CERTIFICATION_LOCATOR: Locator;
     private TXT_MOTIVATION_LOCATOR: Locator;
-
-    //add category locator
+    private BTN_UPLOAD_LOCATOR: Locator;
     private BTN_SUBMIT_LOCATOR: Locator;
 
     constructor(page: Page) {
@@ -20,6 +19,7 @@ export class MentorApplicationPage extends BasePage {
         this.TXT_CERTIFICATION_LOCATOR = page.locator("#mentor_application_form_certifications");
         this.TXT_MOTIVATION_LOCATOR = page.locator("#mentor_application_form_statement");
         this.BTN_SUBMIT_LOCATOR = page.locator('//button[span[text()="Submit"]]');
+        this.BTN_UPLOAD_LOCATOR= page.locator("#mentor_application_form_documents")
     }
 
     async navigateToHomePage(url = "") {
@@ -48,5 +48,9 @@ export class MentorApplicationPage extends BasePage {
 
     async inputMotivation(motivation: string) {
         await this.fill(this.TXT_MOTIVATION_LOCATOR, motivation);
+    }
+
+    async uploadFiles(filePaths: string[]) {
+        await this.uploadFile(this.BTN_UPLOAD_LOCATOR, filePaths);
     }
 }
