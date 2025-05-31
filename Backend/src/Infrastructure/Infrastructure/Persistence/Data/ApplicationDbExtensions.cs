@@ -238,6 +238,56 @@ public static class ApplicationDbExtensions
             });
             dbContext.SaveChanges();
         }
+        if (!dbContext.Schedules.Any())
+        {
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+
+            dbContext.Schedules.AddRange(
+                new Schedules
+                {
+                    MentorId = mentor1Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60, 
+                    BufferTime = 15,    
+                },
+                new Schedules
+                {
+                    MentorId = mentor1Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
+                    StartHour = new TimeOnly(10, 00),
+                    EndHour = new TimeOnly(18, 00),
+                    SessionDuration = 45, 
+                    BufferTime = 10,    
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(13, 00),
+                    EndHour = new TimeOnly(21, 00),
+                    SessionDuration = 30, 
+                    BufferTime = 5,     
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(12, 00),
+                    SessionDuration = 60, 
+                    BufferTime = 0,     
+                }
+            );
+
+            dbContext.SaveChanges();
+        }
 
         if (!dbContext.CourseItems.Any())
         {

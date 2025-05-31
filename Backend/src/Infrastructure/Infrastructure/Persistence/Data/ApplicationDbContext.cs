@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace Infrastructure.Persistence.Data;
 
@@ -20,6 +21,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TeachingApproach> TeachingApproaches { get; set; }
     public DbSet<UserCategory> UserCategories { get; set; }
     public DbSet<UserTeachingApproach> UserTeachingApproaches { get; set; }
+    public DbSet<Schedules> Schedules { get; set; }
+    public DbSet<MentorAvailableTimeSlot> MentorAvailableTimeSlots { get; set; }
+    public DbSet<Sessions> Sessions { get; set; }
  
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
