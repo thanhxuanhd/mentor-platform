@@ -22,9 +22,13 @@ export class MentorApplicationStatusTrackingPage extends BasePage {
     await this.page.goto(PAGE_ENDPOINT_URL.STATUS_TRACKING);
   }
 
-  async verifyEditMentorApplicationButtonIsEnable() {
+  async clickOnApplication() {
     await this.waitUntilVisible(this.LI_APPLICATION_LIST.first());
     await this.LI_APPLICATION_LIST.first().click();
+  }
+
+  async verifyEditMentorApplicationButtonIsEnable() {
+    await this.waitUntilVisible(this.BTN_EDIT);
     const result = await this.isLocatorVisible(this.BTN_EDIT);
     expect(result).toBeTruthy();
   }
