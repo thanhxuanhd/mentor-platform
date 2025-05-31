@@ -6,9 +6,16 @@ import type { ScheduleSettingsResponse, TimeSlotResponse } from '../../services/
 /**
  * Convert API time slot to frontend TimeBlock format
  */
-export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse): TimeBlock => {
+export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse, date?: string): TimeBlock => {
   const startTime = dayjs(`2024-01-01 ${apiSlot.startTime}`);
   const endTime = dayjs(`2024-01-01 ${apiSlot.endTime}`);
+  
+  // Calculate if this slot is in the past
+  let isPast = false;
+  if (date) {
+    const slotDateTime = dayjs(`${date} ${apiSlot.startTime}`);
+    isPast = slotDateTime.isSameOrBefore(dayjs());
+  }
   
   return {
     id: apiSlot.id,
@@ -16,7 +23,8 @@ export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse): TimeBl
     startTime: apiSlot.startTime,
     endTime: apiSlot.endTime,
     available: apiSlot.isAvailable,
-    booked: apiSlot.isBooked
+    booked: apiSlot.isBooked,
+    isPast
   };
 };
 
@@ -27,7 +35,7 @@ export const convertApiScheduleToAvailability = (apiSettings: ScheduleSettingsRe
   const availability: DayAvailability = {};
   
   Object.entries(apiSettings.availableTimeSlots).forEach(([date, slots]) => {
-    availability[date] = slots.map(convertApiTimeSlotToTimeBlock);
+    availability[date] = slots.map(slot => convertApiTimeSlotToTimeBlock(slot, date));
   });
   
   return availability;
@@ -118,7 +126,7 @@ export const generateTimeSlotsForDay = (
     }
   });
   let currentTime = dayStart;
-    // Generate slots only if they can completely fit within work hours (matching backend logic)
+  // Generate slots only if they can completely fit within work hours (matching backend logic)
   while (currentTime.add(sessionDuration, 'minute').isSameOrBefore(dayEnd)) {
     const slotStart = currentTime;
     const slotEnd = currentTime.add(sessionDuration, 'minute');
@@ -127,12 +135,18 @@ export const generateTimeSlotsForDay = (
     const endTimeStr = slotEnd.format('HH:mm');
     const key = `${startTimeStr}-${endTimeStr}`;
     
+    // Check if this slot is in the past (including current time slot)
+    const isPast = slotStart.isSameOrBefore(dayjs());
+    
     // Check if this slot already exists and is booked
     const existingBookedSlot = bookedSlotsMap.get(key);
     
     if (existingBookedSlot) {
-      // Preserve the existing booked slot
-      slots.push(existingBookedSlot);
+      // Preserve the existing booked slot but update isPast
+      slots.push({
+        ...existingBookedSlot,
+        isPast
+      });
     } else {
       // Create a new slot (unselected by default)
       slots.push({
@@ -141,7 +155,8 @@ export const generateTimeSlotsForDay = (
         startTime: startTimeStr,
         endTime: endTimeStr,
         available: false, // New slots are unselected by default
-        booked: false
+        booked: false,
+        isPast
       });
     }
     

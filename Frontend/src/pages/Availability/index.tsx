@@ -116,12 +116,21 @@ export default function AvailabilityManager() {
   useEffect(() => {
     setCurrentSlots(getCurrentDateSlots());
   }, [getCurrentDateSlots]);
-
   // Toggle availability for a specific time slot
   const toggleSlotAvailability = (slotId: string) => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
+    const targetSlot = currentSlots.find(slot => slot.id === slotId);
+    
+    // Prevent modification of past slots, booked slots, or when locked
+    if (!targetSlot || targetSlot.booked || targetSlot.isPast || isLocked) {
+      if (targetSlot?.isPast) {
+        message.warning("Cannot modify time slots in the past");
+      }
+      return;
+    }
+    
     const updatedSlots = currentSlots.map(slot =>
-      slot.id === slotId && !slot.booked
+      slot.id === slotId
         ? { ...slot, available: !slot.available }
         : slot
     );
@@ -135,7 +144,7 @@ export default function AvailabilityManager() {
     message.success(
       `Time slot ${updatedSlot?.time} ${updatedSlot?.available ? 'enabled' : 'disabled'}`
     );
-  };  // Week navigation
+  };// Week navigation
   const navigateWeek = (direction: "prev" | "next") => {
     const newWeekStart = direction === "prev"
       ? currentWeekStart.subtract(1, "week")
@@ -173,12 +182,11 @@ export default function AvailabilityManager() {
     }
     return days;
   };
-
   // Select all slots for current date
   const selectAllSlots = () => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const updatedSlots = currentSlots.map(slot =>
-      slot.booked ? slot : { ...slot, available: true }
+      slot.booked || slot.isPast ? slot : { ...slot, available: true }
     );
 
     setAvailability(prev => ({
@@ -186,14 +194,14 @@ export default function AvailabilityManager() {
       [dateKey]: updatedSlots,
     }));
 
-    message.success("All time slots enabled for this date");
+    message.success("All available time slots enabled for this date");
   };
 
   // Clear all slots for current date
   const clearAllSlots = () => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const updatedSlots = currentSlots.map(slot =>
-      slot.booked ? slot : { ...slot, available: false }
+      slot.booked || slot.isPast ? slot : { ...slot, available: false }
     );
 
     setAvailability(prev => ({
@@ -201,9 +209,8 @@ export default function AvailabilityManager() {
       [dateKey]: updatedSlots,
     }));
 
-    message.success("All time slots disabled for this date");
-  };
-  // Copy schedule to all days in current week
+    message.success("All available time slots disabled for this date");
+  };  // Copy schedule to all days in current week
   const copyScheduleToAllDays = () => {
     const sourceSlots = getCurrentDateSlots();
     const weekDays = getWeekDays();
@@ -220,7 +227,7 @@ export default function AvailabilityManager() {
         slotMap.set(`${slot.startTime}-${slot.endTime}`, slot);
       });
 
-      // Create new slots based on source, but preserve booked status
+      // Create new slots based on source, but preserve booked status and past slots
       const newSlots = sourceSlots.map(slot => {
         const key = `${slot.startTime}-${slot.endTime}`;
         const existingSlot = slotMap.get(key);
@@ -229,9 +236,16 @@ export default function AvailabilityManager() {
           return existingSlot;
         }
 
+        // Check if this slot would be in the past for the target day
+        const slotDateTime = dayjs(`${dateKey} ${slot.startTime}`);
+        const isPast = slotDateTime.isSameOrBefore(dayjs());
+
         return {
           ...slot,
           id: uuidv4(),
+          // Don't copy availability to past slots
+          available: isPast ? false : slot.available,
+          isPast
         };
       });
 
