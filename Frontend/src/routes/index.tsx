@@ -59,6 +59,23 @@ const AppRoutes = () => {
 
       <Route
         element={
+          <ProtectedRoute
+            requiredRole={[
+              applicationRole.ADMIN,
+              applicationRole.LEARNER,
+              applicationRole.MENTOR,
+            ]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
+      </Route>
+
+      <Route
+        element={
           <ProtectedRoute requiredRole={[applicationRole.ADMIN]}>
             <MainLayout />
           </ProtectedRoute>
@@ -74,8 +91,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
         <Route path="my-applications" element={<MentorStatusTrackingPage />} />
         <Route
           path="mentor-application/edit"
