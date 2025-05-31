@@ -146,14 +146,15 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
       form.resetFields();
       setProgress(0);
       navigate(-1);
-    } catch (error) {
-      console.error("Error submitting application:", error);
+    } catch (error: any) {
       setNotify({
         type: "error",
         message: "Error",
-        description: isEditMode
-          ? "Failed to update application."
-          : "Failed to submit application.",
+        description:
+          error.response?.data?.error ||
+          (isEditMode
+            ? "Failed to update application."
+            : "Failed to submit application."),
       });
     }
   };
