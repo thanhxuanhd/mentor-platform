@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Contract.Repositories;
 using Contract.Services;
-using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Persistence.Settings;
@@ -13,7 +12,6 @@ using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
@@ -49,7 +47,6 @@ public static class ConfigureServices
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
-        services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

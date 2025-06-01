@@ -5,32 +5,17 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
-// [Authorize(Roles = "Mentor")]
+[Authorize(Roles = "Mentor")]
 [Route("api/schedules")]
 [ApiController]
 public class ScheduleController : ControllerBase
 {
     private readonly IScheduleService _scheduleService;
 
-
     public ScheduleController(IScheduleService scheduleService)
     {
         _scheduleService = scheduleService;
     }
-
-    // TODO: Delete this
-    // [HttpGet("{id}")]
-    // public async Task<IActionResult> GetScheduleById(Guid id)
-    // {
-    //     var result = await _scheduleService.GetScheduleByIdAsync(id);
-    //     return StatusCode((int)result.StatusCode, result);
-    // }
-    // [HttpGet]
-    // public async Task<IActionResult> GetAll()
-    // {
-    //     var result = await _scheduleService.GetAllAsync();
-    //     return StatusCode((int)result.StatusCode, result);
-    // }
 
     [HttpGet("{mentorId}/settings")]
     public async Task<IActionResult> GetScheduleSettings(Guid mentorId, [FromQuery] GetScheduleSettingsRequest request)
@@ -44,7 +29,7 @@ public class ScheduleController : ControllerBase
     {
         if (mentorId != Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)))
         {
-            return Unauthorized("You are not authorized to update this schedule.");
+            return Forbid("You are not allow to update this mentor's schedule settings.");
         }
 
         var result = await _scheduleService.SaveScheduleSettingsAsync(mentorId, request);
