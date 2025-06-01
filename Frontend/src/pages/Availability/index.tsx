@@ -389,7 +389,8 @@ export default function AvailabilityManager() {
     <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>        <Button
+        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>        
+        <Button
           type="primary"
           icon={<SaveOutlined />}
           onClick={saveChanges}
@@ -474,7 +475,8 @@ export default function AvailabilityManager() {
           {/* Time Blocks */}
           <Card className="bg-slate-700 border-slate-600">
             <div className="text-white">              
-              <Spin spinning={isSaving}>                  <TimeBlocks
+              <Spin spinning={isSaving}>                  
+                <TimeBlocks
                 selectedDate={selectedDate}
                 timeBlocks={currentSlots}
                 onToggleBlock={toggleSlotAvailability}

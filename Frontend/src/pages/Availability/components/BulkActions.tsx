@@ -27,7 +27,8 @@ export function BulkActions({ selectedDate, onSelectAll, onClearAll, onCopyToWee
         className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-500"
       >
         Clear all slots for {selectedDate.format("ddd MMM D")}
-      </Button>      <Button
+      </Button>      
+      <Button
         icon={<CopyOutlined />}
         onClick={onCopyToWeek}
         className="w-full bg-green-600 border-green-600 text-white hover:bg-green-700"

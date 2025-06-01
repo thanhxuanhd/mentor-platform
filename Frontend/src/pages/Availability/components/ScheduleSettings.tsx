@@ -26,7 +26,6 @@ export function ScheduleSettings({
   onBufferTimeChange,
   hasBookedSessions
 }: ScheduleSettingsProps) {
-  // Generate time options in 30-minute increments in 24-hour format
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
@@ -51,9 +50,8 @@ export function ScheduleSettings({
     return true;
   };
 
-  // Fixed session duration and buffer time options
-  const sessionDurationOptions = [30, 45, 60, 90];
-  const bufferTimeOptions = [0, 15, 30, 60];
+  const sessionDurationOptions = [30, 45, 60, 75, 90];
+  const bufferTimeOptions = [0, 15, 30, 45, 60];
 
   return (
     <div className="space-y-6">

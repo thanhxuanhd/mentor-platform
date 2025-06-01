@@ -29,6 +29,14 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBloc
                     : null
               }
             >
+
+              {/* 
+                block color change based on block status
+                if booked, show gray
+                if past, show dark gray
+                if available, show orange
+                if unavailable, show light gray
+              */}
               <button
                 onClick={() => !block.booked && !block.isPast && onToggleBlock(block.id)}
                 className={`
