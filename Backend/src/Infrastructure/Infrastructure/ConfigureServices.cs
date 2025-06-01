@@ -8,6 +8,7 @@ using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
 using Infrastructure.Services.Background;
+using Infrastructure.Services.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
