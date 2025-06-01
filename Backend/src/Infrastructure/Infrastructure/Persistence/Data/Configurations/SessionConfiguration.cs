@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Data.Configurations;
 
-public class BookingConfiguration : IEntityTypeConfiguration<Sessions>
+public class SessionConfiguration : IEntityTypeConfiguration<Sessions>
 {
     public void Configure(EntityTypeBuilder<Sessions> builder)
     {
