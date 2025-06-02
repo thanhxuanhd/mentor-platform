@@ -7,6 +7,7 @@ using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
 using System.Net;
+using System.Text;
 
 namespace Application.Services.Schedule;
 
@@ -106,6 +107,9 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
 
+        var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
+        StringBuilder stringBuilder = new();
+
         foreach (var timeSlot in request.AvailableTimeSlots)
         {
             DateOnly date = timeSlot.Key;
@@ -113,6 +117,22 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
             foreach (var slot in slots)
             {
+                var slotStartDateTime = date.ToDateTime(slot.StartTime);
+                var slotEndDateTime = date.ToDateTime(slot.EndTime);
+
+                bool isOverlap = existingActiveSessions.Any(s => s.Date == date && (
+                    (s.StartTime <= slot.StartTime && s.EndTime > slot.StartTime) ||
+                    (s.StartTime < slot.EndTime && s.EndTime >= slot.EndTime) ||
+                    (s.StartTime >= slot.StartTime && s.EndTime <= slot.EndTime)
+                ));
+
+                if (isOverlap)
+                {
+                    var msg = $"Time slot {slot.StartTime} - {slot.EndTime} on {date} overlaps with an existing session. ";
+                    stringBuilder.AppendLine(msg);
+                    continue;
+                }
+
                 var mentorAvailableTimeSlot = new MentorAvailableTimeSlot
                 {
                     ScheduleId = scheduleSettings.Id,
@@ -129,7 +149,9 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         var result = new SaveScheduleSettingsResponse
         {
-            Message = "Schedule settings saved successfully."
+            Message = stringBuilder.Length > 0
+                ? stringBuilder.ToString()
+                : "Schedule saved successfully!"
         };
 
         return Result.Success(result, HttpStatusCode.OK);
@@ -194,6 +216,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     /// <summary>
     /// Converts the available time slots from the schedule settings into a dictionary format.
     /// Each date maps to a list of time slots, where each time slot contains its start and end times, availability status, and booking status.
+    /// Changes: Only generate time slots in the future (current not included).
     /// </summary>
     /// <param name="scheduleSettings">The schedule settings containing available time slots.</param>
     /// <returns>A dictionary where the key is the date and the value is a list of <see cref="TimeSlotResponse"/> objects for that date.</returns>
@@ -208,6 +231,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         // Group the available time slots by date
         var groupedByDate = scheduleSettings.AvailableTimeSlots.GroupBy(ts => ts.Date);
+        var now = DateTime.Now;
 
         foreach (var group in groupedByDate)
         {
@@ -216,7 +240,11 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
             foreach (var availableSlot in group)
             {
-                bool isBooked = availableSlot.Sessions != null && availableSlot.Sessions.Any();
+                DateTime slotDateTime = date.ToDateTime(availableSlot.StartTime);
+                if (slotDateTime <= now)
+                {
+                    continue;
+                }
 
                 TimeSlotResponse timeSlot = new TimeSlotResponse
                 {
@@ -224,7 +252,11 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                     StartTime = availableSlot.StartTime.ToString("HH:mm"),
                     EndTime = availableSlot.EndTime.ToString("HH:mm"),
                     IsAvailable = true,
-                    IsBooked = availableSlot.Sessions?.Any(s => s.Status == SessionStatus.Approved) ?? false
+                    IsBooked = availableSlot.Sessions?.Any(
+                        s => s.Status == SessionStatus.Approved ||
+                        s.Status == SessionStatus.Completed ||
+                        s.Status == SessionStatus.Rescheduled
+                    ) ?? false
                 };
 
                 timeSlots.Add(timeSlot);
@@ -303,42 +335,4 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                 return false;
             });
     }
-
-    public Dictionary<Guid, TimeSlotData> GetBookedTimeSlotsData(Schedules scheduleSettings)
-    {
-        Dictionary<Guid, TimeSlotData> bookedTimeSlots = new();
-
-        if (scheduleSettings.AvailableTimeSlots == null || !scheduleSettings.AvailableTimeSlots.Any())
-        {
-            return bookedTimeSlots;
-        }
-
-        foreach (var timeSlot in scheduleSettings.AvailableTimeSlots)
-        {
-            if (timeSlot.Sessions != null && timeSlot.Sessions.Any())
-            {
-                foreach (var session in timeSlot.Sessions)
-                {
-                    if (session.Status == SessionStatus.Approved || 
-                        session.Status == SessionStatus.Completed)
-                    {
-                        // Only add Approved or Completed sessions to the booked time slots
-                        bookedTimeSlots[session.LearnerId] = new TimeSlotData
-                        {
-                            StartTime = timeSlot.StartTime,
-                            EndTime = timeSlot.EndTime,
-                            Date = timeSlot.Date,
-                            Status = session.Status
-                        };
-                    }
-                }
-            }
-        }
-
-        return bookedTimeSlots;
-    }
-}
-
-internal class MentorAvailableTimeSlotRepository
-{
 }

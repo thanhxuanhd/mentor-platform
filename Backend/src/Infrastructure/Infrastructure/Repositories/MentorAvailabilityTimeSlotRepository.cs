@@ -10,9 +10,18 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
 {
     public void DeletePendingAndCancelledTimeSlots(Guid scheduleSettingsId)
     {
-        var deleteTimeSlots =  _context.MentorAvailableTimeSlots
+        var deleteTimeSlots = _context.MentorAvailableTimeSlots
             .Where(x => x.ScheduleId == scheduleSettingsId && !x.Sessions!.Any(s => s.Status == SessionStatus.Approved || s.Status == SessionStatus.Completed || s.Status == SessionStatus.Rescheduled));
 
         _context.MentorAvailableTimeSlots.RemoveRange(deleteTimeSlots);
+    }
+    
+    public List<MentorAvailableTimeSlot> GetConfirmedTimeSlots(Guid scheduleSettingsId)
+    {
+        var confirmedTimeSlots = _context.MentorAvailableTimeSlots
+            .Where(x => x.ScheduleId == scheduleSettingsId && x.Sessions!.Any(s => s.Status == SessionStatus.Approved || s.Status == SessionStatus.Completed || s.Status == SessionStatus.Rescheduled))
+            .ToList();
+
+        return confirmedTimeSlots;
     }
 }

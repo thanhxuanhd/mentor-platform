@@ -276,15 +276,16 @@ export default function AvailabilityManager() {
         endTime,
         sessionDuration,
         bufferTime
-      });      const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
+      });      
+      
+      const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
 
       if (response.success) {
         setNotify({
           type: "success",
-          message: "Schedule saved successfully!",
+          message: `${response.message}`,
           description: "",
         });
-        // Reload data to get updated time slots from backend
         await loadScheduleSettings(currentWeekStart);
       } else {
         setSaveError(true);
