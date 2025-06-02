@@ -144,7 +144,7 @@ export default function AvailabilityManager() {
     message.success(
       `Time slot ${updatedSlot?.time} ${updatedSlot?.available ? 'enabled' : 'disabled'}`
     );
-  };// Week navigation
+  };  // Week navigation
   const navigateWeek = (direction: "prev" | "next") => {
     const newWeekStart = direction === "prev"
       ? currentWeekStart.subtract(1, "week")
@@ -154,7 +154,35 @@ export default function AvailabilityManager() {
     // Update selected date to be within the new week
     // If current selected date is not in the new week, move it to the same day of week in new week
     const currentDayOfWeek = selectedDate.day(); // 0 = Sunday, 1 = Monday, etc.
-    const newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
+    let newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
+    
+    // Check if the new selected date has time slots
+    const newSelectedDateKey = newSelectedDate.format("YYYY-MM-DD");
+    const newSelectedDateSlots = availability[newSelectedDateKey] || [];
+    
+    // If the new date doesn't have time slots, find the first day in the week that does, but not for the last day of the week
+    if (newSelectedDateSlots.length === 0 && currentDayOfWeek !== 6) {
+      let foundDayInCurrentWeek = false;
+      
+      for (let i = 0; i < 7; i++) {
+        // Only check days within the current week (don't go to next week)
+        const candidateDate = newWeekStart.add(i, "day");
+        const candidateDateKey = candidateDate.format("YYYY-MM-DD");
+        const candidateSlots = availability[candidateDateKey] || [];
+        
+        if (candidateSlots.length > 0) {
+          newSelectedDate = candidateDate;
+          foundDayInCurrentWeek = true;
+          break;
+        }
+      }
+      
+      // If no day in the current week has slots, just stay on the original day
+      if (!foundDayInCurrentWeek) {
+        newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
+      }
+    }
+    
     setSelectedDate(newSelectedDate);
   };
 
@@ -164,12 +192,14 @@ export default function AvailabilityManager() {
     setCurrentWeekStart(newWeekStart);
     setSelectedDate(dayjs());
   };
-
   // Generate week days
   const getWeekDays = (): WeekDay[] => {
     const days: WeekDay[] = [];
     for (let i = 0; i < 7; i++) {
       const day = currentWeekStart.add(i, "day");
+      const daySlots = availability[day.format("YYYY-MM-DD")] || [];
+      const hasTimeSlots = daySlots.length > 0;
+      
       days.push({
         day: day.format("dddd"),
         shortDay: day.format("ddd"),
@@ -177,7 +207,8 @@ export default function AvailabilityManager() {
         fullDate: day.format(),
         isToday: day.isSame(dayjs(), "day"),
         active: day.isSame(selectedDate, "day"),
-        hasAvailability: availability[day.format("YYYY-MM-DD")]?.some(slot => slot.available) || false,
+        hasAvailability: daySlots.some(slot => slot.available) || false,
+        hasTimeSlots: hasTimeSlots, // New property to track if day has any time slots
       });
     }
     return days;
@@ -215,45 +246,87 @@ export default function AvailabilityManager() {
     const sourceSlots = getCurrentDateSlots();
     const weekDays = getWeekDays();
     const updates: DayAvailability = {};
+    
+    // Create source template - both booked and non-booked slots
+    // We'll use this to get the time slot patterns without actually copying booked status
+    const sourceTimeSlotTemplates = sourceSlots.map(slot => ({
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      available: slot.available,
+      time: slot.time,
+      // We don't copy isPast or booked - these will be determined for each target day
+    }));
 
     weekDays.forEach(day => {
       const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
-      // If the day already has booked sessions, preserve them
+      const dayDate = dayjs(day.fullDate);
+      
+      // Skip the source day itself
+      if (dateKey === selectedDate.format("YYYY-MM-DD")) {
+        return;
+      }
+      
+      // Skip days in the past
+      if (dayDate.isBefore(dayjs(), 'day')) {
+        return;
+      }
+
+      // Get existing slots for this day
       const existingSlots = availability[dateKey] || [];
-      const bookedSlots = existingSlots.filter(slot => slot.booked);
-
-      const slotMap = new Map();
-      bookedSlots.forEach(slot => {
-        slotMap.set(`${slot.startTime}-${slot.endTime}`, slot);
-      });
-
-      // Create new slots based on source, but preserve booked status and past slots
-      const newSlots = sourceSlots.map(slot => {
+      
+      // Create a map for quick lookup of existing slots by time
+      const existingSlotsMap = new Map();
+      existingSlots.forEach(slot => {
         const key = `${slot.startTime}-${slot.endTime}`;
-        const existingSlot = slotMap.get(key);
-
-        if (existingSlot && existingSlot.booked) {
-          return existingSlot;
-        }
-
-        // Check if this slot would be in the past for the target day
-        const slotDateTime = dayjs(`${dateKey} ${slot.startTime}`);
-        const isPast = slotDateTime.isSameOrBefore(dayjs());
-
-        return {
-          ...slot,
-          id: uuidv4(),
-          // Don't copy availability to past slots
-          available: isPast ? false : slot.available,
-          isPast
-        };
+        existingSlotsMap.set(key, slot);
       });
+
+      // Create new slots based on source availability pattern
+      const newSlots: TimeBlock[] = [];
+      
+      sourceTimeSlotTemplates.forEach(template => {
+        const key = `${template.startTime}-${template.endTime}`;
+        const existingSlot = existingSlotsMap.get(key);
+        
+        // Calculate if this slot would be in the past for this day
+        const slotDateTime = dayjs(`${dateKey} ${template.startTime}`);
+        const isPast = slotDateTime.isSameOrBefore(dayjs());
+        
+        // If slot would be in the past, skip it entirely
+        if (isPast) {
+          return;
+        }
+        
+        if (existingSlot) {
+          // If this slot already exists (booked or not), preserve its booked status
+          // but update its availability according to the source template
+          newSlots.push({
+            ...existingSlot,
+            // Only copy available status, don't change booked status
+            available: existingSlot.booked ? existingSlot.available : template.available
+          });
+        } else {
+          // Create a new slot with copied availability pattern
+          newSlots.push({
+            id: uuidv4(),
+            time: template.time,
+            startTime: template.startTime,
+            endTime: template.endTime,
+            available: template.available,
+            booked: false,
+            isPast: false // This should always be false since we skip past slots above
+          });
+        }
+      });
+
+      // Sort slots by start time
+      newSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
       updates[dateKey] = newSlots;
     });
 
     setAvailability(prev => ({ ...prev, ...updates }));
-    message.success("Schedule copied to all days in current week");
+    message.success("Schedule copied to future days in current week (preserving existing bookings)");
   };
   // Save changes
   const saveChanges = async () => {
@@ -501,6 +574,7 @@ export default function AvailabilityManager() {
                         <div className="font-medium text-sm">{day.day}</div>
                         <div className="text-xs text-slate-400">{day.date}</div>
                       </div>
+                      {/* TODO: Clarify with team */}
                       <div className="space-y-1 max-h-48 overflow-y-auto">
                         {day.allVisibleSlots.length > 0 ? (
                           day.allVisibleSlots.map((slot, slotIndex) => (
