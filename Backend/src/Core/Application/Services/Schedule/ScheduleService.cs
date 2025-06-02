@@ -78,25 +78,33 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             return Result.Failure<SaveScheduleSettingsResponse>("Mentor not found", HttpStatusCode.NotFound);
         }
 
-        var scheduleSettings = await scheduleRepository.GetScheduleSettingsAsync(mentorId, request.WeekStartDate, request.WeekEndDate);
+        Schedules? scheduleSettings = await scheduleRepository.GetScheduleSettingsAsync(mentorId, request.WeekStartDate, request.WeekEndDate);
 
-        Dictionary<Guid, TimeSlotData> bookedTimeSlots = new();
-        if (scheduleSettings != null)
+        if (scheduleSettings is not null)
         {
-            bookedTimeSlots = GetBookedTimeSlotsData(scheduleSettings);
-            scheduleRepository.Delete(scheduleSettings);
+            scheduleSettings.StartHour = request.StartTime;
+            scheduleSettings.EndHour = request.EndTime;
+            scheduleSettings.SessionDuration = request.SessionDuration;
+            scheduleSettings.BufferTime = request.BufferTime;
+            scheduleRepository.Update(scheduleSettings);
         }
-
-        scheduleSettings = new Schedules
+        else
         {
-            MentorId = mentorId,
-            WeekStartDate = request.WeekStartDate,
-            WeekEndDate = request.WeekEndDate,
-            StartHour = request.StartTime,
-            EndHour = request.EndTime,
-            SessionDuration = request.SessionDuration,
-            BufferTime = request.BufferTime,
-        };
+            scheduleSettings = new Schedules
+            {
+                MentorId = mentorId,
+                WeekStartDate = request.WeekStartDate,
+                WeekEndDate = request.WeekEndDate,
+                StartHour = request.StartTime,
+                EndHour = request.EndTime,
+                SessionDuration = request.SessionDuration,
+                BufferTime = request.BufferTime,
+            };
+            await scheduleRepository.AddAsync(scheduleSettings);
+        }
+        await scheduleRepository.SaveChangesAsync();
+
+        mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
 
         foreach (var timeSlot in request.AvailableTimeSlots)
         {
@@ -107,45 +115,17 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             {
                 var mentorAvailableTimeSlot = new MentorAvailableTimeSlot
                 {
-                    Id = Guid.NewGuid(),
                     ScheduleId = scheduleSettings.Id,
                     Date = date,
                     StartTime = slot.StartTime,
                     EndTime = slot.EndTime,
                 };
 
-                scheduleSettings.AvailableTimeSlots ??= new List<MentorAvailableTimeSlot>();
-                scheduleSettings.AvailableTimeSlots.Add(mentorAvailableTimeSlot);
+                await mentorAvailableTimeSlotRepository.AddAsync(mentorAvailableTimeSlot);
             }
         }
-        foreach (var bookedSlot in bookedTimeSlots)
-        {
-            var timeSlotId = Guid.NewGuid();
-            var mentorAvailableTimeSlot = new MentorAvailableTimeSlot
-            {
-                Id = timeSlotId,
-                ScheduleId = scheduleSettings.Id,
-                Date = bookedSlot.Value.Date,
-                StartTime = bookedSlot.Value.StartTime,
-                EndTime = bookedSlot.Value.EndTime,
-                Sessions = new List<Sessions>
-                {
-                    new Sessions
-                    {
-                        Id = Guid.NewGuid(),
-                        LearnerId = bookedSlot.Key,
-                        Status = bookedSlot.Value.Status,
-                        TimeSlotId = timeSlotId
-                    }
-                }   
-            };
 
-            scheduleSettings.AvailableTimeSlots ??= new List<MentorAvailableTimeSlot>();
-            scheduleSettings.AvailableTimeSlots.Add(mentorAvailableTimeSlot);
-        }
-
-        await scheduleRepository.AddAsync(scheduleSettings);
-        await scheduleRepository.SaveChangesAsync();
+        await mentorAvailableTimeSlotRepository.SaveChangesAsync();
 
         var result = new SaveScheduleSettingsResponse
         {
@@ -158,44 +138,53 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     /// <summary>
     /// Generates a dictionary of all possible time slots for a given schedule settings.
     /// These time slots are initially marked as not available and not booked.
+    /// Changes: Only generate time slots in the future (current not included).
     /// </summary>
     /// <param name="scheduleSettings">The schedule settings containing start/end dates, times, session duration, and buffer time.</param>
     /// <returns>A dictionary where the key is the date and the value is a list of default <see cref="TimeSlotResponse"/> objects for that date.</returns>
     public Dictionary<DateOnly, List<TimeSlotResponse>> GetAllDefaultTimeSlots(Schedules scheduleSettings)
     {
         Dictionary<DateOnly, List<TimeSlotResponse>> allTimeSlots = new();
+        
+        // Get current date and time
+        DateTime now = DateTime.Now;
 
-        int dayCount = (scheduleSettings.WeekEndDate.DayNumber - scheduleSettings.WeekStartDate.DayNumber) + 1;
+        int dayCount = scheduleSettings.WeekEndDate.DayNumber - scheduleSettings.WeekStartDate.DayNumber + 1;
 
         for (int dayIndex = 0; dayIndex < dayCount; dayIndex++)
         {
             List<TimeSlotResponse> dailyTimeSlots = new();
-            DateOnly currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
-            DateTime currentDateTime = currentDate.ToDateTime(scheduleSettings.StartHour);
+            var currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
+            var slotDateTime = currentDate.ToDateTime(scheduleSettings.StartHour);
             DateTime endDateTime;
 
             endDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
                 ? currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour)
                 : currentDate.ToDateTime(scheduleSettings.EndHour);
 
-            while (currentDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
+            while (slotDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
             {
-                var sessionEndDateTime = currentDateTime.AddMinutes(scheduleSettings.SessionDuration);
-
-                var timeSlot = new TimeSlotResponse
+                var sessionEndDateTime = slotDateTime.AddMinutes(scheduleSettings.SessionDuration);
+                
+                // only add time slots that start in the future (current not included)
+                if (slotDateTime > now)
                 {
-                    Id = Guid.NewGuid(),
-                    StartTime = TimeOnly.FromDateTime(currentDateTime).ToString("HH:mm"),
-                    EndTime = TimeOnly.FromDateTime(sessionEndDateTime).ToString("HH:mm"),
-                    IsAvailable = false,
-                    IsBooked = false
-                };
+                    var timeSlot = new TimeSlotResponse
+                    {
+                        Id = Guid.NewGuid(),
+                        StartTime = TimeOnly.FromDateTime(slotDateTime).ToString("HH:mm"),
+                        EndTime = TimeOnly.FromDateTime(sessionEndDateTime).ToString("HH:mm"),
+                        IsAvailable = false,
+                        IsBooked = false
+                    };
 
-                dailyTimeSlots.Add(timeSlot);
+                    dailyTimeSlots.Add(timeSlot);
+                }
 
-                currentDateTime = currentDateTime.AddMinutes(scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
+                slotDateTime = slotDateTime.AddMinutes(scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
             }
 
+            // Add the date with its time slots (even if empty) to the dictionary
             allTimeSlots.Add(currentDate, dailyTimeSlots);
         }
 
