@@ -10,7 +10,7 @@ using System.Net;
 
 namespace Application.Services.Schedule;
 
-public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository) : IScheduleService
+public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository, IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository) : IScheduleService
 {
     public async Task<Result<ScheduleSettingsResponse>> GetScheduleSettingsAsync(Guid mentorId, GetScheduleSettingsRequest request)
     {
@@ -348,4 +348,8 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         return bookedTimeSlots;
     }
+}
+
+internal class MentorAvailableTimeSlotRepository
+{
 }
