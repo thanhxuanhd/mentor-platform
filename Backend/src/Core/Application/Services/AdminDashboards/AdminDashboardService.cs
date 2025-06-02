@@ -3,7 +3,6 @@ using Contract.Dtos.AdminDashboard.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.AdminDashboards;
 
@@ -30,6 +29,9 @@ public class AdminDashboardService(
         var activeLearners = activeUsersQuery
             .Where(u => u.RoleId == (int)UserRole.Learner);
 
+        var activeAdmins = activeUsersQuery
+            .Where(u => u.RoleId == (int)UserRole.Admin);
+
         var activeResources = resourceRepository.GetAll()
             .Where(c => c.Course.Status != CourseStatus.Archived);
 
@@ -39,7 +41,7 @@ public class AdminDashboardService(
         var pendingApplications = mentorApplicationRepository.GetAll()
             .Where(ma => ma.Status == ApplicationStatus.Submitted);
 
-        var totalUsers = await userRepository.CountAsync(activeUsersQuery);
+        var totalAdmins = await userRepository.CountAsync(activeAdmins);
         var totalMentors = await userRepository.CountAsync(activeMentors);
         var totalLearners = await userRepository.CountAsync(activeLearners);
         var totalResources = await resourceRepository.CountAsync(activeResources);
@@ -48,7 +50,7 @@ public class AdminDashboardService(
 
         var response = new AdminDashboardResponse
         {
-            TotalUsers = totalUsers,
+            TotalUsers = totalAdmins + totalLearners + totalMentors,
             TotalMentors = totalMentors,
             TotalLearners = totalLearners,
             TotalResources = totalResources,

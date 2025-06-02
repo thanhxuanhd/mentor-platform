@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MentorPlatformAPI.Controllers;
 
 [Authorize(Roles = RequiredRole.Admin)]
-[Route("api/dashboard/admin")]
+[Route("api/dashboards/admin")]
 [ApiController]
 public class AdminDashboardController(IAdminDashboardService adminDashboardService) : ControllerBase
 {

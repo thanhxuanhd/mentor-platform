@@ -1,3 +1,3 @@
 ﻿namespace Contract.Dtos.ActivityLogs.Responses;
 
-public record GetActivityLogResponse(string Action, DateTime Timestamp);
+public record GetActivityLogResponse(Guid Id, string Action, DateTime Timestamp);

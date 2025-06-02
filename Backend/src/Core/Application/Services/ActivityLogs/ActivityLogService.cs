@@ -20,7 +20,7 @@ public class ActivityLogService(IActivityLogRepository activityLogRepository) : 
             .Where(a => a.Action.Contains(keyword))
             .Where(a => a.Timestamp >= start && a.Timestamp <= end)
             .OrderByDescending(a => a.Timestamp)
-            .Select(a => new GetActivityLogResponse(a.Action, a.Timestamp));
+            .Select(a => new GetActivityLogResponse(a.Id, a.Action, a.Timestamp));
 
         var paginatedList = await activityLogRepository.ToPaginatedListAsync(activityLogs, request.PageSize, request.PageIndex);
 
