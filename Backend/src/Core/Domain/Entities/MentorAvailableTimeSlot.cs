@@ -9,7 +9,7 @@ public class MentorAvailableTimeSlot : BaseEntity<Guid>
     public TimeOnly StartTime { get; set; }
     public TimeOnly EndTime { get; set; }
     public Guid SessionId { get; set; }
-    public virtual ICollection<Sessions>? Sessions { get; set; }
+    public virtual ICollection<Sessions> Sessions { get; set; } = [];
     public virtual Schedules Schedules { get; set; } = null!;
 }
 
