@@ -142,7 +142,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
         }
 
-        if (category.Courses != null || category.Courses.Count > 0)
+        if (category.Courses != null && category.Courses.Count > 0)
         {
             return Result.Failure<bool>("Cannot delete category because it is in use", HttpStatusCode.BadRequest);
         }
