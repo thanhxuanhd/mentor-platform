@@ -19,7 +19,7 @@ public class GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfigura
         var payload = new Dictionary<string, string>
         {
             { "code", code },
-            { "client_id", _googleConfig["ClientId"]! },
+            { "client_id", _googleConfig["ClientID"]! },
             { "client_secret", _googleConfig["ClientSecret"]! },
             { "redirect_uri", _googleConfig["RedirectUri"]! },
             { "grant_type", "authorization_code" }

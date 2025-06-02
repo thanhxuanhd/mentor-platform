@@ -17,7 +17,7 @@ internal class GitHubOAuthService(IHttpClientFactory httpClientFactory, IConfigu
         var payload = new Dictionary<string, string>
         {
             { "code", code },
-            { "client_id", _gitHubConfigurationSection["ClientId"]! },
+            { "client_id", _gitHubConfigurationSection["ClientID"]! },
             { "client_secret", _gitHubConfigurationSection["ClientSecret"]! }
         };
 
