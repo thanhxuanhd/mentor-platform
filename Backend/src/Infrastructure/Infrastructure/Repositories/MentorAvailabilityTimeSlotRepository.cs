@@ -8,7 +8,7 @@ namespace Infrastructure.Repositories;
 
 public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) : BaseRepository<MentorAvailableTimeSlot, Guid>(context), IMentorAvailabilityTimeSlotRepository
 {
-    public void DeletePendingAndCancelledTimeSlotsAsync(Guid scheduleSettingsId)
+    public void DeletePendingAndCancelledTimeSlots(Guid scheduleSettingsId)
     {
         var deleteTimeSlots =  _context.MentorAvailableTimeSlots
             .Where(x => x.ScheduleId == scheduleSettingsId && !x.Sessions!.Any(s => s.Status == SessionStatus.Approved || s.Status == SessionStatus.Completed || s.Status == SessionStatus.Rescheduled));

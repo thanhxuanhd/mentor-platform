@@ -4,5 +4,5 @@ namespace Contract.Repositories;
 
 public interface IMentorAvailabilityTimeSlotRepository : IBaseRepository<MentorAvailableTimeSlot, Guid>
 {
-    void DeletePendingAndCancelledTimeSlotsAsync(Guid scheduleSettingsId);
+    void DeletePendingAndCancelledTimeSlots(Guid scheduleSettingsId);
 }
