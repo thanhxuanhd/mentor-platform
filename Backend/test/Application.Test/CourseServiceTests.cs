@@ -101,9 +101,9 @@ public class CourseServiceTests
             Assert.That(result.Value.PageIndex, Is.EqualTo(request.PageIndex));
             Assert.That(result.Value.PageSize, Is.EqualTo(request.PageSize));
 
-            var firstItem = result.Value.Items.First();
-            Assert.That(firstItem.Title, Is.EqualTo("Course 1"));
-            Assert.That(firstItem.CategoryName, Is.EqualTo("Category 1"));
+            var firstResource = result.Value.Items.First();
+            Assert.That(firstResource.Title, Is.EqualTo("Course 1"));
+            Assert.That(firstResource.CategoryName, Is.EqualTo("Category 1"));
         }
     }
 
@@ -277,7 +277,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemResponse>()
+                Resources = new List<CourseResourceResponse>()
             })
             .ToList();
 
@@ -640,7 +640,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemResponse>()
+                Resources = new List<CourseResourceResponse>()
             }).ToList(),
             coursesForMentor.Count,
             pageIndex,
@@ -705,7 +705,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemResponse>()
+                Resources = new List<CourseResourceResponse>()
             }).ToList(),
             publishedCourses.Count,
             pageIndex,
@@ -781,7 +781,7 @@ public class CourseServiceTests
                 Status = c.Status,
                 Difficulty = c.Difficulty,
                 DueDate = c.DueDate,
-                Items = new List<CourseItemResponse>()
+                Resources = new List<CourseResourceResponse>()
             }).ToList(),
             matchingCourses.Count,
             pageIndex,

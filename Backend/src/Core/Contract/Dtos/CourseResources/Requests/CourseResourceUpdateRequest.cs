@@ -1,19 +1,19 @@
 using Domain.Enums;
 using FluentValidation;
 
-namespace Contract.Dtos.CourseItems.Requests;
+namespace Contract.Dtos.CourseResources.Requests;
 
-public record CourseItemCreateRequest
+public record CourseResourceUpdateRequest
 {
     public required string Title { get; init; }
     public required string Description { get; init; }
-    public required CourseMediaType MediaType { get; init; }
-    public required string WebAddress { get; init; }
+    public required FileType ResourceType { get; init; }
+    public required string ResourceUrl { get; init; }
 }
 
-public class CourseItemCreateRequestValidator : AbstractValidator<CourseItemCreateRequest>
+public class CourseResourceUpdateRequestValidator : AbstractValidator<CourseResourceUpdateRequest>
 {
-    public CourseItemCreateRequestValidator()
+    public CourseResourceUpdateRequestValidator()
     {
         RuleFor(x => x.Title)
             .NotEmpty()

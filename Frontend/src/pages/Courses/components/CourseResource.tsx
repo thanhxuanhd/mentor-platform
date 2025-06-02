@@ -80,7 +80,7 @@ export const CourseResource: FC<CourseResourceProps> = ({
                     <p className="font-medium">{item.title}</p>
                     <p className="text-xs text-gray-400">{item.description}</p>
                     <p className="text-xs text-gray-500 mt-1">
-                      Type: {item.mediaType}
+                      Type: {item.resourceType}
                     </p>
                   </div>
                   <div className="flex space-x-2">

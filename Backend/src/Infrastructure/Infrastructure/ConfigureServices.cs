@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Contract.Repositories;
+﻿using Contract.Repositories;
 using Contract.Services;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
@@ -12,10 +11,10 @@ using Infrastructure.Services.Authorization.Policies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Infrastructure;
 
@@ -43,7 +42,7 @@ public static class ConfigureServices
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
-        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
+        services.AddScoped<ICourseResourceRepository, CourseResourceRepository>();
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
