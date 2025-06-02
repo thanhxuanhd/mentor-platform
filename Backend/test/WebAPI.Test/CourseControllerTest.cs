@@ -30,7 +30,7 @@ public class CourseControllerTest
             new Claim(ClaimTypes.Role, nameof(UserRole.Admin))
         ], "TestAuthentication"));
 
-        _controller = new CourseController(_courseServiceMock.Object, _courseResourceServiceMock.Object,
+        _controller = new CoursesController(_courseServiceMock.Object, _courseResourceServiceMock.Object,
             _authorizationServiceMock.Object)
         {
             ControllerContext = new ControllerContext
@@ -43,7 +43,7 @@ public class CourseControllerTest
     private Mock<ICourseService> _courseServiceMock = null!;
     private Mock<ICourseResourceService> _courseResourceServiceMock = null!;
     private Mock<IAuthorizationService> _authorizationServiceMock = null!;
-    private CourseController _controller = null!;
+    private CoursesController _controller = null!;
     private ClaimsPrincipal _user = null!;
 
     private static void AssertObjectResult<TValue>(IActionResult actionResult, HttpStatusCode expectedStatusCode,
