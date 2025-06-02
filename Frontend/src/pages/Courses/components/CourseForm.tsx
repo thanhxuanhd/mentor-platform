@@ -37,17 +37,20 @@ export const CourseForm: FC<CourseFormProps> = ({
     try {
       const response = await categoryService.list({
         pageIndex: 1,
-        pageSize: 5,
+        pageSize: 10,
         keyword: categoryKeyword.trim(),
         status: true,
       });
 
-      const items: Category[] = [...response.items, {
-        name: form.getFieldValue("categoryName"),
-        id: form.getFieldValue("categoryId")
-      }];
+      const assignedCategory = { name: form.getFieldValue("categoryName"), id: form.getFieldValue("categoryId") };
 
-      setMyCategories(items);
+      setMyCategories(
+        assignedCategory.id &&
+          !response.items.some((c: Category) => c.id === assignedCategory.id)
+          ? [...response.items, assignedCategory]
+          : [...response.items],
+      );
+
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
