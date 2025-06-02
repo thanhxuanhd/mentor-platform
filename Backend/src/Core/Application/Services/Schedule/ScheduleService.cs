@@ -235,7 +235,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                     StartTime = availableSlot.StartTime.ToString("HH:mm"),
                     EndTime = availableSlot.EndTime.ToString("HH:mm"),
                     IsAvailable = true,
-                    IsBooked = availableSlot.Sessions?.Any(s => s.Status == SessionStatus.Confirmed) ?? false
+                    IsBooked = availableSlot.Sessions?.Any(s => s.Status == SessionStatus.Approved) ?? false
                 };
 
                 timeSlots.Add(timeSlot);
@@ -330,10 +330,10 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             {
                 foreach (var session in timeSlot.Sessions)
                 {
-                    if (session.Status == SessionStatus.Confirmed || 
+                    if (session.Status == SessionStatus.Approved || 
                         session.Status == SessionStatus.Completed)
                     {
-                        // Only add confirmed or completed sessions to the booked time slots
+                        // Only add Approved or Completed sessions to the booked time slots
                         bookedTimeSlots[session.LearnerId] = new TimeSlotData
                         {
                             StartTime = timeSlot.StartTime,

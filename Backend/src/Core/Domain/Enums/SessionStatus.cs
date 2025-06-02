@@ -4,7 +4,8 @@ namespace Domain.Enums;
 public enum SessionStatus
 {
     Pending = 0,
-    Confirmed = 1,
+    Approved = 1,
     Completed = 2,
-    Canceled = 3
+    Canceled = 3,
+    Rescheduled = 4,
 }
