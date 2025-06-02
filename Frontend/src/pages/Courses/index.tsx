@@ -1,18 +1,27 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 
-import {CourseDifficultyEnumMember, CourseStatesEnumMember, initialFormData,} from "./initial-values.tsx";
-import type {Category, Course, CourseFormDataOptions, Mentor,} from "./types.tsx";
-import {CoursePopoverTarget} from "./coursePopoverTarget.tsx";
-import {CourseTable} from "./components/CourseTable.tsx";
-import {CourseForm} from "./components/CourseForm.tsx";
+import {
+  CourseDifficultyEnumMember,
+  CourseStatesEnumMember,
+  initialFormData,
+} from "./initial-values.tsx";
+import type {
+  Category,
+  Course,
+  CourseFormDataOptions,
+  Mentor,
+} from "./types.tsx";
+import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
+import { CourseTable } from "./components/CourseTable.tsx";
+import { CourseForm } from "./components/CourseForm.tsx";
 
-import {CourseResource} from "./components/CourseResource.tsx";
-import {courseService} from "../../services/course";
-import {categoryService} from "../../services/category";
-import {mentorService} from "../../services/mentor";
-import {CourseDetail} from "./components/CourseDetail.tsx";
-import {SearchBar} from "./components/SearchBar.tsx";
-import {App, Modal} from "antd";
+import { CourseResource } from "./components/CourseResource.tsx";
+import { courseService } from "../../services/course";
+import { categoryService } from "../../services/category";
+import { mentorService } from "../../services/mentor";
+import { CourseDetail } from "./components/CourseDetail.tsx";
+import { SearchBar } from "./components/SearchBar.tsx";
+import { App, Modal } from "antd";
 
 const Page: React.FC = () => {
   const [pageIndex, setPageIndex] = useState<number>(1);
@@ -90,8 +99,12 @@ const Page: React.FC = () => {
           courseResponse,
         );
 
-        const categoryResponse = await categoryService.list();
-        const mentorResponse = await mentorService.list();
+        const categoryResponse = await categoryService.list({
+          pageSize: 100
+        });
+        const mentorResponse = await mentorService.list({
+          pageSize: 100
+        });
 
         setTotalCount(courseResponse.totalPages);
         setCategories(categoryResponse.items);
@@ -181,7 +194,7 @@ const Page: React.FC = () => {
                     showSizeChanger: true,
                     onShowSizeChange: (current, pageSize) => {
                       setPageIndex(current);
-                      setPageSize(pageSize)
+                      setPageSize(pageSize);
                     },
                     pageSize: pageSize,
                     total: totalCount,
@@ -211,6 +224,7 @@ const Page: React.FC = () => {
                   setFormData({
                     id: course.id,
                     categoryId: course.categoryId,
+                    categoryName: course.categoryName,
                     description: course.description,
                     difficulty: course.difficulty,
                     dueDate: course.dueDate,

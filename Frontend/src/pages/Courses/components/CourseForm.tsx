@@ -41,7 +41,13 @@ export const CourseForm: FC<CourseFormProps> = ({
         keyword: categoryKeyword.trim(),
         status: true,
       });
-      setMyCategories(response.items);
+
+      const items: Category[] = [...response.items, {
+        name: form.getFieldValue("categoryName"),
+        id: form.getFieldValue("categoryId")
+      }];
+
+      setMyCategories(items);
     } catch (error) {
       console.error("Error fetching categories:", error);
     }

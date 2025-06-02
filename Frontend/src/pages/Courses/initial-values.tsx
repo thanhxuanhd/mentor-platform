@@ -27,6 +27,7 @@ export const initialFormData: CourseFormDataOptions = {
   title: "",
   description: "",
   categoryId: undefined,
+  categoryName: undefined,
   status: "draft",
   dueDate: dayjs().toString(),
   difficulty: "beginner",

@@ -50,7 +50,6 @@ export const SearchBar: FC<SearchBarProps> = ({
         setLoadingCategories(true);
         try {
             const response = await categoryService.list({
-                pageSize: 100,
                 keyword: searchKeyword,
                 status: undefined,
             });
@@ -67,7 +66,6 @@ export const SearchBar: FC<SearchBarProps> = ({
         setLoadingMentors(true);
         try {
             const response = await mentorService.list({
-                pageSize: 100,
                 fullName: searchKeyword,
             });
             setFilteredMentors(response.items);
