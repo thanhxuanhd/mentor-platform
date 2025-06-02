@@ -584,9 +584,9 @@ public class CategoryServiceTest
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(result.Value, Is.True);
 
-            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
-            _categoryRepositoryMock.Verify(r => r.Delete(category), Times.Once);
-            _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+            _mockCategoryRepository.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
+            _mockCategoryRepository.Verify(r => r.Delete(category), Times.Once);
+            _mockCategoryRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         });
     }
 
