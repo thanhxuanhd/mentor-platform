@@ -91,42 +91,7 @@ export const CourseTable: FC<CourseTableProps> = ({
           )}
         </Space>
       ),
-    },
-    // {
-    //   title: "",
-    //   key: "action",
-    //   render: (_: string, course: Course) => {
-    //     const items: MenuProps["items"] = [
-    //       {
-    //         key: "viewResource",
-    //         label: "View Resource",
-    //         onClick: () => onResourceView(course),
-    //       },
-    //       {
-    //         key: "viewCourse",
-    //         label: "View Course Details",
-    //         onClick: () => onView(course),
-    //       },
-    //       {
-    //         key: "editCourse",
-    //         label: "Edit Course",
-    //         onClick: () => onEdit(course),
-    //       },
-    //       {
-    //         key: "deleteCourse",
-    //         label: "Delete Course",
-    //         danger: true,
-    //         onClick: () => onDelete(course),
-    //       },
-    //     ];
-    //
-    //     return (
-    //       <Dropdown menu={{ items }} trigger={["click"]}>
-    //         <Button icon={<EllipsisOutlined />} />
-    //       </Dropdown>
-    //     );
-    //   },
-    // },
+    }
   ];
 
   return (
