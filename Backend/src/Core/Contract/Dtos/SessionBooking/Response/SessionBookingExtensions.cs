@@ -1,4 +1,5 @@
 ﻿using Domain.Entities;
+using Domain.Enums;
 
 namespace Contract.Dtos.SessionBooking.Response;
 
@@ -9,11 +10,12 @@ public static class SessionBookingExtensions
     {
         return new AvailableTimeSlotResponse
         {
-            MentorId = mats.MentorId,
-            MentorName = mats.Mentor.FullName,
+            MentorId = mats.Schedules.MentorId,
+            MentorName = mats.Schedules.Mentor.FullName,
             StartTime = mats.StartTime,
             EndTime = mats.EndTime,
-            Status = mats.Status
+            Date = mats.Date,
+            IsBooked = mats.Sessions.Any(s => s.Status == SessionStatus.Confirmed)
         };
     }
 

@@ -96,21 +96,16 @@ public class SessionBookingService(
         MentorAvailableTimeSlot timeSlot,
         User learner)
     {
-        if (timeSlot.Sessions.Any(b => b.LearnerId == learner.Id) ||
-            timeSlot.Status is SessionStatus.Expired or SessionStatus.Confirmed)
+        if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Completed or SessionStatus.Confirmed))
         {
             return Result.Failure<SessionSlotStatusResponse>(
-                $"Selected slot in {timeSlot.StartTime} - {timeSlot.EndTime} by {timeSlot.Mentor.FullName} is rejected.",
+                $"Selected slot in {timeSlot.StartTime} - {timeSlot.EndTime} by {timeSlot.Schedules.Mentor.FullName} is rejected.",
                 HttpStatusCode.BadRequest);
         }
 
-        if (timeSlot.Status is SessionStatus.Processing)
+        if (timeSlot.Sessions.Any(b => b.LearnerId == learner.Id))
         {
-            var reservedBooking = timeSlot.Bookings.MaxBy(b => b.BookedDateTime);
-            return Result.Failure<SessionSlotStatusResponse>(
-                reservedBooking!.LearnerId == learner.Id
-                    ? "You have already booked this slot."
-                    : "Selected slot is booked by others, please select an other slot!", HttpStatusCode.Conflict);
+            return Result.Failure<SessionSlotStatusResponse>("You have already booked this slot.", HttpStatusCode.Conflict);
         }
 
         var bookingSession = mentorAvailableTimeSlotRepository.AddNewBookingSession(timeSlot, learner.Id);
@@ -138,7 +133,7 @@ public class SessionBookingService(
                 HttpStatusCode.NotFound);
         }
 
-        if (bookingSession.TimeSlot.Mentor.Status != UserStatus.Active)
+        if (bookingSession.TimeSlot.Schedules.Mentor.Status != UserStatus.Active)
         {
             return Result.Failure<SessionSlotStatusResponse>(
                 "Selected slot is unavailable.",
@@ -158,8 +153,8 @@ public class SessionBookingService(
         var mailSent =
             await emailService.SendEmailAsync(learner.Email,
                 EmailConstants.SUBJECT_MEETING_BOOKING_CONFIRMATION,
-                EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName, timeSlot.StartTime,
-                    timeSlot.Mentor.FullName));
+                EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName, new DateTime(timeSlot.Date, timeSlot.StartTime),
+                    timeSlot.Schedules.Mentor.FullName));
 
         if (!mailSent)
         {
@@ -190,12 +185,12 @@ public class SessionBookingService(
                 HttpStatusCode.NotFound);
         }
 
-        if (bookingSession.TimeSlot.Mentor.Status != UserStatus.Active)
-        {
-            return Result.Failure<SessionSlotStatusResponse>(
-                "Selected slot is unavailable.",
-                HttpStatusCode.BadRequest);
-        }
+        // if (bookingSession.TimeSlot.Schedules.Mentor.Status != UserStatus.Active)
+        // {
+        //     return Result.Failure<SessionSlotStatusResponse>(
+        //         "Selected slot is unavailable.",
+        //         HttpStatusCode.BadRequest);
+        // }
 
         return await CancelBookingInternalAsync(bookingSession, user);
     }
