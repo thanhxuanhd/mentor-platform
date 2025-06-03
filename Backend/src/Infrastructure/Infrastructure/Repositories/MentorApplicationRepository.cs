@@ -12,19 +12,19 @@ public class MentorApplicationRepository(ApplicationDbContext context) : BaseRep
     {
         return _context.MentorApplications
             .Include(ma => ma.Mentor)
+            .Include(ma => ma.Mentor)
                 .ThenInclude(m => m.UserExpertises)
-                    .ThenInclude(ue => ue.Expertise)
-            .Include(ma => ma.Mentor);
+                    .ThenInclude(ue => ue.Expertise);
     }
 
     public async Task<MentorApplication?> GetMentorApplicationByIdAsync(Guid applicationId)
     {
         return await _context.MentorApplications
+            .Include(ma => ma.ApplicationDocuments)
+            .Include(ma => ma.Admin)
             .Include(ma => ma.Mentor)
                 .ThenInclude(m => m.UserExpertises)
                     .ThenInclude(ue => ue.Expertise)
-            .Include(ma => ma.ApplicationDocuments)
-            .Include(ma => ma.Admin)
             .FirstOrDefaultAsync(ma => ma.Id == applicationId);
     }
 

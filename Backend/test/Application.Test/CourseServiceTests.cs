@@ -1,4 +1,3 @@
-using System.Net;
 using Application.Services.Courses;
 using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
@@ -7,6 +6,7 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
+using System.Net;
 
 namespace Application.Test;
 
@@ -332,7 +332,6 @@ public class CourseServiceTests
         {
             Id = categoryId,
             Name = "Test Category",
-            IsDeleted = false,
             Status = true
         };
         var mentor = new User
@@ -413,7 +412,6 @@ public class CourseServiceTests
         {
             Id = categoryId,
             Name = "Inactive Category",
-            IsDeleted = true,
             Status = false
         };
 
@@ -466,7 +464,6 @@ public class CourseServiceTests
         {
             Id = categoryId,
             Name = "New Category",
-            IsDeleted = false,
             Status = true
         };
 

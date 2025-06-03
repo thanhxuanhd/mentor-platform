@@ -1,6 +1,13 @@
 import { axiosClient } from "../apiClient";
 import type { Mentor } from "../../pages/Courses/types";
 
+interface MentorListParams {
+  fullName?: string;
+  pageIndex?: number;
+  pageSize?: number;
+}
+
+
 interface MentorListResponse {
   items: Mentor[];
   pageSize: number;
@@ -13,13 +20,11 @@ export const mentorService = {
   /**
    * Get a list of mentors with filtering
    */
-  list: async (keyword: string = ""): Promise<MentorListResponse> => {
+  list: async (params?: MentorListParams): Promise<MentorListResponse> => {
     const response = await axiosClient.get(`Users/filter`, {
       params: {
-        pageIndex: 1,
-        pageSize: 100, // Get all mentors since we want to show all in dropdown
+        ...params,
         roleName: "Mentor",
-        fullName: keyword || null,
       },
     });
 

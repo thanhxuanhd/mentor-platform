@@ -4,10 +4,11 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Contract.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Services.Authorization.OAuth;
 
-public class GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+public class GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<GoogleOAuthService> logger)
     : IOAuthService
 {
     private readonly IConfigurationSection _googleConfig = configuration.GetSection("Google");
@@ -19,11 +20,13 @@ public class GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfigura
         var payload = new Dictionary<string, string>
         {
             { "code", code },
-            { "client_id", _googleConfig["ClientId"]! },
+            { "client_id", _googleConfig["ClientID"]! },
             { "client_secret", _googleConfig["ClientSecret"]! },
             { "redirect_uri", _googleConfig["RedirectUri"]! },
             { "grant_type", "authorization_code" }
         };
+
+        logger.LogInformation("Google Payload: {payload}", payload.ToString());
 
         var response = await client.PostAsync(
             "https://oauth2.googleapis.com/token",

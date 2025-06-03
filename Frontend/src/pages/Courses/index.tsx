@@ -26,7 +26,7 @@ import { useAuth } from "../../hooks/useAuth.ts";
 import { applicationRole } from "../../constants/role.ts";
 
 const Page: React.FC = () => {
-  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -59,7 +59,7 @@ const Page: React.FC = () => {
       const refreshData = async () => {
         try {
           const courseResponse = await courseService.list({
-            pageIndex: 0,
+            pageIndex,
             pageSize,
             keyword,
             difficulty,
@@ -102,8 +102,12 @@ const Page: React.FC = () => {
           courseResponse,
         );
 
-        const categoryResponse = await categoryService.list();
-        const mentorResponse = await mentorService.list();
+        const categoryResponse = await categoryService.list({
+          pageSize: 100
+        });
+        const mentorResponse = await mentorService.list({
+          pageSize: 100
+        });
 
         setTotalCount(courseResponse.totalPages);
         setCategories(categoryResponse.items);
@@ -192,13 +196,18 @@ const Page: React.FC = () => {
                 tableProps={{
                   loading: loading || isRefreshing,
                   pagination: {
+                    showSizeChanger: true,
+                    onShowSizeChange: (current, pageSize) => {
+                      setPageIndex(current);
+                      setPageSize(pageSize);
+                    },
                     pageSize: pageSize,
                     total: totalCount,
                     position: ["bottomRight"],
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
-                    onChange: async (pageNumber, pageSize) => {
-                      setPageIndex(pageNumber - 1);
+                    onChange: (pageNumber, pageSize) => {
+                      setPageIndex(pageNumber);
                       setPageSize(pageSize);
                     },
                   },
@@ -220,6 +229,7 @@ const Page: React.FC = () => {
                   setFormData({
                     id: course.id,
                     categoryId: course.categoryId,
+                    categoryName: course.categoryName,
                     description: course.description,
                     difficulty: course.difficulty,
                     dueDate: course.dueDate,

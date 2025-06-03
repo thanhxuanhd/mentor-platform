@@ -1134,7 +1134,7 @@ public class MentorApplicationServiceTestsGetAll
         Assert.Multiple(() =>
         {
             Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
             Assert.That(result.Error, Is.EqualTo("You can only update applications when the status is WaitingInfo."));
             _mockMentorApplicationRepository.Verify(repo => repo.GetMentorApplicationsToUpdate(applicationId), Times.Once);
             _mockMentorApplicationRepository.Verify(repo => repo.Update(It.IsAny<MentorApplication>()), Times.Never);
@@ -1356,7 +1356,7 @@ public class MentorApplicationServiceTestsGetAll
         Assert.Multiple(() =>
         {
             Assert.That(result.IsSuccess, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Conflict));
             Assert.That(result.Error, Is.EqualTo("User has an active or pending mentor application."));
             _mockUserRepository.Verify(repo => repo.GetByIdAsync(userId, It.IsAny<Expression<Func<User, object>>>()), Times.Once);
             _mockMentorApplicationRepository.Verify(repo => repo.AddAsync(It.IsAny<MentorApplication>()), Times.Never);

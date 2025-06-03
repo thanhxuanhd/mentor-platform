@@ -8,6 +8,7 @@ using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
 using Infrastructure.Services.Background;
+using Infrastructure.Services.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,7 @@ public static class ConfigureServices
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
+        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
 
         // Add repositories
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
@@ -59,9 +61,8 @@ public static class ConfigureServices
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            // options.EnableSensitiveDataLogging();
         });
-        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
+
         // Add JWT Authentication
         services.AddAuthentication(options =>
         {

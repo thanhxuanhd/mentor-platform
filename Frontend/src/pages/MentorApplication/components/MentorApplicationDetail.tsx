@@ -113,6 +113,24 @@ export default function MentorApplicationDetail({
           <p className="text-slate-400">{application.experiences || "Not provided"}</p>
         </div>
 
+        {/* Education */}
+        <div>
+          <h4 className="text-slate-300 text-sm font-medium mb-2 tracking-wide">Education</h4>
+          <p className="text-slate-400">{application.education || "Not provided"}</p>
+        </div>
+
+        {/* Certifications */}
+        <div>
+          <h4 className="text-slate-300 text-sm font-medium mb-2 tracking-wide">Certifications</h4>
+          <p className="text-slate-400">{application.certifications || "Not provided"}</p>
+        </div>
+
+        {/* Certifications */}
+        <div>
+          <h4 className="text-slate-300 text-sm font-medium mb-2 tracking-wide">Motivation Statement</h4>
+          <p className="text-slate-400">{application.statement || "Not provided"}</p>
+        </div>
+
         {/* Application Timeline */}
         <div>
           <h4 className="text-slate-300 text-sm font-medium mb-2 tracking-wide">Application Timeline</h4>

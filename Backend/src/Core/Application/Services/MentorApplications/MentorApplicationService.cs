@@ -255,7 +255,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         }
         if (application.Status != ApplicationStatus.WaitingInfo)
         {
-            return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
+            return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.Conflict);
         }
 
         application.Mentor.Experiences = request.WorkExperience;
@@ -342,7 +342,7 @@ public class MentorApplicationService(IUserRepository userRepository,
 
         if (user.MentorApplications != null && user.MentorApplications.Any(x => x.Status != ApplicationStatus.Rejected))
         {
-            return Result.Failure<bool>("User has an active or pending mentor application.", HttpStatusCode.BadRequest);
+            return Result.Failure<bool>("User has an active or pending mentor application.", HttpStatusCode.Conflict);
         }
 
         user.Experiences = submission.WorkExperience;
@@ -351,7 +351,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         var mentorApplication = new MentorApplication
         {
             MentorId = userId,
-            SubmittedAt = DateTime.UtcNow,
+            SubmittedAt = DateTime.Now,
         };
         submission.ToMentorApplication(mentorApplication);
 

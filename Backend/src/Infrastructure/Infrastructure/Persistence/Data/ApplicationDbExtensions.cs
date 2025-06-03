@@ -270,72 +270,59 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
-        //if (!dbContext.MentorApplications.Any())
-        //{
-        //    dbContext.MentorApplications.AddRange(new MentorApplication
-        //    {
-        //        Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
-        //        MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-        //        Status = ApplicationStatus.Submitted,
-        //        SubmittedAt = DateTime.UtcNow,
-        //        ReviewedAt = null,
-        //        Education = "Bachelor's in Computer Science",
-        //        Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
-        //        Statement = null,
-        //        Note = null
-        //    },
-        //    new MentorApplication
-        //    {
-        //        Id = Guid.Parse("7ad56b17-cb7d-4ca8-9058-8a05def6229f"),
-        //        MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
-        //        Status = ApplicationStatus.Submitted,
-        //        SubmittedAt = DateTime.UtcNow,
-        //        ReviewedAt = null,
-        //        Education = "Master's in Business Administration",
-        //        Certifications = "Project Management Professional (PMP), Six Sigma Green Belt",
-        //        Statement = null,
-        //        Note = null
-        //    },
-        //    new MentorApplication
-        //    {
-        //        Id = Guid.Parse("f64b84ef-5807-4a81-8ee4-9e92f6303916"),
-        //        MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
-        //        Status = ApplicationStatus.Submitted,
-        //        SubmittedAt = DateTime.UtcNow.AddDays(-5),
-        //        ReviewedAt = DateTime.UtcNow,
-        //        AdminId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
-        //        Education = "PhD in Psychology",
-        //        Certifications = "Certified Life Coach, Emotional Intelligence Practitioner",
-        //        Statement = null,
-        //        Note = null
-        //    },
-        //    new MentorApplication
-        //    {
-        //        Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
-        //        MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
-        //        Status = ApplicationStatus.Rejected,
-        //        SubmittedAt = new DateTime(2000, 1, 1),
-        //        ReviewedAt = null,
-        //        Education = "Bachelor's in Arts",
-        //        Certifications = "Certified Art Therapist",
-        //        Statement = null,
-        //        Note = "Invalid"
-        //    },
-        //    new MentorApplication
-        //    {
-        //        Id = Guid.Parse("c9ad54d7-f90e-4ecf-b8ec-8b5badedf171"),
-        //        MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
-        //        Status = ApplicationStatus.Approved,
-        //        SubmittedAt = DateTime.UtcNow.AddDays(-10),
-        //        ReviewedAt = DateTime.UtcNow,
-        //        AdminId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
-        //        Education = "Bachelor's in Graphic Design",
-        //        Certifications = null,
-        //        Statement = null,
-        //        Note = null
-        //    });
-        //    dbContext.SaveChanges();
-        //}
+        if (!dbContext.MentorApplications.Any())
+        {
+            dbContext.MentorApplications.AddRange(new MentorApplication
+            {
+                Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Bachelor's in Computer Science",
+                Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("7ad56b17-cb7d-4ca8-9058-8a05def6229f"),
+                MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Master's in Business Administration",
+                Certifications = "Project Management Professional (PMP), Six Sigma Green Belt",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Rejected,
+                SubmittedAt = new DateTime(2000, 1, 1),
+                ReviewedAt = null,
+                Education = "Bachelor's in Arts",
+                Certifications = "Certified Art Therapist",
+                Statement = null,
+                Note = "Invalid"
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("c9ad54d7-f90e-4ecf-b8ec-8b5badedf171"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Approved,
+                SubmittedAt = DateTime.UtcNow.AddDays(-10),
+                ReviewedAt = DateTime.UtcNow,
+                AdminId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
+                Education = "Bachelor's in Graphic Design",
+                Certifications = null,
+                Statement = null,
+                Note = null
+            });
+            dbContext.SaveChanges();
+        }
 
         if (!dbContext.CourseItems.Any())
         {

@@ -11,8 +11,7 @@ namespace MentorPlatformAPI.Controllers;
 [ApiController]
 public class MentorApplicationController(IMentorApplicationService mentorApplicationService) : ControllerBase
 {
-    // Mentor can also use this route to display all of their applications
-    [Authorize(Roles = "Admin,Mentor")]
+    [Authorize(Roles = "Admin")]
     [HttpGet]
     public async Task<IActionResult> GetAllMentorApplications([FromQuery] FilterMentorApplicationRequest request)
     {
