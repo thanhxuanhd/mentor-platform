@@ -6,6 +6,7 @@ import { useAuth } from "../../../hooks/useAuth.ts";
 import { applicationRole } from "../../../constants/role.ts";
 import dayjs from "dayjs";
 import {DeleteOutlined, FolderOutlined, EyeOutlined, EditOutlined} from "@ant-design/icons";
+import {formatDate} from "../../../utils/DateFormat.ts";
 
 export const CourseTable: FC<CourseTableProps> = ({
   courses,
@@ -26,7 +27,7 @@ export const CourseTable: FC<CourseTableProps> = ({
         <div>
           <div className="font-medium">{course.title}</div>
           <div className="text-xs text-gray-400">
-            {dayjs(course.dueDate).format("YYYY-MM-DD")}
+            {formatDate(course.dueDate)}
           </div>
           <div className="text-xs text-gray-400">{course.difficulty}</div>
         </div>
