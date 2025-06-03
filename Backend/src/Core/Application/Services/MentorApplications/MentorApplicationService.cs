@@ -10,9 +10,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net;
 
 namespace Application.Services.MentorApplications;
