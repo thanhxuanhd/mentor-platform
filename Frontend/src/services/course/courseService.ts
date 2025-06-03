@@ -112,7 +112,7 @@ export const courseService = {
     params: CourseResourceCreateParams,
   ) => {
     const response = await axiosClient.post(
-      `/Courses/${courseId}/resource`,
+      `/Courses/${courseId}/resources`,
       params,
     );
     return response.data;
@@ -127,7 +127,7 @@ export const courseService = {
     params: CourseResourceUpdateParams,
   ) => {
     const response = await axiosClient.put(
-      `/Courses/${courseId}/resource/${resourceId}`,
+      `/Courses/${courseId}/resources/${resourceId}`,
       params,
     );
     return response.data;
@@ -140,7 +140,7 @@ export const courseService = {
     courseId: string,
     resourceId: string,
   ): Promise<void> => {
-    await axiosClient.delete(`/Courses/${courseId}/resource/${resourceId}`);
+    await axiosClient.delete(`/Courses/${courseId}/resources/${resourceId}`);
   },
 };
 
