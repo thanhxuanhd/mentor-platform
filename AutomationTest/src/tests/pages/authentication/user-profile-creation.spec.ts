@@ -22,8 +22,8 @@ test.describe("@Registration Sign Up test", () => {
   const userData: { [label: string]: UserProfileCreation } = {
     "@SmokeTest Verify create user profile successfully":
       profileSetupData.valid_case,
-    "Empty fullname": profileSetupData.empty_fullname,
-    "Empty phone number": profileSetupData.empty_phone_number,
+    "@SmokeTest Empty fullname": profileSetupData.empty_fullname,
+    "@SmokeTest Empty phone number": profileSetupData.empty_phone_number,
     "Incorrect phone number format": profileSetupData.wrong_phone_number_format,
     "Empty availability": profileSetupData.empty_availability,
     "Verify user can search for expertise value":
