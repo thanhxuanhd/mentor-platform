@@ -22,6 +22,7 @@ export interface WeekDay {
   isToday: boolean;
   active: boolean;
   hasAvailability: boolean;
+  hasTimeSlots?: boolean;
 }
 
 export interface AvailabilitySettings {

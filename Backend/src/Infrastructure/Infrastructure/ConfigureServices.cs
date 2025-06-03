@@ -48,7 +48,7 @@ public static class ConfigureServices
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
         services.AddScoped<ISessionsRepository, SessionsRepository>();
-        services.AddScoped<IMentorAvailableTimeSlotRepository, MentorAvailableTimeSlotRepository>();
+        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {

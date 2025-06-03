@@ -1,9 +1,12 @@
-﻿using Domain.Entities;
+using Domain.Entities;
 
 namespace Contract.Repositories;
 
-public interface IMentorAvailableTimeSlotRepository : IBaseRepository<MentorAvailableTimeSlot, Guid>
+public interface IMentorAvailabilityTimeSlotRepository : IBaseRepository<MentorAvailableTimeSlot, Guid>
 {
+    void DeletePendingAndCancelledTimeSlots(Guid scheduleSettingsId);
+    List<MentorAvailableTimeSlot> GetConfirmedTimeSlots(Guid scheduleSettingsId);
+    
     IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot();
     IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking();
 

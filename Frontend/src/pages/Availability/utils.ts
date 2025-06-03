@@ -127,9 +127,9 @@ export const generateTimeSlotsForDay = (
       const key = `${slot.startTime}-${slot.endTime}`;
       bookedSlotsMap.set(key, slot);
     }
-  });
-  let currentTime = dayStart;
-  // Generate slots only if they can completely fit within work hours (matching backend logic)
+  });  let currentTime = dayStart;
+  
+  // Generate slots only if they can completely fit within work hours and are in the future
   while (currentTime.add(sessionDuration, 'minute').isSameOrBefore(dayEnd)) {
     const slotStart = currentTime;
     const slotEnd = currentTime.add(sessionDuration, 'minute');
@@ -138,8 +138,14 @@ export const generateTimeSlotsForDay = (
     const endTimeStr = slotEnd.format('HH:mm');
     const key = `${startTimeStr}-${endTimeStr}`;
     
-    // Check if this slot is in the past (including current time slot)
+    // Check if this slot is in the past or currently happening
     const isPast = slotStart.isSameOrBefore(dayjs());
+    
+    // Skip generating past time slots entirely (backend change requirement)
+    if (isPast) {
+      currentTime = currentTime.add(sessionDuration + bufferTime, 'minute');
+      continue;
+    }
     
     // Check if this slot already exists and is booked
     const existingBookedSlot = bookedSlotsMap.get(key);

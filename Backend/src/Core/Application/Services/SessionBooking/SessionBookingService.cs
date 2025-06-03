@@ -14,7 +14,7 @@ public class SessionBookingService(
     IUserRepository userRepository,
     ISessionsRepository sessionBookingRepository,
     IScheduleRepository scheduleRepository,
-    IMentorAvailableTimeSlotRepository mentorAvailableTimeSlotRepository,
+    IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository,
     IEmailService emailService) : ISessionBookingService
 {
     public async Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotAsync(
@@ -97,7 +97,7 @@ public class SessionBookingService(
         MentorAvailableTimeSlot timeSlot,
         User learner)
     {
-        if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Completed or SessionStatus.Confirmed))
+        if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
             return Result.Failure<SessionSlotStatusResponse>(
                 $"Selected slot in {timeSlot.StartTime} - {timeSlot.EndTime} by {timeSlot.Schedules.Mentor.FullName} is rejected.",

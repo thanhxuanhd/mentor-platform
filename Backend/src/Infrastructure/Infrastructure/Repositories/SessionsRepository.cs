@@ -20,19 +20,19 @@ public class SessionsRepository(ApplicationDbContext context)
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
     {
         var sessions = bookingSession.TimeSlot.Sessions;
-        if (sessions.Any(s => s.Status is SessionStatus.Completed or SessionStatus.Confirmed))
+        if (sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
             throw new Exception("Cannot accept this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Confirmed;
+        bookingSession.Status = SessionStatus.Approved;
         sessions.Add(bookingSession);
     }
 
     public void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var timeSlot = bookingSession.TimeSlot;
-        if (bookingSession.Status is not SessionStatus.Pending)
+        var sessionFinalized = bookingSession.TimeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
+        if (bookingSession.Status is not SessionStatus.Pending || sessionFinalized)
         {
             throw new Exception("Cannot reject this booking session.");
         }
