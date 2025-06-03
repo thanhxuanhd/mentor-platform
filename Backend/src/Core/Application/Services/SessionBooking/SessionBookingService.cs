@@ -71,6 +71,32 @@ public class SessionBookingService(
             HttpStatusCode.OK);
     }
 
+    public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotByMentorAndDateAsync(
+        Guid mentorId, AvailableTimeSlotByDateListRequest request)
+    {
+        var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
+
+        var availableTimeSlot =
+            await mentorAvailableTimeSlotRepository.ToListAsync(
+                mentorAvailableTimeSlots
+                    .Where(mats => mats.Schedules.MentorId == mentorId)
+                    .Where(mats => mats.Date == request.Date)
+                    .Select(mats => mats.ToAvailableTimeSlotResponse()));
+
+        return Result.Success(availableTimeSlot, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<List<SessionSlotStatusResponse>>> GetAllBookingRequestByTimeSlot(Guid timeSlotId)
+    {
+        var sessions = sessionBookingRepository.GetAllSessionsByTimeSlotId(timeSlotId);
+
+        var userBookingRequests =
+            await sessionBookingRepository.ToListAsync(
+                sessions.Select(mats => mats.ToSessionSlotStatusResponse()));
+
+        return Result.Success(userBookingRequests, HttpStatusCode.OK);
+    }
+
     public async Task<Result<SessionSlotStatusResponse>> RequestBookingAsync(CreateSessionBookingRequest request,
         Guid requestingLearnerId)
     {
@@ -104,9 +130,10 @@ public class SessionBookingService(
                 HttpStatusCode.BadRequest);
         }
 
-        if (timeSlot.Sessions.Any(b => b.LearnerId == learner.Id))
+        if (timeSlot.Sessions.Any(b => b.LearnerId == learner.Id && b.Status == SessionStatus.Pending))
         {
-            return Result.Failure<SessionSlotStatusResponse>("You have already booked this slot.", HttpStatusCode.Conflict);
+            return Result.Failure<SessionSlotStatusResponse>("You have already booked this slot.",
+                HttpStatusCode.Conflict);
         }
 
         var bookingSession = mentorAvailableTimeSlotRepository.AddNewBookingSession(timeSlot, learner.Id);
@@ -154,7 +181,8 @@ public class SessionBookingService(
         var mailSent =
             await emailService.SendEmailAsync(learner.Email,
                 EmailConstants.SUBJECT_MEETING_BOOKING_CONFIRMATION,
-                EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName, new DateTime(timeSlot.Date, timeSlot.StartTime),
+                EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName,
+                    new DateTime(timeSlot.Date, timeSlot.StartTime),
                     timeSlot.Schedules.Mentor.FullName));
 
         if (!mailSent)

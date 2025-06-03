@@ -6,10 +6,8 @@ public interface IMentorAvailabilityTimeSlotRepository : IBaseRepository<MentorA
 {
     void DeletePendingAndCancelledTimeSlots(Guid scheduleSettingsId);
     List<MentorAvailableTimeSlot> GetConfirmedTimeSlots(Guid scheduleSettingsId);
-    
+    Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id);
     IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot();
     IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking();
-
-    Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id);
     Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, Guid learnerId);
 }

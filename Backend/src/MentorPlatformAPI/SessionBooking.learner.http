@@ -19,12 +19,15 @@ GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/available-mentors?pageIn
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 
-### Get Available Time Slot of a Mentor
-GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/available-timeslots/{{mentorId}}?pageIndex={{pageIndex}}&
-    pageSize={{pageSize}}
+### Get Available Time Slot of a Mentor By Date
+< {%
+    const currentDate = new Date().toISOString().split('T')[0]
+    request.variables.set("currentDate", currentDate)
+%}
+
+GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/available-mentors/timeslots/{{mentorId}}?date={{currentDate}}
 Accept: application/json
 Authorization: Bearer {{auth_token}}
-
 
 ### Request Booking Session
 POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request
@@ -33,10 +36,9 @@ Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-    "timeSlotId": "bc7cb279-b292-4ca3-a994-9ee579770dbe",
+    "timeSlotId": "{{availableTimeSlotId}}",
     "sessionType": "virtual"
 }
-
 
 ### Request Booking Session that is unavailable
 POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request

@@ -10,6 +10,7 @@ public static class SessionBookingExtensions
     {
         return new AvailableTimeSlotResponse
         {
+            Id = mats.Id,
             MentorId = mats.Schedules.MentorId,
             MentorName = mats.Schedules.Mentor.FullName,
             StartTime = mats.StartTime,
@@ -40,10 +41,10 @@ public static class SessionBookingExtensions
         {
             SlotId = booking.Id,
             MentorId = mats.Schedules.MentorId,
-            BookingStatus = booking.Status,
             Day = mats.Date,
             StartTime = mats.StartTime,
-            EndTime = mats.EndTime
+            EndTime = mats.EndTime,
+            BookingStatus = booking.Status
         };
     }
 }

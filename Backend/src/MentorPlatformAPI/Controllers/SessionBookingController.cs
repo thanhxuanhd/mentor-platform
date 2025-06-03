@@ -23,6 +23,7 @@ public class SessionBookingController(
     }
 
     [HttpGet("available-timeslots/{mentorId:guid}")]
+    [Authorize(Policy = RequiredRole.Admin)]
     public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAsync(Guid mentorId,
         [FromQuery] AvailableTimeSlotListRequest request)
     {
@@ -30,12 +31,28 @@ public class SessionBookingController(
         return StatusCode((int)result.StatusCode, result);
     }
 
-    
     [HttpGet("available-mentors")]
     public async Task<IActionResult> GetAllAvailableMentorForBooking(
         [FromQuery] AvailableMentorForBookingListRequest request)
     {
         var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("available-mentors/timeslots/{mentorId:guid}")]
+    public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAndDateAsync(Guid mentorId,
+        [FromQuery] AvailableTimeSlotByDateListRequest request)
+    {
+        // TODO: resource owner authorization + admin
+        var result = await sessionBookingService.GetAllAvailableTimeSlotByMentorAndDateAsync(mentorId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("timeslots/requests/{timeSlotId:guid}")]
+    public async Task<IActionResult> GetAllBookingRequestByTimeSlot(Guid timeSlotId)
+    {
+        // TODO: resource owner authorization
+        var result = await sessionBookingService.GetAllBookingRequestByTimeSlot(timeSlotId);
         return StatusCode((int)result.StatusCode, result);
     }
     

@@ -32,7 +32,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
             .OrderBy(mats => mats.Id)
             .Include(mats => mats.Sessions)
             .Include(mats => mats.Schedules)
-            .ThenInclude(mats => mats.Mentor)
+            .ThenInclude(s => s.Mentor)
             .Where(mats => mats.Sessions.All(sessions =>
                 sessions.Status != SessionStatus.Approved && sessions.Status != SessionStatus.Completed));
 
@@ -60,6 +60,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
     {
         return await _context.MentorAvailableTimeSlots
             .Include(mats => mats.Schedules)
+            .ThenInclude(s => s.Mentor)
             .Include(mats => mats.Sessions)
             .FirstOrDefaultAsync(mt => mt.Id == id);
     }

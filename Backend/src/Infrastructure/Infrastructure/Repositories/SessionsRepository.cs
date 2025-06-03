@@ -10,29 +10,47 @@ namespace Infrastructure.Repositories;
 public class SessionsRepository(ApplicationDbContext context)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
+    public IQueryable<Sessions> GetAllSessionsByTimeSlotId(Guid timeSlotId)
+    {
+        return _context.Sessions
+            .Include(s => s.TimeSlot)
+            .ThenInclude(mats => mats.Schedules)
+            .Where(s => s.TimeSlotId == timeSlotId);
+    }
+
     public async Task<Sessions?> GetByIdAsync(Guid id)
     {
         return await _context.Sessions
-            .Include(b => b.TimeSlot)
-            .FirstOrDefaultAsync(b => b.Id == id);
+            .Include(s => s.TimeSlot)
+            .ThenInclude(mats => mats.Schedules)
+            .FirstOrDefaultAsync(s => s.Id == id);
     }
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var sessions = bookingSession.TimeSlot.Sessions;
-        if (sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed))
+        var timeSlot = bookingSession.TimeSlot;
+        var isBooked = timeSlot.SessionId != Guid.Empty
+                       || timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
+        if (isBooked)
         {
             throw new Exception("Cannot accept this booking session.");
         }
 
+        timeSlot.ScheduleId = bookingSession.Id;
         bookingSession.Status = SessionStatus.Approved;
-        sessions.Add(bookingSession);
     }
 
     public void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var sessionFinalized = bookingSession.TimeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
-        if (bookingSession.Status is not SessionStatus.Pending || sessionFinalized)
+        var timeSlot = bookingSession.TimeSlot;
+        if (bookingSession.Status is not SessionStatus.Pending)
+        {
+            throw new Exception("Cannot reject this booking session.");
+        }
+
+        var isBooked = timeSlot.SessionId != Guid.Empty
+                       || timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
+        if (isBooked)
         {
             throw new Exception("Cannot reject this booking session.");
         }
