@@ -29,11 +29,11 @@ export class UserProfileSetupPage extends BasePage {
         `.ant-radio-button-label span.font-medium:has-text('${role}')`
       );
     };
-    this.DDL_EXPERTISE = page.locator("div.ant-select-selector");
+    this.DDL_EXPERTISE = page.locator("#user_profile_form_expertiseIds");
     this.DDL_EXPERTISE_OPTIONS = (expertise) => {
-      return page.locator(
-        `div.ant-select-item-option-content:has-text('${expertise}')`
-      );
+      return page
+        .locator(`div.ant-select-item-option-content`)
+        .filter({ hasText: new RegExp(expertise, "i") });
     };
     this.TXT_SKILLS = page.locator("#user_profile_form_skills");
     this.TXT_INDUSTRY_EXPERIENCE = page.locator(
@@ -79,14 +79,11 @@ export class UserProfileSetupPage extends BasePage {
   }
 
   async selectExpertise(expertise: string[]) {
-    if (expertise) {
-      await this.click(this.DDL_EXPERTISE);
-      for (const item of expertise) {
-        const expertise_loc = this.DDL_EXPERTISE_OPTIONS(item);
-        await this.click(expertise_loc);
-      }
-      await this.click(this.DDL_EXPERTISE);
-    }
+    await this.selectFromDropdown(
+      this.DDL_EXPERTISE,
+      this.DDL_EXPERTISE_OPTIONS,
+      expertise
+    );
   }
 
   async fillProfessionalSkillsField(skills: string) {
