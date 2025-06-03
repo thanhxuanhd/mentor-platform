@@ -23,7 +23,6 @@ public static class ConfigureServices
         services.AddScoped<ITeachingApproachService, TeachingApproachService>();
         services.AddScoped<IExpertiseService, ExpertiseService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
-        services.AddScoped<ICourseResourceService, CourseResourceService>();
 
         return services;
     }
