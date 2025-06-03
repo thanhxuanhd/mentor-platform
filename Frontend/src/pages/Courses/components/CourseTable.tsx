@@ -1,12 +1,14 @@
 import type { Course } from "../types.tsx";
-import { Button, Space, Table, type TableProps, Tag } from "antd";
+import type { TableProps } from "antd";
+import { Button, Space, Table, Tag } from "antd";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FolderOutlined,
+} from "@ant-design/icons";
 import type { CourseTableProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
-import { useAuth } from "../../../hooks/useAuth.ts";
-import { applicationRole } from "../../../constants/role.ts";
-import dayjs from "dayjs";
-import {DeleteOutlined, FolderOutlined, EyeOutlined, EditOutlined} from "@ant-design/icons";
-import {formatDate} from "../../../utils/DateFormat.ts";
 
 export const CourseTable: FC<CourseTableProps> = ({
   courses,
@@ -17,18 +19,16 @@ export const CourseTable: FC<CourseTableProps> = ({
   onDelete,
   tableProps,
 }) => {
-  const { user } = useAuth();
   const columns: TableProps<Course>["columns"] = [
     {
       title: "Title",
       dataIndex: "title",
       key: "title",
+      width: "25%",
       render: (_: string, course: Course) => (
         <div>
           <div className="font-medium">{course.title}</div>
-          <div className="text-xs text-gray-400">
-            {formatDate(course.dueDate)}
-          </div>
+          <div className="text-xs text-gray-400">{course.dueDate}</div>
           <div className="text-xs text-gray-400">{course.difficulty}</div>
         </div>
       ),
@@ -66,6 +66,17 @@ export const CourseTable: FC<CourseTableProps> = ({
       dataIndex: "difficulty",
       key: "difficulty",
     },
+    // {
+    //   title: "Students",
+    //   dataIndex: "enrolledStudents",
+    //   key: "enrolledStudents",
+    // },
+    // {
+    //   title: "Completion",
+    //   dataIndex: "completionRate",
+    //   key: "completionRate",
+    //   render: (text: number) => `${text}%`,
+    // },
     {
       title: "Action",
       key: "action",
@@ -76,23 +87,19 @@ export const CourseTable: FC<CourseTableProps> = ({
             onClick={() => onResourceView(course)}
           />
           <Button icon={<EyeOutlined />} onClick={() => onView(course)} />
-          {user?.role === applicationRole.MENTOR && (
-            <>
-              <Button
-                type="primary"
-                icon={<EditOutlined />}
-                onClick={() => onEdit(course)}
-              />
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => onDelete(course)}
-              />
-            </>
-          )}
+          <Button
+            type="primary"
+            icon={<EditOutlined />}
+            onClick={() => onEdit(course)}
+          />
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => onDelete(course)}
+          />
         </Space>
       ),
-    }
+    },
   ];
 
   return (
@@ -102,7 +109,6 @@ export const CourseTable: FC<CourseTableProps> = ({
       rowKey="id"
       loading={tableProps.loading}
       pagination={tableProps.pagination}
-      scroll={{x: "max-content"}}
     />
   );
 };

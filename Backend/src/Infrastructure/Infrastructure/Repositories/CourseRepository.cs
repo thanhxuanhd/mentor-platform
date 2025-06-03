@@ -17,7 +17,6 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
             .Include(c => c.Mentor)
             .Include(c => c.Tags)
             .Include(c => c.Items)
-            .IgnoreQueryFilters() // TEMP-FIX for item: 261
             .AsSplitQuery()
             .AsQueryable();
         return query;
