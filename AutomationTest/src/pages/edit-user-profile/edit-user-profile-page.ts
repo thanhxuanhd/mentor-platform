@@ -30,9 +30,9 @@ export class EditUserProfile extends BasePage {
     this.TXT_BIO = page.locator("#user_profile_form_bio");
     this.DDL_EXPERTISE = page.locator("#user_profile_form_expertise");
     this.DDL_EXPERTISE_OPTIONS = (expertise) => {
-      return page
-        .locator(`div.ant-select-item-option-content`)
-        .filter({ hasText: new RegExp(expertise, "i") });
+      return page.locator(
+        `div.ant-select-item-option-content:has-text('${expertise}')`
+      );
     };
     this.TXT_SKILLS = page.locator("#user_profile_form_skills");
     this.TXT_INDUSTRY_EXPERIENCE = page.locator(
@@ -48,15 +48,15 @@ export class EditUserProfile extends BasePage {
       "#user_profile_form_teachingApproach"
     );
     this.DDL_TEACHING_APPROACH_OPTIONS = (teaching) => {
-      return page
-        .locator(`div.ant-select-item-option-content`)
-        .filter({ hasText: new RegExp(teaching, "i") });
+      return page.locator(
+        `div.ant-select-item-option-content:has-text('${teaching}')`
+      );
     };
     this.DDL_CATEGORIES = page.locator("#user_profile_form_categoryIds");
-    this.DDL_CATEGORIES_OPTIONS = (category) => {
-      return page
-        .locator(`div.ant-select-item-option-content`)
-        .filter({ hasText: new RegExp(category, "i") });
+    this.DDL_CATEGORIES_OPTIONS = (teaching) => {
+      return page.locator(
+        `div.ant-select-item-option-content:has-text('${teaching}')`
+      );
     };
     this.DDL_COMMUNICATION_METHOD = (communication) => {
       return page.locator(
@@ -88,27 +88,36 @@ export class EditUserProfile extends BasePage {
   }
 
   async selectExpertise(expertise: string[]) {
-    await this.selectFromDropdown(
-      this.DDL_EXPERTISE,
-      this.DDL_EXPERTISE_OPTIONS,
-      expertise
-    );
+    if (expertise) {
+      await this.click(this.DDL_EXPERTISE);
+      for (const item of expertise) {
+        const expertise_loc = this.DDL_EXPERTISE_OPTIONS(item);
+        await this.click(expertise_loc);
+      }
+      await this.click(this.DDL_EXPERTISE);
+    }
   }
 
   async selectTeaching(teaching: string[]) {
-    await this.selectFromDropdown(
-      this.DDL_TEACHING_APPROACH,
-      this.DDL_TEACHING_APPROACH_OPTIONS,
-      teaching
-    );
+    if (teaching) {
+      await this.click(this.DDL_TEACHING_APPROACH);
+      for (const item of teaching) {
+        const teaching_loc = this.DDL_TEACHING_APPROACH_OPTIONS(item);
+        await this.click(teaching_loc);
+      }
+      await this.click(this.DDL_TEACHING_APPROACH);
+    }
   }
 
   async selectCategory(category: string[]) {
-    await this.selectFromDropdown(
-      this.DDL_CATEGORIES,
-      this.DDL_CATEGORIES_OPTIONS,
-      category
-    );
+    if (category) {
+      await this.click(this.DDL_CATEGORIES);
+      for (const item of category) {
+        const category_loc = this.DDL_CATEGORIES_OPTIONS(item);
+        await this.click(category_loc);
+      }
+      await this.click(this.DDL_CATEGORIES);
+    }
   }
 
   async fillProfessionalSkillsField(skills: string) {

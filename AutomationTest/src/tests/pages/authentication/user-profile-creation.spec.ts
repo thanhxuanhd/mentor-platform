@@ -3,7 +3,7 @@ import { withTimestampEmail } from "../../../core/utils/generate-unique-data";
 import { SignUpUser, UserProfileCreation } from "../../../models/user/user";
 import { SignUpPage } from "../../../pages/authentication/sign-up-page";
 import profileSetupData from "../../test-data/user-profile-creation-data.json";
-import signUpData from "../../test-data/sign-up-user-data.json";
+import signUpData from '../../test-data/sign-up-user-data.json'
 import { UserProfileSetupPage } from "../../../pages/authentication/user-profile-creation-page";
 import { fillAndSubmitRegistrationStep1 } from "../../../core/utils/registration-helper";
 
@@ -20,10 +20,9 @@ test.describe("@Registration Sign Up test", () => {
   });
 
   const userData: { [label: string]: UserProfileCreation } = {
-    "@SmokeTest Verify create user profile successfully":
-      profileSetupData.valid_case,
-    "@SmokeTest Empty fullname": profileSetupData.empty_fullname,
-    "@SmokeTest Empty phone number": profileSetupData.empty_phone_number,
+    "Verify create user profile successfully": profileSetupData.valid_case,
+    "Empty fullname": profileSetupData.empty_fullname,
+    "Empty phone number": profileSetupData.empty_phone_number,
     "Incorrect phone number format": profileSetupData.wrong_phone_number_format,
     "Empty availability": profileSetupData.empty_availability,
     "Verify user can search for expertise value":

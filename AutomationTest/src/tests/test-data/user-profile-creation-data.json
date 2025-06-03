@@ -58,13 +58,14 @@
     "fullname": "Le Kim Cuong",
     "phoneNumber": "0912345678",
     "availbility": [2, 3],
-    "expertise": ["pr"],
+    "search_term": "pr",
     "expectedMessage": "Set Your Preferences"
   },
   "empty_availability": {
     "fullname": "Le Kim Cuong",
     "phoneNumber": "0912345678",
     "availbility": [],
+    "search_term": "pr",
     "expectedMessage": "Please select your availability!"
   },
   "professional_skills_exceed_200_characters": {

@@ -33,7 +33,7 @@ test.describe("@UserRoleManagement All user role management pagination function"
       expect(result).toBeFalsy();
     });
 
-    await test.step("Verify that the Next button is disable when user is in the last page", async () => {
+    test("@SmokeTest Verify that the Next button is disable when user is in the last page", async () => {
       const totalPaging = await userRoleManagementPage.getAllPagingCount();
       await userRoleManagementPage.clickOnNavigationButton(totalPaging - 1);
       const result = await userRoleManagementPage.getNextButtonStatus();
@@ -62,10 +62,11 @@ test.describe("@UserRoleManagement All user role management pagination function"
   });
 
   itemsPerPage.forEach((item) => {
-    test(`Verify that user table display ${item} users`, async () => {
+    test(`@SmokeTest Verify that user table display ${item} users`, async () => {
       await test.step("Click on items per page dropdown", async () => {
         await userRoleManagementPage.clickOnItemPerPage(item);
       });
+      await userRoleManagementPage.clickOnNavigationButton(1);
       const actualResult = await userRoleManagementPage.getAllTableRowCount();
       expect(actualResult.toString()).toEqual(item);
     });

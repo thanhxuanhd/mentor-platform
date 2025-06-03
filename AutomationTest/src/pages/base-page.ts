@@ -57,18 +57,4 @@ export class BasePage {
       await this.isVisible(locator);
     }
   }
-
-  async selectFromDropdown(
-    locator: Locator,
-    options: (item: string) => Locator,
-    values: string[]
-  ) {
-    if (values?.length) {
-      await this.click(locator);
-      for (const item of values) {
-        await this.click(options(item).first());
-      }
-      await this.click(locator);
-    }
-  }
 }
