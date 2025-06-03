@@ -14,8 +14,9 @@ public class MentorAvailableTimeSlotRepository(ApplicationDbContext context)
     {
         var query = _context.MentorAvailableTimeSlots
             .OrderBy(mats => mats.Id)
-            .Include(mats => mats.Schedules)
             .Include(mats => mats.Sessions)
+            .Include(mats => mats.Schedules)
+            .ThenInclude(mats => mats.Mentor)
             .Where(mats => mats.Sessions.All(sessions =>
                 sessions.Status != SessionStatus.Completed && sessions.Status != SessionStatus.Confirmed));
 

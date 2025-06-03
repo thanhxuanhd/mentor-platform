@@ -33,7 +33,7 @@ Content-Type: application/json
 Authorization: Bearer {{auth_token}}
 
 {
-    "timeSlotId": "{{availableTimeSlotId}}",
+    "timeSlotId": "bc7cb279-b292-4ca3-a994-9ee579770dbe",
     "sessionType": "virtual"
 }
 

@@ -12,7 +12,7 @@ namespace Application.Services.SessionBooking;
 
 public class SessionBookingService(
     IUserRepository userRepository,
-    ISessionBookingRepository sessionBookingRepository,
+    ISessionsRepository sessionBookingRepository,
     IScheduleRepository scheduleRepository,
     IMentorAvailableTimeSlotRepository mentorAvailableTimeSlotRepository,
     IEmailService emailService) : ISessionBookingService
@@ -56,7 +56,8 @@ public class SessionBookingService(
         List<AvailableMentorForBookingResponse> availableMentorForBookingWithMentorDetails = [];
         foreach (var mentorAvailableTimeSlot in availableMentorForBooking.Items)
         {
-            var user = await userRepository.GetUserDetailAsync(mentorAvailableTimeSlot.Schedules.MentorId);
+            var schedules = await scheduleRepository.GetByIdAsync(mentorAvailableTimeSlot.ScheduleId);
+            var user = await userRepository.GetUserDetailAsync(schedules!.MentorId);
             var schedule = await scheduleRepository.GetByIdAsync(mentorAvailableTimeSlot.ScheduleId);
             availableMentorForBookingWithMentorDetails.Add(
                 SessionBookingExtensions.CreateAvailableMentorForBookingResponse(user!, schedule!));

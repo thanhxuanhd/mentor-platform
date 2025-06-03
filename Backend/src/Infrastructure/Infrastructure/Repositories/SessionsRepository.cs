@@ -19,25 +19,24 @@ public class SessionsRepository(ApplicationDbContext context)
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var timeSlot = bookingSession.TimeSlot;
-        if (bookingSession.Status is not SessionStatus.Pending)
+        var sessions = bookingSession.TimeSlot.Sessions;
+        if (sessions.Any(s => s.Status is SessionStatus.Completed or SessionStatus.Confirmed))
         {
             throw new Exception("Cannot accept this booking session.");
         }
 
         bookingSession.Status = SessionStatus.Confirmed;
-        timeSlot.Status = SessionStatus.Confirmed;
+        sessions.Add(bookingSession);
     }
 
     public void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId)
     {
         var timeSlot = bookingSession.TimeSlot;
-        if (timeSlot.Status is not SessionStatus.Processing)
+        if (bookingSession.Status is not SessionStatus.Pending)
         {
             throw new Exception("Cannot reject this booking session.");
         }
 
-        bookingSession.Status = BookingStatus.Rejected;
-        timeSlot.Status = SessionStatus.Available;
+        bookingSession.Status = SessionStatus.Canceled;
     }
 }
