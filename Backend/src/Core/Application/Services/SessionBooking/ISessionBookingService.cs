@@ -19,6 +19,7 @@ public interface ISessionBookingService
         AvailableTimeSlotByDateListRequest request);
     
     Task<Result<List<SessionSlotStatusResponse>>> GetAllBookingRequestByTimeSlot(Guid timeSlotId);
+    Task<Result<PaginatedList<SessionSlotStatusResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId, BookingRequestHistoryListRequest request);
 
     Task<Result<SessionSlotStatusResponse>> RequestBookingAsync(CreateSessionBookingRequest request,
         Guid requestingLearnerId);

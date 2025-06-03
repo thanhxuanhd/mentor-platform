@@ -10,12 +10,12 @@ namespace Infrastructure.Repositories;
 public class SessionsRepository(ApplicationDbContext context)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
-    public IQueryable<Sessions> GetAllSessionsByTimeSlotId(Guid timeSlotId)
+    public new IQueryable<Sessions> GetAll()
     {
         return _context.Sessions
             .Include(s => s.TimeSlot)
             .ThenInclude(mats => mats.Schedules)
-            .Where(s => s.TimeSlotId == timeSlotId);
+            .AsSplitQuery();
     }
 
     public async Task<Sessions?> GetByIdAsync(Guid id)

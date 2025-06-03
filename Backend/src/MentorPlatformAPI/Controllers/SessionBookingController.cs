@@ -56,6 +56,15 @@ public class SessionBookingController(
         return StatusCode((int)result.StatusCode, result);
     }
     
+    [HttpGet("timeslots/requests/me")]
+    [Authorize(Policy = RequiredRole.Learner)]
+    public async Task<IActionResult> GetAllBookingRequestByLearner([FromQuery] BookingRequestHistoryListRequest request)
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await sessionBookingService.GetAllBookingRequestByLearnerId(userId, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
     [HttpPost("request")]
     [Authorize(Policy = RequiredRole.Learner)]
     public async Task<IActionResult> RequestBooking([FromBody] CreateSessionBookingRequest request)
@@ -75,9 +84,9 @@ public class SessionBookingController(
     }
 
     [HttpPost("request/{bookingId:guid}/cancel")]
-    [Authorize(Policy = RequiredRole.Mentor)]
     public async Task<IActionResult> CancelBooking(Guid bookingId)
     {
+        // TODO: resource owner authorization + learner that made the booking request
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var result = await sessionBookingService.CancelBookingAsync(bookingId, userId);
         return StatusCode((int)result.StatusCode, result);

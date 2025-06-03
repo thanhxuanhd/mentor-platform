@@ -88,11 +88,26 @@ public class SessionBookingService(
 
     public async Task<Result<List<SessionSlotStatusResponse>>> GetAllBookingRequestByTimeSlot(Guid timeSlotId)
     {
-        var sessions = sessionBookingRepository.GetAllSessionsByTimeSlotId(timeSlotId);
+        var sessions = sessionBookingRepository.GetAll();
 
         var userBookingRequests =
             await sessionBookingRepository.ToListAsync(
-                sessions.Select(mats => mats.ToSessionSlotStatusResponse()));
+                sessions
+                    .Where(s => s.TimeSlotId == timeSlotId)
+                    .Select(s => s.ToSessionSlotStatusResponse()));
+
+        return Result.Success(userBookingRequests, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<PaginatedList<SessionSlotStatusResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId,
+        BookingRequestHistoryListRequest request)
+    {
+        var sessions = sessionBookingRepository.GetAll();
+
+        var userBookingRequests = await sessionBookingRepository.ToPaginatedListAsync(
+            sessions
+                .Where(s => s.LearnerId == learnerId)
+                .Select(s => s.ToSessionSlotStatusResponse()), request.PageSize, request.PageIndex);
 
         return Result.Success(userBookingRequests, HttpStatusCode.OK);
     }

@@ -39,6 +39,7 @@ public static class SessionBookingExtensions
         var mats = booking.TimeSlot;
         return new SessionSlotStatusResponse
         {
+            SessionId = booking.Id,
             SlotId = booking.Id,
             MentorId = mats.Schedules.MentorId,
             Day = mats.Date,
