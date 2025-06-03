@@ -1,6 +1,8 @@
 import { APIRequestContext } from '@playwright/test';
 import { API_ENDPOINTS } from '../constants/api-endpoint-url';
-import { generateRandomRole, generateUniqueEmail } from "./generate-unique-data";
+import { endWithTimestamp, generateRandomRole, generateUniqueEmail } from "./generate-unique-data";
+import categoryData from '../../tests/test-data/category-data.json'
+import courseData from '../../tests/test-data/course-data.json'
 
 const admin = {
     email: process.env.ADMIN_USER_NAME,
@@ -28,10 +30,11 @@ export async function getAuthToken(request: APIRequestContext, user: any): Promi
 }
 
 //category
-export async function createTestCategory(request: APIRequestContext, category: any): Promise<string> {
+export async function createTestCategory(request: APIRequestContext): Promise<any> {
+    const testData = categoryData.create_valid_category;
     const requestBody = {
-        "name": category.name,
-        "description": category.description
+        "name": endWithTimestamp(testData.name),
+        "status": true
     }
     const token = await getAuthToken(request, admin);
     const response = await request.post(API_ENDPOINTS.CATEGORY, {
@@ -41,7 +44,18 @@ export async function createTestCategory(request: APIRequestContext, category: a
         data: requestBody
     });
     const responseBody = await response.json();
-    return responseBody.value.id;
+    return await responseBody.value;
+}
+
+export async function getCategoryNameById(request: APIRequestContext, categoryId: string): Promise<string> {
+    const token = await getAuthToken(request, admin);
+    const response = await request.get(`${API_ENDPOINTS.CATEGORY}/${categoryId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    const responseBody = await response.json();
+    return responseBody.value.name;
 }
 
 export async function getLatestCategory(request: APIRequestContext): Promise<string> {
@@ -68,14 +82,15 @@ export async function deleteTestCategory(request: APIRequestContext, categoryId:
 }
 
 //course
-export async function createTestCourse(request: APIRequestContext, course: any): Promise<string> {
+export async function createTestCourse(request: APIRequestContext, categoryId: string): Promise<any> {
+    const testData = courseData.create_valid_course;
     const requestBody = {
-        "title": course.title,
-        "description": course.description,
-        "categoryId": await getLatestCategory(request),
-        "difficulty": course.difficulty,
-        "tags": course.tags,
-        "dueDate": course.dueDate
+        "title": endWithTimestamp(testData.title),
+        "description": testData.description,
+        "categoryId": categoryId,
+        "difficulty": testData.difficulty,
+        "tags": testData.tags,
+        "dueDate": testData.dueDate
     }
     const token = await getAuthToken(request, mentor);
     const response = await request.post(API_ENDPOINTS.COURSE, {
@@ -85,7 +100,7 @@ export async function createTestCourse(request: APIRequestContext, course: any):
         data: requestBody
     });
     const responseBody = await response.json();
-    return responseBody.value.id;
+    return await responseBody.value;
 }
 
 export async function getLatestCourse(request: APIRequestContext): Promise<string> {
@@ -103,11 +118,23 @@ export async function getLatestCourse(request: APIRequestContext): Promise<strin
     return responseBody.value?.items?.[0]?.id ?? null;
 }
 
+export async function getCourseTitleById(request: APIRequestContext, courseId: string): Promise<string> {
+    const token = await getAuthToken(request, mentor);
+    const response = await request.get(`${API_ENDPOINTS.COURSE}/${courseId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+    const responseBody = await response.json();
+    return responseBody.value.title;
+}
+
 export async function deleteTestCourse(request: APIRequestContext, courseId: string): Promise<void> {
     const token = await getAuthToken(request, mentor);
     await request.delete(`${API_ENDPOINTS.COURSE}/${courseId}`, {
         headers: {
-            Authorization: `Bearer ${token}`
+            Authorization: `Bearer ${token}`,
+            Accept: '*/*'
         }
     });
 }
@@ -152,7 +179,7 @@ export async function createTestUser(request: APIRequestContext, user: any): Pro
 
 export async function deleteTestUser(request: APIRequestContext, email: string): Promise<void> {
     const token = await getAuthToken(request, admin);
-    await request.delete(API_ENDPOINTS.DELETE_USER, {
+    await request.delete(API_ENDPOINTS.USER, {
         headers: {
             Authorization: `Bearer ${token}`,
             Accept: '*/*'
@@ -161,4 +188,16 @@ export async function deleteTestUser(request: APIRequestContext, email: string):
             email: email
         }
     });
+}
+
+export async function getUserNameById(request: APIRequestContext, userId: string): Promise<string> {
+    const token = await getAuthToken(request, admin);
+    const response = await request.get(`${API_ENDPOINTS.USER}/${userId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: '*/*'
+        },
+    });
+    const responseBody = await response.json();
+    return responseBody.value.fullName;
 }

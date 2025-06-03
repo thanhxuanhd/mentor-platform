@@ -62,4 +62,18 @@ export class BasePage {
         const input = typeof selector === 'string' ? this.page.locator(selector) : selector;
         await input.setInputFiles(filePath);
     }
+
+    async selectFromDropdown(
+        locator: Locator,
+        options: (item: string) => Locator,
+        values: string[]
+    ) {
+        if (values?.length) {
+            await this.click(locator);
+            for (const item of values) {
+                await this.click(options(item).first());
+            }
+            await this.click(locator);
+        }
+    }
 }

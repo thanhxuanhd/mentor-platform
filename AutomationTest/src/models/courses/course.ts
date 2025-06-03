@@ -7,3 +7,12 @@ export interface CreateAndEditCourse {
     description: string
     expectedMessage: string;
 }
+
+export interface CourseView {
+    keyword: string;
+    category: string;
+    difficulty: string;
+    mentor: string;
+    status: string;
+    expectedMessage: string;
+}
