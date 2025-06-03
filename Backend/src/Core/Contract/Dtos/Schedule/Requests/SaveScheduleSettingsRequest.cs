@@ -18,11 +18,6 @@ public class UpdateScheduleSettingsRequestValidator : AbstractValidator<SaveSche
 {
     public UpdateScheduleSettingsRequestValidator()
     {
-        RuleFor(x => x.WeekStartDate)
-            .NotEmpty().WithMessage("WeekStartDate is required.")
-            .Must(date => date.DayOfWeek == DayOfWeek.Sunday)
-            .WithMessage("WeekStartDate must be a Sunday.");
-
         RuleFor(x => x.WeekEndDate)
             .NotEmpty().WithMessage("WeekEndDate is required.")
             .Must(date => date.DayOfWeek == DayOfWeek.Saturday)

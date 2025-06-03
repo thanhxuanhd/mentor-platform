@@ -4,7 +4,6 @@ import React, { useState, useEffect, useContext } from "react";
 import { Button, Card, message, Spin, App } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
-import { v4 as uuidv4 } from 'uuid';
 import weekday from 'dayjs/plugin/weekday';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -21,7 +20,7 @@ import { TimeBlocks } from "./components/TimeBlocks";
 import type { DayAvailability, TimeBlock, WeekDay } from "./types";
 import { availabilityService } from "../../services/availability/availabilityService";
 import { AuthContext } from "../../contexts/AuthContext";
-import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat, generateTimeSlotsForWeek } from "./utils";
+import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat, generateTimeSlotsForWeek, generateTimeSlotsForDay } from "./utils";
 
 // Configure dayjs plugins
 dayjs.extend(weekday);
@@ -247,15 +246,12 @@ export default function AvailabilityManager() {
     const weekDays = getWeekDays();
     const updates: DayAvailability = {};
     
-    // Create source template - both booked and non-booked slots
-    // We'll use this to get the time slot patterns without actually copying booked status
-    const sourceTimeSlotTemplates = sourceSlots.map(slot => ({
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      available: slot.available,
-      time: slot.time,
-      // We don't copy isPast or booked - these will be determined for each target day
-    }));
+    // Create an availability pattern from the actual source slots
+    const availabilityPattern = new Map<string, boolean>();
+    sourceSlots.forEach(slot => {
+      const key = `${slot.startTime}-${slot.endTime}`;
+      availabilityPattern.set(key, slot.available);
+    });
 
     weekDays.forEach(day => {
       const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
@@ -281,46 +277,39 @@ export default function AvailabilityManager() {
         existingSlotsMap.set(key, slot);
       });
 
-      // Create new slots based on source availability pattern
-      const newSlots: TimeBlock[] = [];
+      // Generate complete slots for this target day and apply the availability pattern
+      const targetCompleteSlots = generateTimeSlotsForDay(
+        dateKey,
+        startTime,
+        endTime,
+        sessionDuration,
+        bufferTime,
+        existingSlots.filter(slot => slot.booked) // Preserve existing booked slots
+      );
       
-      sourceTimeSlotTemplates.forEach(template => {
-        const key = `${template.startTime}-${template.endTime}`;
+      // Apply the availability pattern from the source day
+      const newSlots: TimeBlock[] = targetCompleteSlots.map(slot => {
+        const key = `${slot.startTime}-${slot.endTime}`;
         const existingSlot = existingSlotsMap.get(key);
         
-        // Calculate if this slot would be in the past for this day
-        const slotDateTime = dayjs(`${dateKey} ${template.startTime}`);
-        const isPast = slotDateTime.isSameOrBefore(dayjs());
-        
-        // If slot would be in the past, skip it entirely
-        if (isPast) {
-          return;
-        }
+        // Get availability pattern from source (default to false if not in pattern)
+        const shouldBeAvailable = availabilityPattern.get(key) || false;
         
         if (existingSlot) {
-          // If this slot already exists (booked or not), preserve its booked status
-          // but update its availability according to the source template
-          newSlots.push({
+          // If this slot already exists, preserve its booked status but apply the availability pattern
+          return {
             ...existingSlot,
-            // Only copy available status, don't change booked status
-            available: existingSlot.booked ? existingSlot.available : template.available
-          });
+            // Only copy available status if the slot is not booked
+            available: existingSlot.booked ? existingSlot.available : shouldBeAvailable
+          };
         } else {
-          // Create a new slot with copied availability pattern
-          newSlots.push({
-            id: uuidv4(),
-            time: template.time,
-            startTime: template.startTime,
-            endTime: template.endTime,
-            available: template.available,
-            booked: false,
-            isPast: false // This should always be false since we skip past slots above
-          });
+          // For new slots, apply the availability pattern
+          return {
+            ...slot,
+            available: shouldBeAvailable
+          };
         }
       });
-
-      // Sort slots by start time
-      newSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
       updates[dateKey] = newSlots;
     });
