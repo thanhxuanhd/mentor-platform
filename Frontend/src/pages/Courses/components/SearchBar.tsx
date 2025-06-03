@@ -110,8 +110,6 @@ export const SearchBar: FC<SearchBarProps> = ({
   }
 
   function handleDifficultyChange(value: string | undefined) {
-    // Normalize "" to undefined if it could come from an explicit option
-    // For allowClear, `undefined` is passed directly.
     const valueToSet = value === "" ? undefined : value;
     setDifficulty(valueToSet);
     updateSearchBar({
@@ -132,7 +130,6 @@ export const SearchBar: FC<SearchBarProps> = ({
   }
 
   function handleStatusChange(value: string | undefined) {
-    // Normalize "" to undefined if it could come from an explicit option
     const valueToSet = value === "" ? undefined : value;
     setStatus(valueToSet);
     updateSearchBar({
