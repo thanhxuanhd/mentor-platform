@@ -16,6 +16,7 @@ import ForbiddenPage from "../pages/Forbidden";
 import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
+import ScheduleSession from "../pages/SessionTracking/components/ScheduledSessions";
 
 const AppRoutes = () => {
   return (
@@ -29,6 +30,7 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
+        
       </Route>    
       <Route
         element={
@@ -46,6 +48,7 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
+        <Route path="sessions" element={<ScheduleSession />} />
       </Route>
       <Route
         element={

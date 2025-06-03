@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
@@ -58,5 +59,12 @@ export const menuItems: MenuItemProps[] = [
     label: "Profile",
     link: "profile",
     role: [applicationRole.LEARNER, applicationRole.MENTOR],
+  },
+  {
+    key: "Sessions Tracking",
+    icon: <SettingOutlined />,
+    label: "Sessions Tracking",
+    link: "sessions",
+    role: [applicationRole.MENTOR],
   },
 ];
