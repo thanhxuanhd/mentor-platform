@@ -22,9 +22,11 @@ import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./components/CourseDetail.tsx";
 import { SearchBar } from "./components/SearchBar.tsx";
 import { App, Modal } from "antd";
+import { useAuth } from "../../hooks/useAuth.ts";
+import { applicationRole } from "../../constants/role.ts";
 
 const Page: React.FC = () => {
-  const [pageIndex, setPageIndex] = useState<number>(0);
+  const [pageIndex, setPageIndex] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -49,6 +51,7 @@ const Page: React.FC = () => {
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
   const { modal, message } = App.useApp();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (refreshTrigger > 0) {
@@ -56,7 +59,7 @@ const Page: React.FC = () => {
       const refreshData = async () => {
         try {
           const courseResponse = await courseService.list({
-            pageIndex: 0,
+            pageIndex,
             pageSize,
             keyword,
             difficulty,
@@ -99,8 +102,12 @@ const Page: React.FC = () => {
           courseResponse,
         );
 
-        const categoryResponse = await categoryService.list();
-        const mentorResponse = await mentorService.list();
+        const categoryResponse = await categoryService.list({
+          pageSize: 100
+        });
+        const mentorResponse = await mentorService.list({
+          pageSize: 100
+        });
 
         setTotalCount(courseResponse.totalPages);
         setCategories(categoryResponse.items);
@@ -157,15 +164,17 @@ const Page: React.FC = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-semibold">Course Management</h1>
-                <button
-                  onClick={() => {
-                    setPopoverTarget(CoursePopoverTarget.add);
-                    setFormData(initialFormData);
-                  }}
-                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
-                >
-                  Add New Course
-                </button>
+                {user?.role === applicationRole.MENTOR && (
+                  <button
+                    onClick={() => {
+                      setPopoverTarget(CoursePopoverTarget.add);
+                      setFormData(initialFormData);
+                    }}
+                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
+                  >
+                    Add New Course
+                  </button>
+                )}
               </div>
 
               <SearchBar
@@ -187,13 +196,18 @@ const Page: React.FC = () => {
                 tableProps={{
                   loading: loading || isRefreshing,
                   pagination: {
+                    showSizeChanger: true,
+                    onShowSizeChange: (current, pageSize) => {
+                      setPageIndex(current);
+                      setPageSize(pageSize);
+                    },
                     pageSize: pageSize,
                     total: totalCount,
                     position: ["bottomRight"],
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
-                    onChange: async (pageNumber, pageSize) => {
-                      setPageIndex(pageNumber - 1);
+                    onChange: (pageNumber, pageSize) => {
+                      setPageIndex(pageNumber);
                       setPageSize(pageSize);
                     },
                   },
@@ -215,6 +229,7 @@ const Page: React.FC = () => {
                   setFormData({
                     id: course.id,
                     categoryId: course.categoryId,
+                    categoryName: course.categoryName,
                     description: course.description,
                     difficulty: course.difficulty,
                     dueDate: course.dueDate,

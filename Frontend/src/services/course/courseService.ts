@@ -59,8 +59,6 @@ export const courseService = {
    * Get a list of courses based on filter parameters
    */
   list: async (params: CourseListParams): Promise<CourseListResponse> => {
-    const pageIndex = params.pageIndex ?? 1;
-    params.pageIndex = pageIndex + 1;
     const response = await axiosClient.get("/Courses", { params });
     const responseData = response.data.value;
     return {
