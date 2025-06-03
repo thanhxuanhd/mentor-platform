@@ -28,15 +28,12 @@ public class SessionsRepository(ApplicationDbContext context)
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var timeSlot = bookingSession.TimeSlot;
-        var isBooked = timeSlot.SessionId != Guid.Empty
-                       || timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
+        var isBooked = bookingSession.TimeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
         if (isBooked)
         {
             throw new Exception("Cannot accept this booking session.");
         }
-
-        timeSlot.ScheduleId = bookingSession.Id;
+        
         bookingSession.Status = SessionStatus.Approved;
     }
 
@@ -48,8 +45,7 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception("Cannot reject this booking session.");
         }
 
-        var isBooked = timeSlot.SessionId != Guid.Empty
-                       || timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
+        var isBooked = timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
         if (isBooked)
         {
             throw new Exception("Cannot reject this booking session.");
