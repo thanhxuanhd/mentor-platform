@@ -4,7 +4,6 @@ import type { CourseTableProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { applicationRole } from "../../../constants/role.ts";
-import dayjs from "dayjs";
 import {DeleteOutlined, FolderOutlined, EyeOutlined, EditOutlined} from "@ant-design/icons";
 import {formatDate} from "../../../utils/DateFormat.ts";
 
