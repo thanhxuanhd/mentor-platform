@@ -1,12 +1,12 @@
 import editUserProfileData from "../../test-data/user-edit-profile-data.json";
 import { EditUserProfile } from "../../../pages/edit-user-profile/edit-user-profile-page";
-import { test } from "../../../core/fixture/authFixture";
+import { test } from "../../../core/fixture/auth-fixture";
 import { EditUserProfileInterface } from "../../../models/edit-user/edit-user";
 
 test.describe("@Edit profile test", () => {
   let editUserProfile: EditUserProfile;
 
-  test.beforeEach(async ({ loggedInPage, page }) => {
+  test.beforeEach(async ({ loggedInPageByLearnerRole, page }) => {
     editUserProfile = new EditUserProfile(page);
   });
 
