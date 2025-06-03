@@ -10,9 +10,9 @@ public class ScheduleRepository(ApplicationDbContext context) : BaseRepository<S
 {
     public async Task<Schedules?> GetScheduleSettingsAsync(Guid mentorId, DateOnly weekStartDate, DateOnly weekEndDate)
     {
-        return await _context.Schedules
-            .Include(s => s.AvailableTimeSlots)!
-                .ThenInclude(ats => ats.Sessions)
-            .FirstOrDefaultAsync(s => s.MentorId == mentorId && s.WeekStartDate == weekStartDate && s.WeekEndDate == weekEndDate);
+        var context = _context.Schedules.AsQueryable();
+        context = context.Include(s => s.AvailableTimeSlots)!
+            .ThenInclude(ats => ats.Sessions);
+        return await context.FirstOrDefaultAsync(s => s.MentorId == mentorId && s.WeekStartDate == weekStartDate && s.WeekEndDate == weekEndDate);
     }
 }

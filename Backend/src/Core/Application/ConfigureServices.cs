@@ -4,6 +4,7 @@ using Application.Services.Categories;
 using Application.Services.CourseItems;
 using Application.Services.Courses;
 using Application.Services.Expertises;
+using Application.Services.MentorDashboard;
 using Application.Services.Schedule;
 using Application.Services.SessionBooking;
 using Application.Services.TeachingApproaches;
@@ -28,6 +29,7 @@ public static class ConfigureServices
         services.AddScoped<ICourseItemService, CourseItemService>();
         services.AddScoped<IScheduleService, ScheduleService>();
         services.AddScoped<ISessionBookingService, SessionBookingService>();
+        services.AddScoped<IMentorDashboardService, MentorDashboardService>();
 
         return services;
     }
