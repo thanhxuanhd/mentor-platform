@@ -68,9 +68,10 @@ export function ScheduleSettings({
 
       <div>
         <h3 className="text-lg font-medium mb-4">Work Hours</h3>
-        <Form layout="vertical">
+        <Form layout="vertical">          
           <div className="grid grid-cols-2 gap-4 mb-3">
             <Form.Item
+              id="start-time-form-item"
               label={<span className="text-slate-300">Start time</span>}
               validateStatus={isEndTimeValid() ? '' : 'error'}
               help={!isEndTimeValid() && "Start time must be before end time"}
@@ -83,9 +84,9 @@ export function ScheduleSettings({
               >
                 {generateTimeOptions()}
               </Select>
-            </Form.Item>
-
+            </Form.Item>            
             <Form.Item
+              id="end-time-form-item"
               label={<span className="text-slate-300">End time</span>}
               validateStatus={isEndTimeValid() ? '' : 'error'}
             >
@@ -104,9 +105,9 @@ export function ScheduleSettings({
 
       <div>
         <h3 className="text-lg font-medium mb-4">Session Settings</h3>
-        <Form layout="vertical">
+        <Form layout="vertical">          
           <div className="grid grid-cols-2 gap-4 items-end">
-            <Form.Item label={<span className="text-slate-300">Session duration</span>} className="mb-0">
+            <Form.Item id="session-duration-form-item" label={<span className="text-slate-300">Session duration</span>} className="mb-0">
               <Select
                 value={sessionDuration}
                 onChange={onSessionDurationChange}
@@ -122,7 +123,7 @@ export function ScheduleSettings({
               </Select>
             </Form.Item>
 
-            <Form.Item label={<span className="text-slate-300">Buffer time</span>} className="mb-0">
+            <Form.Item id="buffer-time-form-item" label={<span className="text-slate-300">Buffer time</span>} className="mb-0">
               <Select
                 value={bufferTime}
                 onChange={onBufferTimeChange}
