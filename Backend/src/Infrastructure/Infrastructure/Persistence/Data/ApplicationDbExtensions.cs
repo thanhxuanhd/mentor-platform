@@ -114,6 +114,15 @@ public static class ApplicationDbExtensions
                     PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
                     RoleId = adminRole.Id,
                     Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("aa8777db-dfed-4a68-a3a3-e1374fb38572"),
+                    FullName = "Eve Adams",
+                    Email = "learner123@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("learnerpassword"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
                 }
             );
             dbContext.SaveChanges();
@@ -123,24 +132,34 @@ public static class ApplicationDbExtensions
         {
             dbContext.Categories.AddRange(new Category
             {
-                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
-                Description = "Courses related to developing leadership skills and strategies", Status = true
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
-                Description = "Effective communication in professional settings", Status = true
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                Name = "Communication Skills",
+                Description = "Effective communication in professional settings",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
-                Description = "Techniques to improve public speaking and presentation skills", Status = true
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
-                Description = "Strategies for better time management and productivity", Status = false
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                Name = "Time Management",
+                Description = "Strategies for better time management and productivity",
+                Status = false
             }, new Category
             {
-                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
-                Description = "Resources for career advancement and job hunting", Status = false
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"),
+                Name = "Career Development",
+                Description = "Resources for career advancement and job hunting",
+                Status = false
             });
             dbContext.SaveChanges();
         }
@@ -238,12 +257,31 @@ public static class ApplicationDbExtensions
             });
             dbContext.SaveChanges();
         }
+
+        var scheduleId = Guid.NewGuid();
+
         if (!dbContext.Schedules.Any())
         {
             var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
             var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+            // current week
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
 
             dbContext.Schedules.AddRange(
+                new Schedules
+                {
+                    Id = scheduleId,
+                    MentorId = mentor1Id,
+                    WeekStartDate = startOfWeek,
+                    WeekEndDate = endOfWeek,
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
                 new Schedules
                 {
                     MentorId = mentor1Id,
@@ -251,18 +289,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(17, 00),
-                    SessionDuration = 60, 
-                    BufferTime = 15,    
-                },
-                new Schedules
-                {
-                    MentorId = mentor1Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
-                    StartHour = new TimeOnly(10, 00),
-                    EndHour = new TimeOnly(18, 00),
-                    SessionDuration = 45, 
-                    BufferTime = 10,    
+                    SessionDuration = 60,
+                    BufferTime = 15,
                 },
                 new Schedules
                 {
@@ -271,8 +299,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartHour = new TimeOnly(13, 00),
                     EndHour = new TimeOnly(21, 00),
-                    SessionDuration = 30, 
-                    BufferTime = 5,     
+                    SessionDuration = 30,
+                    BufferTime = 5,
                 },
                 new Schedules
                 {
@@ -281,11 +309,59 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(12, 00),
-                    SessionDuration = 60, 
-                    BufferTime = 0,     
+                    SessionDuration = 60,
+                    BufferTime = 0,
                 }
             );
 
+            dbContext.SaveChanges();
+        }
+
+        var slotId1 = Guid.NewGuid();
+        var slotId2 = Guid.NewGuid();
+        var slotId3 = Guid.NewGuid();
+        var slotId4 = Guid.NewGuid();
+        if (!dbContext.MentorAvailableTimeSlots.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.MentorAvailableTimeSlots.AddRange(
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId1,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(10, 0),
+
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId2,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(10, 15),
+                    EndTime = new TimeOnly(11, 15),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId3,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(13, 0),
+                    EndTime = new TimeOnly(14, 0),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId4,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(15, 30),
+                    EndTime = new TimeOnly(16, 30),
+                }
+            );
             dbContext.SaveChanges();
         }
 

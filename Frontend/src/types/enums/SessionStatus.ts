@@ -1,1 +1,1 @@
-export type SessionStatus = "Pending" | "Rescheduled" | "Approved" | "Completed" | "Cancelled"
+export type SessionStatus = "Pending" | "Approved" | "Completed" | "Cancelled" | "Rescheduled"

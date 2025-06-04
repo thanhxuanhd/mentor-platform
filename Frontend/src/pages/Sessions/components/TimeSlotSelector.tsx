@@ -1,34 +1,59 @@
-import { Button } from "antd";
+import { Button, Spin } from "antd";
+import type { SessionStatus } from "../../../types/enums/SessionStatus";
+
+interface TimeSlot {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status?: SessionStatus;
+}
 
 interface TimeSlotSelectorProps {
-  timeSlots: string[];
+  timeSlots: TimeSlot[];
   selectedTime: string;
-  onTimeSelect: (time: string) => void;
+  onTimeSelect: (time: string, id: string) => void;
+  loading: boolean;
 }
 
 export default function TimeSlotSelector({
   timeSlots,
   selectedTime,
   onTimeSelect,
+  loading,
 }: TimeSlotSelectorProps) {
   return (
     <div className="mt-8">
       <h3 className="text-lg font-medium mb-4 text-center">Select a time slot</h3>
-      <div className="grid grid-cols-5 gap-3">
-        {timeSlots.map((time) => (
-          <Button
-            key={time}
-            type={selectedTime === time ? "primary" : "default"}
-            className={`h-12 ${selectedTime === time
-              ? "bg-orange-500 border-orange-500"
-              : "bg-orange-500 border-orange-500 text-white hover:bg-orange-600"
-              }`}
-            onClick={() => onTimeSelect(time)}
-          >
-            {time}
-          </Button>
-        ))}
-      </div>
+      {loading ? (
+        <Spin tip="Loading time slots..." />
+      ) : (
+        <div className="grid grid-cols-5 gap-3">
+          {timeSlots.length > 0 ? (
+            timeSlots.map((slot) => {
+              const timeDisplay = `${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}`;
+              const isDisabled = slot.status === "Pending";
+              return (
+                <Button
+                  key={slot.id}
+                  type={selectedTime === slot.startTime ? "primary" : "default"}
+                  className={`h-12 ${selectedTime === slot.startTime
+                    ? "bg-orange-500 border-orange-500"
+                    : "bg-orange-500 border-orange-500 text-white hover:bg-orange-600"
+                    }`}
+                  onClick={() => onTimeSelect(slot.startTime, slot.id)}
+                  disabled={isDisabled}
+                >
+                  {timeDisplay}
+                </Button>
+              );
+            })
+          ) : (
+            <div className="flex justify-center items-center col-span-5">
+              <p className="text-gray-400 text-center">No time slots available</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

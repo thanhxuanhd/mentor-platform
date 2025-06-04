@@ -9,9 +9,9 @@ public interface ISessionBookingService
     Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotAsync(
         AvailableTimeSlotListRequest request);
 
-    Task<Result<PaginatedList<AvailableMentorForBookingResponse>>> GetAllAvailableMentorForBookingAsync(
-        AvailableMentorForBookingListRequest request);
-    
+    Task<Result<List<AvailableMentorForBookingResponse>>> GetAllAvailableMentorForBookingAsync();
+
+
     Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotByMentorAsync(Guid mentorId,
         AvailableTimeSlotListRequest request);
     
@@ -19,7 +19,7 @@ public interface ISessionBookingService
         AvailableTimeSlotByDateListRequest request);
     
     Task<Result<List<SessionSlotStatusResponse>>> GetAllBookingRequestByTimeSlot(Guid timeSlotId);
-    Task<Result<PaginatedList<SessionSlotStatusResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId, BookingRequestHistoryListRequest request);
+    Task<Result<List<GetAllRequestByLearnerResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId);
 
     Task<Result<SessionSlotStatusResponse>> RequestBookingAsync(CreateSessionBookingRequest request,
         Guid requestingLearnerId);

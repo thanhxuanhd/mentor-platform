@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Contract.Repositories;
 
@@ -9,5 +10,5 @@ public interface IMentorAvailabilityTimeSlotRepository : IBaseRepository<MentorA
     Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id);
     IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot();
     IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking();
-    Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, Guid learnerId);
+    Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId);
 }

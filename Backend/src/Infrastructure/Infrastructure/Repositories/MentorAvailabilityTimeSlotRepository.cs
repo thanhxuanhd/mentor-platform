@@ -36,24 +36,19 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
             .Where(mats => mats.Sessions.All(sessions =>
                 sessions.Status != SessionStatus.Approved && sessions.Status != SessionStatus.Completed));
 
-        return query.AsQueryable();
+        return query;
     }
 
     public IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking()
     {
         var query = _context.MentorAvailableTimeSlots
+            .OrderBy(mats => mats.ScheduleId)
             .Include(mats => mats.Schedules)
-            .Include(mats => mats.Sessions)
+            .AsSplitQuery()
             .Where(mats => mats.Sessions.All(sessions => sessions.Status != SessionStatus.Approved && sessions.Status != SessionStatus.Completed))
-            .GroupBy(
-                mats => mats.Schedules.MentorId,
-                mats => mats,
-                (mentorId, mentorAvailableTimeSlots) => mentorAvailableTimeSlots
-                    .OrderBy(ts => ts.StartTime)
-                    .First()
-            );
-
-        return query.AsQueryable();
+            .GroupBy(mats => mats.Schedules.MentorId)
+            .Select(mats => mats.First());
+        return query;
     }
 
     public async Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id)
@@ -65,7 +60,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
             .FirstOrDefaultAsync(mt => mt.Id == id);
     }
 
-    public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, Guid learnerId)
+    public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId)
     {
         if (timeSlot.Sessions.Any(sessions => sessions.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
@@ -76,7 +71,8 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
         {
             Status = SessionStatus.Pending,
             LearnerId = learnerId,
-            TimeSlot = timeSlot
+            TimeSlot = timeSlot,
+            Type = sessionType
         };
 
         timeSlot.Sessions.Add(bookingSession);

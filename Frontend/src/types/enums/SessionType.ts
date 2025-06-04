@@ -1,1 +1,1 @@
-export type SessionType = "Virtual" | "OneOnOne" | "OnSite";
+export type SessionType = "Virtual" | "OneOnOne" | "Onsite"

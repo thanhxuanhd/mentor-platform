@@ -17,6 +17,7 @@ public static class SessionBookingExtensions
             EndTime = mats.EndTime,
             Date = mats.Date,
             IsBooked = mats.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled)
+            //SessionStatus = mats.Sessions.Select(s => s.Status)
         };
     }
 
@@ -42,6 +43,24 @@ public static class SessionBookingExtensions
             SessionId = booking.Id,
             SlotId = booking.Id,
             MentorId = mats.Schedules.MentorId,
+            Day = mats.Date,
+            StartTime = mats.StartTime,
+            EndTime = mats.EndTime,
+            BookingStatus = booking.Status
+        };
+    }
+
+    public static GetAllRequestByLearnerResponse ToGetAllRequestLearnerResponse(this Sessions booking)
+    {
+        var mats = booking.TimeSlot;
+        return new GetAllRequestByLearnerResponse
+        {
+            SessionId = booking.Id,
+            SlotId = booking.Id,
+            MentorName = booking.TimeSlot.Schedules.Mentor.FullName,
+            Expirtise = booking.TimeSlot.Schedules.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
+            MentorAvatarUrl = booking.TimeSlot.Schedules.Mentor.ProfilePhotoUrl,
+            SessionType = booking.Type,
             Day = mats.Date,
             StartTime = mats.StartTime,
             EndTime = mats.EndTime,

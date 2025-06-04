@@ -1,24 +1,24 @@
 import type { SessionType } from "../../../types/enums/SessionType";
 
 interface SessionTypeSelectorProps {
-  sessionTypes: SessionType[];
+  sessionType: SessionType[];
   selectedSessionType: SessionType | null;
   onSessionTypeSelect: (type: SessionType) => void;
 }
 
-const formatSessionType = (type: SessionType): string => {
+export const formatSessionType = (type: SessionType): string => {
   switch (type) {
     case "OneOnOne":
-      return "One on One";
-    case "OnSite":
-      return "On-Site";
+      return "One On One";
+    case "Onsite":
+      return "On Site";
     default:
       return type;
   }
 };
 
 export default function SessionTypeSelector({
-  sessionTypes,
+  sessionType,
   selectedSessionType,
   onSessionTypeSelect
 }: SessionTypeSelectorProps) {
@@ -26,7 +26,7 @@ export default function SessionTypeSelector({
     <div className="mt-8">
       <h3 className="text-lg font-medium mb-4 text-center">Session type</h3>
       <div className="grid grid-cols-3 gap-4">
-        {sessionTypes.map((type) => (
+        {sessionType.map((type) => (
           <div
             key={type}
             className={`

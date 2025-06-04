@@ -4,6 +4,7 @@ using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories;
 
@@ -23,9 +24,20 @@ public class SessionsRepository(ApplicationDbContext context)
         return await _context.Sessions
             .Include(s => s.TimeSlot)
             .ThenInclude(mats => mats.Schedules)
+            .ThenInclude(s => s.Mentor)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    public IQueryable<Sessions> GetSessionsByLearnerId(Guid learnerId)
+    {
+        return _context.Sessions
+            .Include(s => s.TimeSlot)
+                .ThenInclude(mats => mats.Schedules)
+                    .ThenInclude(s => s.Mentor)
+                        .ThenInclude(m => m.UserExpertises)
+                            .ThenInclude(ue => ue.Expertise)
+            .Where(s => s.LearnerId == learnerId);
+    }
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
     {
         var isBooked = bookingSession.TimeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
@@ -51,6 +63,6 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception("Cannot reject this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 }
