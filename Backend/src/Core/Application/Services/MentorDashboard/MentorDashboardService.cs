@@ -11,9 +11,9 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
 {
     public async Task<Result<GetMentorDashboardResponse>> GetMentorDashboardAsync(Guid mentorId)
     {
-        var user = await userRepository.GetByIdAsync(mentorId);
+        User mentor = await userRepository.GetByIdAsync(mentorId, c => c.);
 
-        if (user == null)
+        if (mentor == null)
         {
             return Result.Failure<GetMentorDashboardResponse>("User not found", HttpStatusCode.NotFound);
         }
@@ -28,8 +28,9 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
 
         int completedSessions = 0;
         int upcomingSessions = 0;
+        int totalCourses = mentor.Courses!.Count(c => c.Status == CourseStatus.Published);
         List<UpcomingSessionResponse> upcomingSessionsList = new();
-        Console.WriteLine(upcomingSchedule.Id);
+        HashSet<Guid> uniqueLearners = new();
         if (upcomingSchedule != null)
         {
             foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots)
@@ -39,6 +40,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
                     if (session.Status == SessionStatus.Completed)
                     {
                         completedSessions++;
+                        uniqueLearners.Add(session.LearnerId);
                     }
                     else if (session.Status == SessionStatus.Approved)
                     {
@@ -58,6 +60,8 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
 
         var result = new GetMentorDashboardResponse
         {
+            TotalLearners = uniqueLearners.Count,
+            TotalCourses = totalCourses,
             UpcomingSessions = upcomingSessions,
             CompletedSessions = completedSessions,
             UpcomingSessionsList = upcomingSessionsList

@@ -2,6 +2,8 @@ namespace Contract.Dtos.MentorDashboard.Responses;
 
 public class GetMentorDashboardResponse
 {
+    public int TotalLearners { get; set; }
+    public int TotalCourses { get; set; }
     public int UpcomingSessions { get; set; }
     public int CompletedSessions { get; set; }
     public List<UpcomingSessionResponse> UpcomingSessionsList { get; set; } = new List<UpcomingSessionResponse>();
