@@ -18,6 +18,11 @@ public class UpdateScheduleSettingsRequestValidator : AbstractValidator<SaveSche
 {
     public UpdateScheduleSettingsRequestValidator()
     {
+        RuleFor(x => x.WeekStartDate)
+            .NotEmpty().WithMessage("WeekStartDate is required.")
+            .Must(date => date.DayOfWeek == DayOfWeek.Sunday)
+            .WithMessage("WeekStartDate must be a Sunday.");
+
         RuleFor(x => x.WeekEndDate)
             .NotEmpty().WithMessage("WeekEndDate is required.")
             .Must(date => date.DayOfWeek == DayOfWeek.Saturday)
@@ -29,9 +34,6 @@ public class UpdateScheduleSettingsRequestValidator : AbstractValidator<SaveSche
                 .Must((request, weekEndDate) => weekEndDate.ToDateTime(TimeOnly.MinValue) - request.WeekStartDate.ToDateTime(TimeOnly.MinValue) == TimeSpan.FromDays(6))
                 .WithMessage("The difference between WeekEndDate and WeekStartDate must be 6 days.");
         });
-
-        RuleFor(x => x.StartTime)
-            .NotEmpty().WithMessage("StartTime is required.");
 
         RuleFor(x => x.EndTime)
             .NotEmpty().WithMessage("EndTime is required.")
