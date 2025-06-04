@@ -5,6 +5,7 @@ import {
   BookOutlined,
   ProfileOutlined,
   ScheduleOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
@@ -33,14 +34,14 @@ export const menuItems: MenuItemProps[] = [
     icon: <UserOutlined />,
     label: "Users",
     link: "users",
-    role: [applicationRole.ADMIN, applicationRole.LEARNER],
+    role: [applicationRole.ADMIN],
   },
   {
     key: "categories",
     icon: <AppstoreOutlined />,
     label: "Categories",
     link: "categories",
-    role: [applicationRole.ADMIN, applicationRole.LEARNER, applicationRole.MENTOR],
+    role: [applicationRole.ADMIN, applicationRole.MENTOR],
   },
   {
     key: "courses",
@@ -66,5 +67,12 @@ export const menuItems: MenuItemProps[] = [
     label: "Availability",
     link: "availability",
     role: [applicationRole.MENTOR],
+  },
+  {
+    key: "sessions",
+    icon: <TeamOutlined />,
+    label: "Sessions",
+    link: "sessions",
+    role: [applicationRole.LEARNER],
   }
 ];

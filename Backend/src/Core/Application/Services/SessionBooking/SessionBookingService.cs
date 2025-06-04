@@ -43,17 +43,15 @@ public class SessionBookingService(
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
     }
 
-    public async Task<Result<PaginatedList<AvailableMentorForBookingResponse>>> GetAllAvailableMentorForBookingAsync(
-        AvailableMentorForBookingListRequest request)
+    public async Task<Result<List<AvailableMentorForBookingResponse>>> GetAllAvailableMentorForBookingAsync()
     {
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableMentorForBooking();
 
         var availableMentorForBooking =
-            await mentorAvailableTimeSlotRepository.ToPaginatedListAsync(mentorAvailableTimeSlots, request.PageSize,
-                request.PageIndex);
+            await mentorAvailableTimeSlotRepository.ToListAsync(mentorAvailableTimeSlots);
 
         List<AvailableMentorForBookingResponse> availableMentorForBookingWithMentorDetails = [];
-        foreach (var mentorAvailableTimeSlot in availableMentorForBooking.Items)
+        foreach (var mentorAvailableTimeSlot in availableMentorForBooking)
         {
             var schedules = mentorAvailableTimeSlot.Schedules;
             var user = await userRepository.GetUserDetailAsync(schedules.MentorId);
@@ -61,12 +59,7 @@ public class SessionBookingService(
                 SessionBookingExtensions.CreateAvailableMentorForBookingResponse(user!, schedules));
         }
 
-        return Result.Success(
-            new PaginatedList<AvailableMentorForBookingResponse>(availableMentorForBookingWithMentorDetails,
-                availableMentorForBooking.TotalCount,
-                availableMentorForBooking.PageIndex,
-                availableMentorForBooking.PageSize),
-            HttpStatusCode.OK);
+        return Result.Success(availableMentorForBookingWithMentorDetails, HttpStatusCode.OK);
     }
 
     public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotByMentorAndDateAsync(
@@ -97,15 +90,11 @@ public class SessionBookingService(
         return Result.Success(userBookingRequests, HttpStatusCode.OK);
     }
 
-    public async Task<Result<PaginatedList<SessionSlotStatusResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId,
-        BookingRequestHistoryListRequest request)
+    public async Task<Result<List<GetAllRequestByLearnerResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId)
     {
-        var sessions = sessionBookingRepository.GetAll();
-
-        var userBookingRequests = await sessionBookingRepository.ToPaginatedListAsync(
-            sessions
-                .Where(s => s.LearnerId == learnerId)
-                .Select(s => s.ToSessionSlotStatusResponse()), request.PageSize, request.PageIndex);
+        var sessions = sessionBookingRepository.GetSessionsByLearnerId(learnerId);
+        var userBookingRequests = await sessionBookingRepository.ToListAsync(
+            sessions.Select(s => s.ToGetAllRequestLearnerResponse()));
 
         return Result.Success(userBookingRequests, HttpStatusCode.OK);
     }

@@ -41,7 +41,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context)
             .Where(mats => mats.Sessions.All(sessions =>
                 sessions.Status != SessionStatus.Approved && sessions.Status != SessionStatus.Completed));
 
-        return query.AsQueryable();
+        return query;
     }
 
     public IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking()

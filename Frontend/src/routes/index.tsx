@@ -17,6 +17,7 @@ import Profile from '../pages/UserProfile/components/Profile'
 import EditProfile from '../pages/UserProfile/components/EditProfile'
 import ProfileSetup from "../pages/Auth/ProfileSetup";
 import AvailabilityManager from "../pages/Availability";
+import SessionBooking from "../pages/Sessions";
 
 const AppRoutes = () => {
   return (
@@ -30,7 +31,7 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
-      </Route>    
+      </Route>
       <Route
         element={
           <ProtectedRoute
@@ -60,6 +61,17 @@ const AppRoutes = () => {
       >
         <Route path="users" element={<UsersPage />} />
         <Route path="categories" element={<CategoriesPage />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.LEARNER]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="sessions" element={<SessionBooking />} />
       </Route>
       <Route
         element={

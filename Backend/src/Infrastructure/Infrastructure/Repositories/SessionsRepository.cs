@@ -5,10 +5,11 @@ using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories;
 
-public class SessionsRepository(ApplicationDbContext context)
+public class SessionsRepository(ApplicationDbContext context, TimeProvider timeProvider)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
     private static bool HasOverlappingSessionTime(Sessions existingSession, Sessions newSession)
@@ -44,6 +45,17 @@ public class SessionsRepository(ApplicationDbContext context)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    public IQueryable<Sessions> GetSessionsByLearnerId(Guid learnerId)
+    {
+        return _context.Sessions
+            .Include(s => s.TimeSlot)
+                .ThenInclude(mats => mats.Schedules)
+                    .ThenInclude(s => s.Mentor)
+                        .ThenInclude(m => m.UserExpertises)
+                            .ThenInclude(ue => ue.Expertise)
+            .Where(s => s.LearnerId == learnerId);
+    }
+    
     public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId)
     {
         Debug.Assert(_context.Entry(timeSlot).Collection(t => t.Sessions).IsLoaded);
@@ -57,7 +69,8 @@ public class SessionsRepository(ApplicationDbContext context)
             Status = SessionStatus.Pending,
             LearnerId = learnerId,
             TimeSlot = timeSlot,
-            Type = sessionType
+            Type = sessionType,
+            BookedOn = timeProvider.GetLocalNow().DateTime,
         };
 
         timeSlot.Sessions.Add(bookingSession);
@@ -72,7 +85,8 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception("Cannot cancel this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
+        bookingSession.ProcessedOn = timeProvider.GetLocalNow().DateTime;
     }
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
@@ -94,5 +108,6 @@ public class SessionsRepository(ApplicationDbContext context)
         }
 
         bookingSession.Status = SessionStatus.Approved;
+        bookingSession.ProcessedOn = timeProvider.GetLocalNow().DateTime;
     }
 }

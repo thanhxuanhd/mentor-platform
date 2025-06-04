@@ -32,10 +32,9 @@ public class SessionBookingController(
     }
 
     [HttpGet("available-mentors")]
-    public async Task<IActionResult> GetAllAvailableMentorForBooking(
-        [FromQuery] AvailableMentorForBookingListRequest request)
+    public async Task<IActionResult> GetAllAvailableMentorForBooking()
     {
-        var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync(request);
+        var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync();
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -58,10 +57,10 @@ public class SessionBookingController(
     
     [HttpGet("timeslots/requests/me")]
     [Authorize(Policy = RequiredRole.Learner)]
-    public async Task<IActionResult> GetAllBookingRequestByLearner([FromQuery] BookingRequestHistoryListRequest request)
+    public async Task<IActionResult> GetAllBookingRequestByLearner()
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var result = await sessionBookingService.GetAllBookingRequestByLearnerId(userId, request);
+        var result = await sessionBookingService.GetAllBookingRequestByLearnerId(userId);
         return StatusCode((int)result.StatusCode, result);
     }
 
