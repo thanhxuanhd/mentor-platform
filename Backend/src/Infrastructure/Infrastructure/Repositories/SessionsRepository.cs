@@ -23,6 +23,7 @@ public class SessionsRepository(ApplicationDbContext context)
         return await _context.Sessions
             .Include(s => s.TimeSlot)
             .ThenInclude(mats => mats.Schedules)
+            .ThenInclude(s => s.Mentor)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 

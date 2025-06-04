@@ -56,11 +56,10 @@ public class SessionBookingService(
         List<AvailableMentorForBookingResponse> availableMentorForBookingWithMentorDetails = [];
         foreach (var mentorAvailableTimeSlot in availableMentorForBooking.Items)
         {
-            var schedules = await scheduleRepository.GetByIdAsync(mentorAvailableTimeSlot.ScheduleId);
+            var schedules = mentorAvailableTimeSlot.Schedules;
             var user = await userRepository.GetUserDetailAsync(schedules!.MentorId);
-            var schedule = await scheduleRepository.GetByIdAsync(mentorAvailableTimeSlot.ScheduleId);
             availableMentorForBookingWithMentorDetails.Add(
-                SessionBookingExtensions.CreateAvailableMentorForBookingResponse(user!, schedule!));
+                SessionBookingExtensions.CreateAvailableMentorForBookingResponse(user!, schedules));
         }
 
         return Result.Success(

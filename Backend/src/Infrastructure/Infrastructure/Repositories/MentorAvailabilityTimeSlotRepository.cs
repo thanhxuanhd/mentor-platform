@@ -42,18 +42,13 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
     public IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking()
     {
         var query = _context.MentorAvailableTimeSlots
+            .OrderBy(mats => mats.ScheduleId)
             .Include(mats => mats.Schedules)
-            .Include(mats => mats.Sessions)
+            .AsSplitQuery()
             .Where(mats => mats.Sessions.All(sessions => sessions.Status != SessionStatus.Approved && sessions.Status != SessionStatus.Completed))
-            .GroupBy(
-                mats => mats.Schedules.MentorId,
-                mats => mats,
-                (mentorId, mentorAvailableTimeSlots) => mentorAvailableTimeSlots
-                    .OrderBy(ts => ts.StartTime)
-                    .First()
-            );
-
-        return query.AsQueryable();
+            .GroupBy(mats => mats.Schedules.MentorId)
+            .Select(mats => mats.First());
+        return query;
     }
 
     public async Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id)
