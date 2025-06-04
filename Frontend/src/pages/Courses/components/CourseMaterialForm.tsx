@@ -3,13 +3,13 @@ import { type FC, useState } from "react";
 import { courseService } from "../../../services/course";
 import type { CourseMaterialFormProps } from "../../../types/pages/courses/types.ts";
 
-export type MediaType = "pdf" | "ExternalWebAddress" | "video" | "Course Id";
+export type ResourceType = "pdf" | "ExternalWebAddress" | "video" | "Course Id";
 
 export interface MaterialFormData {
   title: string;
   description: string;
-  mediaType: MediaType;
-  webAddress?: string;
+  resourceType: ResourceType;
+  resourceUrl?: string;
 }
 
 const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
@@ -31,8 +31,8 @@ const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
       await courseService.createResource(courseId, {
         title: values.title,
         description: values.description,
-        mediaType: values.mediaType,
-        webAddress: values.webAddress || "",
+        resourceType: values.resourceType,
+        resourceUrl: values.resourceUrl || "",
       });
 
       form.resetFields();
@@ -71,7 +71,11 @@ const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
       width={600}
       centered
     >
-      <Form form={form} layout="vertical" initialValues={{ mediaType: "pdf" }}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ resourceType: "pdf" }}
+      >
         <Form.Item
           name="title"
           label="Title"
@@ -98,7 +102,7 @@ const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
         </Form.Item>
 
         <Form.Item
-          name="mediaType"
+          name="resourceType"
           label="Media Type"
           rules={[{ required: true, message: "Please select media type" }]}
         >
@@ -115,13 +119,13 @@ const CourseMaterialForm: FC<CourseMaterialFormProps> = ({
         <Form.Item
           noStyle
           shouldUpdate={(prevValues, currentValues) =>
-            prevValues.mediaType !== currentValues.mediaType
+            prevValues.resourceType !== currentValues.resourceType
           }
         >
           {({ getFieldValue }) =>
-            getFieldValue("mediaType") !== "pdf" && (
+            getFieldValue("resourceType") !== "pdf" && (
               <Form.Item
-                name="webAddress"
+                name="resourceUrl"
                 label="Web Address"
                 rules={[
                   { required: true, message: "Please enter web address" },

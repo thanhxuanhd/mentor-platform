@@ -536,7 +536,7 @@ public class CategoryServiceTest
         var categoryId = Guid.NewGuid();
 
         _mockCategoryRepository
-            .Setup(r => r.GetByIdAsync(categoryId, null))
+            .Setup(r => r.GetByIdAsync(categoryId, c => c.Courses!))
             .ReturnsAsync((Category)null!);
 
         // Act
@@ -549,8 +549,8 @@ public class CategoryServiceTest
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             Assert.That(result.Error, Is.EqualTo("Categories is not found or is deleted"));
 
-            _mockCategoryRepository.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
-            _mockCategoryRepository.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
+            _mockCategoryRepository.Verify(r => r.GetByIdAsync(categoryId, c => c.Courses!), Times.Once);
+            _mockCategoryRepository.Verify(r => r.Delete(It.IsAny<Category>()), Times.Never);
             _mockCategoryRepository.Verify(r => r.SaveChangesAsync(), Times.Never);
         });
     }
@@ -567,7 +567,7 @@ public class CategoryServiceTest
         };
 
         _mockCategoryRepository
-            .Setup(r => r.GetByIdAsync(categoryId, null))
+            .Setup(r => r.GetByIdAsync(categoryId, c => c.Courses!))
             .ReturnsAsync(category);
 
         _mockCategoryRepository
@@ -584,7 +584,7 @@ public class CategoryServiceTest
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(result.Value, Is.True);
 
-            _mockCategoryRepository.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
+            _mockCategoryRepository.Verify(r => r.GetByIdAsync(categoryId, c => c.Courses!), Times.Once);
             _mockCategoryRepository.Verify(r => r.Delete(category), Times.Once);
             _mockCategoryRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
         });
