@@ -65,9 +65,20 @@ public static class ApplicationDbExtensions
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
             var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
             var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
-            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
-            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            if (mentorRole is null)
+            {
+                throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            }
+
+            if (learnerRole is null)
+            {
+                throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
+            }
+
+            if (adminRole is null)
+            {
+                throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            }
 
             dbContext.Users.AddRange(
                 new User
@@ -123,24 +134,34 @@ public static class ApplicationDbExtensions
         {
             dbContext.Categories.AddRange(new Category
             {
-                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
-                Description = "Courses related to developing leadership skills and strategies", Status = true
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
-                Description = "Effective communication in professional settings", Status = true
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                Name = "Communication Skills",
+                Description = "Effective communication in professional settings",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
-                Description = "Techniques to improve public speaking and presentation skills", Status = true
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
-                Description = "Strategies for better time management and productivity", Status = false
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                Name = "Time Management",
+                Description = "Strategies for better time management and productivity",
+                Status = false
             }, new Category
             {
-                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
-                Description = "Resources for career advancement and job hunting", Status = false
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"),
+                Name = "Career Development",
+                Description = "Resources for career advancement and job hunting",
+                Status = false
             });
             dbContext.SaveChanges();
         }
@@ -239,68 +260,68 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
-        if (!dbContext.CourseItems.Any())
+        if (!dbContext.CourseResources.Any())
         {
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
                 Title = "Introduction to Leadership Concepts",
                 Description = "Understand the core principles and theories of leadership.",
-                MediaType = CourseMediaType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 1),
+                ResourceType = FileType.ExternalWebAddress,
+                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 1),
                 CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
                 Title = "Non-Verbal Communication Essentials",
                 Description = "Learn about the importance of body language and other non-verbal cues in communication.",
-                MediaType = CourseMediaType.Pdf,
-                WebAddress = GetMediaUrl(CourseMediaType.Pdf, 1),
+                ResourceType = FileType.Pdf,
+                ResourceUrl = GetMediaUrl(FileType.Pdf, 1),
                 CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
                 Title = "Structuring Your Speech",
                 Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
-                MediaType = CourseMediaType.Video,
-                WebAddress = GetMediaUrl(CourseMediaType.Video, 1),
+                ResourceType = FileType.Video,
+                ResourceUrl = GetMediaUrl(FileType.Video, 1),
                 CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
                 Title = "Prioritization Techniques",
                 Description = "Effective methods for prioritizing tasks and managing workloads.",
-                MediaType = CourseMediaType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 2),
+                ResourceType = FileType.ExternalWebAddress,
+                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 2),
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
                 Title = "Building Trust and Rapport",
                 Description = "Strategies for establishing trust and positive relationships within a team.",
-                MediaType = CourseMediaType.Video,
-                WebAddress = GetMediaUrl(CourseMediaType.Video, 2),
+                ResourceType = FileType.Video,
+                ResourceUrl = GetMediaUrl(FileType.Video, 2),
                 CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
             });
             dbContext.SaveChanges();
         }
     }
 
-    private static string GetMediaUrl(CourseMediaType mediaType, int moduleNumber)
+    private static string GetMediaUrl(FileType mediaType, int moduleNumber)
     {
         return mediaType switch
         {
-            CourseMediaType.Video => $"/content/videos/module{moduleNumber}.mp4",
-            CourseMediaType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
-            CourseMediaType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
+            FileType.Video => $"/content/videos/module{moduleNumber}.mp4",
+            FileType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
+            FileType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
             _ => $"/content/other/module{moduleNumber}"
         };
     }

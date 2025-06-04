@@ -1,4 +1,3 @@
-using System.Net;
 using Application.Services.Categories;
 using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
@@ -7,6 +6,7 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
+using System.Net;
 
 namespace Application.Test;
 
@@ -46,7 +46,11 @@ public class CategoryServiceTest
         var paginatedList = new PaginatedList<GetCategoryResponse>(
             categories.Select(c => new GetCategoryResponse
             {
-                Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                Courses = c.Courses.Count(),
+                Status = c.Status
             }).ToList(),
             categories.Count(),
             pageIndex,
@@ -105,7 +109,11 @@ public class CategoryServiceTest
         var paginatedList = new PaginatedList<GetCategoryResponse>(
             filteredCategoriesQuery.Select(c => new GetCategoryResponse
             {
-                Id = c.Id, Name = c.Name, Description = c.Description, Courses = c.Courses.Count(), Status = c.Status
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                Courses = c.Courses.Count(),
+                Status = c.Status
             }).ToList(),
             filteredCategoriesQuery.Count(),
             pageIndex,
@@ -194,8 +202,13 @@ public class CategoryServiceTest
         var paginatedList = new PaginatedList<FilterCourseByCategoryResponse>(
             coursesForCategory.Select(c => new FilterCourseByCategoryResponse
             {
-                Id = c.Id, Title = c.Title, CategoryName = category.Name, Status = c.Status.ToString(),
-                Description = c.Description, Difficulty = c.Difficulty.ToString(), DueDate = c.DueDate,
+                Id = c.Id,
+                Title = c.Title,
+                CategoryName = category.Name,
+                Status = c.Status.ToString(),
+                Description = c.Description,
+                Difficulty = c.Difficulty.ToString(),
+                DueDate = c.DueDate,
                 Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
             }).ToList(),
             coursesForCategory.Count(),
@@ -237,17 +250,17 @@ public class CategoryServiceTest
     }
 
     [Test]
-    public async Task SoftDeleteCategoryAsync_WhenCategoryNotFound_ReturnsNotFound()
+    public async Task DeleteCategoryAsync_WhenCategoryNotFound_ReturnsNotFound()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
 
         _categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId, null))
+            .Setup(r => r.GetByIdAsync(categoryId, c => c.Courses))
             .ReturnsAsync((Category)null);
 
         // Act
-        var result = await _categoryService.SoftDeleteCategoryAsync(categoryId);
+        var result = await _categoryService.DeleteCategoryAsync(categoryId);
 
         // Assert
         Assert.Multiple(() =>
@@ -256,14 +269,14 @@ public class CategoryServiceTest
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
             Assert.That(result.Error, Is.EqualTo("Categories is not found or is deleted"));
 
-            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
-            _categoryRepositoryMock.Verify(r => r.Update(It.IsAny<Category>()), Times.Never);
+            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, c => c.Courses), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.Delete(It.IsAny<Category>()), Times.Never);
             _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Never);
         });
     }
 
     [Test]
-    public async Task SoftDeleteCategoryAsync_WhenSuccessful_SetsIsDeletedAndReturnsSuccess()
+    public async Task DeleteCategoryAsync_WhenSuccessful_SetsIsDeletedAndReturnsSuccess()
     {
         // Arrange
         var categoryId = Guid.NewGuid();
@@ -271,11 +284,10 @@ public class CategoryServiceTest
         {
             Id = categoryId,
             Name = "Test Category",
-            IsDeleted = false
         };
 
         _categoryRepositoryMock
-            .Setup(r => r.GetByIdAsync(categoryId, null))
+            .Setup(r => r.GetByIdAsync(categoryId, c => c.Courses))
             .ReturnsAsync(category);
 
         _categoryRepositoryMock
@@ -283,7 +295,7 @@ public class CategoryServiceTest
             .ReturnsAsync(1);
 
         // Act
-        var result = await _categoryService.SoftDeleteCategoryAsync(categoryId);
+        var result = await _categoryService.DeleteCategoryAsync(categoryId);
 
         // Assert
         Assert.Multiple(() =>
@@ -291,10 +303,9 @@ public class CategoryServiceTest
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(result.Value, Is.True);
-            Assert.That(category.IsDeleted, Is.True);
 
-            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, null), Times.Once);
-            _categoryRepositoryMock.Verify(r => r.Update(category), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.GetByIdAsync(categoryId, c => c.Courses), Times.Once);
+            _categoryRepositoryMock.Verify(r => r.Delete(category), Times.Once);
             _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
         });
     }

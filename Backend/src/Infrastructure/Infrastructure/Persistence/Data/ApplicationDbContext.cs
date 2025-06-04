@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using Domain.Entities;
+﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Infrastructure.Persistence.Data;
 
@@ -10,7 +10,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Role> Roles { get; set; }
     public DbSet<Category> Categories { get; set; }
     public DbSet<Course> Courses { get; set; }
-    public DbSet<CourseItem> CourseItems { get; set; }
+    public DbSet<CourseResource> CourseResources { get; set; }
     public DbSet<CourseTag> CourseTags { get; set; }
     public DbSet<Tag> Tags { get; set; }
     public DbSet<Expertise> Expertises { get; set; }
@@ -20,7 +20,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<TeachingApproach> TeachingApproaches { get; set; }
     public DbSet<UserCategory> UserCategories { get; set; }
     public DbSet<UserTeachingApproach> UserTeachingApproaches { get; set; }
- 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());

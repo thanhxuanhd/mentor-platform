@@ -1,28 +1,28 @@
-using System.Net;
-using Application.Services.CourseItems;
-using Contract.Dtos.CourseItems.Requests;
+using Application.Services.CourseResources;
+using Contract.Dtos.CourseResources.Requests;
 using Contract.Dtos.Courses.Responses;
 using Contract.Repositories;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
+using System.Net;
 
 namespace Application.Test;
 
 [TestFixture]
-public class CourseItemServiceTests
+public class CourseResourceServiceTests
 {
     [SetUp]
     public void Setup()
     {
-        _courseItemRepositoryMock = new Mock<ICourseItemRepository>();
+        _courseResourceRepositoryMock = new Mock<ICourseResourceRepository>();
         _courseRepositoryMock = new Mock<ICourseRepository>();
-        _courseItemService = new CourseItemService(_courseItemRepositoryMock.Object, _courseRepositoryMock.Object);
+        _courseResourceService = new CourseResourceService(_courseResourceRepositoryMock.Object, _courseRepositoryMock.Object);
     }
 
-    private Mock<ICourseItemRepository> _courseItemRepositoryMock = null!;
+    private Mock<ICourseResourceRepository> _courseResourceRepositoryMock = null!;
     private Mock<ICourseRepository> _courseRepositoryMock = null!;
-    private CourseItemService _courseItemService = null!;
+    private CourseResourceService _courseResourceService = null!;
 
     [Test]
     public async Task GetAllByCourseIdAsync_CourseNotFound_ReturnsNotFound()
@@ -33,7 +33,7 @@ public class CourseItemServiceTests
             .ReturnsAsync(default(Course));
 
         // Act        
-        var result = await _courseItemService.GetAllByCourseIdAsync(courseId);
+        var result = await _courseResourceService.GetAllByCourseIdAsync(courseId);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -50,15 +50,15 @@ public class CourseItemServiceTests
         // Arrange
         var courseId = Guid.NewGuid();
         var course = new Course { Id = courseId };
-        var items = new List<CourseItem>
+        var items = new List<CourseResource>
         {
             new()
             {
                 Id = Guid.NewGuid(),
                 Title = "Item 1",
                 Description = "Description 1",
-                MediaType = CourseMediaType.Video,
-                WebAddress = "https://example.com/1",
+                ResourceType = FileType.Video,
+                ResourceUrl = "https://example.com/1",
                 CourseId = courseId
             }
         };
@@ -67,19 +67,19 @@ public class CourseItemServiceTests
             .ReturnsAsync(course);
 
         var query = items.AsQueryable();
-        _courseItemRepositoryMock.Setup(repo => repo.GetAll())
+        _courseResourceRepositoryMock.Setup(repo => repo.GetAll())
             .Returns(query);
 
-        CourseItem capturedItem = null!;
-        _courseItemRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<CourseItem>()))
-            .Callback<CourseItem>(c => capturedItem = c)
+        CourseResource capturedItem = null!;
+        _courseResourceRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<CourseResource>()))
+            .Callback<CourseResource>(c => capturedItem = c)
             .Returns(Task.CompletedTask);
 
-        _courseItemRepositoryMock.Setup(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseItemResponse>>()))
-            .ReturnsAsync(items.Select(i => i.ToCourseItemResponse()).ToList());
+        _courseResourceRepositoryMock.Setup(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseResourceResponse>>()))
+            .ReturnsAsync(items.Select(i => i.ToCourseResourceResponse()).ToList());
 
         // Act
-        var result = await _courseItemService.GetAllByCourseIdAsync(courseId);
+        var result = await _courseResourceService.GetAllByCourseIdAsync(courseId);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -91,8 +91,8 @@ public class CourseItemServiceTests
         }
 
         _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
-        _courseItemRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
-        _courseItemRepositoryMock.Verify(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseItemResponse>>()),
+        _courseResourceRepositoryMock.Verify(repo => repo.GetAll(), Times.Once);
+        _courseResourceRepositoryMock.Verify(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseResourceResponse>>()),
             Times.Once);
     }
 
@@ -101,9 +101,9 @@ public class CourseItemServiceTests
     {
         // Arrange
         var itemId = Guid.NewGuid();
-        _courseItemRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
-            .ReturnsAsync(default(CourseItem)); // Act
-        var result = await _courseItemService.GetByIdAsync(itemId);
+        _courseResourceRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
+            .ReturnsAsync(default(CourseResource)); // Act
+        var result = await _courseResourceService.GetByIdAsync(itemId);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -119,18 +119,18 @@ public class CourseItemServiceTests
     {
         // Arrange
         var itemId = Guid.NewGuid();
-        var item = new CourseItem
+        var item = new CourseResource
         {
             Id = itemId,
             Title = "Test Item",
             Description = "Test Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "https://example.com"
+            ResourceType = FileType.Video,
+            ResourceUrl = "https://example.com"
         };
 
-        _courseItemRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
+        _courseResourceRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
             .ReturnsAsync(item); // Act
-        var result = await _courseItemService.GetByIdAsync(itemId);
+        var result = await _courseResourceService.GetByIdAsync(itemId);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -147,17 +147,17 @@ public class CourseItemServiceTests
     {
         // Arrange
         var courseId = Guid.NewGuid();
-        var request = new CourseItemCreateRequest
+        var request = new CourseResourceCreateRequest
         {
             Title = "New Item",
             Description = "Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "https://example.com"
+            ResourceType = FileType.Video,
+            ResourceUrl = "https://example.com"
         };
 
         _courseRepositoryMock.Setup(repo => repo.GetByIdAsync(courseId, null))
             .ReturnsAsync(default(Course)); // Act
-        var result = await _courseItemService.CreateAsync(courseId, request);
+        var result = await _courseResourceService.CreateAsync(courseId, request);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -174,23 +174,23 @@ public class CourseItemServiceTests
         // Arrange
         var courseId = Guid.NewGuid();
         var course = new Course { Id = courseId };
-        var request = new CourseItemCreateRequest
+        var request = new CourseResourceCreateRequest
         {
             Title = "New Item",
             Description = "Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "https://example.com"
+            ResourceType = FileType.Video,
+            ResourceUrl = "https://example.com"
         };
 
         _courseRepositoryMock.Setup(repo => repo.GetByIdAsync(courseId, null))
             .ReturnsAsync(course);
 
-        CourseItem? capturedItem = null;
-        _courseItemRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<CourseItem>()))
-            .Callback<CourseItem>(item => capturedItem = item);
+        CourseResource? capturedItem = null;
+        _courseResourceRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<CourseResource>()))
+            .Callback<CourseResource>(item => capturedItem = item);
 
         // Act
-        var result = await _courseItemService.CreateAsync(courseId, request);
+        var result = await _courseResourceService.CreateAsync(courseId, request);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -199,12 +199,12 @@ public class CourseItemServiceTests
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.Created));
             Assert.That(result.Value!.Title, Is.EqualTo(request.Title));
             Assert.That(result.Value.Description, Is.EqualTo(request.Description));
-            Assert.That(result.Value.MediaType, Is.EqualTo(request.MediaType));
-            Assert.That(result.Value.WebAddress, Is.EqualTo(request.WebAddress));
+            Assert.That(result.Value.ResourceType, Is.EqualTo(request.ResourceType));
+            Assert.That(result.Value.ResourceUrl, Is.EqualTo(request.ResourceUrl));
         }
 
-        _courseItemRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<CourseItem>()), Times.Once);
-        _courseItemRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        _courseResourceRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<CourseResource>()), Times.Once);
+        _courseResourceRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
 
         Assert.That(capturedItem, Is.Not.Null);
         using (Assert.EnterMultipleScope())
@@ -212,8 +212,8 @@ public class CourseItemServiceTests
             Assert.That(capturedItem!.CourseId, Is.EqualTo(courseId));
             Assert.That(capturedItem.Title, Is.EqualTo(request.Title));
             Assert.That(capturedItem.Description, Is.EqualTo(request.Description));
-            Assert.That(capturedItem.MediaType, Is.EqualTo(request.MediaType));
-            Assert.That(capturedItem.WebAddress, Is.EqualTo(request.WebAddress));
+            Assert.That(capturedItem.ResourceType, Is.EqualTo(request.ResourceType));
+            Assert.That(capturedItem.ResourceUrl, Is.EqualTo(request.ResourceUrl));
         }
     }
 
@@ -222,17 +222,17 @@ public class CourseItemServiceTests
     {
         // Arrange
         var itemId = Guid.NewGuid();
-        var request = new CourseItemUpdateRequest
+        var request = new CourseResourceUpdateRequest
         {
             Title = "Updated Item",
             Description = "Updated Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "https://example.com/updated"
+            ResourceType = FileType.Video,
+            ResourceUrl = "https://example.com/updated"
         };
 
-        _courseItemRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
-            .ReturnsAsync(default(CourseItem)); // Act
-        var result = await _courseItemService.UpdateAsync(itemId, request);
+        _courseResourceRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
+            .ReturnsAsync(default(CourseResource)); // Act
+        var result = await _courseResourceService.UpdateAsync(itemId, request);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -248,28 +248,28 @@ public class CourseItemServiceTests
     {
         // Arrange
         var itemId = Guid.NewGuid();
-        var existingItem = new CourseItem
+        var existingItem = new CourseResource
         {
             Id = itemId,
             Title = "Old Title",
             Description = "Old Description",
-            MediaType = CourseMediaType.Pdf,
-            WebAddress = "https://example.com/old",
+            ResourceType = FileType.Pdf,
+            ResourceUrl = "https://example.com/old",
             CourseId = Guid.NewGuid()
         };
-        var request = new CourseItemUpdateRequest
+        var request = new CourseResourceUpdateRequest
         {
             Title = "Updated Item",
             Description = "Updated Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "https://example.com/updated"
+            ResourceType = FileType.Video,
+            ResourceUrl = "https://example.com/updated"
         };
 
-        _courseItemRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
+        _courseResourceRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
             .ReturnsAsync(existingItem);
 
         // Act
-        var result = await _courseItemService.UpdateAsync(itemId, request); // Assert
+        var result = await _courseResourceService.UpdateAsync(itemId, request); // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.IsSuccess, Is.True);
@@ -277,11 +277,11 @@ public class CourseItemServiceTests
             Assert.That(result.Value!.Title, Is.EqualTo(request.Title));
             Assert.That(existingItem.Title, Is.EqualTo(request.Title));
             Assert.That(existingItem.Description, Is.EqualTo(request.Description));
-            Assert.That(existingItem.MediaType, Is.EqualTo(request.MediaType));
-            Assert.That(existingItem.WebAddress, Is.EqualTo(request.WebAddress));
+            Assert.That(existingItem.ResourceType, Is.EqualTo(request.ResourceType));
+            Assert.That(existingItem.ResourceUrl, Is.EqualTo(request.ResourceUrl));
         }
 
-        _courseItemRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+        _courseResourceRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
@@ -290,11 +290,11 @@ public class CourseItemServiceTests
         // Arrange
         var itemId = Guid.NewGuid();
 
-        _courseItemRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
-            .ReturnsAsync(default(CourseItem));
+        _courseResourceRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
+            .ReturnsAsync(default(CourseResource));
 
         // Act
-        var result = await _courseItemService.DeleteAsync(itemId);
+        var result = await _courseResourceService.DeleteAsync(itemId);
 
         // Assert
         using (Assert.EnterMultipleScope())
@@ -310,29 +310,29 @@ public class CourseItemServiceTests
     {
         // Arrange
         var itemId = Guid.NewGuid();
-        var existingItem = new CourseItem
+        var existingItem = new CourseResource
         {
             Id = itemId,
             Title = "Item to Delete",
             Description = "Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "https://example.com",
+            ResourceType = FileType.Video,
+            ResourceUrl = "https://example.com",
             CourseId = Guid.NewGuid()
         };
 
-        _courseItemRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
+        _courseResourceRepositoryMock.Setup(repo => repo.GetByIdAsync(itemId, null))
             .ReturnsAsync(existingItem);
 
         // Act
-        var result = await _courseItemService.DeleteAsync(itemId);
+        var result = await _courseResourceService.DeleteAsync(itemId);
 
         // Assert
         using (Assert.EnterMultipleScope())
         {
             Assert.That(result.IsSuccess, Is.True);
             Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            _courseItemRepositoryMock.Verify(repo => repo.Delete(existingItem), Times.Once);
-            _courseItemRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            _courseResourceRepositoryMock.Verify(repo => repo.Delete(existingItem), Times.Once);
+            _courseResourceRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         }
     }
 
@@ -342,15 +342,15 @@ public class CourseItemServiceTests
         // Arrange
         var courseId = Guid.NewGuid();
         var course = new Course { Id = courseId };
-        var items = new List<CourseItem>
+        var items = new List<CourseResource>
         {
             new()
             {
                 Id = Guid.NewGuid(),
                 Title = "Item 2",
                 Description = "Description 2",
-                MediaType = CourseMediaType.Video,
-                WebAddress = "https://example.com/2",
+                ResourceType = FileType.Video,
+                ResourceUrl = "https://example.com/2",
                 CourseId = courseId
             },
             new()
@@ -358,8 +358,8 @@ public class CourseItemServiceTests
                 Id = Guid.NewGuid(),
                 Title = "Item 1",
                 Description = "Description 1",
-                MediaType = CourseMediaType.Pdf,
-                WebAddress = "https://example.com/1",
+                ResourceType = FileType.Pdf,
+                ResourceUrl = "https://example.com/1",
                 CourseId = courseId
             }
         };
@@ -368,14 +368,14 @@ public class CourseItemServiceTests
             .ReturnsAsync(course);
 
         var query = items.AsQueryable();
-        _courseItemRepositoryMock.Setup(repo => repo.GetAll())
+        _courseResourceRepositoryMock.Setup(repo => repo.GetAll())
             .Returns(query);
 
-        _courseItemRepositoryMock.Setup(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseItemResponse>>()))
-            .ReturnsAsync(items.OrderBy(i => i.Id).Select(i => i.ToCourseItemResponse()).ToList());
+        _courseResourceRepositoryMock.Setup(repo => repo.ToListAsync(It.IsAny<IQueryable<CourseResourceResponse>>()))
+            .ReturnsAsync(items.OrderBy(i => i.Id).Select(i => i.ToCourseResourceResponse()).ToList());
 
         // Act
-        var result = await _courseItemService.GetAllByCourseIdAsync(courseId);
+        var result = await _courseResourceService.GetAllByCourseIdAsync(courseId);
 
         // Assert
         using (Assert.EnterMultipleScope())
