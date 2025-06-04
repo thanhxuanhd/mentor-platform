@@ -101,7 +101,7 @@ public static class ApplicationDbExtensions
                 {
                     Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                     FullName = "David Copperfield",
-                    Email = "david.copperfield@mentorplatform.local",
+                    Email = "ngominh24122001@gmail.com",
                     PasswordHash = PasswordHelper.HashPassword("mypassword"),
                     RoleId = learnerRole.Id,
                     Status = UserStatus.Active
@@ -114,6 +114,25 @@ public static class ApplicationDbExtensions
                     PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
                     RoleId = adminRole.Id,
                     Status = UserStatus.Active
+                },
+                // Thêm 2 Learner mới
+                new User
+                {
+                    Id = Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
+                    FullName = "Nguyen Van A",
+                    Email = "nguyenvana@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("passA123"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2"),
+                    FullName = "Tran Thi B",
+                    Email = "tranthib@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("passB123"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
                 }
             );
             dbContext.SaveChanges();
@@ -123,24 +142,34 @@ public static class ApplicationDbExtensions
         {
             dbContext.Categories.AddRange(new Category
             {
-                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
-                Description = "Courses related to developing leadership skills and strategies", Status = true
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
-                Description = "Effective communication in professional settings", Status = true
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                Name = "Communication Skills",
+                Description = "Effective communication in professional settings",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
-                Description = "Techniques to improve public speaking and presentation skills", Status = true
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
-                Description = "Strategies for better time management and productivity", Status = false
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                Name = "Time Management",
+                Description = "Strategies for better time management and productivity",
+                Status = false
             }, new Category
             {
-                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
-                Description = "Resources for career advancement and job hunting", Status = false
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"),
+                Name = "Career Development",
+                Description = "Resources for career advancement and job hunting",
+                Status = false
             });
             dbContext.SaveChanges();
         }
@@ -251,8 +280,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(17, 00),
-                    SessionDuration = 60, 
-                    BufferTime = 15,    
+                    SessionDuration = 60,
+                    BufferTime = 15,
                 },
                 new Schedules
                 {
@@ -261,8 +290,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartHour = new TimeOnly(10, 00),
                     EndHour = new TimeOnly(18, 00),
-                    SessionDuration = 45, 
-                    BufferTime = 10,    
+                    SessionDuration = 45,
+                    BufferTime = 10,
                 },
                 new Schedules
                 {
@@ -271,8 +300,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartHour = new TimeOnly(13, 00),
                     EndHour = new TimeOnly(21, 00),
-                    SessionDuration = 30, 
-                    BufferTime = 5,     
+                    SessionDuration = 30,
+                    BufferTime = 5,
                 },
                 new Schedules
                 {
@@ -281,8 +310,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(12, 00),
-                    SessionDuration = 60, 
-                    BufferTime = 0,     
+                    SessionDuration = 60,
+                    BufferTime = 0,
                 }
             );
 
@@ -342,6 +371,99 @@ public static class ApplicationDbExtensions
             });
             dbContext.SaveChanges();
         }
+        if (!dbContext.MentorAvailableTimeSlots.Any())
+        {
+            var schedule = dbContext.Schedules.FirstOrDefault();
+            if (schedule != null)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    dbContext.MentorAvailableTimeSlots.Add(new MentorAvailableTimeSlot
+                    {
+                        Id = Guid.NewGuid(),
+                        ScheduleId = schedule.Id,
+                        Date = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(i + 1)),
+                        StartTime = new TimeOnly(9, 0),
+                        EndTime = new TimeOnly(10, 0),
+                    });
+                }
+                // Thêm một time slot cụ thể để 2 learner mới book cùng lúc
+                dbContext.MentorAvailableTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"), // ID cụ thể cho việc book chung
+                    ScheduleId = schedule.Id,
+                    Date = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10)), // Ngày trong tương lai, ví dụ 10 ngày tới
+                    StartTime = new TimeOnly(14, 0), // Thời gian bắt đầu: 14:00
+                    EndTime = new TimeOnly(15, 0),   // Thời gian kết thúc: 15:00 (1 tiếng)
+                });
+
+                dbContext.SaveChanges();
+            }
+        }
+
+        if (!dbContext.Sessions.Any())
+        {
+            var learnerId = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C");
+            var newLearner1Id = Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1");
+            var newLearner2Id = Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2");
+
+
+            var learner = dbContext.Users.FirstOrDefault(u => u.Id == learnerId);
+            var newLearner1 = dbContext.Users.FirstOrDefault(u => u.Id == newLearner1Id);
+            var newLearner2 = dbContext.Users.FirstOrDefault(u => u.Id == newLearner2Id);
+
+            var timeSlots = dbContext.MentorAvailableTimeSlots.Take(5).ToList();
+            var sharedTimeSlot = dbContext.MentorAvailableTimeSlots.FirstOrDefault(ts => ts.Id == Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"));
+
+            // Đảm bảo các learner và time slot chung tồn tại
+            if (learner is null) throw new Exception("Session seeding: David Copperfield learner does not exist.");
+            if (newLearner1 is null) throw new Exception("Session seeding: New Learner 1 (Nguyen Van A) does not exist.");
+            if (newLearner2 is null) throw new Exception("Session seeding: New Learner 2 (Tran Thi B) does not exist.");
+            if (sharedTimeSlot is null) throw new Exception("Session seeding: Shared time slot does not exist.");
+
+            foreach (var timeSlot in timeSlots)
+            {
+                var session = new Sessions
+                {
+                    Id = Guid.NewGuid(),
+                    LearnerId = learner.Id,
+                    Learner = learner,
+                    TimeSlotId = timeSlot.Id,
+                    TimeSlot = timeSlot,
+                    Status = SessionStatus.Pending,
+                    Type = SessionType.Onsite,
+                };
+
+                dbContext.Sessions.Add(session);
+            }
+
+            // Seed các session cho 2 learner mới, cùng một time slot
+            dbContext.Sessions.AddRange(
+                new Sessions
+                {
+                    Id = Guid.NewGuid(),
+                    LearnerId = newLearner1.Id,
+                    Learner = newLearner1,
+                    TimeSlotId = sharedTimeSlot.Id,
+                    TimeSlot = sharedTimeSlot, // Gán đối tượng TimeSlot để đảm bảo liên kết
+                    Status = SessionStatus.Pending,
+                    Type = SessionType.Onsite, // Ví dụ: Có thể khác
+                },
+                new Sessions
+                {
+                    Id = Guid.NewGuid(),
+                    LearnerId = newLearner2.Id,
+                    Learner = newLearner2,
+                    TimeSlotId = sharedTimeSlot.Id,
+                    TimeSlot = sharedTimeSlot, // Gán đối tượng TimeSlot để đảm bảo liên kết
+                    Status = SessionStatus.Pending,
+                    Type = SessionType.Onsite, // Ví dụ: Có thể khác
+                }
+            );
+
+            dbContext.SaveChanges();
+        }
+
     }
 
     private static string GetMediaUrl(CourseMediaType mediaType, int moduleNumber)

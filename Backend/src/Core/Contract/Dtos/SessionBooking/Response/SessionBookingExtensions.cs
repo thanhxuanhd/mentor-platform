@@ -16,6 +16,7 @@ public static class SessionBookingExtensions
             StartTime = mats.StartTime,
             EndTime = mats.EndTime,
             Date = mats.Date,
+
             IsBooked = mats.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled)
         };
     }

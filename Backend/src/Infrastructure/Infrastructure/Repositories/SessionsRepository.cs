@@ -57,4 +57,14 @@ public class SessionsRepository(ApplicationDbContext context)
 
         bookingSession.Status = SessionStatus.Canceled;
     }
+    public async Task<List<Sessions>> GetAllBookingAsync()
+    {
+        return await _context.Sessions
+            .Include(s => s.Learner)
+            .Include(s => s.TimeSlot)
+            //.Where(s => s.Status == SessionStatus.Pending)
+            .Where(s => s.Id != Guid.Empty)
+            .ToListAsync();
+    }
+
 }

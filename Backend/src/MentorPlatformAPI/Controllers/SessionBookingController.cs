@@ -1,13 +1,20 @@
 using System.Security.Claims;
+using Application.Services.Categories;
 using Application.Services.SessionBooking;
+using Application.Services.TeachingApproaches;
+using Application.Services.Users;
+using Azure;
+using Azure.Core;
 using Contract.Dtos.SessionBooking.Requests;
+using Contract.Dtos.Users.Requests;
+using Domain.Entities;
 using Infrastructure.Services.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class SessionBookingController(
@@ -15,7 +22,7 @@ public class SessionBookingController(
     : ControllerBase
 {
     [HttpGet("available-timeslots")]
-    [Authorize(Policy = RequiredRole.Admin)]
+    //[Authorize(Policy = RequiredRole.Admin)]
     public async Task<IActionResult> GetAllAvailableTimeSlot([FromQuery] AvailableTimeSlotListRequest request)
     {
         var result = await sessionBookingService.GetAllAvailableTimeSlotAsync(request);
@@ -80,6 +87,34 @@ public class SessionBookingController(
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var result = await sessionBookingService.CancelBookingAsync(bookingId, userId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("request/get")]
+    //[Authorize(Policy = RequiredRole.Mentor)]
+    public async Task<IActionResult> GetAllBooking()
+    {
+        var result = await sessionBookingService.GetAllBooking();
+        return StatusCode((int)result.StatusCode, result);
+    }
+    [HttpGet("request/get/{id}")]
+    public async Task<IActionResult> GetSessionsBookingById(Guid id)
+    {
+        var result = await sessionBookingService.GetSessionsBookingByIdAsync(id);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateStatusSession(Guid id, [FromBody] SessionBookingRequest request)
+    {
+        var result = await sessionBookingService.UpdateStatusSessionAsync(id, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut("update/{id}")]
+    public async Task<IActionResult> UpdateRecheduleSession(Guid id, [FromBody] SessionUpdateRecheduleRequest request)
+    {
+        var result = await sessionBookingService.UpdateRecheduleSessionAsync(id, request);
         return StatusCode((int)result.StatusCode, result);
     }
 }

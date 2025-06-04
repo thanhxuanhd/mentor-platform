@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using Contract.Dtos.SessionBooking.Requests;
 using Contract.Dtos.SessionBooking.Response;
+using Contract.Dtos.Users.Requests;
+using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
@@ -235,4 +237,130 @@ public class SessionBookingService(
 
         return Result.Success(sessionsSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
+
+    public async Task<Result<List<LearnerSessionBookingResponse>>> GetAllBooking()
+    {
+        var sessionList = await sessionBookingRepository.GetAllBookingAsync();
+
+        var resultList = sessionList.Select(s => new LearnerSessionBookingResponse
+        {
+            Id = s.Id,
+            TimeSlotId = s.TimeSlotId,
+            LearnerId = s.LearnerId,
+            Status = s.Status.ToString(),
+            Date = s.TimeSlot.Date,
+            StartTime = s.TimeSlot.StartTime,
+            EndTime = s.TimeSlot.EndTime,
+            FullNameLearner = s.Learner.FullName,
+            PreferredCommunicationMethod = s.Learner.PreferredCommunicationMethod.ToString()
+        }).ToList();
+
+        return Result.Success(resultList, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<LearnerSessionBookingResponse>> GetSessionsBookingByIdAsync(Guid id)
+    {
+        var session = await sessionBookingRepository.GetByIdAsync(id);
+        if (session == null)
+        {
+            return Result.Failure<LearnerSessionBookingResponse>($"Session with id {id} not found.", HttpStatusCode.NotFound);
+        }
+
+        var result = new LearnerSessionBookingResponse
+        {
+            TimeSlotId = session.TimeSlotId,
+            LearnerId = session.LearnerId,
+            Status = session.Status.ToString(),
+            Date = session.TimeSlot.Date,
+            StartTime = session.TimeSlot.StartTime,
+            EndTime = session.TimeSlot.EndTime
+        };
+
+        return Result.Success(result, HttpStatusCode.OK);
+    }
+
+
+    public async Task<Result<bool>> UpdateStatusSessionAsync(Guid id, SessionBookingRequest request)
+    {
+        var sessionList = await sessionBookingRepository.GetAllBookingAsync();
+        var session = sessionList.FirstOrDefault(s => s.Id == id);
+
+        if (session == null)
+        {
+            return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
+        }
+
+        session.Status = (SessionStatus)request.Status;
+        string subject = string.Empty;
+        string body = string.Empty;
+
+        if (request.Status == SessionStatus.Approved)
+        {
+            subject = EmailConstants.SUBJECT_SESSION_ACCEPTED;
+            body = EmailConstants.BodySessionAcceptedEmail(id);
+        }
+        else if (request.Status == SessionStatus.Canceled)
+        {
+            subject = EmailConstants.SUBJECT_SESSION_CANCELLED;
+            body = EmailConstants.BodySessionAcceptedEmail(id);
+        }
+
+        if (!string.IsNullOrEmpty(subject) && !string.IsNullOrEmpty(body))
+        {
+            var user = await userRepository.GetByIdAsync(session.LearnerId);
+            if (user == null)
+            {
+                return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
+            }
+
+            var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
+            if (!emailResult)
+            {
+                return Result.Failure<bool>("Failed to send email.", HttpStatusCode.InternalServerError);
+            }
+        }
+
+        sessionBookingRepository.Update(session);
+        await sessionBookingRepository.SaveChangesAsync();
+
+        return Result.Success(true, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<bool>> UpdateRecheduleSessionAsync(Guid id, SessionUpdateRecheduleRequest request)
+    {
+        var sessionList = await sessionBookingRepository.GetAllBookingAsync();
+        var session = sessionList.FirstOrDefault(s => s.Id == id);
+
+        if (session == null)
+        {
+            return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
+        }
+
+        session.TimeSlot.Date = request.Date;
+        session.TimeSlot.StartTime = request.StartTime;
+        session.TimeSlot.EndTime = request.EndTime;
+        session.Status = SessionStatus.Rescheduled;
+
+        var user = await userRepository.GetByIdAsync(session.LearnerId);
+        if (user == null)
+        {
+            return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
+        }
+
+        string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
+        string body = EmailConstants.BodySessionRescheduledEmail(id, request.Date, request.StartTime, request.EndTime, request.Reason);
+
+        var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
+        if (!emailResult)
+        {
+            return Result.Failure<bool>("Failed to send reschedule email.", HttpStatusCode.InternalServerError);
+        }
+
+        sessionBookingRepository.Update(session);
+        await sessionBookingRepository.SaveChangesAsync();
+
+        return Result.Success(true, HttpStatusCode.OK);
+    }
+
+
 }
