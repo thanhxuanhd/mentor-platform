@@ -12,7 +12,7 @@ public class UserLoggingStrategy : IEntityLoggingStrategy
         return entry is { Entity: User, State: EntityState.Added or EntityState.Modified };
     }
 
-    public string GetLoggingAction(EntityEntry entry)
+    public string GetLoggingAction(EntityEntry entry, User? u)
     {
         if (!IsLoggingState(entry))
             return string.Empty;
@@ -40,7 +40,7 @@ public class UserLoggingStrategy : IEntityLoggingStrategy
         var currentRole = entry.CurrentValues.GetValue<int>("RoleId");
 
         return originalRole != currentRole
-            ? $"User {fullName} changed role to {role}"
-            : $"User {userId} modified profile for {fullName}";
+            ? $"User {fullName} registered to the system as role {role}"
+            : $"User {fullName} modified profile";
     }
 }

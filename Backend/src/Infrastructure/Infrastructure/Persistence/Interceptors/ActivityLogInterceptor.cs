@@ -27,16 +27,15 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
         var dbContext = eventData.Context;
         if (dbContext is null) return await base.SavingChangesAsync(eventData, result, cancellationToken);
 
-        Guid? currentUserId = null;
+        User? user = null;
         var httpContext = httpContextAccessor.HttpContext;
         if (httpContext?.User.Identity?.IsAuthenticated == true)
         {
             var claimUserId = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (Guid.TryParse(claimUserId, out var userId))
             {
-                var user = await dbContext.Set<User>().AsNoTracking()
+                user = await dbContext.Set<User>().AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Id.Equals(userId), cancellationToken);
-                currentUserId = user?.Id ?? userId;
             }
         }
 
@@ -49,12 +48,12 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
         foreach (var entry in entries)
         {
             var strategy = _loggingStrategies[entry.Entity.GetType()];
-            var action = strategy.GetLoggingAction(entry);
+            var action = strategy.GetLoggingAction(entry, user);
             if (string.IsNullOrEmpty(action)) continue;
 
             _pendingLogs.Add(new ActivityLog
             {
-                UserId = currentUserId,
+                UserId = user?.Id ?? null,
                 Action = action,
                 Timestamp = DateTime.UtcNow
             });
