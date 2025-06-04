@@ -56,3 +56,8 @@ GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/timeslots/requests/me
 Accept: application/json
 Content-Type: application/json
 Authorization: Bearer {{auth_token}}
+
+### Cancel Booking Session
+POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request/{{bookingId}}/cancel
+Accept: application/json
+Authorization: Bearer {{auth_token}}
