@@ -55,6 +55,11 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
             experiences: userProfile.experiences ?? "",
           });
         }
+
+        if (userProfile.experiences) {
+          form.setFieldsValue({ workExperience: userProfile.experiences });
+          setProgress(25);
+        }
       } catch {
         setNotify({
           type: "error",
@@ -65,14 +70,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
     };
 
     fetchMentorInfo();
-  }, [user, notification]);
-
-  useEffect(() => {
-    if (mentorInfo.experiences !== undefined) {
-      form.setFieldsValue({ workExperience: mentorInfo.experiences });
-      setProgress(25);
-    }
-  }, [mentorInfo.experiences, form]);
+  }, [user, notification, form]);
 
   useEffect(() => {
     if (isEditMode && application) {
@@ -142,20 +140,21 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
         setNotify({
           type: "success",
           message: "Application Submitted",
-          description: "Thank you! We'll review your application soon.",
+          description: "Thank you! We will review your application soon.",
         });
       }
       form.resetFields();
       setProgress(0);
       navigate(-1);
-    } catch (error) {
-      console.error("Error submitting application:", error);
+    } catch (error: any) {
       setNotify({
         type: "error",
         message: "Error",
-        description: isEditMode
-          ? "Failed to update application."
-          : "Failed to submit application.",
+        description:
+          error.response?.data?.error ||
+          (isEditMode
+            ? "Failed to update application."
+            : "Failed to submit application."),
       });
     }
   };
@@ -174,7 +173,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
       setNotify({
         type: "error",
         message: "Error",
-        description: "Image must smaller than 1MB!",
+        description: "File size must smaller than 1MB!",
       });
     }
 
@@ -185,15 +184,18 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
     let currentProgress = 0;
     const values = form.getFieldsValue();
 
-    if (values.education) {
-      currentProgress += 25;
-    }
     if (values.workExperience) {
       currentProgress += 25;
     }
+
+    if (values.education) {
+      currentProgress += 25;
+    }
+
     if (values.certifications) {
       currentProgress += 25;
     }
+
     if (values.statement) {
       currentProgress += 25;
     }
@@ -208,7 +210,9 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
 
   return (
     <div className="text-white p-6 rounded-xl max-w-3xl my-6 mx-auto shadow-lg bg-gray-800">
-      <h1 className="text-2xl font-semibold mb-6">Mentor Application</h1>
+      <h1 className="text-2xl font-semibold mb-6">
+        {isEditMode ? "Edit Mentor Application" : "Mentor Application"}
+      </h1>
 
       <div className="mb-8 p-4 rounded-lg bg-gray-700 shadow flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex-shrink-0 w-24 h-24 rounded-full bg-gray-600 overflow-hidden border border-gray-500 shadow">
@@ -250,19 +254,17 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
         requiredMark={false}
         onValuesChange={handleFieldChange}
       >
-        <Form.Item label="Education">
-          <Form.Item
-            name="education"
-            noStyle
-            rules={[
-              {
-                max: 300,
-                message: "Education must be less than 300 characters.",
-              },
-            ]}
-          >
-            <TextArea rows={4} placeholder="Your education..." />
-          </Form.Item>
+        <Form.Item
+          name="education"
+          label="Education"
+          rules={[
+            {
+              max: 300,
+              message: "Education must be less than 300 characters.",
+            },
+          ]}
+        >
+          <TextArea rows={4} placeholder="Your education..." />
         </Form.Item>
 
         <Form.Item

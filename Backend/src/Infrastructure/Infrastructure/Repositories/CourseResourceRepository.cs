@@ -5,5 +5,5 @@ using Infrastructure.Repositories.Base;
 
 namespace Infrastructure.Repositories;
 
-public class CourseItemRepository(ApplicationDbContext context)
-    : BaseRepository<CourseItem, Guid>(context), ICourseItemRepository;
+public class CourseResourceRepository(ApplicationDbContext context)
+    : BaseRepository<CourseResource, Guid>(context), ICourseResourceRepository;

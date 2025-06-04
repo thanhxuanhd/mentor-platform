@@ -5,7 +5,7 @@ namespace Contract.Dtos.MentorApplications.Requests;
 
 public class UpdateMentorApplicationRequest
 {
-    public string? Experiences { get; set; }
+    public string? WorkExperience { get; set; }
     public string? Education { get; set; }
     public string? Certifications { get; set; }
     public string? Statement { get; set; }

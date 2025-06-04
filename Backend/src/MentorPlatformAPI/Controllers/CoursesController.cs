@@ -1,12 +1,13 @@
-﻿using System.Security.Claims;
-using Application.Services.CourseItems;
+﻿using Application.Services.CourseResources;
 using Application.Services.Courses;
-using Contract.Dtos.CourseItems.Requests;
+
+using Contract.Dtos.CourseResources.Requests;
 using Contract.Dtos.Courses.Requests;
 using Domain.Enums;
 using Infrastructure.Services.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using static Infrastructure.Services.Authorization.Policies.CourseResourcePolicyName;
 
 namespace MentorPlatformAPI.Controllers;
@@ -14,9 +15,9 @@ namespace MentorPlatformAPI.Controllers;
 [Authorize]
 [Route("api/[controller]")]
 [ApiController]
-public class CourseController(
+public class CoursesController(
     ICourseService courseService,
-    ICourseItemService courseItemService,
+    ICourseResourceService courseResourceService,
     IAuthorizationService authorizationService)
     : ControllerBase
 {
@@ -101,8 +102,8 @@ public class CourseController(
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpGet("{courseId:guid}/resource")]
-    public async Task<IActionResult> GetAllCourseItem(Guid courseId)
+    [HttpGet("{courseId:guid}/resources")]
+    public async Task<IActionResult> GetAllCourseResource(Guid courseId)
     {
         var course = await courseService.GetByIdAsync(courseId);
         if (!course.IsSuccess)
@@ -117,15 +118,15 @@ public class CourseController(
             || (course.Value!.Status == CourseStatus.Draft
                 && roleName == nameof(UserRole.Admin)) || mentorId == course.Value!.MentorId)
         {
-            var serviceResult = await courseItemService.GetAllByCourseIdAsync(courseId);
+            var serviceResult = await courseResourceService.GetAllByCourseIdAsync(courseId);
             return StatusCode((int)serviceResult.StatusCode, serviceResult);
         }
 
         return Forbid();
     }
 
-    [HttpGet("{courseId:guid}/resource/{courseItemId:guid}")]
-    public async Task<IActionResult> GetCourseItemById(Guid courseId, Guid courseItemId)
+    [HttpGet("{courseId:guid}/resources/{courseResourceId:guid}")]
+    public async Task<IActionResult> GetCourseResourceById(Guid courseId, Guid courseResourceId)
     {
         var course = await courseService.GetByIdAsync(courseId);
         if (!course.IsSuccess)
@@ -140,35 +141,35 @@ public class CourseController(
             || (course.Value!.Status == CourseStatus.Draft
                 && roleName == nameof(UserRole.Admin)) || mentorId == course.Value!.MentorId)
         {
-            var serviceResult = await courseItemService.GetByIdAsync(courseItemId);
+            var serviceResult = await courseResourceService.GetByIdAsync(courseResourceId);
             return StatusCode((int)serviceResult.StatusCode, serviceResult);
         }
 
         return Forbid();
     }
 
-    [HttpPost("{courseId:guid}/resource")]
+    [HttpPost("{courseId:guid}/resources")]
     [Authorize(Policy = RequiredRole.Mentor)]
-    public async Task<IActionResult> CreateCourseItem(Guid courseId, [FromBody] CourseItemCreateRequest request)
+    public async Task<IActionResult> CreateCourseResource(Guid courseId, [FromBody] CourseResourceCreateRequest request)
     {
-        var serviceResult = await courseItemService.CreateAsync(courseId, request);
+        var serviceResult = await courseResourceService.CreateAsync(courseId, request);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpPut("{courseId:guid}/resource/{courseItemId:guid}")]
+    [HttpPut("{courseId:guid}/resources/{courseResourceId:guid}")]
     [Authorize(Policy = RequiredRole.Mentor)]
-    public async Task<IActionResult> UpdateCourseItem(Guid courseId, Guid courseItemId,
-        [FromBody] CourseItemUpdateRequest request)
+    public async Task<IActionResult> UpdateCourseResource(Guid courseId, Guid courseResourceId,
+        [FromBody] CourseResourceUpdateRequest request)
     {
-        var serviceResult = await courseItemService.UpdateAsync(courseItemId, request);
+        var serviceResult = await courseResourceService.UpdateAsync(courseResourceId, request);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
-    [HttpDelete("{courseId:guid}/resource/{courseItemId:guid}")]
+    [HttpDelete("{courseId:guid}/resources/{courseResourceId:guid}")]
     [Authorize(Policy = RequiredRole.Mentor)]
-    public async Task<IActionResult> DeleteCourseItem(Guid courseId, Guid courseItemId)
+    public async Task<IActionResult> DeleteCourseResource(Guid courseId, Guid courseResourceId)
     {
-        var serviceResult = await courseItemService.DeleteAsync(courseItemId);
+        var serviceResult = await courseResourceService.DeleteAsync(courseResourceId);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 }

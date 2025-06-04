@@ -298,19 +298,6 @@ public static class ApplicationDbExtensions
             },
             new MentorApplication
             {
-                Id = Guid.Parse("f64b84ef-5807-4a81-8ee4-9e92f6303916"),
-                MentorId = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
-                Status = ApplicationStatus.Submitted,
-                SubmittedAt = DateTime.UtcNow.AddDays(-5),
-                ReviewedAt = DateTime.UtcNow,
-                AdminId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
-                Education = "PhD in Psychology",
-                Certifications = "Certified Life Coach, Emotional Intelligence Practitioner",
-                Statement = null,
-                Note = null
-            },
-            new MentorApplication
-            {
                 Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
                 MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
                 Status = ApplicationStatus.Rejected,
@@ -337,55 +324,55 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
-        if (!dbContext.CourseItems.Any())
+        if (!dbContext.CourseResources.Any())
         {
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
                 Title = "Introduction to Leadership Concepts",
                 Description = "Understand the core principles and theories of leadership.",
-                MediaType = FileType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(FileType.ExternalWebAddress, 1),
+                ResourceType = FileType.ExternalWebAddress,
+                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 1),
                 CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
                 Title = "Non-Verbal Communication Essentials",
                 Description = "Learn about the importance of body language and other non-verbal cues in communication.",
-                MediaType = FileType.Pdf,
-                WebAddress = GetMediaUrl(FileType.Pdf, 1),
+                ResourceType = FileType.Pdf,
+                ResourceUrl = GetMediaUrl(FileType.Pdf, 1),
                 CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
                 Title = "Structuring Your Speech",
                 Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
-                MediaType = FileType.Video,
-                WebAddress = GetMediaUrl(FileType.Video, 1),
+                ResourceType = FileType.Video,
+                ResourceUrl = GetMediaUrl(FileType.Video, 1),
                 CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
                 Title = "Prioritization Techniques",
                 Description = "Effective methods for prioritizing tasks and managing workloads.",
-                MediaType = FileType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(FileType.ExternalWebAddress, 2),
+                ResourceType = FileType.ExternalWebAddress,
+                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 2),
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
                 Title = "Building Trust and Rapport",
                 Description = "Strategies for establishing trust and positive relationships within a team.",
-                MediaType = FileType.Video,
-                WebAddress = GetMediaUrl(FileType.Video, 2),
+                ResourceType = FileType.Video,
+                ResourceUrl = GetMediaUrl(FileType.Video, 2),
                 CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
             });
             dbContext.SaveChanges();

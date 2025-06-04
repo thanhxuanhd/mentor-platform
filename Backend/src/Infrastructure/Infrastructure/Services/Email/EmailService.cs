@@ -5,7 +5,7 @@ using System.Net.Mail;
 using System.Net;
 using System.Text;
 
-namespace Infrastructure.Services.Authorization;
+namespace Infrastructure.Services.Email;
 
 public class EmailService : IEmailService
 {

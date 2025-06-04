@@ -10,9 +10,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Net;
 
 namespace Application.Services.MentorApplications;
@@ -47,7 +45,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             Experiences = x.Mentor.Experiences,
             SubmittedAt = x.SubmittedAt,
             Status = x.Status.ToString(),
-            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList()
+            Expertises = x.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList()
         }).OrderByDescending(x => x.SubmittedAt);
 
         PaginatedList<FilterMentorApplicationResponse> result = await mentorApplicationRepository.ToPaginatedListAsync(
@@ -97,7 +95,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             Statement = applicationDetails.Statement,
             Certifications = applicationDetails.Certifications,
             Education = applicationDetails.Education,
-            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise.Name).ToList(),
+            Expertises = applicationDetails.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
             ApplicationStatus = applicationDetails.Status.ToString(),
             SubmittedAt = applicationDetails.SubmittedAt,
             ReviewedAt = applicationDetails.ReviewedAt,
@@ -138,7 +136,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 Expertises = application.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
                 Status = application.Status.ToString(),
                 SubmittedAt = application.SubmittedAt
-            });
+            }).OrderByDescending(application => application.SubmittedAt);
 
         var response = await mentorApplicationRepository.ToListAsync(applicationDetails);
 
@@ -255,15 +253,13 @@ public class MentorApplicationService(IUserRepository userRepository,
         }
         if (application.Status != ApplicationStatus.WaitingInfo)
         {
-            return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.BadRequest);
+            return Result.Failure<bool>("You can only update applications when the status is WaitingInfo.", HttpStatusCode.Conflict);
         }
 
-        application.Mentor.Experiences = request.Experiences;
+        application.Mentor.Experiences = request.WorkExperience;
         application.Certifications = request.Certifications;
         application.Education = request.Education;
         application.Statement = request.Statement;
-
-
 
         if (request.Documents != null && request.Documents.Any())
         {
@@ -324,7 +320,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         await mentorApplicationRepository.SaveChangesAsync();
 
         var subject = EmailConstants.SUBJECT_UPDATE_APPLICATION;
-        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin.FullName, application.Mentor.FullName);
+        var body = EmailConstants.BodyUpdatedNotificationApplication(application.Admin!.FullName, application.Mentor.FullName);
 
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 
@@ -344,7 +340,7 @@ public class MentorApplicationService(IUserRepository userRepository,
 
         if (user.MentorApplications != null && user.MentorApplications.Any(x => x.Status != ApplicationStatus.Rejected))
         {
-            return Result.Failure<bool>("User has an active or pending mentor application.", HttpStatusCode.BadRequest);
+            return Result.Failure<bool>("User has an active or pending mentor application.", HttpStatusCode.Conflict);
         }
 
         user.Experiences = submission.WorkExperience;
@@ -353,7 +349,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         var mentorApplication = new MentorApplication
         {
             MentorId = userId,
-            SubmittedAt = DateTime.UtcNow,
+            SubmittedAt = DateTime.Now,
         };
         submission.ToMentorApplication(mentorApplication);
 

@@ -40,8 +40,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     user.role === applicationRole.MENTOR &&
     checkMentorApplication &&
     !isMentorApproved
-  )
+  ) {
     return <Navigate to="my-applications" replace />;
+  }
 
   return <>{children}</>;
 };

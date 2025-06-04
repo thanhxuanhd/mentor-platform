@@ -73,9 +73,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -137,7 +134,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("Domain.Entities.CourseItem", b =>
+            modelBuilder.Entity("Domain.Entities.CourseResource", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -151,25 +148,27 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<string>("MediaType")
+                    b.Property<string>("ResourceType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("Pdf");
+
+                    b.Property<string>("ResourceUrl")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("WebAddress")
-                        .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("CourseItems");
+                    b.ToTable("CourseResources");
                 });
 
             modelBuilder.Entity("Domain.Entities.CourseTag", b =>
@@ -536,10 +535,10 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Mentor");
                 });
 
-            modelBuilder.Entity("Domain.Entities.CourseItem", b =>
+            modelBuilder.Entity("Domain.Entities.CourseResource", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
-                        .WithMany("Items")
+                        .WithMany("Resources")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -687,7 +686,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                 {
                     b.Navigation("CourseTags");
 
-                    b.Navigation("Items");
+                    b.Navigation("Resources");
                 });
 
             modelBuilder.Entity("Domain.Entities.Expertise", b =>

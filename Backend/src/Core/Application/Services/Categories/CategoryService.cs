@@ -1,9 +1,9 @@
-﻿using System.Net;
-using Contract.Dtos.Categories.Requests;
+﻿using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
+using System.Net;
 
 namespace Application.Services.Categories;
 
@@ -36,7 +36,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             categories = categories.Where(c => c.Name.Contains(request.Keyword));
         }
-        
+
         if (request.Status.HasValue)
         {
             categories = categories.Where(c => c.Status == request.Status);
@@ -131,17 +131,28 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return Result.Success(true, HttpStatusCode.OK);
     }
 
-    public async Task<Result<bool>> SoftDeleteCategoryAsync(Guid categoryId)
+    public async Task<Result<bool>> DeleteCategoryAsync(Guid categoryId)
     {
-        var category = await categoryRepository.GetByIdAsync(categoryId);
+        var category = await categoryRepository.GetByIdAsync(categoryId, c => c.Courses!);
         if (category == null)
         {
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
         }
 
-        category.IsDeleted = true;
-        categoryRepository.Update(category);
-        var result = await categoryRepository.SaveChangesAsync();
-        return Result.Success(true, HttpStatusCode.OK);
+        if (category.Courses != null && category.Courses.Count > 0)
+        {
+            return Result.Failure<bool>("Cannot delete category because it is in use", HttpStatusCode.BadRequest);
+        }
+
+        try
+        {
+            categoryRepository.Delete(category);
+            await categoryRepository.SaveChangesAsync();
+            return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (Exception)
+        {
+            return Result.Failure<bool>("An error occurred while deleting the category.", HttpStatusCode.BadRequest);
+        }
     }
 }

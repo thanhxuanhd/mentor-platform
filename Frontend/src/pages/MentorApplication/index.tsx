@@ -113,6 +113,7 @@ export default function MentorApplicationPage() {
         ? 1
         : (newFilters.pageIndex ?? filters.pageIndex),
     });
+    setSelectedApplication(null)
   };
 
   const handleApplicationClick = async (application: any) => {
