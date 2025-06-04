@@ -2,6 +2,7 @@
 using Contract.Dtos.Schedule.Requests;
 using Contract.Dtos.Schedule.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
@@ -11,7 +12,7 @@ using System.Text;
 
 namespace Application.Services.Schedule;
 
-public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository, IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository) : IScheduleService
+public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository, IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository, IEmailService emailService) : IScheduleService
 {
     public async Task<Result<ScheduleSettingsResponse>> GetScheduleSettingsAsync(Guid mentorId, GetScheduleSettingsRequest request)
     {
@@ -105,7 +106,35 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         }
         await scheduleRepository.SaveChangesAsync();
 
-        mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
+        List<MentorAvailableTimeSlot> DeletingTimeSlots = mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
+
+        Dictionary<string, string> UniqueLearnerInfos = new Dictionary<string, string>();
+
+        foreach (var timeSlot in DeletingTimeSlots)
+        {
+            if (timeSlot.Sessions == null || !timeSlot.Sessions.Any())
+            {
+                continue;
+            }
+
+            foreach (var session in timeSlot.Sessions)
+            {
+                if (session.Status == SessionStatus.Pending)
+                {
+                    UniqueLearnerInfos[session.Learner!.Email] = session.Learner.FullName;
+                }
+            }
+        }
+
+        if (UniqueLearnerInfos.Any())
+        {
+            foreach (var learnerInfo in UniqueLearnerInfos)
+            {
+                var subject = EmailConstants.SUBJECT_MENTOR_UPDATED_SCHEDULE;
+                var body = EmailConstants.BodyMentorUpdatedScheduleEmail(learnerInfo.Value, mentor.FullName);
+                await emailService.SendEmailAsync(learnerInfo.Key, subject, body);
+            }
+        }
 
         var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
         StringBuilder stringBuilder = new();
