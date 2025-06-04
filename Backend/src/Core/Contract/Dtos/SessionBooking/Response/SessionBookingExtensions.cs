@@ -22,7 +22,7 @@ public static class SessionBookingExtensions
     }
 
     public static AvailableMentorForBookingResponse CreateAvailableMentorForBookingResponse(
-        User user, Schedules earliestSchedule)
+        User user, Schedules earliestWorkingSchedule)
     {
         return new AvailableMentorForBookingResponse
         {
@@ -30,8 +30,8 @@ public static class SessionBookingExtensions
             MentorName = user.FullName,
             MentorExpertise = user.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
             MentorAvatarUrl = user.ProfilePhotoUrl,
-            WorkingEndTime = earliestSchedule.StartHour,
-            WorkingStartTime = earliestSchedule.EndHour
+            WorkingStartTime = earliestWorkingSchedule.StartHour,
+            WorkingEndTime = earliestWorkingSchedule.EndHour
         };
     }
 
