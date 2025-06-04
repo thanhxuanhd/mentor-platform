@@ -1,9 +1,4 @@
 import type { Mentor } from "./components/MentorSelectionModal"
-import {
-  VideoCameraOutlined,
-  UserOutlined,
-  HomeOutlined,
-} from "@ant-design/icons"
 
 export const mentors: Mentor[] = [
   {
@@ -57,25 +52,4 @@ export const timeSlots = [
   "1:30 PM",
   "2:00 PM",
   "2:30 PM",
-]
-
-export const sessionTypes = [
-  {
-    id: "virtual",
-    title: "Virtual Session",
-    icon: <VideoCameraOutlined className="text-2xl text-gray-400" />,
-    description: "Online video call",
-  },
-  {
-    id: "in-person",
-    title: "In-Person Session",
-    icon: <UserOutlined className="text-2xl text-gray-400" />,
-    description: "Face-to-face meeting",
-  },
-  {
-    id: "on-site",
-    title: "On-Site Session",
-    icon: <HomeOutlined className="text-2xl text-gray-400" />,
-    description: "At your location",
-  },
 ]
