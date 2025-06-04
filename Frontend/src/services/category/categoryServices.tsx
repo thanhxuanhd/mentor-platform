@@ -45,3 +45,8 @@ export const deleteCategory = async (categoryId: string) => {
   const response = await axiosClient.delete(`categories/${categoryId}`);
   return response.data;
 };
+
+export const getCoursesByCategoryId = async (categoryId: string) => {
+  const response = await axiosClient.get(`categories/${categoryId}/courses`);
+  return response.data.value;
+}
