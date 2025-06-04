@@ -1,4 +1,5 @@
-﻿using Application.Services.Authentication;
+﻿using Application.Services.ActivityLogs;
+using Application.Services.Authentication;
 using Application.Services.Availabilities;
 using Application.Services.Categories;
 using Application.Services.CourseResources;
@@ -25,6 +26,7 @@ public static class ConfigureServices
         services.AddScoped<IExpertiseService, ExpertiseService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IMentorApplicationService, MentorApplicationService>();
+        services.AddScoped<IActivityLogService, ActivityLogService>();
 
         return services;
     }

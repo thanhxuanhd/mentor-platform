@@ -22,6 +22,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UserTeachingApproach> UserTeachingApproaches { get; set; }
     public DbSet<MentorApplication> MentorApplications { get; set; }
     public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }
+    public DbSet<ActivityLog> ActivityLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
