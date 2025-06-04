@@ -130,12 +130,13 @@ public class SessionBookingService(
                 HttpStatusCode.BadRequest);
         }
 
-        return await RequestBookingInternalAsync(timeSlot, user);
+        return await RequestBookingInternalAsync(timeSlot, user, request.SessionType);
     }
 
     private async Task<Result<SessionSlotStatusResponse>> RequestBookingInternalAsync(
         MentorAvailableTimeSlot timeSlot,
-        User learner)
+        User learner,
+        SessionType sessionType)
     {
         if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
@@ -150,7 +151,7 @@ public class SessionBookingService(
                 HttpStatusCode.Conflict);
         }
 
-        var bookingSession = mentorAvailableTimeSlotRepository.AddNewBookingSession(timeSlot, learner.Id);
+        var bookingSession = mentorAvailableTimeSlotRepository.AddNewBookingSession(timeSlot, sessionType, learner.Id);
         await mentorAvailableTimeSlotRepository.SaveChangesAsync();
 
         return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);

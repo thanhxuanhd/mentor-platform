@@ -60,7 +60,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
             .FirstOrDefaultAsync(mt => mt.Id == id);
     }
 
-    public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, Guid learnerId)
+    public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId)
     {
         if (timeSlot.Sessions.Any(sessions => sessions.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
@@ -71,7 +71,8 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
         {
             Status = SessionStatus.Pending,
             LearnerId = learnerId,
-            TimeSlot = timeSlot
+            TimeSlot = timeSlot,
+            Type = sessionType
         };
 
         timeSlot.Sessions.Add(bookingSession);
