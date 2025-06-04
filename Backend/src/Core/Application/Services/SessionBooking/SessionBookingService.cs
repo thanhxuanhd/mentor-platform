@@ -13,7 +13,6 @@ namespace Application.Services.SessionBooking;
 public class SessionBookingService(
     IUserRepository userRepository,
     ISessionsRepository sessionBookingRepository,
-    IScheduleRepository scheduleRepository,
     IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository,
     IEmailService emailService) : ISessionBookingService
 {
@@ -57,7 +56,7 @@ public class SessionBookingService(
         foreach (var mentorAvailableTimeSlot in availableMentorForBooking.Items)
         {
             var schedules = mentorAvailableTimeSlot.Schedules;
-            var user = await userRepository.GetUserDetailAsync(schedules!.MentorId);
+            var user = await userRepository.GetUserDetailAsync(schedules.MentorId);
             availableMentorForBookingWithMentorDetails.Add(
                 SessionBookingExtensions.CreateAvailableMentorForBookingResponse(user!, schedules));
         }
@@ -123,10 +122,10 @@ public class SessionBookingService(
         }
 
         var timeSlot = await mentorAvailableTimeSlotRepository.GetByIdAsync(request.TimeSlotId);
-        if (timeSlot == null || timeSlot.Schedules.Mentor.Status != UserStatus.Active)
+        if (timeSlot == null)
         {
             return Result.Failure<SessionSlotStatusResponse>(
-                "Selected slot is unavailable.",
+                "Booking Session not found.",
                 HttpStatusCode.BadRequest);
         }
 
@@ -151,7 +150,7 @@ public class SessionBookingService(
                 HttpStatusCode.Conflict);
         }
 
-        var bookingSession = mentorAvailableTimeSlotRepository.AddNewBookingSession(timeSlot, sessionType, learner.Id);
+        var bookingSession = sessionBookingRepository.AddNewBookingSession(timeSlot, sessionType, learner.Id);
         await mentorAvailableTimeSlotRepository.SaveChangesAsync();
 
         return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
@@ -176,21 +175,14 @@ public class SessionBookingService(
                 HttpStatusCode.NotFound);
         }
 
-        if (bookingSession.TimeSlot.Schedules.Mentor.Status != UserStatus.Active)
-        {
-            return Result.Failure<SessionSlotStatusResponse>(
-                "Selected slot is unavailable.",
-                HttpStatusCode.BadRequest);
-        }
-
         return await AcceptBookingInternalAsync(bookingSession, user);
     }
 
-    private async Task<Result<SessionSlotStatusResponse>> AcceptBookingInternalAsync(Sessions sessionsSession,
+    private async Task<Result<SessionSlotStatusResponse>> AcceptBookingInternalAsync(Sessions bookingSession,
         User learner)
     {
-        var timeSlot = sessionsSession.TimeSlot;
-        sessionBookingRepository.MentorAcceptBookingSession(sessionsSession, learner.Id);
+        var timeSlot = bookingSession.TimeSlot;
+        sessionBookingRepository.MentorAcceptBookingSession(bookingSession, learner.Id);
         await sessionBookingRepository.SaveChangesAsync();
 
         var mailSent =
@@ -207,7 +199,7 @@ public class SessionBookingService(
                 HttpStatusCode.InternalServerError);
         }
 
-        return Result.Success(sessionsSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
+        return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
 
     public async Task<Result<SessionSlotStatusResponse>> CancelBookingAsync(Guid bookingSessionId,
@@ -229,25 +221,32 @@ public class SessionBookingService(
                 HttpStatusCode.NotFound);
         }
 
-        // if (bookingSession.TimeSlot.Schedules.Mentor.Status != UserStatus.Active)
-        // {
-        //     return Result.Failure<SessionSlotStatusResponse>(
-        //         "Selected slot is unavailable.",
-        //         HttpStatusCode.BadRequest);
-        // }
-
         return await CancelBookingInternalAsync(bookingSession, user);
     }
 
-    private async Task<Result<SessionSlotStatusResponse>> CancelBookingInternalAsync(Sessions sessionsSession,
-        User cancellingLearner)
+    private async Task<Result<SessionSlotStatusResponse>> CancelBookingInternalAsync(Sessions bookingSession,
+        User cancellingLearner, bool sendMail = false)
     {
-        var timeSlot = sessionsSession.TimeSlot;
-        sessionBookingRepository.MentorCancelBookingSession(sessionsSession, cancellingLearner.Id);
+        sessionBookingRepository.CancelBookingSession(bookingSession, cancellingLearner.Id);
         await sessionBookingRepository.SaveChangesAsync();
 
-        // TODO: sending email?
+        if (sendMail)
+        {
+            var mailSent =
+                await emailService.SendEmailAsync(cancellingLearner.Email,
+                    EmailConstants.SUBJECT_MEETING_BOOKING_CANCELLED,
+                    EmailConstants.BodyMeetingBookingConfirmationEmail(cancellingLearner.FullName,
+                        new DateTime(bookingSession.TimeSlot.Date, bookingSession.TimeSlot.EndTime),
+                        bookingSession.TimeSlot.Schedules.Mentor.FullName));
 
-        return Result.Success(sessionsSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
+            if (!mailSent)
+            {
+                return Result.Failure<SessionSlotStatusResponse>(
+                    "Failed to send email",
+                    HttpStatusCode.InternalServerError);
+            }
+        }
+
+        return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
 }
