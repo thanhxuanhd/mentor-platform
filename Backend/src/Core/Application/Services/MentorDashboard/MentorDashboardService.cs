@@ -11,7 +11,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
 {
     public async Task<Result<GetMentorDashboardResponse>> GetMentorDashboardAsync(Guid mentorId)
     {
-        User mentor = await userRepository.GetByIdAsync(mentorId, c => c.);
+        User? mentor = await userRepository.GetByIdAsync(mentorId, c => c.Courses!);
 
         if (mentor == null)
         {
@@ -33,7 +33,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         HashSet<Guid> uniqueLearners = new();
         if (upcomingSchedule != null)
         {
-            foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots)
+        foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots!)
             {
                 foreach (var session in timeSlot.Sessions)
                 {
