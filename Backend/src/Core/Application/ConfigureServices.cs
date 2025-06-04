@@ -1,4 +1,5 @@
 ﻿using Application.Services.ActivityLogs;
+using Application.Services.AdminDashboards;
 using Application.Services.Authentication;
 using Application.Services.Availabilities;
 using Application.Services.Categories;
@@ -33,6 +34,7 @@ public static class ConfigureServices
         services.AddScoped<IMentorDashboardService, MentorDashboardService>();
         services.AddScoped<IMentorApplicationService, MentorApplicationService>();
         services.AddScoped<IActivityLogService, ActivityLogService>();
+        services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
         return services;
     }

@@ -33,7 +33,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         HashSet<Guid> uniqueLearners = new();
         if (upcomingSchedule != null)
         {
-        foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots!)
+            foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots!)
             {
                 foreach (var session in timeSlot.Sessions)
                 {
