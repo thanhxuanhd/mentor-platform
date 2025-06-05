@@ -7,6 +7,7 @@ export const PAGE_ENDPOINT_URL = {
   VIEW_PROFILE: "/profile",
   COURSE_MANAGEMENT: '/courses',
   MENTOR_APPLICATION: '/mentor-application',
+  AVAILABILITY: '/availability',
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
 };
