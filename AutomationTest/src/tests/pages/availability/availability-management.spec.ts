@@ -20,7 +20,7 @@ test.describe('@Availability Availability management tests', () => {
             await availabilityPage.clickSaveChangesButton();
         });
         await test.step('Verify system behavior', async () => {
-            await availabilityPage.expectFirstTimeSlot();
+            await availabilityPage.expectFirstTimeSlotAfterCurrentTime();
         });
     });
 

@@ -108,7 +108,7 @@ export class AvailabilityPage extends BasePage {
         await this.click(this.BTN_SAVECHANGES_LOCATOR);
     }
 
-    async expectFirstTimeSlot() {
+    async expectFirstTimeSlotAfterCurrentTime() {
         const timeRangeText = await this.TBL_FIRSTTIMESLOT_LOCATOR.locator('div').first().innerText();
         const startTimeString = timeRangeText.split(' - ')[0]; // "00:30"
 
