@@ -1,16 +1,13 @@
-import { Button } from "antd"
-import type { Dayjs } from "dayjs"
-import dayjs from "dayjs"
-import {
-  LeftOutlined,
-  RightOutlined,
-} from "@ant-design/icons"
+import { Button } from "antd";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 
 interface CalendarComponentProps {
-  selectedDate: Dayjs | null
-  currentMonth: Dayjs
-  onDateSelect: (date: Dayjs) => void
-  onMonthChange: (month: Dayjs) => void
+  selectedDate: Dayjs | null;
+  currentMonth: Dayjs;
+  onDateSelect: (date: Dayjs) => void;
+  onMonthChange: (month: Dayjs) => void;
 }
 
 export function CalendarComponent({
@@ -20,6 +17,7 @@ export function CalendarComponent({
   onMonthChange,
 }: CalendarComponentProps) {
   const today = dayjs();
+  const nextMonth = today.add(1, "month");
 
   // Get the start of the month
   const startOfMonth = currentMonth.startOf("month");
@@ -27,8 +25,8 @@ export function CalendarComponent({
 
   // Adjust startOfWeek to Monday
   const startOfWeek = startOfMonth.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-  const startDate = startOfMonth.subtract((startOfWeek === 0 ? 6 : startOfWeek - 1), "day");
-  const endDate = endOfMonth.endOf("week"); // This will still work as we adjust the start
+  const startDate = startOfMonth.subtract(startOfWeek === 0 ? 6 : startOfWeek - 1, "day");
+  const endDate = endOfMonth.endOf("week");
 
   const days = [];
   let current = startDate;
@@ -41,11 +39,17 @@ export function CalendarComponent({
   const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
   const handlePreviousMonth = () => {
-    onMonthChange(currentMonth.subtract(1, "month"));
+    // Chỉ cho phép quay lại nếu không phải là tháng hiện tại
+    if (!currentMonth.isSame(today, "month")) {
+      onMonthChange(currentMonth.subtract(1, "month"));
+    }
   };
 
   const handleNextMonth = () => {
-    onMonthChange(currentMonth.add(1, "month"));
+    // Chỉ cho phép tiến tới nếu không phải là tháng tiếp theo
+    if (!currentMonth.isSame(nextMonth, "month")) {
+      onMonthChange(currentMonth.add(1, "month"));
+    }
   };
 
   return (
@@ -56,7 +60,7 @@ export function CalendarComponent({
           icon={<LeftOutlined />}
           className="text-white hover:text-orange-400"
           onClick={handlePreviousMonth}
-          disabled={currentMonth.isSame(today, "month")}
+          disabled={currentMonth.isSame(today, "month")} // Vô hiệu hóa nút Previous khi ở tháng hiện tại
         />
         <h3 className="text-white text-lg font-medium">{currentMonth.format("MMMM YYYY")}</h3>
         <Button
@@ -64,6 +68,7 @@ export function CalendarComponent({
           icon={<RightOutlined />}
           className="text-white hover:text-orange-400"
           onClick={handleNextMonth}
+          disabled={currentMonth.isSame(nextMonth, "month")} // Vô hiệu hóa nút Next khi ở tháng tiếp theo
         />
       </div>
 
