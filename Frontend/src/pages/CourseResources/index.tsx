@@ -23,6 +23,7 @@ import { resourceService } from "../../services/resource/resourceService";
 import CourseResourceModal from "./components/CourseResourceModal"; // Import the modal
 import { useAuth } from "../../hooks";
 import { downloadFile, getFileNameFromUrl } from "../../utils/FileHelper";
+import { applicationRole } from "../../constants/role";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
@@ -242,16 +243,17 @@ export default function CourseResourcesPage() {
           name="roleSegment"
           className="h-content!"
         />
-        {/* { user?.role === } */}
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleCreateResource}
-          name=""
-          size="large"
-        >
-          Add New Resource
-        </Button>
+        {user?.role === applicationRole.MENTOR && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={handleCreateResource}
+            name=""
+            size="large"
+          >
+            Add New Resource
+          </Button>
+        )}
       </div>
       {loading && <Spin tip="Loading..." size="large" />}
       {resourcesData.length === 0 ? (
@@ -295,25 +297,33 @@ export default function CourseResourcesPage() {
                     >
                       Download
                     </Button>
-                    <Button
-                      size="large"
-                      icon={<EditOutlined />}
-                      onClick={() => handleEditResource(resource)}
-                    >
-                      Edit
-                    </Button>
-                    <Tooltip title="Delete Resource">
-                      <Popconfirm
-                        title="Are you sure to delete this resource?"
-                        onConfirm={() => handleDeleteResource(resource.id)}
-                        okText="Yes"
-                        cancelText="No"
-                      >
-                        <Button danger size="large" icon={<DeleteOutlined />}>
-                          Delete
+                    {user?.role === applicationRole.MENTOR && (
+                      <>
+                        <Button
+                          size="large"
+                          icon={<EditOutlined />}
+                          onClick={() => handleEditResource(resource)}
+                        >
+                          Edit
                         </Button>
-                      </Popconfirm>
-                    </Tooltip>
+                        <Tooltip title="Delete Resource">
+                          <Popconfirm
+                            title="Are you sure to delete this resource?"
+                            onConfirm={() => handleDeleteResource(resource.id)}
+                            okText="Yes"
+                            cancelText="No"
+                          >
+                            <Button
+                              danger
+                              size="large"
+                              icon={<DeleteOutlined />}
+                            >
+                              Delete
+                            </Button>
+                          </Popconfirm>
+                        </Tooltip>
+                      </>
+                    )}
                   </div>,
                 ]}
               >
