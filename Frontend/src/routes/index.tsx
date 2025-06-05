@@ -19,8 +19,8 @@ import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
-import AvailabilityManager from "../pages/Availability";
 import MentorDashboard from "../pages/Dashboard/MentorDashboard";
+import AvailabilityManager from "../pages/Availability";
 
 const AppRoutes = () => {
   const location = useLocation();
