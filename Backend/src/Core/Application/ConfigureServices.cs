@@ -26,6 +26,6 @@ public static class ConfigureServices
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IMentorApplicationService, MentorApplicationService>();
 
-                return services;
-        }
+        return services;
+    }
 }

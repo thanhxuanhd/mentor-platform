@@ -86,12 +86,14 @@ public static class ConfigureServices
             };
         });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(UserRole.Admin.ToString()));
-            options.AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(UserRole.Mentor.ToString()));
-            options.AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(UserRole.Learner.ToString()));
-        });
+        services.AddAuthorizationBuilder()
+            .AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(nameof(UserRole.Admin)))
+            .AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(nameof(UserRole.Mentor)))
+            .AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(nameof(UserRole.Learner)))
+            .AddPolicy(CourseResourcePolicyName.UserCanEditCoursePolicyName,
+                policy => policy.Requirements.Add(new UserCanEditCourseRequirement()));
+
+        services.AddTransient<IAuthorizationHandler, UserCanEditCourseAccessHandler>();
 
         return services;
     }

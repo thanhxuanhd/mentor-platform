@@ -221,7 +221,7 @@ public class CategoryServiceTest
 
     [Test]
     public async Task FilterCourseByCategoryAsync_CategoryNotFound_ReturnsNotFound()
-    {        
+    {
         // Arrange
         var categoryId = Guid.NewGuid();
         _mockCategoryRepository.Setup(repo => repo.GetByIdAsync(categoryId, null)).ReturnsAsync(default(Category));
