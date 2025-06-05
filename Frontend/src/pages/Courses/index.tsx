@@ -15,7 +15,7 @@ import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
 import { CourseTable } from "./components/CourseTable.tsx";
 import { CourseForm } from "./components/CourseForm.tsx";
 
-import { CourseResource } from "./components/CourseResource.tsx";
+import { CourseResourceDialog } from "./components/CourseResourceDialog.tsx";
 import { courseService } from "../../services/course";
 import { categoryService } from "../../services/category";
 import { mentorService } from "../../services/mentor";
@@ -79,7 +79,15 @@ const Page: React.FC = () => {
       setIsRefreshing(true);
       refreshData();
     }
-  }, [categoryId, difficulty, keyword, mentorId, pageIndex, pageSize, refreshTrigger]);
+  }, [
+    categoryId,
+    difficulty,
+    keyword,
+    mentorId,
+    pageIndex,
+    pageSize,
+    refreshTrigger,
+  ]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -197,14 +205,14 @@ const Page: React.FC = () => {
                   loading: loading || isRefreshing,
                   pagination: {
                     showSizeChanger: true,
-                    "onShowSizeChange": (current, pageSize) => {
+                    onShowSizeChange: (current, pageSize) => {
                       setPageIndex(current);
                       setPageSize(pageSize);
                     },
                     pageSize: pageSize,
                     total: totalCount,
                     position: ["bottomRight"],
-                    "showTotal": (total, range) =>
+                    showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
                     onChange: (pageNumber, pageSize) => {
                       setPageIndex(pageNumber);
@@ -268,9 +276,8 @@ const Page: React.FC = () => {
                   setPopoverTarget(targetAction);
                 }}
               />
-              <CourseResource
+              <CourseResourceDialog
                 course={item}
-                onDownload={(material) => window.alert(material.resourceUrl)}
                 active={popoverTarget === CoursePopoverTarget.resource}
                 onClose={(targetAction) => {
                   if (targetAction === "refresh") {
