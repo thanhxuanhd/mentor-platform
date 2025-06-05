@@ -40,7 +40,7 @@ public class SessionBookingController(
     
     [HttpGet("available-mentors/timeslots/{mentorId:guid}")]
     [Authorize(Policy = RequiredRole.Learner)]
-    public async Task<IActionResult> GetAllTimeSlotByMentorAndDateAsync(Guid mentorId,
+    public async Task<IActionResult> GetAllTimeSlotByMentorAndDate(Guid mentorId,
         [FromQuery] AvailableTimeSlotByDateListRequest request)
     {
         var learnerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
