@@ -73,7 +73,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
             TotalCourses = totalCourses,
             UpcomingSessions = upcomingSessions,
             CompletedSessions = completedSessions,
-            UpcomingSessionsList = upcomingSessionsList.OrderByDescending(s => s.ScheduledDate).ThenBy(s => s.TimeRange)
+            UpcomingSessionsList = upcomingSessionsList.OrderBy(s => s.ScheduledDate).ThenBy(s => s.TimeRange)
         };
 
         return Result.Success(result, HttpStatusCode.OK);
