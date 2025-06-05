@@ -17,7 +17,7 @@ export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
 };
 
 export type CourseMimeType = "application/pdf" | "application/octet-stream";
-export const CourseMediaTypeEnumMember: Record<CourseMimeType, string> = {
+export const CourseResourceTypeEnumMember: Record<CourseMimeType, string> = {
   "application/pdf": "pdf",
   "application/octet-stream": "binary",
 };
@@ -27,8 +27,9 @@ export const initialFormData: CourseFormDataOptions = {
   title: "",
   description: "",
   categoryId: undefined,
+  categoryName: undefined,
   status: "draft",
-  dueDate: dayjs().add(1, "day").toString(),
+  dueDate: dayjs().toString(),
   difficulty: "beginner",
   tags: [],
 };

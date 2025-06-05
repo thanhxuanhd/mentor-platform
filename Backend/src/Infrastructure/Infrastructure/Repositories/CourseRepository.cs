@@ -1,9 +1,9 @@
-using System.Linq.Expressions;
 using Contract.Repositories;
 using Domain.Entities;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories;
 
@@ -16,7 +16,7 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
             .Include(c => c.Category)
             .Include(c => c.Mentor)
             .Include(c => c.Tags)
-            .Include(c => c.Items)
+            .Include(c => c.Resources)
             .AsSplitQuery()
             .AsQueryable();
         return query;
@@ -29,7 +29,7 @@ public class CourseRepository(ApplicationDbContext context) : BaseRepository<Cou
             .Include(c => c.Category)
             .Include(c => c.Mentor)
             .Include(c => c.Tags)
-            .Include(c => c.Items)
+            .Include(c => c.Resources)
             .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.Id == id);
     }
