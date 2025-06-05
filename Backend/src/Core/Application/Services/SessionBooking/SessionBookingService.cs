@@ -28,7 +28,7 @@ public class SessionBookingService(
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
     }
 
-    public async Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotByMentorAsync(
+    public async Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(
         Guid mentorId, AvailableTimeSlotListRequest request)
     {
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
@@ -62,8 +62,9 @@ public class SessionBookingService(
         return Result.Success(availableMentorForBookingWithMentorDetails, HttpStatusCode.OK);
     }
 
-    public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllAvailableTimeSlotByMentorAndDateAsync(
-        Guid mentorId, AvailableTimeSlotByDateListRequest request)
+    public async Task<Result<List<TimeSlotByMentorAndDateResponse>>> GetAllTimeSlotByMentorAndDateAsync(Guid mentorId,
+        Guid learnerId,
+        AvailableTimeSlotByDateListRequest request)
     {
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
 
@@ -72,7 +73,7 @@ public class SessionBookingService(
                 mentorAvailableTimeSlots
                     .Where(mats => mats.Schedules.MentorId == mentorId)
                     .Where(mats => mats.Date == request.Date)
-                    .Select(mats => mats.ToAvailableTimeSlotResponse()));
+                    .Select(mats => SessionBookingExtensions.CreateTimeSlotByMentorAndDateListResponse(mats, learnerId)));
 
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
     }

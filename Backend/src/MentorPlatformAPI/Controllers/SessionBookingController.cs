@@ -23,11 +23,11 @@ public class SessionBookingController(
     }
 
     [HttpGet("available-timeslots/{mentorId:guid}")]
-    [Authorize(Policy = RequiredRole.Admin)]
-    public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAsync(Guid mentorId,
+    public async Task<IActionResult> GetAllTimeSlotByMentorAsync(Guid mentorId,
         [FromQuery] AvailableTimeSlotListRequest request)
     {
-        var result = await sessionBookingService.GetAllAvailableTimeSlotByMentorAsync(mentorId, request);
+        // TODO: Admin + Resource Owner
+        var result = await sessionBookingService.GetAllTimeSlotByMentorAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -37,13 +37,14 @@ public class SessionBookingController(
         var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync();
         return StatusCode((int)result.StatusCode, result);
     }
-
+    
     [HttpGet("available-mentors/timeslots/{mentorId:guid}")]
-    public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAndDateAsync(Guid mentorId,
+    [Authorize(Policy = RequiredRole.Learner)]
+    public async Task<IActionResult> GetAllTimeSlotByMentorAndDateAsync(Guid mentorId,
         [FromQuery] AvailableTimeSlotByDateListRequest request)
     {
-        // TODO: resource owner authorization + admin
-        var result = await sessionBookingService.GetAllAvailableTimeSlotByMentorAndDateAsync(mentorId, request);
+        var learnerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await sessionBookingService.GetAllTimeSlotByMentorAndDateAsync(mentorId, learnerId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 

@@ -16,8 +16,25 @@ public static class SessionBookingExtensions
             StartTime = mats.StartTime,
             EndTime = mats.EndTime,
             Date = mats.Date,
-            IsBooked = mats.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled)
-            //SessionStatus = mats.Sessions.Select(s => s.Status)
+            IsBooked = mats.Sessions.Any(s =>
+                s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled)
+        };
+    }
+
+    public static TimeSlotByMentorAndDateResponse CreateTimeSlotByMentorAndDateListResponse(
+        MentorAvailableTimeSlot mats, Guid learnerId)
+    {
+        return new TimeSlotByMentorAndDateResponse
+        {
+            Id = mats.Id,
+            MentorId = mats.Schedules.MentorId,
+            MentorName = mats.Schedules.Mentor.FullName,
+            StartTime = mats.StartTime,
+            EndTime = mats.EndTime,
+            Date = mats.Date,
+            IsBooked = mats.Sessions.Any(s =>
+                s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled),
+            LearnerCurrentBookingStatus = mats.Sessions.Where(s => s.LearnerId == learnerId).OrderBy(s => s.BookedOn).FirstOrDefault()?.Status
         };
     }
 
