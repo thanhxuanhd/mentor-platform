@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
-import DashboardPage from "../pages/Dashboard";
+import DashboardPage from "../pages/Dashboard/LearnerDashboard";
 import UsersPage from "../pages/Users";
 import CategoriesPage from "../pages/Categories";
 import CoursesPage from "../pages/Courses";
@@ -29,7 +29,7 @@ const AppRoutes = () => {
         <Route path="auth/callback/:provider" element={<OAuthCallback />} />
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
-      </Route>    
+      </Route>
       <Route
         element={
           <ProtectedRoute
