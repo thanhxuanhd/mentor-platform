@@ -1,3 +1,4 @@
+import type { FileType } from "../../types/enums/FileType";
 import { axiosClient } from "../apiClient";
 
 interface DashboardResponse {
@@ -7,6 +8,10 @@ interface DashboardResponse {
   totalResources: number;
   sessionsThisWeek: number;
   pendingApplications: number;
+  resourceTypeCounts: {
+    resourceType: keyof typeof FileType;
+    count: number;
+  }[];
 }
 
 export const dashboardService = {

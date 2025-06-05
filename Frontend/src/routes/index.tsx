@@ -20,7 +20,7 @@ import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import AvailabilityManager from "../pages/Availability";
-import AdminDashboard from "../pages/Dashboard/Admin";
+import AdminDashboard from "../pages/Dashboard/AdminDashboard";
 
 const AppRoutes = () => {
   const location = useLocation();

@@ -3,6 +3,7 @@ import type {
   ActivityLogResponse,
 } from "../../types/ActivityLogType";
 import type { PaginatedList } from "../../types/Pagination";
+import { getSystemEndDate, getSystemStartDate } from "../../utils/CurrentDate";
 import { axiosClient } from "../apiClient";
 
 export const activityLogService = {
@@ -12,8 +13,8 @@ export const activityLogService = {
     try {
       const response = await axiosClient.get("/activity-logs", {
         params: {
-          startDateTime: params.startDateTime?.toISOString() || undefined,
-          endDateTime: params.endDateTime?.toISOString() || undefined,
+          startDateTime: getSystemStartDate(params.startDateTime) || undefined,
+          endDateTime: getSystemEndDate(params.endDateTime) || undefined,
           keyword: params.keyword || undefined,
           pageSize: params.pageSize ?? 5,
           pageIndex: params.pageIndex ?? 1,

@@ -15,7 +15,9 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
 {
     private readonly Dictionary<Type, IEntityLoggingStrategy> _loggingStrategies = new()
     {
-        { typeof(User), new UserLoggingStrategy() }
+        { typeof(User), new UserLoggingStrategy() },
+        { typeof(Course), new CourseLoggingStrategy() },
+        { typeof(Category), new CategoryLoggingStrategy() }
     };
     private readonly List<ActivityLog> _pendingLogs = new();
 
@@ -55,7 +57,7 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
             {
                 UserId = user?.Id ?? null,
                 Action = action,
-                Timestamp = DateTime.UtcNow
+                Timestamp = DateTime.Now
             });
         }
 

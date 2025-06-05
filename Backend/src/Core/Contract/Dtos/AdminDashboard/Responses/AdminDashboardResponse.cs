@@ -8,4 +8,5 @@ public class AdminDashboardResponse
     public int TotalResources { get; set; }
     public int SessionsThisWeek { get; set; }
     public int PendingApplications { get; set; }
+    public List<ResourceTypeCountResponse> ResourceTypeCounts { get; set; } = [];
 }

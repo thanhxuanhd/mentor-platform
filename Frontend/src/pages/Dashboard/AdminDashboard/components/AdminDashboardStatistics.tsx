@@ -9,6 +9,7 @@ import {
 } from "@ant-design/icons"
 import { useNavigate } from "react-router-dom"
 import type { DashboardMetrics } from "../../../../types/DashboardType"
+import { getFileTypeString } from "../../../../types/enums/FileType"
 
 const { Text } = Typography
 
@@ -72,15 +73,13 @@ export default function AdminDashboardStatistics({ metrics }: AdminDashboardStat
             <Text className="text-slate-300">Total Resources</Text>
           </div>
         </div>
-        <div className="space-y-1">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Videos</span>
-            <span className="text-purple-300">156</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Documents</span>
-            <span className="text-purple-300">186</span>
-          </div>
+        <div className="space-y-2">
+          {metrics?.resourceTypeCounts.map((resource, index) => (
+            <div key={index} className="flex justify-between text-sm">
+              <span className="text-slate-400">{getFileTypeString(resource.resourceType)}</span>
+              <span className="text-purple-300">{resource.count}</span>
+            </div>
+          ))}
         </div>
       </Card>
 

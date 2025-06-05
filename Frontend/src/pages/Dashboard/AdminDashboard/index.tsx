@@ -49,9 +49,9 @@ export default function AdminDashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      setLoading(true)
-      const data = await dashboardService.getAdminDashboard()
-      setMetrics(data)
+      setLoading(true);
+      const response = await dashboardService.getAdminDashboard();
+      setMetrics(response)
     } catch (error: any) {
       setNotify({
         type: "error",
@@ -91,6 +91,7 @@ export default function AdminDashboard() {
   }, [fetchData])
 
   useEffect(() => {
+    console.log(activityLogFilter)
     fetchActivityLog(activityLogFilter)
   }, [fetchActivityLog])
 

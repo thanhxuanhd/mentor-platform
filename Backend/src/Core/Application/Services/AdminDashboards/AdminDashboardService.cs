@@ -36,10 +36,21 @@ public class AdminDashboardService(
             .Where(c => c.Course.Status != CourseStatus.Archived);
 
         var sessionsThisWeek = sessionRepository.GetAll()
-            .Where(s => s.TimeSlot.Date >= startOfWeekDateOnly);
+            .Where(s => s.TimeSlot.Date >= startOfWeekDateOnly)
+            .Where(s => s.Status == SessionStatus.Completed || s.Status == SessionStatus.Approved);
 
         var pendingApplications = mentorApplicationRepository.GetAll()
             .Where(ma => ma.Status == ApplicationStatus.Submitted);
+
+        var topResourceTypes = activeResources
+            .GroupBy(r => r.ResourceType)
+            .Select(g => new ResourceTypeCountResponse
+            {
+                ResourceType = g.Key.ToString(),
+                Count = g.Count()
+            })
+            .OrderByDescending(ft => ft.Count)
+            .Take(2);
 
         var totalAdmins = await userRepository.CountAsync(activeAdmins);
         var totalMentors = await userRepository.CountAsync(activeMentors);
@@ -47,6 +58,7 @@ public class AdminDashboardService(
         var totalResources = await resourceRepository.CountAsync(activeResources);
         var totalSessionsThisWeek = await sessionRepository.CountAsync(sessionsThisWeek);
         var totalPendingApplications = await mentorApplicationRepository.CountAsync(pendingApplications);
+        var topResourceTypesList = await resourceRepository.ToListAsync(topResourceTypes);
 
         var response = new AdminDashboardResponse
         {
@@ -55,7 +67,8 @@ public class AdminDashboardService(
             TotalLearners = totalLearners,
             TotalResources = totalResources,
             SessionsThisWeek = totalSessionsThisWeek,
-            PendingApplications = totalPendingApplications
+            PendingApplications = totalPendingApplications,
+            ResourceTypeCounts = topResourceTypesList
         };
 
         return Result.Success(response, HttpStatusCode.OK);

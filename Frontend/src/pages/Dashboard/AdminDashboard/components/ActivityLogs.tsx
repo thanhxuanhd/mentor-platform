@@ -37,6 +37,7 @@ export default function ActivityLogTable({ items, loading, filter, pagination, o
   const handleDateChange = (
     dates: [dayjs.Dayjs | null, dayjs.Dayjs | null] | null
   ) => {
+    debugger;
     onFilter({
       ...filter,
       startDateTime: dates && dates[0] ? dates[0].toDate() : undefined,
