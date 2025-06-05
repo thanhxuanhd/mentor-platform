@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection.Metadata;
 
 namespace Infrastructure.Persistence.Data;
 
@@ -101,7 +102,7 @@ public static class ApplicationDbExtensions
                 {
                     Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                     FullName = "David Copperfield",
-                    Email = "ngominh24122001@gmail.com",
+                    Email = "David.Copperfield@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("mypassword"),
                     RoleId = learnerRole.Id,
                     Status = UserStatus.Active
@@ -119,7 +120,7 @@ public static class ApplicationDbExtensions
                 new User
                 {
                     Id = Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
-                    FullName = "Nguyen Van A",
+                    FullName = "Lerbon James",
                     Email = "nguyenvana@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("passA123"),
                     RoleId = learnerRole.Id,
@@ -128,8 +129,8 @@ public static class ApplicationDbExtensions
                 new User
                 {
                     Id = Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2"),
-                    FullName = "Tran Thi B",
-                    Email = "tranthib@mentorplatform.local",
+                    FullName = "Stephen Curry",
+                    Email = "ngominh24122001@gmail.com",
                     PasswordHash = PasswordHelper.HashPassword("passB123"),
                     RoleId = learnerRole.Id,
                     Status = UserStatus.Active

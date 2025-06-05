@@ -2,7 +2,7 @@ export interface SessionBookingRequest {
   id: string
   timeSlotId: string
   learnerId: string
-  status: "Pending" | "Approved" | "Completed" | "Cancelled" | "Rescheduled"
+  status: number | "Pending" | "Approved" | "Completed" | "Canceled" | "Rescheduled"
   type: number
   startTime: string
   endTime: string
@@ -24,12 +24,12 @@ export interface SessionBookingResponse {
 
 export const getStatusString = (
   numericStatus: number,
-): "Pending" | "Approved" | "Completed" | "Cancelled" | "Rescheduled" => {
-  const statusMap: { [key: number]: "Pending" | "Approved" | "Completed" | "Cancelled" | "Rescheduled" } = {
+): "Pending" | "Approved" | "Completed" | "Canceled" | "Rescheduled" => {
+  const statusMap: { [key: number]: "Pending" | "Approved" | "Completed" | "Canceled" | "Rescheduled" } = {
     0: "Pending",
     1: "Approved",
     2: "Completed",
-    3: "Cancelled",
+    3: "Canceled",
     4: "Rescheduled",
   }
   return statusMap[numericStatus] || "Pending"
@@ -40,7 +40,7 @@ export const getStatusNumber = (stringStatus: string): number => {
     Pending: 0,
     Approved: 1,
     Completed: 2,
-    Cancelled: 3,
+    Canceled: 3,
     Rescheduled: 4,
   }
   return statusMap[stringStatus] ?? 0

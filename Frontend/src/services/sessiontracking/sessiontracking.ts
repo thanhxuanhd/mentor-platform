@@ -13,7 +13,7 @@ export const sessionBookingService = {
         throw error
       })
   },
-  
+
   getSessionDetails: async (sessionId: string): Promise<SessionBookingRequest> => {
     return await axiosClient
       .get(`SessionBooking/request/get/${sessionId}`)
@@ -31,7 +31,7 @@ export const sessionBookingService = {
       Pending: 0,
       Approved: 1,
       Completed: 2,
-      Cancelled: 3,
+      Canceled: 3,
       Rescheduled: 4,
     }
 
@@ -61,15 +61,18 @@ export const sessionBookingService = {
       Pending: 0,
       Approved: 1,
       Completed: 2,
-      Cancelled: 3,
+      Canceled: 3,
       Rescheduled: 4,
     }
 
-    const requestData = { ...updateData }
-    if (requestData.status && typeof requestData.status === "string") {
-      const numericStatus = statusMap[requestData.status]
+    const requestData: Partial<SessionBookingRequest> = { ...updateData }
+
+    if (typeof updateData.status === "string") {
+      const numericStatus = statusMap[updateData.status]
       if (numericStatus !== undefined) {
-        requestData.status = numericStatus as any
+        requestData.status = numericStatus
+      } else {
+        throw new Error(`Invalid status: ${updateData.status}`)
       }
     }
 

@@ -42,7 +42,7 @@ interface Session {
   date: string
   startTime: string
   endTime: string
-  status: "Pending" | "Approved" | "Completed" | "Cancelled" | "Rescheduled"
+  status: "Pending" | "Approved" | "Completed" | "Canceled" | "Rescheduled"
   communicationMethod: "VideoCall" | "AudioCall" | "Chat"
   notes?: string
   studentEmail?: string
@@ -144,7 +144,7 @@ export default function ScheduleSession() {
     Pending: "orange",
     Approved: "blue",
     Completed: "green",
-    Cancelled: "red",
+    Canceled: "red",
     Rescheduled: "purple",
   }
 
@@ -152,7 +152,7 @@ export default function ScheduleSession() {
     Pending: <ExclamationCircleOutlined />,
     Approved: <CheckCircleOutlined />,
     Completed: <CheckCircleOutlined />,
-    Cancelled: <CloseCircleOutlined />,
+    Canceled: <CloseCircleOutlined />,
     Rescheduled: <ClockCircleOutlined />,
   }
 
@@ -196,11 +196,11 @@ export default function ScheduleSession() {
   useEffect(() => {
     loadSessions()
   }, [])
-
   const loadSessions = async () => {
     try {
       setLoading(true)
       const response = await sessionBookingService.getSessionBookings()
+      console.log("API sessions:", response)
 
       if (!response || !Array.isArray(response)) {
         throw new Error("Invalid response format")
@@ -210,8 +210,8 @@ export default function ScheduleSession() {
       setSessions(convertedSessions)
 
       console.log("Sessions loaded:", convertedSessions.length)
-    } catch (error: any) {
-      showNotification("error", `Failed to load sessions: ${error.message || "Unknown error"}`)
+    } catch (error: unknown) {
+      showNotification("error", `Failed to update session status: ${error}`)
       console.error("Error loading sessions:", error)
     } finally {
       setLoading(false)
@@ -220,12 +220,14 @@ export default function ScheduleSession() {
 
   const upcomingSessions = sessions.filter(
     (session) =>
-      (["Pending", "Approved"].includes(session.status) && dayjs(session.date).isAfter(dayjs(), "day")) ||
+      (["Pending", "Approved","Rescheduled"].includes(session.status) && dayjs(session.date).isAfter(dayjs(), "day")) ||
       dayjs(session.date).isSame(dayjs(), "day"),
   )
 
   const pastSessions = sessions.filter(
-    (session) => ["Completed", "Cancelled"].includes(session.status) || dayjs(session.date).isBefore(dayjs(), "day"),
+    (session) =>
+      ["Completed", "Canceled"].includes(session.status) ||
+      (dayjs(session.date).isBefore(dayjs(), "day") && !["Pending", "Approved"].includes(session.status)),
   )
 
   const handleStatusChange = async (sessionId: string, newStatus: Session["status"]) => {
@@ -238,9 +240,9 @@ export default function ScheduleSession() {
 
       await sessionBookingService.updateSessionStatus(sessionId, newStatus)
 
-      setSessions((prev) =>
-        prev.map((session) => (session.id === sessionId ? { ...session, status: newStatus } : session)),
-      )
+      setSessions((prevSessions) => prevSessions.map((s) => (s.id === sessionId ? { ...s, status: newStatus } : s)))
+
+      await loadSessions()
 
       switch (newStatus) {
         case "Approved":
@@ -249,15 +251,21 @@ export default function ScheduleSession() {
         case "Completed":
           showNotification("success", "Session completed! It will be moved to Past Sessions 📚")
           break
-        case "Cancelled":
-          showNotification("success", "Session cancelled successfully ❌")
+        case "Canceled":
+          showNotification("success", "Session cancelled successfully and moved to Past Sessions ❌")
           break
         default:
           showNotification("success", `Status updated to ${newStatus} successfully`)
           break
       }
-    } catch (error: any) {
-      showNotification("error", `Failed to update session status: ${error.message || "Unknown error"}`)
+    } catch (error: unknown) {
+      let errorMessage = "Unknown error"
+
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+
+      showNotification("error", `Failed to update session status: ${errorMessage}`)
       console.error("Error updating session status:", error)
     }
   }
@@ -350,7 +358,7 @@ export default function ScheduleSession() {
         )}
 
         {["Pending", "Approved"].includes(record.status) && (
-          <Button danger size="small" onClick={() => handleStatusChange(record.id, "Cancelled")}>
+          <Button danger size="small" onClick={() => handleStatusChange(record.id, "Canceled")}>
             Cancel
           </Button>
         )}
@@ -407,142 +415,115 @@ export default function ScheduleSession() {
   ]
 
   const upcomingColumns = [...getBaseColumns(), getActionsColumn()]
-  const pastColumns = [...getBaseColumns()] 
+  const pastColumns = [...getBaseColumns()]
 
   const RescheduleModal = () => {
-    const [newDate, setNewDate] = useState<dayjs.Dayjs | null>(null)
-    const [newStartTime, setNewStartTime] = useState<dayjs.Dayjs | null>(null)
-    const [newEndTime, setNewEndTime] = useState<dayjs.Dayjs | null>(null)
-    const [rescheduleReason, setRescheduleReason] = useState("")
-    const [validationError, setValidationError] = useState("")
+  const [newDate, setNewDate] = useState<dayjs.Dayjs | null>(null)
+  const [newStartTime, setNewStartTime] = useState<dayjs.Dayjs | null>(null)
+  const [newEndTime, setNewEndTime] = useState<dayjs.Dayjs | null>(null)
+  const [reason, setReason] = useState("")
+  const [error, setError] = useState("")
 
-    useEffect(() => {
-      if (selectedSession && isModalVisible) {
-        setNewDate(dayjs(selectedSession.date))
-        setNewStartTime(dayjs(selectedSession.startTime, "HH:mm:ss"))
-        setNewEndTime(dayjs(selectedSession.endTime, "HH:mm:ss"))
-        setRescheduleReason("")
-        setValidationError("")
-      }
-    }, [selectedSession, isModalVisible])
+  useEffect(() => {
+    if (selectedSession && isModalVisible) {
+      setNewDate(dayjs(selectedSession.date))
+      setNewStartTime(dayjs(selectedSession.startTime, "HH:mm:ss"))
+      setNewEndTime(dayjs(selectedSession.endTime, "HH:mm:ss"))
+      setReason("")
+      setError("")
+    }
+  }, [selectedSession, isModalVisible])
 
-    const handleSubmit = () => {
-      setValidationError("")
+  const roundToNearestHalfHour = (time: dayjs.Dayjs | null) => {
+    if (!time) return null
+    const minute = time.minute()
+    const roundedMinute = minute < 15 ? 0 : minute < 45 ? 30 : 0
+    const adjustedHour = minute >= 45 ? time.hour() + 1 : time.hour()
+    return time.set("hour", adjustedHour).set("minute", roundedMinute).set("second", 0)
+  }
 
-      if (newDate && newStartTime && newEndTime && selectedSession) {
-        // Validation: End time must be after start time
-        if (newEndTime.isBefore(newStartTime) || newEndTime.isSame(newStartTime)) {
-          setValidationError("Start time must be before end time")
-          return
-        }
-
-        const currentDateTime = dayjs()
-        const selectedDateTime = newDate.hour(newStartTime.hour()).minute(newStartTime.minute())
-
-        if (selectedDateTime.isBefore(currentDateTime)) {
-          setValidationError("Start time must be later than current time")
-          return
-        }
-
-        if (rescheduleReason.length > 100) {
-          setValidationError("Reason should not exceed 100 characters")
-          return
-        }
-
-        handleReschedule(
-          selectedSession.id,
-          newDate.format("YYYY-MM-DD"),
-          newStartTime.format("HH:mm:ss"),
-          newEndTime.format("HH:mm:ss"),
-          rescheduleReason,
-        )
-
-        setNewDate(null)
-        setNewStartTime(null)
-        setNewEndTime(null)
-        setRescheduleReason("")
-        setValidationError("")
-      } else {
-        setValidationError("Please fill in all required fields")
-      }
+  const handleSubmit = () => {
+    if (!newDate || !newStartTime || !newEndTime || !selectedSession) {
+      setError("Please fill in all fields")
+      return
     }
 
-    const handleModalClose = () => {
-      setIsModalVisible(false)
-      setValidationError("")
-      setNewDate(null)
-      setNewStartTime(null)
-      setNewEndTime(null)
-      setRescheduleReason("")
+    if (newEndTime.isSameOrBefore(newStartTime)) {
+      setError("End time must be after start time")
+      return
     }
 
-    return (
-      <Modal
-        title="Reschedule Session"
-        open={isModalVisible}
-        onCancel={handleModalClose}
-        onOk={handleSubmit}
-        okText="Reschedule"
-      >
-        <Space direction="vertical" style={{ width: "100%" }}>
-          {validationError && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded">{validationError}</div>
-          )}
+    if (newDate.isSame(dayjs(), "day") && newStartTime.isBefore(dayjs())) {
+      setError("Start time must be later than current time")
+      return
+    }
 
-          <div>
-            <label>New Date:</label>
-            <DatePicker
-              style={{ width: "100%", marginTop: 8 }}
-              value={newDate}
-              onChange={setNewDate}
-              disabledDate={(current) => current && current < dayjs().startOf("day")}
-            />
-          </div>
+    if (reason.length > 100) {
+      setError("Reason too long")
+      return
+    }
 
-          <div>
-            <label>Time:</label>
-            <Row gutter={8} style={{ marginTop: 8 }}>
-              <Col span={12}>
-                <TimePicker
-                  style={{ width: "100%" }}
-                  value={newStartTime}
-                  onChange={setNewStartTime}
-                  format="HH:mm"
-                  placeholder="Start Time"
-                />
-              </Col>
-              <Col span={12}>
-                <TimePicker
-                  style={{ width: "100%" }}
-                  value={newEndTime}
-                  onChange={setNewEndTime}
-                  format="HH:mm"
-                  placeholder="End Time"
-                />
-              </Col>
-            </Row>
-          </div>
-
-          <div>
-            <label>Reason for Reschedule:</label>
-            <TextArea
-              rows={3}
-              style={{ marginTop: 8 }}
-              value={rescheduleReason}
-              onChange={(e) => setRescheduleReason(e.target.value)}
-              placeholder="Please provide a reason for rescheduling..."
-              maxLength={100}
-              showCount
-            />
-          </div>
-        </Space>
-      </Modal>
+    handleReschedule(
+      selectedSession.id,
+      newDate.format("YYYY-MM-DD"),
+      newStartTime.format("HH:mm:ss"),
+      newEndTime.format("HH:mm:ss"),
+      reason
     )
   }
 
+  return (
+    <Modal title="Reschedule Session" open={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={handleSubmit}>
+      <Space direction="vertical" style={{ width: "100%" }}>
+        {error && <div className="text-red-600">{error}</div>}
+        <DatePicker
+          value={newDate}
+          onChange={setNewDate}
+          style={{ width: "100%" }}
+          disabledDate={(d) => d.isBefore(dayjs(), "day")}
+        />
+        <Row gutter={8}>
+          <Col span={12}>
+            <TimePicker
+              style={{ width: "100%" }}
+              value={newStartTime}
+              onChange={(val) => setNewStartTime(roundToNearestHalfHour(val))}
+              format="HH:mm"
+              placeholder="Start Time"
+              minuteStep={30}
+            />
+          </Col>
+          <Col span={12}>
+            <TimePicker
+              style={{ width: "100%" }}
+              value={newEndTime}
+              onChange={(val) => setNewEndTime(roundToNearestHalfHour(val))}
+              format="HH:mm"
+              placeholder="End Time"
+              minuteStep={30}
+            />
+          </Col>
+        </Row>
+        <TextArea
+          rows={3}
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          maxLength={100}
+          placeholder="Reason for rescheduling"
+          showCount
+        />
+      </Space>
+    </Modal>
+  )
+}
+
+
   const pendingSessions = sessions.filter((s) => s.status === "Pending").length
+  const approvedSessions = sessions.filter((s) => s.status === "Approved").length
   const completedSessions = sessions.filter((s) => s.status === "Completed").length
-  const totalActiveSessions = pendingSessions + completedSessions
+  const cancelledSessions = sessions.filter((s) => s.status === "Canceled").length
+  const rescheduledSessions = sessions.filter((s) => s.status === "Rescheduled").length
+  const totalActiveSessions = pendingSessions + completedSessions + approvedSessions + cancelledSessions + rescheduledSessions
 
   return (
     <div style={{ padding: "24px", minHeight: "100vh" }}>
@@ -555,14 +536,13 @@ export default function ScheduleSession() {
 
       <Card>
         <div style={{ marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "8px" }}>Mentor Dashboard</h1>
+          <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "8px" }}>Mentor Sessions Tracking</h1>
           <p style={{ color: "#666", marginBottom: "16px" }}>
             Manage your mentoring sessions and track your activities
           </p>
 
-          {/* Statistics Cards */}
           <Row gutter={16} style={{ marginBottom: "24px" }}>
-            <Col span={6}>
+            <Col span={4}>
               <Card>
                 <Statistic
                   title="Pending Sessions"
@@ -572,17 +552,17 @@ export default function ScheduleSession() {
                 />
               </Card>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <Card>
                 <Statistic
                   title="Approved Sessions"
-                  value={sessions.filter((s) => s.status === "Approved").length}
+                  value={approvedSessions}
                   valueStyle={{ color: "#1890ff" }}
                   prefix={<CheckCircleOutlined />}
                 />
               </Card>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
               <Card>
                 <Statistic
                   title="Completed Sessions"
@@ -592,16 +572,32 @@ export default function ScheduleSession() {
                 />
               </Card>
             </Col>
-            <Col span={6}>
+            <Col span={4}>
+              <Card>
+                <Statistic
+                  title="Cancelled Sessions"
+                  value={sessions.filter((s) => s.status === "Canceled").length}
+                  valueStyle={{ color: "#ff4d4f" }}
+                  prefix={<CloseCircleOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col span={4}>
+              <Card>
+                <Statistic
+                  title="Rescheduled Sessions"
+                  value={sessions.filter((s) => s.status === "Rescheduled").length}
+                  valueStyle={{ color: "#8a2be2" }}
+                  prefix={<ClockCircleOutlined />}
+                />
+              </Card>
+            </Col>
+            <Col span={4}>
               <Card>
                 <Statistic title="Total Sessions" value={totalActiveSessions} prefix={<CalendarOutlined />} />
               </Card>
             </Col>
           </Row>
-
-          <Button type="primary" onClick={loadSessions} loading={loading} style={{ marginBottom: "16px" }}>
-            Refresh Sessions
-          </Button>
         </div>
 
         <Tabs activeKey={activeTab} onChange={setActiveTab}>
@@ -623,7 +619,14 @@ export default function ScheduleSession() {
             />
           </TabPane>
 
-          <TabPane tab="Past Sessions" key="past">
+          <TabPane
+            tab={
+              <Badge count={pastSessions.length} offset={[10, 0]}>
+                <span>Past Sessions</span>
+              </Badge>
+            }
+            key="past"
+          >
             <Table
               columns={pastColumns}
               dataSource={pastSessions}

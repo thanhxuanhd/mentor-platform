@@ -1,8 +1,6 @@
 ﻿using System.Net;
 using Contract.Dtos.SessionBooking.Requests;
 using Contract.Dtos.SessionBooking.Response;
-using Contract.Dtos.Users.Requests;
-using Contract.Dtos.Users.Responses;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
@@ -242,7 +240,10 @@ public class SessionBookingService(
     {
         var sessionList = await sessionBookingRepository.GetAllBookingAsync();
 
-        var resultList = sessionList.Select(s => new LearnerSessionBookingResponse
+        var resultList = sessionList
+        .OrderByDescending(s => s.TimeSlot.Date)
+        .ThenByDescending(s => s.TimeSlot.StartTime)
+        .Select(s => new LearnerSessionBookingResponse
         {
             Id = s.Id,
             TimeSlotId = s.TimeSlotId,
@@ -253,7 +254,8 @@ public class SessionBookingService(
             EndTime = s.TimeSlot.EndTime,
             FullNameLearner = s.Learner.FullName,
             PreferredCommunicationMethod = s.Learner.PreferredCommunicationMethod.ToString()
-        }).ToList();
+        })
+        .ToList();
 
         return Result.Success(resultList, HttpStatusCode.OK);
     }
@@ -298,6 +300,28 @@ public class SessionBookingService(
         {
             subject = EmailConstants.SUBJECT_SESSION_ACCEPTED;
             body = EmailConstants.BodySessionAcceptedEmail(id);
+            var conflictingSessions = sessionList.Where(s =>
+                s.Id != session.Id &&
+                s.Status == SessionStatus.Pending &&
+                s.TimeSlot.Date == session.TimeSlot.Date &&
+                s.TimeSlot.StartTime == session.TimeSlot.StartTime &&
+                s.TimeSlot.EndTime == session.TimeSlot.EndTime
+            ).ToList();
+
+            foreach (var conflict in conflictingSessions)
+            {
+                conflict.Status = SessionStatus.Canceled;
+
+                var conflictUser = await userRepository.GetByIdAsync(conflict.LearnerId);
+                if (conflictUser != null)
+                {
+                    var cancelSubject = EmailConstants.SUBJECT_SESSION_CANCELLED;
+                    var cancelBody = EmailConstants.BodySessionCancelledEmail(conflict.Id);
+                    await emailService.SendEmailAsync(conflictUser.Email, cancelSubject, cancelBody);
+                }
+
+                sessionBookingRepository.Update(conflict);
+            }
         }
         else if (request.Status == SessionStatus.Canceled)
         {
