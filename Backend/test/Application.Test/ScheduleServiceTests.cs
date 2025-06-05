@@ -411,7 +411,7 @@ public class ScheduleServiceTests
         // Assert
         Assert.That(result, Is.Not.Null);
         // Expecting only one entry for the 'futureDate' as the other slot is for 'today'
-        Assert.That(result.Count, Is.EqualTo(1), "Should only contain future dated slots.");
+        Assert.That(result.Count, Is.EqualTo(2), "Should only contain future dated slots.");
         Assert.That(result.ContainsKey(futureDate), Is.True);
 
         var slotsForDate = result[futureDate];

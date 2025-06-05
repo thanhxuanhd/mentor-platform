@@ -106,29 +106,32 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         }
         await scheduleRepository.SaveChangesAsync();
 
-        List<MentorAvailableTimeSlot> DeletingTimeSlots = mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
+        List<MentorAvailableTimeSlot> deletingTimeSlots = mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
 
-        Dictionary<string, string> UniqueLearnerInfos = new Dictionary<string, string>();
+        Dictionary<string, string> uniqueLearnerInfos = new Dictionary<string, string>();
 
-        foreach (var timeSlot in DeletingTimeSlots)
+        if (deletingTimeSlots is not null)
         {
-            if (timeSlot.Sessions == null || !timeSlot.Sessions.Any())
+            foreach (var timeSlot in deletingTimeSlots)
             {
-                continue;
-            }
-
-            foreach (var session in timeSlot.Sessions)
-            {
-                if (session.Status == SessionStatus.Pending)
+                if (timeSlot.Sessions == null || !timeSlot.Sessions.Any())
                 {
-                    UniqueLearnerInfos[session.Learner!.Email] = session.Learner.FullName;
+                    continue;
+                }
+
+                foreach (var session in timeSlot.Sessions)
+                {
+                    if (session.Status == SessionStatus.Pending)
+                    {
+                        uniqueLearnerInfos[session.Learner!.Email] = session.Learner.FullName;
+                    }
                 }
             }
         }
 
-        if (UniqueLearnerInfos.Any())
+        if (uniqueLearnerInfos.Any())
         {
-            foreach (var learnerInfo in UniqueLearnerInfos)
+            foreach (var learnerInfo in uniqueLearnerInfos)
             {
                 var subject = EmailConstants.SUBJECT_MENTOR_UPDATED_SCHEDULE;
                 var body = EmailConstants.BodyMentorUpdatedScheduleEmail(learnerInfo.Value, mentor.FullName);
@@ -138,7 +141,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
         StringBuilder stringBuilder = new();
-
+        
         foreach (var timeSlot in request.AvailableTimeSlots)
         {
             DateOnly date = timeSlot.Key;
@@ -149,17 +152,20 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                 var slotStartDateTime = date.ToDateTime(slot.StartTime);
                 var slotEndDateTime = date.ToDateTime(slot.EndTime);
 
-                bool isOverlap = existingActiveSessions.Any(s => s.Date == date && (
-                    (s.StartTime <= slot.StartTime && s.EndTime > slot.StartTime) ||
-                    (s.StartTime < slot.EndTime && s.EndTime >= slot.EndTime) ||
-                    (s.StartTime >= slot.StartTime && s.EndTime <= slot.EndTime)
-                ));
-
-                if (isOverlap)
+                if (existingActiveSessions is not null && existingActiveSessions.Any())
                 {
-                    var msg = $"Time slot {slot.StartTime} - {slot.EndTime} on {date} overlaps with an existing session. ";
-                    stringBuilder.AppendLine(msg);
-                    continue;
+                    bool isOverlap = existingActiveSessions.Any(s => s.Date == date && (
+                        (s.StartTime <= slot.StartTime && s.EndTime > slot.StartTime) ||
+                        (s.StartTime < slot.EndTime && s.EndTime >= slot.EndTime) ||
+                        (s.StartTime >= slot.StartTime && s.EndTime <= slot.EndTime)
+                    ));
+
+                    if (isOverlap)
+                    {
+                        var msg = $"Time slot {slot.StartTime} - {slot.EndTime} on {date} overlaps with an existing session. ";
+                        stringBuilder.AppendLine(msg);
+                        continue;
+                    }
                 }
 
                 var mentorAvailableTimeSlot = new MentorAvailableTimeSlot
