@@ -1,21 +1,62 @@
-import { Avatar, Card, Modal } from "antd"
-
-export interface Mentor {
-  id: string;
-  name: string;
-  expertise: string[];
-  availability: string;
-  avatar: string;
-}
+import { useEffect, useState } from "react";
+import { Avatar, Card, Modal, App } from "antd";
+import { getAvailableMentors, type AvailableMentorForBookingResponse } from "../../../services/session-booking/sessionBookingService";
+import type { Mentor } from "../../../types/SessionsType";
+import type { NotificationProps } from "../../../types/Notification";
 
 interface MentorSelectionModalProps {
   open: boolean;
   onCancel: () => void;
-  mentors: Mentor[];
   onMentorSelect: (mentor: Mentor) => void;
 }
 
-export function MentorSelectionModal({ open, onCancel, mentors, onMentorSelect }: MentorSelectionModalProps) {
+export function MentorSelectionModal({ open, onCancel, onMentorSelect }: MentorSelectionModalProps) {
+  const [mentors, setMentors] = useState<Mentor[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const { notification } = App.useApp();
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchMentors = async () => {
+      setLoading(true);
+      try {
+        const response = await getAvailableMentors();
+        console.log("Available Mentors Response:", response);
+        const transformedMentors: Mentor[] = response.map((item: AvailableMentorForBookingResponse) => ({
+          id: item.mentorId,
+          name: item.mentorName,
+          expertise: item.mentorExpertise,
+          availability: `${item.workingStartTime.slice(0, 5)} - ${item.workingEndTime.slice(0, 5)}`,
+          avatar: item.mentorAvatarUrl,
+        }));
+        setMentors(transformedMentors);
+      } catch (err: any) {
+        setNotify({
+          type: "error",
+          message: "Loading Error",
+          description: err.response.data.error || "Failed to load mentors. Please try again."
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMentors();
+  }, [open]);
+
   return (
     <Modal
       title={<span className="text-white">Select a Mentor</span>}
@@ -29,7 +70,11 @@ export function MentorSelectionModal({ open, onCancel, mentors, onMentorSelect }
       }}
     >
       <div className="space-y-4">
-        {mentors.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <p className="text-gray-400">Loading mentor...</p>
+          </div>
+        ) : mentors.length > 0 ? (
           mentors.map((mentor) => (
             <Card
               key={mentor.id}

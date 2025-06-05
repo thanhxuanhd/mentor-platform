@@ -14,9 +14,9 @@ import type { SessionType } from "../../../types/enums/SessionType"
 import type { SessionStatus } from "../../../types/enums/SessionStatus"
 import { useEffect, useState } from "react"
 import { cancelBooking, getBookingRequestsByLearner } from "../../../services/session-booking/sessionBookingService"
-import type { Mentor } from "./MentorSelectionModal"
 import { formatSessionType } from "./SessionTypeSelector"
 import type { NotificationProps } from "../../../types/Notification"
+import type { BookedSession } from "../../../types/SessionsType"
 
 interface SessionSlotStatusResponse {
   sessionId: string
@@ -28,16 +28,6 @@ interface SessionSlotStatusResponse {
   startTime: string
   endTime: string
   bookingStatus: SessionStatus
-}
-
-export interface BookedSession {
-  id: string
-  mentor: Mentor
-  date: string
-  type: SessionType
-  status: SessionStatus
-  startTime: string
-  endTime: string
 }
 
 interface BookedSessionsModalProps {

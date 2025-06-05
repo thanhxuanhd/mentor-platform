@@ -1,6 +1,6 @@
 import { Button, Avatar } from "antd";
 import { PlusOutlined, MessageOutlined, CalendarOutlined } from "@ant-design/icons";
-import { type Mentor } from "./MentorSelectionModal";
+import type { Mentor } from "../../../types/SessionsType";
 
 interface MentorProfileProps {
   selectedMentor: Mentor | null;

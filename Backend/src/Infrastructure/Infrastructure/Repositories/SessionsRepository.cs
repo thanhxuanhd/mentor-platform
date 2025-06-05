@@ -4,7 +4,7 @@ using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Infrastructure.Repositories;
 
@@ -81,7 +81,7 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception("Cannot cancel this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
@@ -101,7 +101,6 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception(
                 "Cannot accept this booking session. The learner has another session scheduled during this time range.");
         }
-<<<<<<< HEAD
 
         bookingSession.Status = SessionStatus.Approved;
     }
@@ -114,6 +113,6 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception("Cannot cancel this booking session at this time.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 }

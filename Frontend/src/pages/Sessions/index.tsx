@@ -4,20 +4,14 @@ import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
 import { CalendarComponent } from "./components/Calendar";
 import type { NotificationProps } from "../../types/Notification";
-import BookedSessionsModal, { type BookedSession } from "./components/BookedSessionsModal";
+import BookedSessionsModal from "./components/BookedSessionsModal";
 import MentorProfile from "./components/MentorProfile";
 import type { SessionType } from "../../types/enums/SessionType";
 import SessionTypeSelector from "./components/SessionTypeSelector";
 import TimeSlotSelector from "./components/TimeSlotSelector";
 import { getAvailableTimeSlots, requestBooking } from "../../services/session-booking/sessionBookingService";
-import type { Mentor } from "./components/MentorSelectionModal";
-import { MentorSelectionModalContainer } from "./components/MentorSelectionModalContainer";
-
-interface TimeSlot {
-  id: string;
-  startTime: string;
-  endTime: string;
-}
+import type { BookedSession, Mentor, TimeSlot } from "../../types/SessionsType";
+import { MentorSelectionModal } from "./components/MentorSelectionModal";
 
 export default function SessionBooking() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
@@ -35,7 +29,6 @@ export default function SessionBooking() {
   const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
   const { notification } = App.useApp();
 
-  // Fetch time slots when mentor and date are selected
   useEffect(() => {
     if (!selectedMentor || !selectedDate) {
       setTimeSlots([]);
@@ -212,7 +205,7 @@ export default function SessionBooking() {
           </Button>
         </div>
 
-        <MentorSelectionModalContainer
+        <MentorSelectionModal
           open={showMentorModal}
           onCancel={() => setShowMentorModal(false)}
           onMentorSelect={handleMentorSelect}

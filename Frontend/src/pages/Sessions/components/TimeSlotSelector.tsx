@@ -1,12 +1,5 @@
 import { Button, Spin } from "antd";
-import type { SessionStatus } from "../../../types/enums/SessionStatus";
-
-interface TimeSlot {
-  id: string;
-  startTime: string;
-  endTime: string;
-  status?: SessionStatus;
-}
+import type { TimeSlot } from "../../../types/SessionsType";
 
 interface TimeSlotSelectorProps {
   timeSlots: TimeSlot[];
