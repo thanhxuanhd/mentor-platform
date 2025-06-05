@@ -1,38 +1,46 @@
+import { useState, useEffect } from 'react';
 import { Badge } from 'antd';
 import { CalendarOutlined, VideoCameraOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
+import { learnerDashboardService, type GetLearnerDashboardResponse, type LearnerUpcomingSessionResponse } from '../../../services/learnerDashboard/learnerDashboardService';
 
 interface Session {
   id: string;
   name: string;
   date: string;
   time: string;
-  type: 'video' | 'chat' | 'in-person';
+  type: 'Virtual' | 'OneOnOne' | 'Onsite';
 }
 
-export default function DashboardPage() {
-  const sessions: Session[] = [
-    {
-      id: '1',
-      name: 'Alex Johnson',
-      date: 'Today',
-      time: '10:30 AM - 11:30 AM',
-      type: 'video'
-    },
-    {
-      id: '2',
-      name: 'Sophia Chen',
-      date: 'May 7',
-      time: '1:00 PM - 2:00 PM',
-      type: 'chat'
-    },
-    {
-      id: '3',
-      name: 'James Wilson',
-      date: 'May 9',
-      time: '3:30 PM - 4:30 PM',
-      type: 'in-person'
-    }
-  ];
+export default function LearnerDashboard() {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        setLoading(true);
+        const response: GetLearnerDashboardResponse = await learnerDashboardService.getLearnerDashboard();
+
+        const mappedSessions: Session[] = response.upcomingSessions.map((session: LearnerUpcomingSessionResponse) => ({
+          id: session.sessionId,
+          name: session.mentorName,
+          date: session.scheduledDate,
+          time: session.timeRange,
+          type: session.type as 'Virtual' | 'OneOnOne' | 'Onsite'
+        }));
+
+        setSessions(mappedSessions);
+      } catch (err) {
+        setError('Failed to fetch sessions. Please try again later.');
+        console.error('Error fetching learner dashboard:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSessions();
+  }, []);
 
   const getSessionTypeButton = (type: string) => {
     switch (type) {
@@ -78,7 +86,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <h2 className="text-xl font-semibold text-white">Upcoming Sessions</h2>
               <Badge
-                count={3}
+                count={sessions.length}
                 style={{ backgroundColor: '#dc2626' }}
               />
             </div>
@@ -89,27 +97,35 @@ export default function DashboardPage() {
 
           {/* Sessions List */}
           <div className="space-y-4">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className="bg-slate-700 hover:bg-slate-600 rounded-lg p-5 transition-colors cursor-pointer"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-medium text-white mb-3">
-                      {session.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-gray-300 mb-4">
-                      <CalendarOutlined className="text-gray-400" />
-                      <span className="text-sm">
-                        {session.date} • {session.time}
-                      </span>
+            {loading ? (
+              <p className="text-gray-300">Loading sessions...</p>
+            ) : error ? (
+              <p className="text-red-400">{error}</p>
+            ) : sessions.length === 0 ? (
+              <p className="text-gray-300">No upcoming sessions.</p>
+            ) : (
+              sessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="bg-slate-700 hover:bg-slate-600 rounded-lg p-5 transition-colors cursor-pointer"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-white mb-3">
+                        {session.name}
+                      </h3>
+                      <div className="flex items-center gap-2 text-gray-300 mb-4">
+                        <CalendarOutlined className="text-gray-400" />
+                        <span className="text-sm">
+                          {session.date} • {session.time}
+                        </span>
+                      </div>
+                      {getSessionTypeButton(session.type)}
                     </div>
-                    {getSessionTypeButton(session.type)}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

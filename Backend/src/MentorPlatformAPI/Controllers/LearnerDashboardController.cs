@@ -1,8 +1,6 @@
-using System.Runtime.InteropServices;
+using System.Security.Claims;
 using Application.Services.LearnerDashboard;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace MentorPlatformAPI.Controllers
 {
@@ -10,9 +8,10 @@ namespace MentorPlatformAPI.Controllers
     [ApiController]
     public class LearnerDashboardController(ILearnerDashboardService learnerDashboardService) : ControllerBase
     {
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetLearnerDashboard(Guid userId)
+        [HttpGet()]
+        public async Task<IActionResult> GetLearnerDashboard()
         {
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var result = await learnerDashboardService.GetLearnerDashboardAsync(userId);
             return StatusCode((int)result.StatusCode, result);
         }

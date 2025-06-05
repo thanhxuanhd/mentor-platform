@@ -21,6 +21,7 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import MentorDashboard from "../pages/Dashboard/MentorDashboard";
 import AvailabilityManager from "../pages/Availability";
+import LearnerDashboard from "../pages/Dashboard/LearnerDashboard";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -86,7 +87,15 @@ const AppRoutes = () => {
       >
         <Route path="users" element={<UsersPage />} />
       </Route>
-
+      <Route
+        element={
+          <ProtectedRoute requiredRole={[applicationRole.LEARNER]}>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="learner-dashboard" element={<LearnerDashboard />} />
+      </Route>
       <Route
         element={
           <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
