@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
 import DashboardPage from "../pages/Dashboard/LearnerDashboard";
 import UsersPage from "../pages/Users";
@@ -13,11 +13,18 @@ import AuthLayout from "../components/AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import { applicationRole } from "../constants/role";
 import ForbiddenPage from "../pages/Forbidden";
-import Profile from '../pages/UserProfile/components/Profile'
-import EditProfile from '../pages/UserProfile/components/EditProfile'
+import Profile from "../pages/UserProfile/components/Profile";
+import EditProfile from "../pages/UserProfile/components/EditProfile";
 import ProfileSetup from "../pages/Auth/ProfileSetup";
+import MentorApplicationPage from "../pages/MentorApplication";
+import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
+import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
+import MentorDashboard from "../pages/Dashboard/MentorDashboard";
+import AvailabilityManager from "../pages/Availability";
 
 const AppRoutes = () => {
+  const location = useLocation();
+
   return (
     <Routes>
       <Route element={<AuthLayout />}>
@@ -30,6 +37,29 @@ const AppRoutes = () => {
         <Route path="*" element={<NotFoundPage />} />
         <Route path="forbidden" element={<ForbiddenPage />} />
       </Route>
+
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[
+              applicationRole.ADMIN,
+              applicationRole.LEARNER,
+              applicationRole.MENTOR,
+            ]}
+            checkMentorApplication={true}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/" element={<MentorDashboard />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="courses" element={<CoursesPage />} />
+        <Route path="applications" element={<MentorApplicationPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="availability" element={<AvailabilityManager />} />
+      </Route>
+
       <Route
         element={
           <ProtectedRoute
@@ -43,33 +73,38 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="courses" element={<CoursesPage />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
+
       <Route
         element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.LEARNER]}
-          >
+          <ProtectedRoute requiredRole={[applicationRole.ADMIN]}>
             <MainLayout />
           </ProtectedRoute>
         }
       >
         <Route path="users" element={<UsersPage />} />
-        <Route path="categories" element={<CategoriesPage />} />
       </Route>
+
       <Route
         element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.ADMIN, applicationRole.MENTOR, applicationRole.LEARNER]}
-          >
+          <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
             <MainLayout />
           </ProtectedRoute>
         }
       >
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
+        <Route path="my-applications" element={<MentorStatusTrackingPage />} />
+        <Route
+          path="mentor-application/edit"
+          element={
+            <MentorApplicationForm
+              isEditMode={location.state?.isEditMode}
+              application={location.state?.application}
+            />
+          }
+        />
+        <Route path="mentor-application" element={<MentorApplicationForm />} />
       </Route>
     </Routes>
   );

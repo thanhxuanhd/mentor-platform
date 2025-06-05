@@ -16,5 +16,5 @@ public class Course : BaseEntity<Guid>
     public User Mentor { get; set; } = null!;
     public ICollection<CourseTag> CourseTags { get; set; } = [];
     public List<Tag> Tags { get; set; } = [];
-    public ICollection<CourseItem> Items { get; } = [];
+    public ICollection<CourseResource> Resources { get; } = [];
 }

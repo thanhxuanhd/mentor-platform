@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Contract.Repositories;
+﻿using Contract.Repositories;
 using Contract.Services;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
@@ -8,14 +7,18 @@ using Infrastructure.Repositories;
 using Infrastructure.Repositories.Base;
 using Infrastructure.Services.Authorization;
 using Infrastructure.Services.Authorization.OAuth;
-using Infrastructure.Services.Authorization.Policies;
+using Infrastructure.Services.Background;
+using Infrastructure.Services.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Infrastructure.Services.Authorization.Policies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Infrastructure;
 
@@ -36,25 +39,35 @@ public static class ConfigureServices
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
+        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
 
         // Add repositories
         services.AddScoped(typeof(IBaseRepository<,>), typeof(BaseRepository<,>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
-        services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
-        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
+        services.AddScoped<ICourseResourceRepository, CourseResourceRepository>();
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<ISessionsRepository, SessionsRepository>();
+        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
+        services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
+
+        services.AddHostedService(provider =>
+        new UserProfilePhotoCleanupService(
+        provider,
+        provider.GetRequiredService<IWebHostEnvironment>(),
+        provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
+        ));
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-            options.EnableSensitiveDataLogging();
-            // options.ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning));
         });
-        services.Configure<MailSettings>(configuration.GetSection("MailSetting"));
+
         // Add JWT Authentication
         services.AddAuthentication(options =>
         {
