@@ -124,6 +124,11 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
         {
             return Result.Failure<CourseResourceResponse>("You can not change course of existing resource. Please delete and add new", HttpStatusCode.BadRequest);
         }
+        var deletionResult = DeleteFile(resource.ResourceUrl, resource.CourseId);
+        if (!deletionResult.IsSuccess)
+        {
+            return Result.Failure<CourseResourceResponse>(deletionResult.Error, deletionResult.StatusCode);
+        }
         var uploadResult = await UploadFileAsync(courseId, formData.Resource, httpRequest);
         if (!uploadResult.IsSuccess)
         {
@@ -132,13 +137,6 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
 
         resource.CourseId = courseId;
         resource.Course = course;
-
-        var deletionResult = DeleteFile(resource.ResourceUrl, resource.CourseId);
-        if (!deletionResult.IsSuccess)
-        {
-            return Result.Failure<CourseResourceResponse>(deletionResult.Error, deletionResult.StatusCode);
-        }
-
         resource.ResourceUrl = uploadResult.Value.fileUrl;
         resource.ResourceType = FileHelper.GetFileTypeFromUrl(uploadResult.Value.fileUrl);
 
@@ -240,11 +238,7 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
         var filePath = Path.Combine(resourcesPath, file.FileName);
         var baseUrl = $"{httpRequest?.Scheme}://{httpRequest?.Host}";
         string fileUrl = $"{baseUrl}/resources/{courseId}/{file.FileName}";
-
-        var existingResource = courseResourceRepository.GetAll()
-            .FirstOrDefault(r => r.CourseId == courseId && r.ResourceUrl == fileUrl);
-
-        if (existingResource != null)
+        if (Directory.GetFiles(resourcesPath).Any(fileItem => Path.GetFileName(fileItem) == file.FileName))
         {
             return Result.Failure<(string, string)>("A file with this name already exists for this course.", HttpStatusCode.BadRequest);
         }

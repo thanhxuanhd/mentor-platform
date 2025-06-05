@@ -9,7 +9,10 @@ import { UploadOutlined } from "@ant-design/icons";
 import type { Course } from "../../Courses/types";
 import courseService from "../../../services/course";
 import type { NotificationProps } from "../../../types/Notification";
-import { getFileNameFromUrl } from "../../../utils/FileHelper";
+import {
+  getBinaryFileFromUrl,
+  getFileNameFromUrl,
+} from "../../../utils/FileHelper";
 
 interface CourseResourceModalProps {
   visible: boolean;
@@ -46,17 +49,16 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
         // Get courses
         const courseResponse = await courseService.list({
           pageIndex: 1,
-          pageSize: 5,
+          pageSize: 10,
           keyword: keyword ?? undefined,
         });
-
-        console.log(
-          "Course list refreshed after fetch courses:",
-          courseResponse,
-        );
         setCourses(courseResponse.items);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } catch (error: any) {
+        setNotify({
+          type: "error",
+          message: "Error",
+          description: error.response?.data?.value || "Error fetching data",
+        });
       }
     };
 
@@ -65,21 +67,23 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
 
   useEffect(() => {
     if (visible && isEditing && initialValues) {
-      form.setFieldsValue({
-        title: initialValues.title,
-        description: initialValues.description,
-        courseId: initialValues.courseId,
-      });
       // Assuming initialValues.resource is a URL
       if (initialValues.resourceUrl) {
-        setFileList([
+        const initialFileList: UploadFile[] = [
           {
             uid: initialValues.courseId, // Unique ID
             name: getFileNameFromUrl(initialValues.resourceUrl), // Display name
-            status: "done",
+            status: "done" as const,
             url: initialValues.resourceUrl,
           },
-        ]);
+        ];
+        setFileList(initialFileList);
+        form.setFieldsValue({
+          title: initialValues.title,
+          description: initialValues.description,
+          courseId: initialValues.courseId,
+          resource: initialFileList,
+        });
       } else {
         setFileList([]);
       }
@@ -104,13 +108,15 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
     }
   }, [notify, notification]);
 
-  const handleOk = () => {
+  const handleOk = async () => {
     form
       .validateFields()
-      .then((values) => {
+      .then(async (values) => {
         let resourceValue: any = null;
         if (fileList.length > 0) {
-          resourceValue = fileList[0].originFileObj;
+          resourceValue = fileList[0].originFileObj
+            ? fileList[0].originFileObj
+            : await getBinaryFileFromUrl(fileList[0].url as string);
         }
 
         onSubmit({ ...values, resource: resourceValue });
@@ -153,9 +159,6 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
   const onSearch = (value: string) => {
     setKeyword(value);
   };
-
-  console.log(fileList);
-
   return (
     <Modal
       centered
@@ -221,42 +224,36 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
             }
             return e && e.fileList;
           }}
-          rules={[
-            { required: !isEditing, message: "Please upload a resource file" },
-          ]}
+          rules={[{ required: true, message: "Please upload a resource file" }]}
         >
-          {fileList.length > 0 ? (
-            <Card
-              title={fileList[0].name}
-              actions={[
-                <Button onClick={() => setFileList([])}>Remove</Button>,
-              ]}
-            >
-              {fileList[0].url ? (
-                <a
-                  href={fileList[0].url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View Resource
-                </a>
-              ) : (
-                "Uploaded File"
-              )}
-            </Card>
-          ) : (
-            <Upload
-              beforeUpload={beforeUpload}
-              onChange={handleChange}
-              fileList={fileList}
-              maxCount={1}
-              accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
-              listType="picture"
-            >
-              <Button icon={<UploadOutlined />}>Upload</Button>
-            </Upload>
-          )}
+          <Upload
+            beforeUpload={beforeUpload}
+            onChange={handleChange}
+            fileList={fileList}
+            maxCount={1}
+            showUploadList={false}
+            accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Upload</Button>
+          </Upload>
         </Form.Item>
+        {fileList.length > 0 && (
+          <Card>
+            <div className="flex justify-between">
+              <p>{fileList[0].name}</p>
+              <Button
+                danger
+                onClick={() => {
+                  form.setFieldValue("resource", undefined);
+                  setFileList([]);
+                }}
+              >
+                Remove
+              </Button>
+            </div>
+          </Card>
+        )}
       </Form>
     </Modal>
   );

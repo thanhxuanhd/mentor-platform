@@ -22,3 +22,18 @@ export const downloadFile = (url: string, filename: string) => {
     })
     .catch((error) => console.error("Error downloading file:", error));
 };
+
+export const getBinaryFileFromUrl = async (
+  url: string,
+): Promise<File | null> => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const contentType = response.headers.get("Content-Type") || "";
+    const fileName = getFileNameFromUrl(url);
+    return new File([blob], fileName, { type: contentType });
+  } catch (error) {
+    console.error("Error getting binary file from URL:", error);
+    return null;
+  }
+};
