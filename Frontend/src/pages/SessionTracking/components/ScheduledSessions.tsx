@@ -277,6 +277,52 @@ export default function ScheduleSession() {
     newEndTime: string,
     reason: string,
   ) => {
+    const session = sessions.find((s) => s.id === sessionId)
+    if (!session) {
+      showNotification("error", "Session not found.")
+      return
+    }
+    const timeToMinutes = (time: string) => {
+    const [hours, minutes] = time.split(":").map(Number)
+    return hours * 60 + minutes
+  }
+
+  const startMinutes = timeToMinutes(newStartTime)
+  const endMinutes = timeToMinutes(newEndTime)
+  const duration = endMinutes - startMinutes
+
+  if (duration > 90) {
+    showNotification("error", "The session duration must not exceed 90 minutes.")
+    return
+  }
+  const overlappingSession = sessions.find((s) => {
+    if (s.id === sessionId) return false; 
+    if (s.date !== newDate) return false;
+    if (s.learnerId !== session.learnerId) return false; 
+
+    const sStart = timeToMinutes(s.startTime);
+    const sEnd = timeToMinutes(s.endTime);
+
+    return startMinutes < sEnd && endMinutes > sStart;
+  });
+
+  if (overlappingSession) {
+    showNotification(
+      "error",
+      `The selected time slot overlaps with another approved session for this learner.`
+    );
+    return;
+  }
+    const isSameDate = newDate === session.date
+    const isSameStart = newStartTime === session.startTime
+    const isSameEnd = newEndTime === session.endTime
+    const isEmptyReason = reason.trim() === ""
+
+    if (isSameDate && isSameStart && isSameEnd && isEmptyReason) {
+      showNotification("info", "No changes detected. Reschedule skipped.")
+      setIsModalVisible(false)
+      return
+    }
     try {
       await sessionBookingService.rescheduleSession(sessionId, {
         date: newDate,
@@ -443,33 +489,50 @@ export default function ScheduleSession() {
   }
 
   const handleSubmit = () => {
-    if (!newDate || !newStartTime || !newEndTime || !selectedSession) {
-      setError("Please fill in all fields")
-      return
-    }
+  if (!newDate || !newStartTime || !newEndTime || !selectedSession) {
+    showNotification("error", "Please fill in all the fields.")
+    return
+  }
 
-    if (newEndTime.isSameOrBefore(newStartTime)) {
-      setError("End time must be after start time")
-      return
-    }
+  if (newEndTime.isSameOrBefore(newStartTime)) {
+    showNotification("error", "End time must be after start time.")
+    return
+  }
 
-    if (newDate.isSame(dayjs(), "day") && newStartTime.isBefore(dayjs())) {
-      setError("Start time must be later than current time")
-      return
-    }
+  if (newDate.isSame(dayjs(), "day") && newStartTime.isBefore(dayjs())) {
+    showNotification("error", "Start time must be later than the current time.")
+    return
+  }
 
-    if (reason.length > 100) {
-      setError("Reason too long")
-      return
-    }
+  if (reason.length > 100) {
+    showNotification("error", "Reason is too long. Please shorten it.")
+    return
+  }
 
-    handleReschedule(
-      selectedSession.id,
-      newDate.format("YYYY-MM-DD"),
-      newStartTime.format("HH:mm:ss"),
-      newEndTime.format("HH:mm:ss"),
-      reason
+  // Check for overlapping sessions
+  const overlapping = sessions.find(
+    (s) =>
+      s.id !== selectedSession.id &&
+      s.date === newDate.format("YYYY-MM-DD") &&
+      newStartTime.isBefore(dayjs(s.endTime, "HH:mm:ss")) &&
+      newEndTime.isAfter(dayjs(s.startTime, "HH:mm:ss"))
+  )
+
+  if (overlapping) {
+    showNotification(
+      "error",
+      `❌ The selected time slot (${newStartTime.format("HH:mm")} - ${newEndTime.format("HH:mm")}) overlaps with another session of ${overlapping.studentName} (${overlapping.startTime} - ${overlapping.endTime}).`
     )
+    return
+  }
+
+  handleReschedule(
+    selectedSession.id,
+    newDate.format("YYYY-MM-DD"),
+    newStartTime.format("HH:mm:ss"),
+    newEndTime.format("HH:mm:ss"),
+    reason
+  )
   }
 
   return (
@@ -516,7 +579,6 @@ export default function ScheduleSession() {
     </Modal>
   )
 }
-
 
   const pendingSessions = sessions.filter((s) => s.status === "Pending").length
   const approvedSessions = sessions.filter((s) => s.status === "Approved").length

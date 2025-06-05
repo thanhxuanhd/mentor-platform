@@ -298,8 +298,22 @@ public class SessionBookingService(
 
         if (request.Status == SessionStatus.Approved)
         {
-            subject = EmailConstants.SUBJECT_SESSION_ACCEPTED;
-            body = EmailConstants.BodySessionAcceptedEmail(id);
+            var existingApproved = sessionList.FirstOrDefault(s =>
+                s.Id != session.Id &&
+                s.Status == SessionStatus.Approved &&
+                s.TimeSlot.Date == session.TimeSlot.Date &&
+                s.TimeSlot.StartTime == session.TimeSlot.StartTime &&
+                s.TimeSlot.EndTime == session.TimeSlot.EndTime
+            );
+
+            if (existingApproved != null)
+            {
+                return Result.Failure<bool>(
+                    $"A session for the same time slot ({session.TimeSlot.StartTime} - {session.TimeSlot.EndTime}) is already approved.",
+                    HttpStatusCode.Conflict
+                );
+            }
+
             var conflictingSessions = sessionList.Where(s =>
                 s.Id != session.Id &&
                 s.Status == SessionStatus.Pending &&
@@ -323,6 +337,7 @@ public class SessionBookingService(
                 sessionBookingRepository.Update(conflict);
             }
         }
+
         else if (request.Status == SessionStatus.Canceled)
         {
             subject = EmailConstants.SUBJECT_SESSION_CANCELLED;
@@ -359,6 +374,32 @@ public class SessionBookingService(
         {
             return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
         }
+        if (
+                session.TimeSlot.Date == request.Date &&
+                session.TimeSlot.StartTime == request.StartTime &&
+                session.TimeSlot.EndTime == request.EndTime
+            )
+        {
+            return Result.Failure<bool>("No changes detected. Reschedule not applied.", HttpStatusCode.BadRequest);
+        }
+
+        var overlappingSession = sessionList
+            .Where(s => s.Id != id && s.TimeSlot.Date == request.Date && s.LearnerId == session.LearnerId)
+            .FirstOrDefault(s =>
+                (request.StartTime < s.TimeSlot.EndTime) &&
+                (request.EndTime > s.TimeSlot.StartTime)
+            );
+
+        if (overlappingSession != null)
+        {
+            return Result.Failure<bool>("There has existed a same time slot for this learner.", HttpStatusCode.Conflict);
+        }
+
+        var duration = (request.EndTime - request.StartTime).TotalMinutes;
+        if (duration > 90)
+        {
+            return Result.Failure<bool>("Session duration cannot exceed 90 minutes.", HttpStatusCode.BadRequest);
+        }
 
         session.TimeSlot.Date = request.Date;
         session.TimeSlot.StartTime = request.StartTime;
@@ -385,6 +426,5 @@ public class SessionBookingService(
 
         return Result.Success(true, HttpStatusCode.OK);
     }
-
 
 }
