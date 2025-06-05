@@ -55,7 +55,6 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
 
     public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId)
     {
-        Debug.Assert(_context.Entry(timeSlot).Collection(t => t.Sessions).IsLoaded);
         if (timeSlot.Sessions.Any(sessions => sessions.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
             throw new Exception("Cannot add new booking session at this time.");

@@ -75,7 +75,7 @@ public static class SessionBookingExtensions
             SessionId = booking.Id,
             SlotId = booking.Id,
             MentorName = booking.TimeSlot.Schedules.Mentor.FullName,
-            Expirtise = booking.TimeSlot.Schedules.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
+            Expertise = booking.TimeSlot.Schedules.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),
             MentorAvatarUrl = booking.TimeSlot.Schedules.Mentor.ProfilePhotoUrl,
             SessionType = booking.Type,
             Day = mats.Date,

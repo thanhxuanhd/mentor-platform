@@ -47,10 +47,10 @@ public class SessionBookingService(
     {
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableMentorForBooking();
 
-        var availableMentorForBooking =
-            await mentorAvailableTimeSlotRepository.ToListAsync(mentorAvailableTimeSlots);
+        var availableMentorForBooking = await mentorAvailableTimeSlotRepository.ToListAsync(mentorAvailableTimeSlots);
 
         List<AvailableMentorForBookingResponse> availableMentorForBookingWithMentorDetails = [];
+
         foreach (var mentorAvailableTimeSlot in availableMentorForBooking)
         {
             var schedules = mentorAvailableTimeSlot.Schedules;
@@ -126,8 +126,8 @@ public class SessionBookingService(
         MentorAvailableTimeSlot timeSlot,
         User learner,
         SessionType sessionType)
-    {
-        if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed))
+    {   
+        if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
             return Result.Failure<SessionSlotStatusResponse>(
                 $"Selected slot in {timeSlot.StartTime} - {timeSlot.EndTime} by {timeSlot.Schedules.Mentor.FullName} is rejected.",
