@@ -469,6 +469,8 @@ export default function ScheduleSession() {
   const [newEndTime, setNewEndTime] = useState<dayjs.Dayjs | null>(null)
   const [reason, setReason] = useState("")
   const [error, setError] = useState("")
+  const [submitting, setSubmitting] = useState(false)
+
 
   useEffect(() => {
     if (selectedSession && isModalVisible) {
@@ -488,7 +490,7 @@ export default function ScheduleSession() {
     return time.set("hour", adjustedHour).set("minute", roundedMinute).set("second", 0)
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
   if (!newDate || !newStartTime || !newEndTime || !selectedSession) {
     showNotification("error", "Please fill in all the fields.")
     return
@@ -509,7 +511,6 @@ export default function ScheduleSession() {
     return
   }
 
-  // Check for overlapping sessions
   const overlapping = sessions.find(
     (s) =>
       s.id !== selectedSession.id &&
@@ -521,22 +522,27 @@ export default function ScheduleSession() {
   if (overlapping) {
     showNotification(
       "error",
-      `❌ The selected time slot (${newStartTime.format("HH:mm")} - ${newEndTime.format("HH:mm")}) overlaps with another session of ${overlapping.studentName} (${overlapping.startTime} - ${overlapping.endTime}).`
+      `The selected time overlaps with another session of ${overlapping.studentName}.`
     )
     return
   }
 
-  handleReschedule(
+  setSubmitting(true)
+
+  await handleReschedule(
     selectedSession.id,
     newDate.format("YYYY-MM-DD"),
     newStartTime.format("HH:mm:ss"),
     newEndTime.format("HH:mm:ss"),
     reason
   )
-  }
+
+  setSubmitting(false)
+}
+
 
   return (
-    <Modal title="Reschedule Session" open={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={handleSubmit}>
+    <Modal title="Reschedule Session" open={isModalVisible} onCancel={() => setIsModalVisible(false)} onOk={handleSubmit} confirmLoading={submitting}>
       <Space direction="vertical" style={{ width: "100%" }}>
         {error && <div className="text-red-600">{error}</div>}
         <DatePicker
