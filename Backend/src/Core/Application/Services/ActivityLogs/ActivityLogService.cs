@@ -12,7 +12,7 @@ public class ActivityLogService(IActivityLogRepository activityLogRepository) : 
         GetActivityLogRequest request)
     {
         var end = request.EndDateTime ?? DateTime.Now;
-        var start = DateTime.Now.Subtract(TimeSpan.FromDays(7));
+        var start = request.StartDateTime ?? DateTime.Now.Subtract(TimeSpan.FromDays(7));
         var keyword = request.Keyword ?? "";
 
         var activityLogs = activityLogRepository

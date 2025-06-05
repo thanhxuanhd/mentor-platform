@@ -1,4 +1,4 @@
-import { Input, DatePicker, Table, Card } from "antd"
+import { Input, DatePicker, Table, Card, Pagination } from "antd"
 import type { ActivityLogRequest, ActivityLogResponse } from "../../../../types/ActivityLogType"
 import { formatDateTime } from "../../../../utils/DateFormat"
 import { CalendarOutlined, SearchOutlined, TeamOutlined } from "@ant-design/icons"
@@ -45,18 +45,10 @@ export default function ActivityLogTable({ items, loading, filter, pagination, o
     });
   };
 
-  const handleTableChange = (pagination: any) => {
-    onFilter({
-      ...filter,
-      pageIndex: pagination.current,
-      pageSize: pagination.pageSize,
-    });
-  };
-
   return (
     <Card
       title={
-        <span className=" text-white text-xl font-semibold flex items-center gap-2" >
+        <span className=" text-white text-lg font-semibold flex items-center gap-2" >
           <TeamOutlined className="text-blue-400" />
           Recent Activity
         </span >
@@ -89,18 +81,27 @@ export default function ActivityLogTable({ items, loading, filter, pagination, o
       </div>
 
       <Table
+        className="mb-6"
         rowKey={"id"}
         columns={columns}
         dataSource={items}
-        pagination={{
-          current: pagination.pageIndex,
-          pageSize: filter.pageSize || 5,
-          total: pagination.totalCount,
-        }}
+        pagination={false}
         loading={loading}
         rowClassName="bg-slate-500/30 hover:bg-slate-500/50 transition-colors"
-        onChange={handleTableChange}
         locale={{ emptyText: "No recent activity" }}
+      />
+
+      <Pagination
+        align="center"
+        pageSize={filter.pageSize}
+        current={pagination.pageIndex}
+        total={pagination.totalCount}
+        onChange={(page) => {
+          onFilter({
+            ...filter,
+            pageIndex: page,
+          });
+        }}
       />
     </Card>
   )

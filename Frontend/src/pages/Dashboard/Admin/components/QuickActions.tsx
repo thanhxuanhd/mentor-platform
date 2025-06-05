@@ -15,12 +15,12 @@ export default function QuickActions() {
   return (
     <Card
       title={
-        <span className="text-white text-xl font-semibold flex items-center gap-2">
+        <span className="text-white text-lg font-semibold flex items-center gap-2">
           <TrophyOutlined className="text-purple-400" />
           Quick Actions
         </span>
       }
-      className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm lg:col-span-1"
+      className="border-slate-500/30 backdrop-blur-sm lg:col-span-1"
     >
       <div className="grid grid-cols-1 gap-4">
         <Button
