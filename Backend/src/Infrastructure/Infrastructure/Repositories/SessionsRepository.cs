@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Infrastructure.Repositories;
 
-public class SessionsRepository(ApplicationDbContext context)
+public class SessionsRepository(ApplicationDbContext context, TimeProvider timeProvider)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
     private static bool HasOverlappingSessionTime(Sessions existingSession, Sessions newSession)
@@ -66,7 +66,8 @@ public class SessionsRepository(ApplicationDbContext context)
             Status = SessionStatus.Pending,
             LearnerId = learnerId,
             TimeSlot = timeSlot,
-            Type = sessionType
+            Type = sessionType,
+            BookedOn = timeProvider.GetLocalNow().DateTime,
         };
 
         timeSlot.Sessions.Add(bookingSession);
