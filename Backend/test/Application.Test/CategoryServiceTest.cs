@@ -114,11 +114,6 @@ public class CategoryServiceTest
                 Description = c.Description,
                 Courses = c.Courses.Count(),
                 Status = c.Status
-                Id = c.Id,
-                Name = c.Name,
-                Description = c.Description!,
-                Courses = c.Courses!.Count,
-                Status = c.Status
             }).ToList(),
             filteredCategoriesQuery.Count(),
             pageIndex,

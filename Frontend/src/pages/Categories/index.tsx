@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
 import { Table, Space, Button, Tooltip, Tag, App, Popconfirm } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  EyeOutlined,
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import Search from "antd/es/input/Search";
 import EditCategoryModal from "./components/EditCategoryModal";
 import type {
   Category,
   CategoryFilter,
+  CategoryFilterCourse,
   CategoryRequest,
 } from "../../types/CategoryTypes";
 import type { NotificationProps } from "../../types/Notification";
@@ -17,8 +23,12 @@ import {
   deleteCategory,
   editCategory,
   getCategoryById,
+  getCoursesByCategoryId,
   getListCategories,
 } from "../../services/category/categoryServices";
+import { useAuth } from "../../hooks";
+import { applicationRole } from "../../constants/role";
+import DisplayCourseModal from "./components/DisplayCoursesModal";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
