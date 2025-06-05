@@ -1,4 +1,4 @@
-import { App, Button, Card, Form, Input, Modal, Select, Upload } from "antd";
+import { App, Button, Form, Input, Modal, Select, Upload } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
 import { useEffect, useState } from "react";
 import type {
@@ -231,29 +231,12 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
             onChange={handleChange}
             fileList={fileList}
             maxCount={1}
-            showUploadList={false}
             accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
             listType="picture"
           >
             <Button icon={<UploadOutlined />}>Upload</Button>
           </Upload>
         </Form.Item>
-        {fileList.length > 0 && (
-          <Card>
-            <div className="flex justify-between">
-              <p>{fileList[0].name}</p>
-              <Button
-                danger
-                onClick={() => {
-                  form.setFieldValue("resource", undefined);
-                  setFileList([]);
-                }}
-              >
-                Remove
-              </Button>
-            </div>
-          </Card>
-        )}
       </Form>
     </Modal>
   );
