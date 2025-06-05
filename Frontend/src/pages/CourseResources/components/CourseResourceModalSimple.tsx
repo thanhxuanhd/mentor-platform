@@ -112,7 +112,11 @@ const CourseResourceModalSimple: React.FC<CourseResourceModalSimpleProps> = ({
     return isLt1M ? false : Upload.LIST_IGNORE;
   };
 
-  const handleChange = ({ fileList: newFileList }: { fileList: UploadFile[] }) => {
+  const handleChange = ({
+    fileList: newFileList,
+  }: {
+    fileList: UploadFile[];
+  }) => {
     setFileList(newFileList);
   };
 
@@ -131,9 +135,7 @@ const CourseResourceModalSimple: React.FC<CourseResourceModalSimpleProps> = ({
         name="course_resource_form_simple"
         requiredMark={false}
       >
-        <Form.Item
-          label="Course"
-        >
+        <Form.Item label="Course">
           <Input value={course.title} disabled />
         </Form.Item>
         <Form.Item

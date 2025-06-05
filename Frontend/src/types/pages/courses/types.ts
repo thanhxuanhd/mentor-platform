@@ -2,7 +2,6 @@ import type {
   Category,
   Course,
   CourseFormDataOptions,
-  CourseResource,
   Mentor,
 } from "../../../pages/Courses/types.tsx";
 import type { CourseDifficulty } from "../../../pages/Courses/initial-values.tsx";
@@ -34,7 +33,6 @@ export type CourseMaterialFormProps = {
 
 export type CourseResourceProps = {
   course?: Course;
-  onDownload: (material: CourseResource) => void;
   active: boolean;
   onClose: (targetAction?: string | undefined) => void;
 };
@@ -46,6 +44,8 @@ export type CourseTableProps = {
   onView: (course: Course) => void;
   onEdit: (course: Course) => void;
   onDelete: (course: Course) => void;
+  onPublish: (course: Course) => void;
+  onArchive: (course: Course) => void;
   tableProps: TableProps;
 };
 

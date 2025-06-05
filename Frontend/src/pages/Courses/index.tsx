@@ -164,6 +164,44 @@ const Page: React.FC = () => {
     });
   };
 
+  const handlePublishCourse = async (course: Course) => {
+    modal.confirm({
+      title: "Are you sure you want to publish this course?",
+      content: `Course: ${course.title}`,
+      okText: "Yes",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.publishCourse(course.id);
+          message.success("Course published successfully!");
+          setRefreshTrigger((prev) => prev + 1);
+        } catch (error) {
+          console.error("Error publishing course:", error);
+          message.error("Failed to publish course. Please try again.");
+        }
+      },
+    });
+  };
+
+  const handleArchiveCourse = async (course: Course) => {
+    modal.confirm({
+      title: "Are you sure you want to archive this course?",
+      content: `Course: ${course.title}`,
+      okText: "Yes",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.archiveCourse(course.id);
+          message.success("Course archived successfully!");
+          setRefreshTrigger((prev) => prev + 1);
+        } catch (error) {
+          console.error("Error archiving course:", error);
+          message.error("Failed to archive course. Please try again.");
+        }
+      },
+    });
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gray-900 text-gray-200">
@@ -231,6 +269,8 @@ const Page: React.FC = () => {
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
                 onDelete={handleDeleteCourse}
+                onPublish={handlePublishCourse}
+                onArchive={handleArchiveCourse}
                 onEdit={async (course) => {
                   const resource = await courseService.get(course.id);
                   setItem(resource);
