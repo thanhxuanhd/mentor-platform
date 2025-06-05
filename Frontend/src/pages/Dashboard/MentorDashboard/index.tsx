@@ -7,8 +7,9 @@ import {
   VideoCameraOutlined,
   AudioOutlined,
   HomeOutlined,
-  SettingOutlined,
   ProfileOutlined,
+  TrophyOutlined,
+  ArrowRightOutlined,
 } from "@ant-design/icons"
 import { formatDate } from "../../../utils/DateFormat"
 import { useEffect, useState } from "react"
@@ -150,7 +151,7 @@ export default function MentorDashboard() {
           <Avatar src={userDetails?.profilePhotoUrl || DefaultAvatar} size={80} className="ring-2 ring-blue-400/20" />
           <div>
             <h2 className="text-2xl font-bold">Welcome back, {userDetails?.fullName || user?.fullName || 'Mentor'}!</h2>
-            <span className="text-slate-300 block">Member Since: {userDetails?.joinedDate || 'N/A'}</span>
+            <span className="text-slate-300 block">Member Since: {formatDate(userDetails?.joinedDate) || 'N/A'}</span>
           </div>
         </div>
       </div>{/* Stats Cards */}
@@ -255,34 +256,50 @@ export default function MentorDashboard() {
               </List.Item>
             )}
           />
-        </Card>
-
-        {/* Quick Actions */}
+        </Card>        {/* Quick Actions */}
         <Card
           title={
             <span className="text-white text-xl font-semibold flex items-center gap-2">
-              <SettingOutlined className="text-green-400" />
+              <TrophyOutlined className="text-purple-400" />
               Quick Actions
             </span>
           }
+          className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm"
         >
-          <div className="space-y-4">
-            {quickActions.map((action, index) => (
-              <Button
-                key={index}
-                onClick={action.onClick}
-                className="w-full bg-slate-500/30 border-slate-400/30 hover:bg-slate-500/50 text-left h-auto p-4"
-                style={{ height: 'auto' }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">{action.icon}</div>
-                  <div className="text-left">
-                    <div className="text-white font-semibold text-base">{action.title}</div>
-                    <div className="text-slate-300 text-sm">{action.description}</div>
-                  </div>
-                </div>
-              </Button>
-            ))}
+          <div className="grid grid-cols-1 gap-4">
+            <Button
+              onClick={quickActions[0].onClick}
+              size="large"
+              className="bg-blue-500 hover:bg-blue-600 text-white border-blue-500 h-12 flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <CalendarOutlined />
+                Manage Availability
+              </span>
+              <ArrowRightOutlined />
+            </Button>
+            <Button
+              onClick={quickActions[1].onClick}
+              size="large"
+              className="bg-green-500 hover:bg-green-600 text-white border-green-500 h-12 flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <ProfileOutlined />
+                View Profile
+              </span>
+              <ArrowRightOutlined />
+            </Button>
+            <Button
+              onClick={quickActions[2].onClick}
+              size="large"
+              className="bg-purple-500 hover:bg-purple-600 text-white border-purple-500 h-12 flex items-center justify-between"
+            >
+              <span className="flex items-center gap-2">
+                <BookOutlined />
+                My Courses
+              </span>
+              <ArrowRightOutlined />
+            </Button>
           </div>
         </Card>
       </div>
