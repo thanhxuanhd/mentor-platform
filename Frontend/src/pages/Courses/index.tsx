@@ -22,7 +22,7 @@ import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./components/CourseDetail.tsx";
 import { SearchBar } from "./components/SearchBar.tsx";
 import { App, Modal } from "antd";
-import { useAuth } from "../../hooks/useAuth.ts";
+import { useAuth } from "../../hooks";
 import { applicationRole } from "../../constants/role.ts";
 
 const Page: React.FC = () => {
@@ -54,32 +54,32 @@ const Page: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    const refreshData = async () => {
+      try {
+        const courseResponse = await courseService.list({
+          pageIndex,
+          pageSize,
+          keyword,
+          difficulty,
+          categoryId,
+          mentorId,
+        });
+
+        setCourses(courseResponse.items);
+        setTotalCount(courseResponse.totalPages);
+        console.log("Course list refreshed after create/update");
+      } catch (error) {
+        console.error("Error refreshing courses:", error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
     if (refreshTrigger > 0) {
       setIsRefreshing(true);
-      const refreshData = async () => {
-        try {
-          const courseResponse = await courseService.list({
-            pageIndex,
-            pageSize,
-            keyword,
-            difficulty,
-            categoryId,
-            mentorId,
-          });
-
-          setCourses(courseResponse.items);
-          setTotalCount(courseResponse.totalPages);
-          console.log("Course list refreshed after create/update");
-        } catch (error) {
-          console.error("Error refreshing courses:", error);
-        } finally {
-          setIsRefreshing(false);
-        }
-      };
-
       refreshData();
     }
-  }, [refreshTrigger]);
+  }, [categoryId, difficulty, keyword, mentorId, pageIndex, pageSize, refreshTrigger]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -103,10 +103,10 @@ const Page: React.FC = () => {
         );
 
         const categoryResponse = await categoryService.list({
-          pageSize: 100
+          pageSize: 10,
         });
         const mentorResponse = await mentorService.list({
-          pageSize: 100
+          pageSize: 10,
         });
 
         setTotalCount(courseResponse.totalPages);
@@ -197,14 +197,14 @@ const Page: React.FC = () => {
                   loading: loading || isRefreshing,
                   pagination: {
                     showSizeChanger: true,
-                    onShowSizeChange: (current, pageSize) => {
+                    "onShowSizeChange": (current, pageSize) => {
                       setPageIndex(current);
                       setPageSize(pageSize);
                     },
                     pageSize: pageSize,
                     total: totalCount,
                     position: ["bottomRight"],
-                    showTotal: (total, range) =>
+                    "showTotal": (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
                     onChange: (pageNumber, pageSize) => {
                       setPageIndex(pageNumber);

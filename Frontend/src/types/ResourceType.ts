@@ -13,8 +13,8 @@ export interface CourseResourceResponse {
 export interface FilterResourceRequest {
   pageIndex: number;
   pageSize: number;
-  keyWord: string | null;
-  resourceType: FileType | null;
+  keyWord?: string | null;
+  resourceType?: FileType | null;
 }
 
 export interface CourseResourceRequest {

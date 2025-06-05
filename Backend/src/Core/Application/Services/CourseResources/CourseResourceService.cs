@@ -181,11 +181,11 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
     {
         var resources = courseResourceRepository.GetAll();
 
-        if (!string.IsNullOrEmpty(request.Keyword))
+        if (!string.IsNullOrWhiteSpace(request.Keyword))
         {
             resources = resources.Where(c => c.Title.Contains(request.Keyword));
         }
-
+        
         if (request.ResourceType.HasValue)
         {
             resources = resources.Where(c => c.ResourceType == request.ResourceType);

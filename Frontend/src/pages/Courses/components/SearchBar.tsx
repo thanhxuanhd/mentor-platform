@@ -49,38 +49,23 @@ export const SearchBar: FC<SearchBarProps> = ({
     });
   };
 
-  const fetchCategories = async (searchKeyword: string) => {
-    setLoadingCategories(true);
-    try {
-      const response = await categoryService.list({
-        keyword: searchKeyword,
-        status: undefined,
-      });
-      setFilteredCategories(response.items);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setFilteredCategories([]);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
-  const fetchMentors = async (searchKeyword: string) => {
-    setLoadingMentors(true);
-    try {
-      const response = await mentorService.list({
-        fullName: searchKeyword,
-      });
-      setFilteredMentors(response.items);
-    } catch (error) {
-      console.error("Error fetching mentors:", error);
-      setFilteredMentors([]);
-    } finally {
-      setLoadingMentors(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchCategories = async (searchKeyword: string) => {
+      setLoadingCategories(true);
+      try {
+        const response = await categoryService.list({
+          keyword: searchKeyword,
+          status: undefined,
+        });
+        setFilteredCategories(response.items);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setFilteredCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
     if (categoryKeyword !== "") {
       const timer = setTimeout(() => {
         fetchCategories(categoryKeyword);
@@ -92,6 +77,21 @@ export const SearchBar: FC<SearchBarProps> = ({
   }, [categoryKeyword, categories]);
 
   useEffect(() => {
+    const fetchMentors = async (searchKeyword: string) => {
+      setLoadingMentors(true);
+      try {
+        const response = await mentorService.list({
+          fullName: searchKeyword,
+        });
+        setFilteredMentors(response.items);
+      } catch (error) {
+        console.error("Error fetching mentors:", error);
+        setFilteredMentors([]);
+      } finally {
+        setLoadingMentors(false);
+      }
+    };
+
     if (mentorKeyword !== "") {
       const timer = setTimeout(() => {
         fetchMentors(mentorKeyword);
