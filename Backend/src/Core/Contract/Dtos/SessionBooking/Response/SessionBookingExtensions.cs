@@ -34,7 +34,8 @@ public static class SessionBookingExtensions
             Date = mats.Date,
             IsBooked = mats.Sessions.Any(s =>
                 s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled),
-            LearnerCurrentBookingStatus = mats.Sessions.Where(s => s.LearnerId == learnerId).OrderBy(s => s.BookedOn).FirstOrDefault()?.Status
+            LearnerCurrentBookingStatus = mats.Sessions.Where(s => s.LearnerId == learnerId)
+                .OrderByDescending(s => s.BookedOn).FirstOrDefault()?.Status
         };
     }
 
