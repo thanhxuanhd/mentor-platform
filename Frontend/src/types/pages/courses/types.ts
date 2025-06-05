@@ -2,13 +2,13 @@ import type {
   Category,
   Course,
   CourseFormDataOptions,
-  CourseItem,
+  CourseResource,
   Mentor,
 } from "../../../pages/Courses/types.tsx";
 import type { CourseDifficulty } from "../../../pages/Courses/initial-values.tsx";
 import type { SearchBarOptions } from "../../../pages/Courses/components/SearchBar.tsx";
 
-import type {TableProps} from "antd";
+import type { TableProps } from "antd";
 
 export type CourseDetailProps = {
   course?: Course;
@@ -34,7 +34,7 @@ export type CourseMaterialFormProps = {
 
 export type CourseResourceProps = {
   course?: Course;
-  onDownload: (material: CourseItem) => void;
+  onDownload: (material: CourseResource) => void;
   active: boolean;
   onClose: (targetAction?: string | undefined) => void;
 };

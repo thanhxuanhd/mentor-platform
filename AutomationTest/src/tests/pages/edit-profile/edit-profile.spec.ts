@@ -11,11 +11,12 @@ test.describe("@Edit profile test", () => {
   });
 
   const userData: { [label: string]: EditUserProfileInterface } = {
-    "Verify update user profile successfully": editUserProfileData.valid_case,
-    "Empty fullname": editUserProfileData.empty_fullname,
-    "Empty phone number": editUserProfileData.empty_phone_number,
-    "Empty availability": editUserProfileData.empty_availability,
-    "Incorrect phone number format":
+    "@SmokeTest Verify update user profile successfully":
+      editUserProfileData.valid_case,
+    "@SmokeTest Empty fullname": editUserProfileData.empty_fullname,
+    "@SmokeTest Empty phone number": editUserProfileData.empty_phone_number,
+    "@SmokeTest Empty availability": editUserProfileData.empty_availability,
+    "@SmokeTest Incorrect phone number format":
       editUserProfileData.wrong_phone_number_format,
     "Verify display error message when skills exceed 200 characters":
       editUserProfileData.professional_skills_exceed_200_characters,
@@ -34,7 +35,7 @@ test.describe("@Edit profile test", () => {
         await editUserProfile.selectExpertise(data.expertise!);
         await editUserProfile.fillProfessionalSkillsField(data.skills!);
         await editUserProfile.fillExperienceField(data.experience!);
-        await editUserProfile.unselectedAvailabilityOptions();
+        await editUserProfile.unselectAvailabilityOptions();
         await editUserProfile.selectAvailabilityOptions(data.availbility);
         await editUserProfile.selectTeaching(data.teaching!);
         await editUserProfile.selectCategory(data.category!);

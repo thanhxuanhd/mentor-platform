@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  HddOutlined,
   ScheduleOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
@@ -15,6 +16,7 @@ interface MenuItemProps {
   label: string;
   link: string;
   role: string[];
+  isMentorApprovedRequired?: boolean;
 }
 
 export const menuItems: MenuItemProps[] = [
@@ -28,6 +30,7 @@ export const menuItems: MenuItemProps[] = [
       applicationRole.LEARNER,
       applicationRole.MENTOR,
     ],
+    isMentorApprovedRequired: true,
   },
   {
     key: "users",
@@ -41,7 +44,12 @@ export const menuItems: MenuItemProps[] = [
     icon: <AppstoreOutlined />,
     label: "Categories",
     link: "categories",
-    role: [applicationRole.ADMIN, applicationRole.MENTOR],
+    role: [
+      applicationRole.ADMIN,
+
+      applicationRole.MENTOR,
+    ],
+    isMentorApprovedRequired: true,
   },
   {
     key: "courses",
@@ -53,6 +61,7 @@ export const menuItems: MenuItemProps[] = [
       applicationRole.ADMIN,
       applicationRole.MENTOR,
     ],
+    isMentorApprovedRequired: true,
   },
   {
     key: "profile",
@@ -60,6 +69,20 @@ export const menuItems: MenuItemProps[] = [
     label: "Profile",
     link: "profile",
     role: [applicationRole.LEARNER, applicationRole.MENTOR],
+  },
+  {
+    key: "applications",
+    icon: <ProfileOutlined />,
+    label: "Applications",
+    link: "applications",
+    role: [applicationRole.ADMIN],
+  },
+  {
+    key: "my-applications",
+    icon: <HddOutlined />,
+    label: "My Applications",
+    link: "my-applications",
+    role: [applicationRole.MENTOR],
   },
   {
     key: "availability",

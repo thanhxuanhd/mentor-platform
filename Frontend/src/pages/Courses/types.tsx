@@ -19,17 +19,17 @@ export type Course = {
   mentorName: string;
   difficulty: string;
   dueDate: string;
-  items: CourseItem[];
+  resources: CourseResource[];
   tags: string[];
   status: string;
 };
 
-export type CourseItem = {
+export type CourseResource = {
   id: string;
   title: string;
   description: string;
-  mediaType: string;
-  webAddress: string;
+  resourceType: string;
+  resourceUrl: string;
 };
 
 export type Feedback = {

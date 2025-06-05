@@ -1,8 +1,6 @@
-using System.Net;
-using System.Security.Claims;
-using Application.Services.CourseItems;
+using Application.Services.CourseResources;
 using Application.Services.Courses;
-using Contract.Dtos.CourseItems.Requests;
+using Contract.Dtos.CourseResources.Requests;
 using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
 using Contract.Shared;
@@ -12,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Net;
+using System.Security.Claims;
 
 namespace WebAPI.Test;
 
@@ -22,7 +22,7 @@ public class CourseControllerTest
     public void Setup()
     {
         _courseServiceMock = new Mock<ICourseService>();
-        _courseItemServiceMock = new Mock<ICourseItemService>();
+        _courseResourceServiceMock = new Mock<ICourseResourceService>();
         _authorizationServiceMock = new Mock<IAuthorizationService>();
 
         _user = new ClaimsPrincipal(new ClaimsIdentity([
@@ -30,7 +30,7 @@ public class CourseControllerTest
             new Claim(ClaimTypes.Role, nameof(UserRole.Admin))
         ], "TestAuthentication"));
 
-        _controller = new CourseController(_courseServiceMock.Object, _courseItemServiceMock.Object,
+        _controller = new CoursesController(_courseServiceMock.Object, _courseResourceServiceMock.Object,
             _authorizationServiceMock.Object)
         {
             ControllerContext = new ControllerContext
@@ -41,9 +41,9 @@ public class CourseControllerTest
     }
 
     private Mock<ICourseService> _courseServiceMock = null!;
-    private Mock<ICourseItemService> _courseItemServiceMock = null!;
+    private Mock<ICourseResourceService> _courseResourceServiceMock = null!;
     private Mock<IAuthorizationService> _authorizationServiceMock = null!;
-    private CourseController _controller = null!;
+    private CoursesController _controller = null!;
     private ClaimsPrincipal _user = null!;
 
     private static void AssertObjectResult<TValue>(IActionResult actionResult, HttpStatusCode expectedStatusCode,
@@ -84,7 +84,7 @@ public class CourseControllerTest
             Difficulty = CourseDifficulty.Intermediate,
             DueDate = DateTime.UtcNow.AddDays(10),
             Status = CourseStatus.Draft,
-            Items = new List<CourseItemResponse>(),
+            Resources = new List<CourseResourceResponse>(),
             Tags = new List<string> { "FetchedTag" }
         };
 
@@ -143,7 +143,7 @@ public class CourseControllerTest
             Difficulty = CourseDifficulty.Intermediate,
             DueDate = DateTime.UtcNow.AddMonths(1),
             Status = CourseStatus.Draft,
-            Items = new List<CourseItemResponse>(),
+            Resources = new List<CourseResourceResponse>(),
             Tags = new List<string> { "TestTag1", "TestTag2" }
         };
         var serviceResult = Result.Success(courseResponse, HttpStatusCode.OK);
@@ -162,7 +162,7 @@ public class CourseControllerTest
     }
 
     [Test]
-    public async Task GetAllCourseItem_WhenCourseAccessible_ReturnsOkResult()
+    public async Task GetAllCourseResource_WhenCourseAccessible_ReturnsOkResult()
     {
         // Arrange
         var courseId = Guid.NewGuid();
@@ -178,31 +178,31 @@ public class CourseControllerTest
             Difficulty = CourseDifficulty.Intermediate,
             DueDate = DateTime.UtcNow.AddDays(10),
             Status = CourseStatus.Draft,
-            Items = [],
+            Resources = [],
             Tags = ["FetchedTag"]
         };
-        var items = new List<CourseItemResponse>
+        var items = new List<CourseResourceResponse>
         {
             new()
             {
                 Id = Guid.NewGuid(),
-                Title = "Item 1",
-                Description = "Description of Item 1",
-                MediaType = CourseMediaType.Video,
-                WebAddress = "http://example.com/item1"
+                Title = "Resource 1",
+                Description = "Description of Resource 1",
+                ResourceType = FileType.Video,
+                ResourceUrl = "http://example.com/item1"
             }
         };
         var courseServiceResult = Result.Success(courseSummary, HttpStatusCode.OK);
-        var courseItemServiceResult = Result.Success(items, HttpStatusCode.OK);
+        var courseResourceServiceResult = Result.Success(items, HttpStatusCode.OK);
 
         _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
             .ReturnsAsync(courseServiceResult);
-        _courseItemServiceMock.Setup(s => s.GetAllByCourseIdAsync(courseId))
-            .ReturnsAsync(courseItemServiceResult);
+        _courseResourceServiceMock.Setup(s => s.GetAllByCourseIdAsync(courseId))
+            .ReturnsAsync(courseResourceServiceResult);
 
 
         // Act
-        var result = await _controller.GetAllCourseItem(courseId);
+        var result = await _controller.GetAllCourseResource(courseId);
 
         // Assert
         Assert.That(result, Is.InstanceOf<ObjectResult>());
@@ -210,13 +210,13 @@ public class CourseControllerTest
         Assert.Multiple(() =>
         {
             Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
-            Assert.That(objectResult.Value, Is.EqualTo(courseItemServiceResult));
+            Assert.That(objectResult.Value, Is.EqualTo(courseResourceServiceResult));
         });
-        _courseItemServiceMock.Verify(s => s.GetAllByCourseIdAsync(courseId), Times.Once);
+        _courseResourceServiceMock.Verify(s => s.GetAllByCourseIdAsync(courseId), Times.Once);
     }
 
     [Test]
-    public async Task GetCourseItemById_WhenItemExists_ReturnsOkResult()
+    public async Task GetCourseResourceById_WhenResourceExists_ReturnsOkResult()
     {
         // Arrange
         var courseId = Guid.NewGuid();
@@ -232,111 +232,111 @@ public class CourseControllerTest
             Difficulty = CourseDifficulty.Intermediate,
             DueDate = DateTime.UtcNow.AddDays(10),
             Status = CourseStatus.Draft,
-            Items = [],
+            Resources = [],
             Tags = ["FetchedTag"]
         };
         var itemId = Guid.NewGuid();
-        var item = new CourseItemResponse
+        var item = new CourseResourceResponse
         {
             Id = itemId,
-            Title = "Test Item",
-            Description = "Description of Test Item",
-            MediaType = CourseMediaType.Pdf,
-            WebAddress = "http://example.com/testitem"
+            Title = "Test Resource",
+            Description = "Description of Test Resource",
+            ResourceType = FileType.Pdf,
+            ResourceUrl = "http://example.com/testitem"
         };
         var serviceResult = Result.Success(item, HttpStatusCode.OK);
-        _courseItemServiceMock.Setup(s => s.GetByIdAsync(itemId)).ReturnsAsync(serviceResult);
+        _courseResourceServiceMock.Setup(s => s.GetByIdAsync(itemId)).ReturnsAsync(serviceResult);
         var courseSummaryServiceResult = Result.Success(courseSummary, HttpStatusCode.OK);
         _courseServiceMock.Setup(s => s.GetByIdAsync(courseId))
             .ReturnsAsync(courseSummaryServiceResult);
 
         // Act
-        var result = await _controller.GetCourseItemById(courseId, itemId);
+        var result = await _controller.GetCourseResourceById(courseId, itemId);
 
         // Assert
         AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
-        _courseItemServiceMock.Verify(s => s.GetByIdAsync(itemId), Times.Once);
+        _courseResourceServiceMock.Verify(s => s.GetByIdAsync(itemId), Times.Once);
     }
 
     [Test]
-    public async Task CreateCourseItem_WhenRequestValid_ReturnsCreatedResult()
+    public async Task CreateCourseResource_WhenRequestValid_ReturnsCreatedResult()
     {
         // Arrange
         var courseId = Guid.NewGuid();
-        var request = new CourseItemCreateRequest
+        var request = new CourseResourceCreateRequest
         {
-            Title = "New Item",
-            Description = "New Item Description",
-            MediaType = CourseMediaType.Video,
-            WebAddress = "http://example.com/new"
+            Title = "New Resource",
+            Description = "New Resource Description",
+            ResourceType = FileType.Video,
+            ResourceUrl = "http://example.com/new"
         };
 
-        var createdItem = new CourseItemResponse
+        var createdResource = new CourseResourceResponse
         {
             Id = Guid.NewGuid(),
             Title = request.Title,
             Description = request.Description,
-            MediaType = request.MediaType,
-            WebAddress = request.WebAddress
+            ResourceType = request.ResourceType,
+            ResourceUrl = request.ResourceUrl
         };
-        var serviceResult = Result.Success(createdItem, HttpStatusCode.Created);
-        _courseItemServiceMock.Setup(s => s.CreateAsync(courseId, request)).ReturnsAsync(serviceResult);
+        var serviceResult = Result.Success(createdResource, HttpStatusCode.Created);
+        _courseResourceServiceMock.Setup(s => s.CreateAsync(courseId, request)).ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _controller.CreateCourseItem(courseId, request);
+        var result = await _controller.CreateCourseResource(courseId, request);
 
         // Assert
         AssertObjectResult(result, HttpStatusCode.Created, serviceResult);
-        _courseItemServiceMock.Verify(s => s.CreateAsync(courseId, request), Times.Once);
+        _courseResourceServiceMock.Verify(s => s.CreateAsync(courseId, request), Times.Once);
     }
 
     [Test]
-    public async Task UpdateCourseItem_WhenRequestValid_ReturnsOkResult()
+    public async Task UpdateCourseResource_WhenRequestValid_ReturnsOkResult()
     {
         // Arrange
         var courseId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
-        var request = new CourseItemUpdateRequest
+        var request = new CourseResourceUpdateRequest
         {
-            Title = "Updated Item",
-            Description = "Updated Item Description",
-            MediaType = CourseMediaType.Pdf,
-            WebAddress = "http://example.com/updated"
+            Title = "Updated Resource",
+            Description = "Updated Resource Description",
+            ResourceType = FileType.Pdf,
+            ResourceUrl = "http://example.com/updated"
         };
 
-        var updatedItem = new CourseItemResponse
+        var updatedResource = new CourseResourceResponse
         {
             Id = itemId,
             Title = request.Title,
             Description = request.Description,
-            MediaType = request.MediaType,
-            WebAddress = request.WebAddress
+            ResourceType = request.ResourceType,
+            ResourceUrl = request.ResourceUrl
         };
-        var serviceResult = Result.Success(updatedItem, HttpStatusCode.OK);
-        _courseItemServiceMock.Setup(s => s.UpdateAsync(itemId, request)).ReturnsAsync(serviceResult);
+        var serviceResult = Result.Success(updatedResource, HttpStatusCode.OK);
+        _courseResourceServiceMock.Setup(s => s.UpdateAsync(itemId, request)).ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _controller.UpdateCourseItem(courseId, itemId, request);
+        var result = await _controller.UpdateCourseResource(courseId, itemId, request);
 
         // Assert
         AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
-        _courseItemServiceMock.Verify(s => s.UpdateAsync(itemId, request), Times.Once);
+        _courseResourceServiceMock.Verify(s => s.UpdateAsync(itemId, request), Times.Once);
     }
 
     [Test]
-    public async Task DeleteCourseItem_WhenItemExists_ReturnsOk()
+    public async Task DeleteCourseResource_WhenResourceExists_ReturnsOk()
     {
         // Arrange
         var courseId = Guid.NewGuid();
         var itemId = Guid.NewGuid();
         var serviceResult = Result.Success(true, HttpStatusCode.OK);
-        _courseItemServiceMock.Setup(s => s.DeleteAsync(itemId)).ReturnsAsync(serviceResult);
+        _courseResourceServiceMock.Setup(s => s.DeleteAsync(itemId)).ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _controller.DeleteCourseItem(courseId, itemId);
+        var result = await _controller.DeleteCourseResource(courseId, itemId);
 
         // Assert
         AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
-        _courseItemServiceMock.Verify(s => s.DeleteAsync(itemId), Times.Once);
+        _courseResourceServiceMock.Verify(s => s.DeleteAsync(itemId), Times.Once);
     }
 }

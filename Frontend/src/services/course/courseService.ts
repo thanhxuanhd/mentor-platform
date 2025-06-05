@@ -40,18 +40,18 @@ interface CourseUpdateParams {
   tags?: string[];
 }
 
-interface CourseItemCreateParams {
+interface CourseResourceCreateParams {
   title: string;
   description: string;
-  mediaType: string;
-  webAddress: string;
+  resourceType: string;
+  resourceUrl: string;
 }
 
-interface CourseItemUpdateParams {
+interface CourseResourceUpdateParams {
   title: string;
   description: string;
-  mediaType: string;
-  webAddress: string;
+  resourceType: string;
+  resourceUrl: string;
 }
 
 export const courseService = {
@@ -59,7 +59,7 @@ export const courseService = {
    * Get a list of courses based on filter parameters
    */
   list: async (params: CourseListParams): Promise<CourseListResponse> => {
-    const response = await axiosClient.get("/Course", { params });
+    const response = await axiosClient.get("/Courses", { params });
     const responseData = response.data.value;
     return {
       items: responseData.items,
@@ -71,7 +71,7 @@ export const courseService = {
   },
 
   get: async (id: string): Promise<Course> => {
-    const response = await axiosClient.get(`/Course/${id}`);
+    const response = await axiosClient.get(`/Courses/${id}`);
     return response.data.value as Course;
   },
 
@@ -79,7 +79,7 @@ export const courseService = {
    * Create a new course
    */
   create: async (params: CourseCreateParams) => {
-    const response = await axiosClient.post("/Course", {
+    const response = await axiosClient.post("/Courses", {
       ...params,
       tags: params.tags || [],
     });
@@ -89,7 +89,7 @@ export const courseService = {
    * Update an existing course
    */
   update: async (id: string, params: CourseUpdateParams) => {
-    const response = await axiosClient.put(`/Course/${id}`, {
+    const response = await axiosClient.put(`/Courses/${id}`, {
       ...params,
       tags: params.tags || [],
     });
@@ -100,16 +100,19 @@ export const courseService = {
    * Delete a course
    */
   delete: async (id: string) => {
-    await axiosClient.delete(`/Course/${id}`);
+    await axiosClient.delete(`/Courses/${id}`);
     return true;
   },
 
   /**
    * Create a new course resource
    */
-  createResource: async (courseId: string, params: CourseItemCreateParams) => {
+  createResource: async (
+    courseId: string,
+    params: CourseResourceCreateParams,
+  ) => {
     const response = await axiosClient.post(
-      `/Course/${courseId}/resource`,
+      `/Courses/${courseId}/resources`,
       params,
     );
     return response.data;
@@ -121,10 +124,10 @@ export const courseService = {
   updateResource: async (
     courseId: string,
     resourceId: string,
-    params: CourseItemUpdateParams,
+    params: CourseResourceUpdateParams,
   ) => {
     const response = await axiosClient.put(
-      `/Course/${courseId}/resource/${resourceId}`,
+      `/Courses/${courseId}/resources/${resourceId}`,
       params,
     );
     return response.data;
@@ -137,7 +140,7 @@ export const courseService = {
     courseId: string,
     resourceId: string,
   ): Promise<void> => {
-    await axiosClient.delete(`/Course/${courseId}/resource/${resourceId}`);
+    await axiosClient.delete(`/Courses/${courseId}/resources/${resourceId}`);
   },
 };
 
