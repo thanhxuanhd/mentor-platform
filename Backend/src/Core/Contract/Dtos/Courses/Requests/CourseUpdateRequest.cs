@@ -32,7 +32,7 @@ public class CourseUpdateRequestValidator : AbstractValidator<CourseUpdateReques
             .WithMessage("Category Id is required.");
 
         RuleFor(x => x.DueDate)
-            .Must(dueDate => dueDate > DateTime.Now)
+            .Must(dueDate => dueDate.Day.CompareTo(DateTime.Now.Day) >= 0)
             .WithMessage("Due Date must be in the future.");
 
         RuleFor(x => x.Tags)

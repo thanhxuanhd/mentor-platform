@@ -37,9 +37,9 @@ public class CategoriesController(ICategoryService categoryService) : Controller
 
     [Authorize]
     [HttpGet("{id}/courses")]
-    public async Task<IActionResult> FilterCourseByCategory(Guid id, FilterCourseByCategoryRequest request)
+    public async Task<IActionResult> FilterCourseByCategory(Guid id)
     {
-        var result = await categoryService.FilterCourseByCategoryAsync(id, request);
+        var result = await categoryService.FilterCourseByCategoryAsync(id);
 
         return StatusCode((int)result.StatusCode, result);
     }
@@ -66,7 +66,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
     [Route("{categoryId}")]
     public async Task<IActionResult> DeleteCategory(Guid categoryId)
     {
-        var result = await categoryService.SoftDeleteCategoryAsync(categoryId);
+        var result = await categoryService.DeleteCategoryAsync(categoryId);
         return StatusCode((int)result.StatusCode, result);
     }
 }
