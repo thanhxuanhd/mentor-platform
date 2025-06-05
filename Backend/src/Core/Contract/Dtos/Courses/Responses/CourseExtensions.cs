@@ -1,4 +1,5 @@
-﻿using Domain.Entities;
+﻿using Contract.Dtos.CourseResources.Responses;
+using Domain.Entities;
 
 namespace Contract.Dtos.Courses.Responses;
 
@@ -32,6 +33,7 @@ public static class CourseExtensions
             Title = courseResource.Title,
             ResourceType = courseResource.ResourceType,
             ResourceUrl = courseResource.ResourceUrl,
+            CourseTitle = courseResource.Course.Title,
         };
     }
 }

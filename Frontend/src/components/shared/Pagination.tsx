@@ -36,7 +36,10 @@ const PaginationControls = ({
           onChange={onPageSizeChange}
           options={[
             { value: 5, label: "5" },
+            { value: 6, label: "6" },
+            { value: 8, label: "8" },
             { value: 10, label: "10" },
+            { value: 12, label: "12" },
             { value: 25, label: "25" },
           ]}
           style={{ width: 80 }}

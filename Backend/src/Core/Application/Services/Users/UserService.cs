@@ -260,7 +260,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         }
 
         var path = Directory.GetCurrentDirectory();
-        logger.LogInformation($"RootPath: {env.WebRootPath}");
+
         if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
         {
             Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
@@ -355,7 +355,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         var fileContentType = file.ContentType;
 
-        if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+        if (!FileConstants.FILE_CONTENT_TYPES.Contains(fileContentType))
         {
             return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
         }
