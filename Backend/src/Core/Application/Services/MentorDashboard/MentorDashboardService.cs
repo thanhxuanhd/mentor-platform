@@ -21,7 +21,6 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         var today = DateTime.Now;
         int daysToSubtract = (int)today.DayOfWeek;
         weekStartDate = DateOnly.FromDateTime(today.AddDays(-daysToSubtract));
-
         DateOnly weekEndDate = weekStartDate.AddDays(6);
 
         Schedules? upcomingSchedule = await scheduleRepository.GetScheduleSettingsAsync(mentorId, weekStartDate, weekEndDate);
@@ -55,13 +54,14 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
                         upcomingSessions++;
                         upcomingSessionsList.Add(new UpcomingSessionResponse
                         {
-                            LearnerProfilePhotoUrl = session.Learner!.ProfilePhotoUrl ?? string.Empty,
+                            LearnerProfilePhotoUrl = session.Learner!.ProfilePhotoUrl,
                             SessionId = session.Id,
                             LearnerName = session.Learner?.FullName ?? "Unknown Learner",
                             ScheduledDate = timeSlot.Date,
                             TimeRange = $"{timeSlot.StartTime:HH:mm} - {timeSlot.EndTime:HH:mm}",
                             Type = session.Type.ToString()
                         });
+                    }
                 }
             }
         }
@@ -77,6 +77,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         };
 
         return Result.Success(result, HttpStatusCode.OK);
-
     }
+}
+
 

@@ -1,17 +1,21 @@
 import { axiosClient } from "../apiClient";
 
+export interface UpcomingSessionResponse {
+  learnerProfilePhotoUrl: string;
+  sessionId: string;
+  learnerName: string;
+  scheduledDate: string;
+  timeRange: string;
+  type: string;
+}
+
 export interface MentorDashboardResponse {
+  totalPendingSessions: number;
   totalLearners: number;
   totalCourses: number;
   upcomingSessions: number;
   completedSessions: number;
-  upcomingSessionsList: {
-    sessionId: string;
-    learnerName: string;
-    scheduledDate: string;
-    timeRange: string;
-    type: string;
-  }[];
+  upcomingSessionsList: UpcomingSessionResponse[];
 }
 
 export const mentorDashboardService = {

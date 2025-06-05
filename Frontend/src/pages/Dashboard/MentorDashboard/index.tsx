@@ -1,20 +1,32 @@
 "use client"
-import { Card, Avatar, Tag, List, Statistic } from "antd"
+import { Card, Avatar, List, Statistic, Button } from "antd"
 import {
   CalendarOutlined,
   BookOutlined,
   TeamOutlined,
   VideoCameraOutlined,
   AudioOutlined,
-  PlayCircleOutlined,
-  FileTextOutlined,
-  EditOutlined,
+  HomeOutlined,
+  SettingOutlined,
+  ProfileOutlined,
 } from "@ant-design/icons"
 import { formatDate } from "../../../utils/DateFormat"
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import mentorDashboardService, { type MentorDashboardResponse } from "../../../services/mentor/mentorDashboardService"
 import { useAuth } from "../../../hooks"
+import DefaultAvatar from "../../../assets/images/default-account.svg"
+import { userService } from "../../../services/user/userService"
 import type { UserDetail } from "../../../types/UserTypes"
+
+// Session Type constants to match backend
+const SessionType = {
+  Virtual: "Virtual" as const,
+  OneOnOne: "OneOnOne" as const,
+  Onsite: "Onsite" as const
+} as const
+
+type SessionTypeValue = typeof SessionType[keyof typeof SessionType]
 
 interface UpcomingSession {
   id: string
@@ -23,67 +35,9 @@ interface UpcomingSession {
   date: string
   time: string
   duration: string
-  sessionType: "video_call" | "audio_call"
-  status: "confirmed" | "pending" | "cancelled"
+  sessionType: SessionTypeValue
   topic: string
 }
-
-interface CourseMaterial {
-  id: string
-  name: string
-  type: "video" | "document" | "assignment" | "quiz"
-  size?: string
-  duration?: string
-}
-
-interface Course {
-  id: string
-  title: string
-  description: string
-  category: string
-  status: "active" | "completed" | "draft"
-  materials: CourseMaterial[]
-}
-
-// Hardcoded mentor and course data (API doesn't provide these)
-const mentorData = {
-  name: "Sarah Johnson",
-  email: "sarah.j@mentor.com",
-  avatar: "/placeholder.svg?height=80&width=80",
-  title: "Senior Data Science Mentor",
-  rating: 4.9,
-  joinDate: "January 2023",
-}
-
-const courses: Course[] = [
-  {
-    id: "1",
-    title: "Introduction to Data Science",
-    description: "Complete beginner course covering Python, statistics, and basic ML",
-    category: "Data Science",
-    status: "active",
-    materials: [
-      { id: "1", name: "Course Introduction", type: "video", duration: "15 mins" },
-      { id: "2", name: "Python Basics Handbook", type: "document", size: "2.5 MB" },
-      { id: "3", name: "Week 1 Assignment", type: "assignment" },
-      { id: "4", name: "Statistics Quiz", type: "quiz" },
-      { id: "5", name: "Data Visualization Tutorial", type: "video", duration: "32 mins" },
-    ],
-  },
-  {
-    id: "2",
-    title: "Advanced Machine Learning",
-    description: "Deep dive into ML algorithms and real-world applications",
-    category: "Machine Learning",
-    status: "active",
-    materials: [
-      { id: "1", name: "ML Algorithms Overview", type: "video", duration: "45 mins" },
-      { id: "2", name: "Neural Networks Guide", type: "document", size: "5.2 MB" },
-      { id: "3", name: "Model Training Exercise", type: "assignment" },
-      { id: "4", name: "Deep Learning Resources", type: "document", size: "1.8 MB" },
-    ],
-  },
-]
 
 const parseTimeRange = (timeRange: string) => {
   const [start, end] = timeRange.split(" - ").map((time) => time.trim())
@@ -98,16 +52,14 @@ const parseTimeRange = (timeRange: string) => {
 
 export default function MentorDashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [mentorDashboardData, setMentorDashboardData] = useState<MentorDashboardResponse | undefined>()
+  const [userDetails, setUserDetails] = useState<UserDetail | undefined>()
   const [loading, setLoading] = useState(true)
-  const [userDetail, setUserDetail] = useState<UserDetail | undefined>()
 
   useEffect(() => {
     fetchMentorDashboardData()
-  }, [])
-
-  useEffect(() => {
-    // get user detail
+    fetchUserDetails()
   }, [])
 
   const fetchMentorDashboardData = async () => {
@@ -122,92 +74,102 @@ export default function MentorDashboard() {
     }
   }
 
-  const upcomingSessions: UpcomingSession[] = mentorDashboardData?.upcomingSessionsList?.map((session) => {
+  const fetchUserDetails = async () => {
+    try {
+      if (user?.id) {
+        const response = await userService.getUserDetail(user.id)
+        setUserDetails(response)
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error)
+    }
+  }
+    const upcomingSessions: UpcomingSession[] = mentorDashboardData?.upcomingSessionsList?.map((session) => {
     const { time, duration } = parseTimeRange(session.timeRange)
     return {
       id: session.sessionId,
       learnerName: session.learnerName,
-      learnerAvatar: "/placeholder.svg?height=48&width=48",
+      learnerAvatar: session.learnerProfilePhotoUrl || DefaultAvatar,
       date: formatDate(session.scheduledDate),
       time,
       duration,
-      sessionType: session.type === "OneOnOne" ? "video_call" : "audio_call", // Map API type to sessionType
-      status: "confirmed",
+      sessionType: session.type as SessionTypeValue,
       topic: "Mentoring Session",
     }
   }) || []
-
-  const getSessionTypeIcon = (type: string) => {
+  const getSessionTypeIcon = (type: SessionTypeValue) => {
     switch (type) {
-      case "video_call":
+      case SessionType.Virtual:
         return <VideoCameraOutlined className="text-blue-400" />
-      case "audio_call":
+      case SessionType.OneOnOne:
         return <AudioOutlined className="text-green-400" />
+      case SessionType.Onsite:
+        return <HomeOutlined className="text-purple-400" />
       default:
         return <CalendarOutlined className="text-gray-400" />
     }
   }
 
-  const getSessionTypeText = (type: string) => {
+  const getSessionTypeText = (type: SessionTypeValue) => {
     switch (type) {
-      case "video_call":
-        return "Video Call"
-      case "audio_call":
-        return "Audio Call"
+      case SessionType.Virtual:
+        return "Virtual Session"
+      case SessionType.OneOnOne:
+        return "One-on-One Session"
+      case SessionType.Onsite:
+        return "On-site Session"
       default:
         return "Session"
     }
   }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return "green"
-      case "pending":
-        return "orange"
-      case "cancelled":
-        return "red"
-      default:
-        return "gray"
-    }
-  }
-
-  const getMaterialIcon = (type: string) => {
-    switch (type) {
-      case "video":
-        return <PlayCircleOutlined className="text-red-400" />
-      case "document":
-        return <FileTextOutlined className="text-blue-400" />
-      case "assignment":
-        return <EditOutlined className="text-green-400" />
-      case "quiz":
-        return <BookOutlined className="text-purple-400" />
-      default:
-        return <FileTextOutlined className="text-gray-400" />
-    }
-  }
+  const quickActions = [
+    {
+      title: "Manage Availability",
+      description: "Set your available time slots",
+      icon: <CalendarOutlined className="text-blue-400" />,
+      onClick: () => navigate("/availability"),
+    },
+    {
+      title: "View Profile",
+      description: "Edit your mentor profile",
+      icon: <ProfileOutlined className="text-green-400" />,
+      onClick: () => navigate("/profile"),
+    },
+    {
+      title: "My Courses",
+      description: "Manage your courses",
+      icon: <BookOutlined className="text-purple-400" />,
+      onClick: () => navigate("/courses"),
+    },
+  ]
 
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
-      {/* Header */}
+    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Avatar src={mentorData.avatar} size={80} className="ring-2 ring-blue-400/20" />
+          <Avatar src={userDetails?.profilePhotoUrl || DefaultAvatar} size={80} className="ring-2 ring-blue-400/20" />
           <div>
-            <h2 className="text-2xl font-bold">Welcome back, {mentorData.name}!</h2>
-            <p className="text-slate-300 text-lg">{mentorData.title}</p>
-            <span className="text-slate-300">Member since {mentorData.joinDate}</span>
+            <h2 className="text-2xl font-bold">Welcome back, {userDetails?.fullName || user?.fullName || 'Mentor'}!</h2>
+            <span className="text-slate-300 block">Member Since: {userDetails?.joinedDate || 'N/A'}</span>
           </div>
         </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      </div>{/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <Card className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm">
           <Statistic
             title={<span className="text-slate-300">Total Learners</span>}
             value={mentorDashboardData?.totalLearners ?? 0}
             prefix={<TeamOutlined className="text-blue-400" />}
+            valueStyle={{ color: "white", fontSize: "2rem" }}
+            loading={loading}
+          />
+        </Card>
+
+        <Card className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm">
+          <Statistic
+            title={<span className="text-slate-300">Pending Sessions</span>}
+            value={mentorDashboardData?.totalPendingSessions ?? 0}
+            prefix={<CalendarOutlined className="text-orange-400" />}
             valueStyle={{ color: "white", fontSize: "2rem" }}
             loading={loading}
           />
@@ -235,16 +197,14 @@ export default function MentorDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Upcoming Sessions */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">        {/* Upcoming Sessions */}
         <Card
           title={
             <div className="flex items-center justify-between">
               <span className="text-white text-lg font-semibold flex items-center gap-2">
                 <CalendarOutlined className="text-blue-400" />
                 Upcoming Sessions
-              </span>
-              <span className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+              </span>              <span className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
                 {mentorDashboardData?.upcomingSessions ?? 0} sessions
               </span>
             </div>
@@ -254,8 +214,12 @@ export default function MentorDashboard() {
           <List
             dataSource={upcomingSessions}
             locale={{ emptyText: "No upcoming sessions" }}
-            renderItem={(session) => (
-              <List.Item className="border-b border-slate-500/20 last:border-b-0 py-4">
+            renderItem={(session, index) => (
+              <List.Item 
+                className={`border-b border-slate-500/20 last:border-b-0 py-4 ${
+                  index === 0 && upcomingSessions.length > 0 ? 'bg-blue-500/10 border-blue-400/30 rounded-lg' : ''
+                }`}
+              >
                 <List.Item.Meta
                   avatar={
                     <div className="relative">
@@ -266,9 +230,11 @@ export default function MentorDashboard() {
                   title={
                     <div className="flex items-center justify-between">
                       <span className="text-white font-semibold text-lg">{session.learnerName}</span>
-                      <Tag color={getStatusColor(session.status)} className="capitalize">
-                        {session.status}
-                      </Tag>
+                      {index === 0 && upcomingSessions.length > 0 && (
+                        <span className="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded text-xs font-medium">
+                          Next Session
+                        </span>
+                      )}
                     </div>
                   }
                   description={
@@ -291,35 +257,31 @@ export default function MentorDashboard() {
           />
         </Card>
 
-        {/* Course Materials */}
+        {/* Quick Actions */}
         <Card
           title={
             <span className="text-white text-xl font-semibold flex items-center gap-2">
-              <BookOutlined className="text-purple-400" />
-              My Courses & Materials
+              <SettingOutlined className="text-green-400" />
+              Quick Actions
             </span>
           }
         >
-          <div className="space-y-6">
-            {courses.map((course) => (
-              <div key={course.id} className="bg-slate-500/30 rounded-lg p-4 hover:bg-slate-500/50 transition-colors">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="text-white font-semibold text-lg">{course.title}</h3>
-                      <Tag
-                        color={
-                          course.status === "active" ? "green" : course.status === "completed" ? "blue" : "orange"
-                        }
-                      >
-                        {course.status}
-                      </Tag>
-                    </div>
-                    <p className="text-slate-300 text-sm mb-2">{course.description}</p>
-                    <Tag className="bg-blue-500/20 text-blue-300 border-blue-400/30">{course.category}</Tag>
+          <div className="space-y-4">
+            {quickActions.map((action, index) => (
+              <Button
+                key={index}
+                onClick={action.onClick}
+                className="w-full bg-slate-500/30 border-slate-400/30 hover:bg-slate-500/50 text-left h-auto p-4"
+                style={{ height: 'auto' }}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">{action.icon}</div>
+                  <div className="text-left">
+                    <div className="text-white font-semibold text-base">{action.title}</div>
+                    <div className="text-slate-300 text-sm">{action.description}</div>
                   </div>
                 </div>
-              </div>
+              </Button>
             ))}
           </div>
         </Card>
