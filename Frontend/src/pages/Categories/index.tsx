@@ -35,12 +35,15 @@ export default function CategoriesPage() {
     keyword: "",
   });
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null,
   );
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [isCreating, setIsCreating] = useState(true);
   const { notification } = App.useApp();
+  const [courses, setCourses] = useState<CategoryFilterCourse[]>([]);
+  const { user } = useAuth();
 
   const fetchData = async () => {
     try {
@@ -68,6 +71,18 @@ export default function CategoriesPage() {
       setPagination((prev) => ({ ...prev, items: [], totalCount: 0 }));
     }
   };
+
+  const fetchCourses = async (categoryId: string) => {
+    try {
+      const response = await getCoursesByCategoryId(categoryId);
+      setCourses(response || []);
+      return response || [];
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+      setCourses([]);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [filters]);
@@ -185,6 +200,15 @@ export default function CategoriesPage() {
     }
   };
 
+  const handleCourseModalClick = (categoryId: string) => {
+    fetchCourses(categoryId);
+    setIsCourseModalVisible(true);
+  };
+
+  const handleCourseModalCancel = () => {
+    setIsCourseModalVisible(false);
+  };
+
   const columns: ColumnsType<Category> = [
     {
       title: "Name",
@@ -225,28 +249,39 @@ export default function CategoriesPage() {
       width: 120,
       render: (_: any, record: Category) => (
         <Space size="small">
-          <Tooltip title="Edit Category">
-            <Button
-              icon={<EditOutlined />}
-              size="small"
-              className="text-green-600"
-              onClick={() => handleEditClick(record)}
-            />
-          </Tooltip>
-          <Tooltip title="Delete Category">
-            <Popconfirm
-              title="Are you sure to delete this category?"
-              onConfirm={() => handleModelDelete(record.id)}
-              okText="Yes"
-              cancelText="No"
-            >
+          {user?.role === applicationRole.ADMIN && (
+            <Tooltip title="Edit Category">
               <Button
-                icon={<DeleteOutlined />}
+                icon={<EditOutlined />}
                 size="small"
-                danger
-                className="text-red-600"
+                className="text-green-600"
+                onClick={() => handleEditClick(record)}
               />
-            </Popconfirm>
+            </Tooltip>
+          )}
+          {user?.role === applicationRole.ADMIN && (
+            <Tooltip title="Delete Category">
+              <Popconfirm
+                title="Are you sure to delete this category?"
+                onConfirm={() => handleModelDelete(record.id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                <Button
+                  icon={<DeleteOutlined />}
+                  size="small"
+                  danger
+                  className="text-red-600"
+                />
+              </Popconfirm>
+            </Tooltip>
+          )}
+          <Tooltip title="View List Courses">
+            <Button
+              icon={<EyeOutlined />}
+              size="small"
+              onClick={() => handleCourseModalClick(record.id)}
+            />
           </Tooltip>
         </Space>
       ),
@@ -257,14 +292,16 @@ export default function CategoriesPage() {
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Category Management</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => handleCreateClick()}
-          name=""
-        >
-          Add Category
-        </Button>
+        {user?.role === applicationRole.ADMIN && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => handleCreateClick()}
+            name=""
+          >
+            Add Category
+          </Button>
+        )}
       </div>
       <Search
         placeholder="Search by category name..."
@@ -279,6 +316,7 @@ export default function CategoriesPage() {
         dataSource={categories}
         rowKey="id"
         pagination={false}
+        className="mb-6"
       />
       <PaginationControls
         pageIndex={pagination.pageIndex}
@@ -306,6 +344,11 @@ export default function CategoriesPage() {
         onSubmit={handleModalSubmit}
         title={isCreating ? "Add Category" : "Edit Category"}
         onText={isCreating ? "Add" : "Update"}
+      />
+      <DisplayCourseModal
+        visible={isCourseModalVisible}
+        courses={courses}
+        onClose={handleCourseModalCancel}
       />
     </div>
   );
