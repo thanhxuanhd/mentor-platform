@@ -43,14 +43,7 @@ export default function SessionBooking() {
         const response = await getAvailableTimeSlots(selectedMentor.id, {
           date: selectedDate.format("YYYY-MM-DD"),
         });
-        const slots = response
-          .filter(slot => !slot.isBooked)
-          .map(slot => ({
-            id: slot.id,
-            startTime: slot.startTime.slice(0, 5),
-            endTime: slot.endTime.slice(0, 5),
-          }));
-        setTimeSlots(slots);
+        setTimeSlots(response);
       } catch (error) {
         setNotify({
           type: "error",

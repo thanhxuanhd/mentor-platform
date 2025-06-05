@@ -21,7 +21,7 @@ export default function MentorProfile({
         <>
           <div className="flex items-center space-x-4">
             <div className="relative">
-              <Avatar size={60} src={selectedMentor.avatar || "https://via.placeholder.com/60"} />
+              <Avatar size={60} src={selectedMentor.avatar} />
             </div>
             <div>
               <h3 className="text-xl font-semibold">{selectedMentor.name}</h3>

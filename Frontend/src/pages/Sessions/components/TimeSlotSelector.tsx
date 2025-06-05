@@ -25,6 +25,7 @@ export default function TimeSlotSelector({
             timeSlots.map((slot) => {
               const timeDisplay = `${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}`;
               const isDisabled = slot.status === "Pending";
+              console.log(`Slot ${slot.id}: Status=${slot.status}, Disabled=${isDisabled}`);
               return (
                 <Button
                   key={slot.id}
@@ -32,7 +33,7 @@ export default function TimeSlotSelector({
                   className={`h-12 ${selectedTime === slot.startTime
                     ? "bg-orange-500 border-orange-500"
                     : "bg-orange-500 border-orange-500 text-white hover:bg-orange-600"
-                    }`}
+                    } ${isDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                   onClick={() => onTimeSelect(slot.startTime, slot.id)}
                   disabled={isDisabled}
                 >

@@ -1,5 +1,6 @@
 import { axiosClient } from "../apiClient";
 import type { SessionStatus } from "../../types/enums/SessionStatus";
+import type { TimeSlot } from "../../types/SessionsType";
 
 export interface AvailableMentorForBookingResponse {
   mentorId: string;
@@ -18,6 +19,7 @@ export interface AvailableTimeSlotResponse {
   isBooked: boolean;
   mentorId: string;
   mentorName: string;
+  learnerCurrentBookingStatus: SessionStatus
 }
 
 interface AvailableTimeSlotRequest {
@@ -58,15 +60,18 @@ export const getAvailableTimeSlots = async (mentorId: string, request: Available
     if (!Array.isArray(data)) {
       throw new Error("API response does not contain a valid time slots array");
     }
-    return data.map((slot: any) => ({
-      id: slot.id,
-      startTime: slot.startTime, // Already in HH:mm:ss
-      endTime: slot.endTime,
-      date: slot.date,
-      isBooked: slot.isBooked,
-      mentorId: slot.mentorId,
-      mentorName: slot.mentorName,
-    })) as AvailableTimeSlotResponse[];
+    return data
+      .filter((slot: AvailableTimeSlotResponse) => !slot.isBooked)
+      .map((slot: AvailableTimeSlotResponse) => ({
+        id: slot.id,
+        startTime: slot.startTime, // Already in HH:mm:ss
+        endTime: slot.endTime,
+        date: slot.date,
+        isBooked: slot.isBooked,
+        mentorId: slot.mentorId,
+        mentorName: slot.mentorName,
+        status: slot.learnerCurrentBookingStatus,
+      })) as TimeSlot[];
   } catch (error) {
     console.error("API Error (Time Slots):", error);
     throw error;
