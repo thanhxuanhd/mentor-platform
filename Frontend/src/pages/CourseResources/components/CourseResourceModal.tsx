@@ -250,6 +250,7 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
               onChange={handleChange}
               fileList={fileList}
               maxCount={1}
+              accept=".pdf,.png,.jpg,.jpeg,.mp4,.avi,.mpeg,.mp3,.wav,.aac"
               listType="picture"
             >
               <Button icon={<UploadOutlined />}>Upload</Button>
