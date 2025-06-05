@@ -13,31 +13,40 @@ interface CalendarComponentProps {
   onMonthChange: (month: Dayjs) => void
 }
 
-export function CalendarComponent({ selectedDate, currentMonth, onDateSelect, onMonthChange }: CalendarComponentProps) {
-  const today = dayjs()
+export function CalendarComponent({
+  selectedDate,
+  currentMonth,
+  onDateSelect,
+  onMonthChange,
+}: CalendarComponentProps) {
+  const today = dayjs();
 
-  const startOfMonth = currentMonth.startOf("month")
-  const endOfMonth = currentMonth.endOf("month")
-  const startDate = startOfMonth.startOf("week")
-  const endDate = endOfMonth.endOf("week")
+  // Get the start of the month
+  const startOfMonth = currentMonth.startOf("month");
+  const endOfMonth = currentMonth.endOf("month");
 
-  const days = []
-  let current = startDate
+  // Adjust startOfWeek to Monday
+  const startOfWeek = startOfMonth.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const startDate = startOfMonth.subtract((startOfWeek === 0 ? 6 : startOfWeek - 1), "day");
+  const endDate = endOfMonth.endOf("week"); // This will still work as we adjust the start
+
+  const days = [];
+  let current = startDate;
 
   while (current.isBefore(endDate) || current.isSame(endDate, "day")) {
-    days.push(current)
-    current = current.add(1, "day")
+    days.push(current);
+    current = current.add(1, "day");
   }
 
-  const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]
+  const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
   const handlePreviousMonth = () => {
-    onMonthChange(currentMonth.subtract(1, "month"))
-  }
+    onMonthChange(currentMonth.subtract(1, "month"));
+  };
 
   const handleNextMonth = () => {
-    onMonthChange(currentMonth.add(1, "month"))
-  }
+    onMonthChange(currentMonth.add(1, "month"));
+  };
 
   return (
     <div className="bg-slate-700 rounded-lg p-6">
@@ -68,10 +77,10 @@ export function CalendarComponent({ selectedDate, currentMonth, onDateSelect, on
 
       <div className="grid grid-cols-7 gap-1">
         {days.map((day, index) => {
-          const isCurrentMonth = day.month() === currentMonth.month()
-          const isSelected = selectedDate && day.isSame(selectedDate, "day")
-          const isPastDate = day.isBefore(today, "day")
-          const isClickable = isCurrentMonth && !isPastDate
+          const isCurrentMonth = day.month() === currentMonth.month();
+          const isSelected = selectedDate && day.isSame(selectedDate, "day");
+          const isPastDate = day.isBefore(today, "day");
+          const isClickable = isCurrentMonth && !isPastDate;
 
           return (
             <button
@@ -89,9 +98,9 @@ export function CalendarComponent({ selectedDate, currentMonth, onDateSelect, on
             >
               {day.date()}
             </button>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
