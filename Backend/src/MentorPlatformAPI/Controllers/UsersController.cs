@@ -4,7 +4,6 @@ using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Infrastructure.Services.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
 

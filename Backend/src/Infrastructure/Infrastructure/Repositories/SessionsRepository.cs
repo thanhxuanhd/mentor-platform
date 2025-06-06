@@ -51,7 +51,7 @@ public class SessionsRepository(ApplicationDbContext context)
             throw new Exception("Cannot reject this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 
     public async Task<IEnumerable<Sessions>> GetLearnerUpcomingSessionsAsync(Guid userId)

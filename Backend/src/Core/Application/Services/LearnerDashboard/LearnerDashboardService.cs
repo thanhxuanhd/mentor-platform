@@ -3,6 +3,7 @@ using Contract.Dtos.LearnerDashboard.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Services.LearnerDashboard;
 
@@ -29,8 +30,9 @@ public class LearnerDashboardService(IUserRepository userRepository, ISessionsRe
 				MentorProfilePictureUrl = session.TimeSlot.Schedules?.Mentor?.ProfilePhotoUrl,
 				ScheduledDate = session.TimeSlot.Date,
 				TimeRange = $"{session.TimeSlot.StartTime:HH:mm} - {session.TimeSlot.EndTime:HH:mm}",
-				Type = session.Type.ToString()
-			});
+				Type = session.Type.ToString(), 
+				Status = session.Status.ToString()
+            });
 		}
 
 		var result = new GetLearnerDashboardResponse
@@ -40,4 +42,38 @@ public class LearnerDashboardService(IUserRepository userRepository, ISessionsRe
 
 		return Result.Success(result, HttpStatusCode.OK);
 	}
+	
+	public async Task<Result> CancelSessionBookingAsync(Guid sessionBookingId, Guid userId)
+    {
+        var session = await sessionsRepository.GetByIdAsync(sessionBookingId, c => c.TimeSlot);
+        if (session == null)
+        {
+            return Result.Failure("Session not found", HttpStatusCode.NotFound);
+        }
+        if (session.LearnerId != userId)
+        {
+            return Result.Failure("You are not authorized to cancel this session", HttpStatusCode.Forbidden);
+        }
+        session.Status = SessionStatus.Cancelled;
+        sessionsRepository.Update(session);
+        await sessionsRepository.SaveChangesAsync();
+        return Result.Success(HttpStatusCode.OK);
+    }
+
+	public async Task<Result> AcceptSessionBookingAsync(Guid sessionBookingId, Guid userId)
+    {
+        var session = await sessionsRepository.GetByIdAsync(sessionBookingId, c => c.TimeSlot);
+        if (session == null)
+        {
+            return Result.Failure("Session not found", HttpStatusCode.NotFound);
+        }
+        if (session.LearnerId != userId)
+        {
+            return Result.Failure("You are not authorized to cancel this session", HttpStatusCode.Forbidden);
+        }
+        session.Status = SessionStatus.Approved;
+        sessionsRepository.Update(session);
+        await sessionsRepository.SaveChangesAsync();
+        return Result.Success(HttpStatusCode.OK);
+    }
 }

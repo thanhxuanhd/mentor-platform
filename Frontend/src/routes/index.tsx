@@ -53,7 +53,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<MentorDashboard />} />
+        <Route path="/" element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />

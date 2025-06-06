@@ -406,7 +406,7 @@ public static class ApplicationDbExtensions
                     TimeSlotId = slotId1,
                     LearnerId = learnerId1,
                     Type = SessionType.OneOnOne,
-                    Status = SessionStatus.Pending,
+                    Status = SessionStatus.Rescheduled,
                 },
                 new Sessions
                 {
@@ -422,7 +422,7 @@ public static class ApplicationDbExtensions
                     TimeSlotId = slotId3,
                     LearnerId = learnerId1,
                     Type = SessionType.OneOnOne,
-                    Status = SessionStatus.Completed,
+                    Status = SessionStatus.Rescheduled,
                 },
                 new Sessions
                 {
@@ -430,7 +430,7 @@ public static class ApplicationDbExtensions
                     TimeSlotId = slotId4,
                     LearnerId = learnerId1,
                     Type = SessionType.OneOnOne,
-                    Status = SessionStatus.Completed,
+                    Status = SessionStatus.Approved,
                 },
                 new Sessions
                 {

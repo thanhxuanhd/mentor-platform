@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Avatar, Badge } from 'antd';
+import { App, Avatar, Badge, Button, Modal } from 'antd';
 import { CalendarOutlined, VideoCameraOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
 import { learnerDashboardService, type GetLearnerDashboardResponse, type LearnerUpcomingSessionResponse } from '../../../services/learnerDashboard/learnerDashboardService';
 import dayjs from 'dayjs';
+import type { NotificationProps } from '../../../types/Notification';
 
 interface Session {
   id: string;
@@ -11,12 +12,17 @@ interface Session {
   time: string;
   avatarUrl?: string;
   type: 'Virtual' | 'OneOnOne' | 'Onsite';
+  sessionStatus: 'Approved' | 'Rescheduled';
 }
 
 export default function LearnerDashboard() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const { notification } = App.useApp();
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -30,7 +36,8 @@ export default function LearnerDashboard() {
           date: dayjs(session.scheduledDate).format('MMM D, YYYY'),
           time: session.timeRange,
           type: session.type as 'Virtual' | 'OneOnOne' | 'Onsite',
-          avatarUrl: session.mentorProfilePictureUrl
+          avatarUrl: session.mentorProfilePictureUrl,
+          sessionStatus: session.status as 'Approved' | 'Rescheduled'
         }));
 
         setSessions(mappedSessions);
@@ -44,6 +51,21 @@ export default function LearnerDashboard() {
 
     fetchSessions();
   }, []);
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
 
   const getSessionTypeButton = (type: string) => {
     switch (type) {
@@ -70,6 +92,79 @@ export default function LearnerDashboard() {
         );
       default:
         return null;
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusStyles = {
+      Approved: 'bg-green-600 text-white',
+      Rescheduled: 'bg-purple-700 text-white'
+    };
+
+    return (
+      <span
+        className={`px-3 py-1.5 rounded-md text-sm font-medium
+           ${statusStyles[status as keyof typeof statusStyles]
+          }`}
+      >
+        {status}
+      </span>
+    );
+  };
+
+  const handleSessionClick = (session: Session) => {
+    if (session.sessionStatus === 'Rescheduled') {
+      setSelectedSession(session);
+      setIsModalVisible(true);
+    }
+  };
+
+  const handleAgree = async () => {
+    if (!selectedSession) return;
+    try {
+      await learnerDashboardService.acceptSessionBooking(selectedSession.id);
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === selectedSession.id
+            ? { ...s, sessionStatus: 'Approved' }
+            : s
+        )
+      );
+      setIsModalVisible(false);
+      setSelectedSession(null);
+      setNotify({
+        type: "success",
+        message: "Success",
+        description: "Rescheduled successfully",
+      });
+    } catch (err: any) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: err?.response?.data?.error || "Failed to accept rescheduled session",
+      });
+    }
+  };
+
+  const handleDecline = async () => {
+    if (!selectedSession) return;
+
+    try {
+      await learnerDashboardService.cancelSessionBooking(selectedSession.id);
+      setSessions((prev) => prev.filter((s) => s.id !== selectedSession.id));
+      setIsModalVisible(false);
+      setSelectedSession(null);
+      setNotify({
+        type: "success",
+        message: "Success",
+        description: "Canceled reschedule successfully",
+      });
+    } catch (err: any) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: err?.response?.data?.error || "Rescheduled error",
+      });
     }
   };
 
@@ -106,7 +201,9 @@ export default function LearnerDashboard() {
               sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="bg-slate-700 hover:bg-slate-600 rounded-lg p-5 transition-colors cursor-pointer"
+                  className={`bg-slate-700 hover:bg-slate-600 rounded-lg p-5 transition-colors ${session.sessionStatus === 'Rescheduled' ? 'cursor-pointer' : 'cursor-default'
+                    }`}
+                  onClick={() => handleSessionClick(session)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-4 flex-1">
@@ -129,6 +226,9 @@ export default function LearnerDashboard() {
                         {getSessionTypeButton(session.type)}
                       </div>
                     </div>
+                    <div className="flex items-center">
+                      {getStatusBadge(session.sessionStatus)}
+                    </div>
                   </div>
                 </div>
               ))
@@ -136,6 +236,36 @@ export default function LearnerDashboard() {
           </div>
         </div>
       </div>
+
+      <Modal
+        title="Confirm Reschedule"
+        open={isModalVisible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setSelectedSession(null);
+        }}
+        footer={[
+          <Button
+            key="decline"
+            onClick={handleDecline}
+            className="bg-red-600 hover:bg-red-700 text-white border-none"
+          >
+            Cancel
+          </Button>,
+          <Button
+            key="agree"
+            type="primary"
+            onClick={handleAgree}
+            className="bg-green-600 hover:bg-green-700 border-none"
+          >
+            Accept
+          </Button>,
+        ]}
+      >
+        <p>
+          Your mentor has rescheduled the session. Do you agree to reschedule?
+        </p>
+      </Modal>
     </div>
   );
 };
