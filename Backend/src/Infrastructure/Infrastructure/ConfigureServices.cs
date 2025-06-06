@@ -17,8 +17,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Services.Authorization.Policies;
+using Infrastructure.Services.Logging;
+using Infrastructure.Services.Logging.Strategies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure;
 
@@ -28,6 +32,7 @@ public static class ConfigureServices
         IConfiguration configuration)
     {
         // Add HttpClient
+        services.AddHttpContextAccessor();
         services.AddHttpClient();
 
         // Add services
@@ -36,6 +41,8 @@ public static class ConfigureServices
         services.AddScoped<GoogleOAuthService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddSingleton<IOAuthServiceFactory, OAuthServiceFactory>();
+        services.AddSingleton<IEntityLoggingStrategy, UserLoggingStrategy>();
+        services.AddScoped<ActivityLogInterceptor>();
 
         // Add Persistence
         services.Configure<JwtSetting>(configuration.GetSection("JwtSetting"));
@@ -50,8 +57,12 @@ public static class ConfigureServices
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<ISessionsRepository, SessionsRepository>();
+        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
         services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 
         services.AddHostedService(provider =>
         new UserProfilePhotoCleanupService(
@@ -60,9 +71,11 @@ public static class ConfigureServices
         provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            var interceptor = serviceProvider.GetRequiredService<ActivityLogInterceptor>();
+            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"))
+                .AddInterceptors(interceptor);
         });
 
         // Add JWT Authentication

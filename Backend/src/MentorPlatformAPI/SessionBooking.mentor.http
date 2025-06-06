@@ -1,0 +1,25 @@
+@MentorConnectAPI_HostAddress = https://localhost:5000
+
+### Authorize as Mentor
+POST {{MentorConnectAPI_HostAddress}}/api/Auth/sign-in
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+ client.global.set("auth_token", response.body.value.token);
+%}
+
+### Accept Booking Session
+POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request/{{bookingId}}/accept
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Cancel Booking Session
+POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request/{{bookingId}}/cancel
+Accept: application/json
+Authorization: Bearer {{auth_token}}
