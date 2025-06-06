@@ -89,6 +89,7 @@ export default function MentorDashboard() {
       setLoading(false)
     }
   }
+
   const upcomingSessions: UpcomingSession[] = mentorDashboardData?.upcomingSessionsList?.map((session) => {
     const { time, duration } = parseTimeRange(session.timeRange)
     return {
