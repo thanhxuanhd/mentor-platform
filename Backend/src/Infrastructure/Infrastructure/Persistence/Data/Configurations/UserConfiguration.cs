@@ -97,6 +97,5 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(ma => ma.Admin)
             .HasForeignKey(ma => ma.AdminId)
             .OnDelete(DeleteBehavior.NoAction);
->>>>>>>>> Temporary merge branch 2
     }
 }

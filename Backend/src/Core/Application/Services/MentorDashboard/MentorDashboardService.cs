@@ -32,24 +32,22 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         List<UpcomingSessionResponse> upcomingSessionsList = new();
         HashSet<Guid> uniqueLearners = new();
         var now = DateTime.Now;
+        DateOnly currentDate = DateOnly.FromDateTime(now);
+        TimeOnly currentTime = TimeOnly.FromDateTime(now);
+
+
 
         if (upcomingSchedule != null)
         {
             foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots!)
             {
+                if (timeSlot.Date < currentDate || (timeSlot.Date == currentDate && timeSlot.EndTime < currentTime))
+                {
+                    continue;
+                }
                 foreach (var session in timeSlot.Sessions)
                 {
-                    if (session.Status == SessionStatus.Pending || session.Status == SessionStatus.Rescheduled)
-                    {
-                        pendingSessions++;
-                        continue;
-                    }
-                    else if (session.Status == SessionStatus.Completed)
-                    {
-                        completedSessions++;
-                        uniqueLearners.Add(session.LearnerId);
-                    }
-                    else if (session.Status == SessionStatus.Approved)
+                    if (session.Status == SessionStatus.Approved)
                     {
                         upcomingSessions++;
                         upcomingSessionsList.Add(new UpcomingSessionResponse
@@ -65,6 +63,35 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
                 }
             }
         }
+
+        IEnumerable<Schedules> allSchedules = await scheduleRepository.GetAllSchedulesAsync(mentorId);
+
+        foreach (var schedule in allSchedules)
+        {
+            foreach (var timeSlot in schedule.AvailableTimeSlots!)
+            {
+                foreach (var session in timeSlot.Sessions)
+                {
+                    if (currentDate > timeSlot.Date || (currentDate == timeSlot.Date && currentTime > timeSlot.EndTime))
+                    {
+                        if (session.Status == SessionStatus.Completed)
+                        {
+                            completedSessions++;
+                            uniqueLearners.Add(session.Learner!.Id);
+                        }
+                        break;
+                    }
+                    else
+                    {
+                        if (session.Status == SessionStatus.Pending || session.Status == SessionStatus.Rescheduled)
+                        {
+                            pendingSessions++;
+                        }    
+                    }
+                }
+            }
+        }
+
 
         var result = new GetMentorDashboardResponse
         {

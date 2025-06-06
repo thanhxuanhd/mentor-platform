@@ -4,7 +4,6 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
-<<<<<<<<< Temporary merge branch 1
   ScheduleOutlined,
   HddOutlined,
 } from "@ant-design/icons";
@@ -12,7 +11,7 @@ import { applicationRole } from "./role";
 
 interface MenuItemProps {
   key: string;
-  icon: React.ReactNode;
+icon: React.ReactNode;
   label: string;
   link: string;
   role: string[];
