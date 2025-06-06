@@ -197,6 +197,7 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
                 Description = r.Description,
                 ResourceType = r.ResourceType,
                 ResourceUrl = r.ResourceUrl,
+                MentorId = r.Course.MentorId,
                 CourseId = r.CourseId,
                 CourseTitle = r.Course.Title
             });

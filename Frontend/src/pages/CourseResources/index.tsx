@@ -255,7 +255,6 @@ export default function CourseResourcesPage() {
           </Button>
         )}
       </div>
-      {loading && <Spin tip="Loading..." size="large" />}
       {resourcesData.length === 0 ? (
         <Empty
           description="No Data"
@@ -268,9 +267,10 @@ export default function CourseResourcesPage() {
             <Col key={resource.id} sm={24} md={12} lg={8} xxl={6}>
               <Card
                 title={
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-2">
                     <div className="truncate">{resource.title}</div>
                     <Tag
+                      className="mr-0!"
                       color={
                         fileTypeColors[resource.resourceType.toLowerCase()] ||
                         fileTypeColors.default
@@ -280,10 +280,16 @@ export default function CourseResourcesPage() {
                     </Tag>
                   </div>
                 }
-                className="resource-card"
+                loading={loading}
+                className="resource-card min-h-full flex flex-col"
                 variant="borderless"
+                styles={{
+                  body: {
+                    flex: 1,
+                  },
+                }}
                 actions={[
-                  <div className="card-actions flex flex-wrap gap-4 px-6">
+                  <div className="card-actions flex flex-wrap gap-4 px-6 bottom-0">
                     <Button
                       type="primary"
                       size="large"
@@ -297,43 +303,46 @@ export default function CourseResourcesPage() {
                     >
                       Download
                     </Button>
-                    {user?.role === applicationRole.MENTOR && (
-                      <>
-                        <Button
-                          size="large"
-                          icon={<EditOutlined />}
-                          onClick={() => handleEditResource(resource)}
-                        >
-                          Edit
-                        </Button>
-                        <Tooltip title="Delete Resource">
-                          <Popconfirm
-                            title="Are you sure to delete this resource?"
-                            onConfirm={() => handleDeleteResource(resource.id)}
-                            okText="Yes"
-                            cancelText="No"
+                    {user?.role === applicationRole.MENTOR &&
+                      user.id === resource.mentorId && (
+                        <>
+                          <Button
+                            size="large"
+                            icon={<EditOutlined />}
+                            onClick={() => handleEditResource(resource)}
                           >
-                            <Button
-                              danger
-                              size="large"
-                              icon={<DeleteOutlined />}
+                            Edit
+                          </Button>
+                          <Tooltip title="Delete Resource">
+                            <Popconfirm
+                              title="Are you sure to delete this resource?"
+                              onConfirm={() =>
+                                handleDeleteResource(resource.id)
+                              }
+                              okText="Yes"
+                              cancelText="No"
                             >
-                              Delete
-                            </Button>
-                          </Popconfirm>
-                        </Tooltip>
-                      </>
-                    )}
+                              <Button
+                                danger
+                                size="large"
+                                icon={<DeleteOutlined />}
+                              >
+                                Delete
+                              </Button>
+                            </Popconfirm>
+                          </Tooltip>
+                        </>
+                      )}
                   </div>,
                 ]}
               >
-                <div className="card-header">
+                <div className="card-header h-full">
                   <div className="text-gray-400 truncate">
                     {resource.description}
                   </div>
-                </div>
-                <div className="text-orange-300 truncate">
-                  Course: {resource.courseTitle}
+                  <div className="text-orange-300 truncate">
+                    Course: {resource.courseTitle}
+                  </div>
                 </div>
               </Card>
             </Col>

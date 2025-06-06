@@ -10,5 +10,6 @@ public record CourseResourceResponse
     public FileType ResourceType { get; init; }
     public required string ResourceUrl { get; init; }
     public Guid CourseId { get; init; }
+    public Guid MentorId { get; init; }
     public required string CourseTitle { get; init; }
 }

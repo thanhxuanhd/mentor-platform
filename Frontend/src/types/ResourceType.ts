@@ -7,6 +7,7 @@ export interface CourseResourceResponse {
   resourceType: FileType;
   resourceUrl: string;
   courseId: string;
+  mentorId: string;
   courseTitle: string;
 }
 
