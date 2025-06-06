@@ -5,12 +5,10 @@ import type { FC } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { applicationRole } from "../../../constants/role.ts";
 import {
-  CheckOutlined,
   DeleteOutlined,
   EditOutlined,
   EyeOutlined,
   FolderOutlined,
-  InboxOutlined,
 } from "@ant-design/icons";
 import { formatDate } from "../../../utils/DateFormat.ts";
 
@@ -21,8 +19,6 @@ export const CourseTable: FC<CourseTableProps> = ({
   onView,
   onEdit,
   onDelete,
-  onPublish,
-  onArchive,
   tableProps,
 }) => {
   const { user } = useAuth();
@@ -96,23 +92,6 @@ export const CourseTable: FC<CourseTableProps> = ({
                 icon={<DeleteOutlined />}
                 onClick={() => onDelete(course)}
               />
-            </>
-          )}
-          {user?.role === applicationRole.ADMIN && (
-            <>
-              {course.status.toLowerCase() === "draft" && (
-                <Button
-                  type="primary"
-                  icon={<CheckOutlined />}
-                  onClick={() => onPublish(course)}
-                />
-              )}
-              {course.status.toLowerCase() === "published" && (
-                <Button
-                  icon={<InboxOutlined />}
-                  onClick={() => onArchive(course)}
-                />
-              )}
             </>
           )}
         </Space>
