@@ -27,7 +27,12 @@ export const getBinaryFileFromUrl = async (
   url: string,
 ): Promise<File | null> => {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/octet-stream",
+      },
+    });
     const blob = await response.blob();
     const contentType = response.headers.get("Content-Type") || "";
     const fileName = getFileNameFromUrl(url);
