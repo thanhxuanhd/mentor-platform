@@ -4,10 +4,7 @@ using Contract.Shared;
 using MentorPlatformAPI.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using NUnit.Framework;
-using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace WebAPI.Test
 {
