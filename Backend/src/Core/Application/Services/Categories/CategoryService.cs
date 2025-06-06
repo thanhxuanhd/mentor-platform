@@ -3,6 +3,7 @@ using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace Application.Services.Categories;
@@ -55,6 +56,20 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             await categoryRepository.ToPaginatedListAsync(categoryInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCategories, HttpStatusCode.OK);
+    }
+    public async Task<Result<List<GetActiveCategoryResponse>>> GetActiveCategoriesAsync()
+    {
+        var activeCategories = categoryRepository.GetAll()
+            .Where(c => c.Status == true)
+            .Select(c => new GetActiveCategoryResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+            });
+
+        var listActiveCategories = await categoryRepository.ToListAsync(activeCategories);
+
+        return Result.Success(listActiveCategories, HttpStatusCode.OK);
     }
 
     public async Task<Result<List<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id)
@@ -139,16 +154,15 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
         }
 
-        if (category.Courses != null && category.Courses.Count > 0)
-        {
-            return Result.Failure<bool>("Cannot delete category because it is in use", HttpStatusCode.BadRequest);
-        }
-
         try
         {
             categoryRepository.Delete(category);
             await categoryRepository.SaveChangesAsync();
             return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (DbUpdateException)
+        {
+            return Result.Failure<bool>("Cannot delete category because it is in use", HttpStatusCode.BadRequest);
         }
         catch (Exception)
         {
