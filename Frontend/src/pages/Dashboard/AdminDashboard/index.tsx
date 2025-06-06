@@ -113,9 +113,6 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-3 rounded-xl">
-            <TrophyOutlined className="text-white text-xl" />
-          </div>
           <div>
             <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
             <p className="text-slate-300 text-sm">
