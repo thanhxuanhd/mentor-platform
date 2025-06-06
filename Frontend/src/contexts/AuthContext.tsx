@@ -1,5 +1,11 @@
 import { jwtDecode } from "jwt-decode";
-import React, { createContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { ReactNode } from "react";
 import { mentorApplicationService } from "../services/mentorAppplications/mentorApplicationService";
 import { applicationRole } from "../constants/role";
@@ -54,10 +60,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isMentorApproved, setIsMentorApproved] = useState<boolean>(false);
 
-  const setToken = (token: string) => {
+  const setToken = useCallback((token: string) => {
     window.localStorage.setItem("token", token);
     fetchUserFromToken();
-  };
+  }, []);
 
   const removeToken = () => {
     window.localStorage.removeItem("token");
@@ -89,7 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
-    setUser({
+    const currentUser: User = {
       id: decodedToken.sub,
       email: decodedToken.email,
       fullName:
@@ -99,7 +105,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       role: decodedToken[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
       ],
-    });
+    };
+
+    setUser(currentUser);
     setIsAuthenticated(true);
     setLoading(false);
   };

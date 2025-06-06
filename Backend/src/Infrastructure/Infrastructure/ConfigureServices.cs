@@ -17,6 +17,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Infrastructure.Services.Authorization.Policies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Infrastructure;
 
@@ -44,12 +46,12 @@ public static class ConfigureServices
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ICourseRepository, CourseRepository>();
+        services.AddScoped<ICourseResourceRepository, CourseResourceRepository>();
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
         services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
-        services.AddScoped<ICourseItemRepository, CourseItemRepository>();
 
         services.AddHostedService(provider =>
         new UserProfilePhotoCleanupService(
@@ -57,6 +59,8 @@ public static class ConfigureServices
         provider.GetRequiredService<IWebHostEnvironment>(),
         provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
@@ -84,12 +88,14 @@ public static class ConfigureServices
             };
         });
 
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(UserRole.Admin.ToString()));
-            options.AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(UserRole.Mentor.ToString()));
-            options.AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(UserRole.Learner.ToString()));
-        });
+        services.AddAuthorizationBuilder()
+            .AddPolicy(RequiredRole.Admin, policy => policy.RequireRole(nameof(UserRole.Admin)))
+            .AddPolicy(RequiredRole.Mentor, policy => policy.RequireRole(nameof(UserRole.Mentor)))
+            .AddPolicy(RequiredRole.Learner, policy => policy.RequireRole(nameof(UserRole.Learner)))
+            .AddPolicy(CourseResourcePolicyName.UserCanEditCoursePolicyName,
+                policy => policy.Requirements.Add(new UserCanEditCourseRequirement()));
+
+        services.AddTransient<IAuthorizationHandler, UserCanEditCourseAccessHandler>();
 
         return services;
     }

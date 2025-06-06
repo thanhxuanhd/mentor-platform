@@ -9,12 +9,7 @@ test.describe('@Category Delete category tests', () => {
 
     test.beforeEach(async ({ loggedInPageByAdminRole, page, request }) => {
         categoryPage = new CategoryPage(page);
-        const data = categoryData.create_valid_category;
-        const tempCategory = {
-            name: endWithTimestamp(data.name),
-            description: data.description
-        };
-        await createTestCategory(request, tempCategory);
+        await createTestCategory(request);
     });
 
     test('@SmokeTest @Category Delete a valid category successful', async ({ page }) => {

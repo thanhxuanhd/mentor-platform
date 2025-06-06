@@ -17,21 +17,21 @@ public static class CourseExtensions
             MentorName = course.Mentor.FullName,
             Difficulty = course.Difficulty,
             DueDate = course.DueDate,
-            Items = course.Items.Select(ToCourseItemResponse).ToList(),
+            Resources = course.Resources.Select(ToCourseResourceResponse).ToList(),
             Tags = course.Tags.Select(t => t.Name).ToList(),
             Status = course.Status
         };
     }
 
-    public static CourseItemResponse ToCourseItemResponse(this CourseItem courseItem)
+    public static CourseResourceResponse ToCourseResourceResponse(this CourseResource courseResource)
     {
-        return new CourseItemResponse
+        return new CourseResourceResponse
         {
-            Id = courseItem.Id,
-            Description = courseItem.Description,
-            Title = courseItem.Title,
-            MediaType = courseItem.MediaType,
-            WebAddress = courseItem.WebAddress
+            Id = courseResource.Id,
+            Description = courseResource.Description,
+            Title = courseResource.Title,
+            ResourceType = courseResource.ResourceType,
+            ResourceUrl = courseResource.ResourceUrl,
         };
     }
 }

@@ -1,24 +1,20 @@
 import { CoursePage } from '../../../pages/courses/course-management-page';
 import { test } from '../../../core/fixture/auth-fixture';
 import courseData from '../../test-data/course-data.json'
-import { createTestCourse, getLatestCategory } from '../../../core/utils/api-helper';
+import { createTestCategory, createTestCourse, deleteTestCategory, getLatestCategory } from '../../../core/utils/api-helper';
 import { endWithTimestamp } from '../../../core/utils/generate-unique-data';
 
 test.describe('@Course Delete course tests', () => {
     let coursePage: CoursePage;
+    let categoryId: string;
+
+    test.beforeAll("Setup precondition", async ({ request }) => {
+        categoryId = await createTestCategory(request);
+    });
 
     test.beforeEach(async ({ loggedInPageByMentorRole, page, request }) => {
         coursePage = new CoursePage(page);
-        const testData = courseData.create_valid_course;
-        const tempCourse = {
-            title: endWithTimestamp(testData.title),
-            description: testData.description,
-            categoryId: await getLatestCategory(request),
-            difficulty: testData.difficulty,
-            tags: testData.tags,
-            dueDate: testData.dueDate
-        };
-        await createTestCourse(request, tempCourse);
+        await createTestCourse(request, categoryId);
     });
     test('@SmokeTest @Course Delete a valid course successful', async ({ page }) => {
         coursePage = new CoursePage(page);
@@ -36,4 +32,8 @@ test.describe('@Course Delete course tests', () => {
             await coursePage.expectSucessDeleteMessage();
         });
     });
+
+    test.afterAll("Clean up precondition data", async ({ request }) => {
+        await deleteTestCategory(request, categoryId);
+    })
 });
