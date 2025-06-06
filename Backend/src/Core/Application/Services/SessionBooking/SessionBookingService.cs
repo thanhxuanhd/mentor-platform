@@ -214,13 +214,6 @@ public class SessionBookingService(
                 HttpStatusCode.NotFound);
         }
 
-        // if (bookingSession.TimeSlot.Schedules.Mentor.Status != UserStatus.Active)
-        // {
-        //     return Result.Failure<SessionSlotStatusResponse>(
-        //         "Selected slot is unavailable.",
-        //         HttpStatusCode.BadRequest);
-        // }
-
         return await CancelBookingInternalAsync(bookingSession, user);
     }
 
@@ -230,8 +223,6 @@ public class SessionBookingService(
         var timeSlot = sessionsSession.TimeSlot;
         sessionBookingRepository.MentorCancelBookingSession(sessionsSession, cancellingLearner.Id);
         await sessionBookingRepository.SaveChangesAsync();
-
-        // TODO: sending email?
 
         return Result.Success(sessionsSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
@@ -327,7 +318,7 @@ public class SessionBookingService(
                 conflict.Status = SessionStatus.Canceled;
 
                 var conflictUser = await userRepository.GetByIdAsync(conflict.LearnerId);
-                if (conflictUser != null)
+                if (conflictUser?.IsReceiveNotification == true)
                 {
                     var cancelSubject = EmailConstants.SUBJECT_SESSION_CANCELLED;
                     var cancelBody = EmailConstants.BodySessionCancelledEmail(conflict.Id);
@@ -337,7 +328,6 @@ public class SessionBookingService(
                 sessionBookingRepository.Update(conflict);
             }
         }
-
         else if (request.Status == SessionStatus.Canceled)
         {
             subject = EmailConstants.SUBJECT_SESSION_CANCELLED;
@@ -352,10 +342,13 @@ public class SessionBookingService(
                 return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
             }
 
-            var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
-            if (!emailResult)
+            if (user.IsReceiveNotification)
             {
-                return Result.Failure<bool>("Failed to send email.", HttpStatusCode.InternalServerError);
+                var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
+                if (!emailResult)
+                {
+                    return Result.Failure<bool>("Failed to send email.", HttpStatusCode.InternalServerError);
+                }
             }
         }
 
@@ -364,6 +357,7 @@ public class SessionBookingService(
 
         return Result.Success(true, HttpStatusCode.OK);
     }
+
 
     public async Task<Result<bool>> UpdateRecheduleSessionAsync(Guid id, SessionUpdateRecheduleRequest request)
     {
@@ -374,11 +368,12 @@ public class SessionBookingService(
         {
             return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
         }
+
         if (
-                session.TimeSlot.Date == request.Date &&
-                session.TimeSlot.StartTime == request.StartTime &&
-                session.TimeSlot.EndTime == request.EndTime
-            )
+            session.TimeSlot.Date == request.Date &&
+            session.TimeSlot.StartTime == request.StartTime &&
+            session.TimeSlot.EndTime == request.EndTime
+        )
         {
             return Result.Failure<bool>("No changes detected. Reschedule not applied.", HttpStatusCode.BadRequest);
         }
@@ -412,13 +407,16 @@ public class SessionBookingService(
             return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
         }
 
-        string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
-        string body = EmailConstants.BodySessionRescheduledEmail(id, request.Date, request.StartTime, request.EndTime, request.Reason);
-
-        var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
-        if (!emailResult)
+        if (user.IsReceiveNotification)
         {
-            return Result.Failure<bool>("Failed to send reschedule email.", HttpStatusCode.InternalServerError);
+            string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
+            string body = EmailConstants.BodySessionRescheduledEmail(id, request.Date, request.StartTime, request.EndTime, request.Reason);
+
+            var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
+            if (!emailResult)
+            {
+                return Result.Failure<bool>("Failed to send reschedule email.", HttpStatusCode.InternalServerError);
+            }
         }
 
         sessionBookingRepository.Update(session);
