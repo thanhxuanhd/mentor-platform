@@ -686,6 +686,24 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Tag");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorApplication", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Admin")
+                        .WithMany("ReviewedMentorApplications")
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Domain.Entities.User", "Mentor")
+                        .WithMany("MentorApplications")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
+
+                    b.Navigation("Mentor");
+                });
+
             modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
                 {
                     b.HasOne("Domain.Entities.Schedules", "Schedules")

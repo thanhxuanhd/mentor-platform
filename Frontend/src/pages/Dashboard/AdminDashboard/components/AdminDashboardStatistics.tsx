@@ -8,13 +8,13 @@ import {
   ArrowRightOutlined,
 } from "@ant-design/icons"
 import { useNavigate } from "react-router-dom"
-import type { DashboardMetrics } from "../../../../types/DashboardType"
+import type { AdminDashboardMetrics } from "../../../../types/DashboardType"
 import { getFileTypeString } from "../../../../types/enums/FileType"
 
 const { Text } = Typography
 
 interface AdminDashboardStatisticProps {
-  metrics?: DashboardMetrics;
+  metrics?: AdminDashboardMetrics;
 }
 
 export default function AdminDashboardStatistics({ metrics }: AdminDashboardStatisticProps) {
@@ -23,7 +23,7 @@ export default function AdminDashboardStatistics({ metrics }: AdminDashboardStat
   return (
     <>
       {/* Total Users Card */}
-      <Card key={1} className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm hover:bg-slate-600/70 transition-all duration-300 hover:scale-105 hover:shadow-xl" id="total-users">
+      <Card className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm hover:bg-slate-600/70 transition-all duration-300 hover:scale-105 hover:shadow-xl" id="total-users">
         <div className="flex items-center justify-between mb-4">
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-xl">
             <UserOutlined className="text-white text-xl" />
@@ -46,7 +46,7 @@ export default function AdminDashboardStatistics({ metrics }: AdminDashboardStat
       </Card>
 
       {/* Sessions This Week */}
-      <Card key={2} className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm hover:bg-slate-600/70 transition-all duration-300 hover:scale-105 hover:shadow-xl" id="sessions">
+      <Card className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm hover:bg-slate-600/70 transition-all duration-300 hover:scale-105 hover:shadow-xl" id="sessions">
         <div className="flex items-center justify-between mb-4" id="3">
           <div className="bg-gradient-to-r from-green-500 to-green-600 p-3 rounded-xl">
             <BookOutlined className="text-white text-xl" />
@@ -84,7 +84,7 @@ export default function AdminDashboardStatistics({ metrics }: AdminDashboardStat
       </Card>
 
       {/* Pending Applications */}
-      <Card key={4} className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm hover:bg-slate-600/70 transition-all duration-300 hover:scale-105 hover:shadow-xl" id="pending-approval">
+      <Card className="bg-slate-600/50 border-slate-500/30 backdrop-blur-sm hover:bg-slate-600/70 transition-all duration-300 hover:scale-105 hover:shadow-xl" id="pending-approval">
         <div className="flex items-center justify-between mb-4">
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-3 rounded-xl">
             <CheckSquareOutlined className="text-white text-xl" />

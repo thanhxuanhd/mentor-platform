@@ -4,8 +4,8 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
-  HddOutlined,
   ScheduleOutlined,
+  HddOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
@@ -23,7 +23,7 @@ export const menuItems: MenuItemProps[] = [
     key: "dashboard",
     icon: <BarChartOutlined />,
     label: "Dashboard",
-    link: "dashboard",
+    link: "",
     role: [
       applicationRole.ADMIN,
       applicationRole.LEARNER,

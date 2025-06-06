@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Persistence.Data.Configurations
 {
-    public class TimeSlotConfiguration : IEntityTypeConfiguration<MentorAvailableTimeSlot>
+    public class MentorAvailableTimeSlotConfiguration : IEntityTypeConfiguration<MentorAvailableTimeSlot>
     {
         public void Configure(EntityTypeBuilder<MentorAvailableTimeSlot> builder)
         {
