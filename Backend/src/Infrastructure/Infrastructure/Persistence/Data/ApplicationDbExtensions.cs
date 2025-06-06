@@ -386,6 +386,87 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        if (!dbContext.Sessions.Any())
+        {
+            var learnerId1 = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C");
+            var learnerId2 = Guid.Parse("aa8777db-dfed-4a68-a3a3-e1374fb38572");
+            var sessionId1 = Guid.NewGuid();
+            var sessionId2 = Guid.NewGuid();
+            var sessionId3 = Guid.NewGuid();
+            var sessionId4 = Guid.NewGuid();
+            var sessionId5 = Guid.NewGuid();
+            var sessionId6 = Guid.NewGuid();
+            var sessionId7 = Guid.NewGuid();
+            var sessionId8 = Guid.NewGuid();
+
+            dbContext.Sessions.AddRange(
+                new Sessions
+                {
+                    Id = sessionId1,
+                    TimeSlotId = slotId1,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Pending,
+                },
+                new Sessions
+                {
+                    Id = sessionId2,
+                    TimeSlotId = slotId2,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId3,
+                    TimeSlotId = slotId3,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                },
+                new Sessions
+                {
+                    Id = sessionId4,
+                    TimeSlotId = slotId4,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                },
+                new Sessions
+                {
+                    Id = sessionId5,
+                    TimeSlotId = slotId1,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId6,
+                    TimeSlotId = slotId2,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Pending,
+                },
+                new Sessions
+                {
+                    Id = sessionId7,
+                    TimeSlotId = slotId3,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                },
+                new Sessions
+                {
+                    Id = sessionId8,
+                    TimeSlotId = slotId4,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                }
+            );
+        }
+
         if (!dbContext.MentorApplications.Any())
         {
             dbContext.MentorApplications.AddRange(new MentorApplication
@@ -439,6 +520,8 @@ public static class ApplicationDbExtensions
             });
             dbContext.SaveChanges();
         }
+
+        var scheduleId = Guid.NewGuid();
 
         if (!dbContext.Schedules.Any())
         {
@@ -497,6 +580,10 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        var slotId1 = Guid.NewGuid();
+        var slotId2 = Guid.NewGuid();
+        var slotId3 = Guid.NewGuid();
+        var slotId4 = Guid.NewGuid();
         if (!dbContext.MentorAvailableTimeSlots.Any())
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);

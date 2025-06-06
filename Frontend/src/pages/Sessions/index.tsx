@@ -57,7 +57,7 @@ export default function SessionBooking() {
     };
 
     fetchTimeSlots();
-  }, [selectedDate]);
+  }, [selectedMentor, selectedDate]);
 
   const handleDateSelect = (date: Dayjs) => {
     setSelectedDate(date);
