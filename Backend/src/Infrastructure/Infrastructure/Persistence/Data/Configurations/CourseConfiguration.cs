@@ -37,9 +37,9 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
             .WithMany()
             .UsingEntity<CourseTag>();
 
-        builder.HasMany(c => c.Items)
-            .WithOne(ci => ci.Course)
-            .HasForeignKey(ci => ci.CourseId)
+        builder.HasMany(c => c.Resources)
+            .WithOne(cr => cr.Course)
+            .HasForeignKey(cr => cr.CourseId)
             .IsRequired();
     }
 }
