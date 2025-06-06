@@ -4,8 +4,9 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
-  HddOutlined,
+<<<<<<<<< Temporary merge branch 1
   ScheduleOutlined,
+  HddOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 

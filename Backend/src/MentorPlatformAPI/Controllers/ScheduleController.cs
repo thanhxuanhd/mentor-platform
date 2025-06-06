@@ -27,7 +27,8 @@ public class ScheduleController : ControllerBase
     [HttpPost("{mentorId}/settings")]
     public async Task<IActionResult> UpdateScheduleSettings(Guid mentorId, [FromBody] SaveScheduleSettingsRequest request)
     {
-        if (mentorId != Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)))
+        var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || mentorId != Guid.Parse(userIdString))
         {
             return Forbid("You are not allow to update this mentor's schedule settings.");
         }

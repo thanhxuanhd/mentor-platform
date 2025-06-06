@@ -11,7 +11,7 @@ interface TimeBlocksProps {
 
 export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBlocksProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" id="time-blocks">
       <h3 className="text-lg font-medium mb-4">
         Set your availability for {selectedDate.format("dddd, MMMM D")}
       </h3>
