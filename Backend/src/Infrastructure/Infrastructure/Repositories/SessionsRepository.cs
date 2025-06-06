@@ -113,7 +113,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             throw new Exception("Cannot cancel this booking session at this time.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 
     public async Task<IEnumerable<Sessions>> GetLearnerUpcomingSessionsAsync(Guid userId)
