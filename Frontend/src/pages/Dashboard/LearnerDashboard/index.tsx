@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Badge } from 'antd';
+import { Avatar, Badge } from 'antd';
 import { CalendarOutlined, VideoCameraOutlined, MessageOutlined, UserOutlined } from '@ant-design/icons';
 import { learnerDashboardService, type GetLearnerDashboardResponse, type LearnerUpcomingSessionResponse } from '../../../services/learnerDashboard/learnerDashboardService';
+import dayjs from 'dayjs';
 
 interface Session {
   id: string;
   name: string;
   date: string;
   time: string;
+  avatarUrl: string;
   type: 'Virtual' | 'OneOnOne' | 'Onsite';
 }
 
@@ -25,9 +27,10 @@ export default function LearnerDashboard() {
         const mappedSessions: Session[] = response.upcomingSessions.map((session: LearnerUpcomingSessionResponse) => ({
           id: session.sessionId,
           name: session.mentorName,
-          date: session.scheduledDate,
+          date: dayjs(session.scheduledDate).format('MMM D, YYYY'),
           time: session.timeRange,
-          type: session.type as 'Virtual' | 'OneOnOne' | 'Onsite'
+          type: session.type as 'Virtual' | 'OneOnOne' | 'Onsite',
+          avatarUrl: session.mentorProfilePictureUrl || ''
         }));
 
         setSessions(mappedSessions);
@@ -44,25 +47,25 @@ export default function LearnerDashboard() {
 
   const getSessionTypeButton = (type: string) => {
     switch (type) {
-      case 'video':
+      case 'Virtual':
         return (
           <button className="flex items-center gap-2 px-3 py-1.5 bg-blue-600">
             <VideoCameraOutlined />
-            Video Call
+            Virtual
           </button>
         );
-      case 'chat':
+      case 'OneOnOne':
         return (
           <button className="flex items-center gap-2 px-3 py-1.5 bg-green-600">
             <MessageOutlined />
-            Chat Session
+            One on One
           </button>
         );
-      case 'in-person':
+      case 'Onsite':
         return (
           <button className="flex items-center gap-2 px-3 py-1.5 bg-orange-400">
             <UserOutlined />
-            In-Person
+            Onsite
           </button>
         );
       default:
@@ -72,15 +75,12 @@ export default function LearnerDashboard() {
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
-      {/* Header */}
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-semibold text-white mb-2">Learner Dashboard</h1>
         <p className="text-gray-400">Welcome to your learning dashboard. Navigate using the sidebar.</p>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Upcoming Sessions Section */}
         <div className="bg-slate-800 rounded-lg p-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
@@ -91,11 +91,10 @@ export default function LearnerDashboard() {
               />
             </div>
             <button className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
-              Manage Schedule →
+              View Schedule →
             </button>
           </div>
 
-          {/* Sessions List */}
           <div className="space-y-4">
             {loading ? (
               <p className="text-gray-300">Loading sessions...</p>
@@ -110,17 +109,25 @@ export default function LearnerDashboard() {
                   className="bg-slate-700 hover:bg-slate-600 rounded-lg p-5 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-white mb-3">
-                        {session.name}
-                      </h3>
-                      <div className="flex items-center gap-2 text-gray-300 mb-4">
-                        <CalendarOutlined className="text-gray-400" />
-                        <span className="text-sm">
-                          {session.date} • {session.time}
-                        </span>
+                    <div className="flex items-center gap-4 flex-1">
+                      <Avatar
+                        src={session.avatarUrl || undefined}
+                        icon={!session.avatarUrl ? <UserOutlined /> : undefined}
+                        size={100}
+                        className="flex-shrink-0"
+                      />
+                      <div>
+                        <h3 className="text-lg font-medium text-white mb-3">
+                          {session.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-gray-300 mb-4">
+                          <CalendarOutlined className="text-gray-400" />
+                          <span className="text-sm">
+                            {session.date} • {session.time}
+                          </span>
+                        </div>
+                        {getSessionTypeButton(session.type)}
                       </div>
-                      {getSessionTypeButton(session.type)}
                     </div>
                   </div>
                 </div>
