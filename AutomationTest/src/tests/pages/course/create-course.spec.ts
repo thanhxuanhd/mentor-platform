@@ -31,7 +31,6 @@ test.describe('@Course Create course tests', () => {
                 await coursePage.selectDifficulty(data.difficulty);
                 await coursePage.inputDescription(data.description);
                 await coursePage.inputTagsName(data.tags);
-                await coursePage.selectDueDate(data.dueDate);
                 await coursePage.clickCreateCourseButton();
             });
             await test.step('Verify system behavior', async () => {

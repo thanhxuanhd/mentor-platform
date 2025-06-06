@@ -4,14 +4,14 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
-  HddOutlined,
   ScheduleOutlined,
+  HddOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
 interface MenuItemProps {
   key: string;
-  icon: React.ReactNode;
+icon: React.ReactNode;
   label: string;
   link: string;
   role: string[];
