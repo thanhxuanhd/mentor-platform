@@ -113,6 +113,28 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             throw new Exception("Cannot cancel this booking session at this time.");
         }
 
-        bookingSession.Status = SessionStatus.Cancelled;
+        bookingSession.Status = SessionStatus.Canceled;
+    }
+
+    public async Task<IEnumerable<Sessions>> GetLearnerUpcomingSessionsAsync(Guid userId)
+    {
+        var learnerSessions = _context.Sessions
+            .Include(s => s.TimeSlot)
+                .ThenInclude(mats => mats.Schedules)
+                    .ThenInclude(s => s.Mentor)
+            .Where(s => s.LearnerId == userId);
+
+        var approvedSessions = learnerSessions
+            .Where(s => s.Status == SessionStatus.Approved || s.Status == SessionStatus.Rescheduled);
+
+        var now = DateTime.Now;
+
+        var upcomingSessions = await approvedSessions
+            .Where(s => s.TimeSlot.Date >= DateOnly.FromDateTime(now) ||
+                        (s.TimeSlot.Date == DateOnly.FromDateTime(now) && s.TimeSlot.StartTime > TimeOnly.FromDateTime(now)))
+            .OrderBy(s => s.TimeSlot.Date).ThenBy(s => s.TimeSlot.StartTime)
+            .ToListAsync();
+
+        return upcomingSessions;
     }
 }

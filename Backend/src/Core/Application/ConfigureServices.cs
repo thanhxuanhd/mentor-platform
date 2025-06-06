@@ -4,12 +4,15 @@ using Application.Services.Categories;
 using Application.Services.CourseResources;
 using Application.Services.Courses;
 using Application.Services.Expertises;
+using Application.Services.MentorDashboard;
 using Application.Services.MentorApplications;
 using Application.Services.Schedule;
 using Application.Services.SessionBooking;
+using Application.Services.MentorApplications;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;
 using Microsoft.Extensions.DependencyInjection;
+using Application.Services.LearnerDashboard;
 
 namespace Application;
 
@@ -29,6 +32,9 @@ public static class ConfigureServices
                 services.AddScoped<IMentorApplicationService, MentorApplicationService>();
                 services.AddScoped<IScheduleService, ScheduleService>();
                 services.AddScoped<ISessionBookingService, SessionBookingService>();
+                services.AddScoped<IMentorDashboardService, MentorDashboardService>();
+                services.AddScoped<IMentorApplicationService, MentorApplicationService>();
+                services.AddScoped<ILearnerDashboardService, LearnerDashboardService>();
 
                 return services;
         }

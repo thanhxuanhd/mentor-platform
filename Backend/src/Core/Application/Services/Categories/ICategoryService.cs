@@ -11,6 +11,7 @@ public interface ICategoryService
     Task<Result<List<GetActiveCategoryResponse>>> GetActiveCategoriesAsync();
     Task<Result<List<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id);
     Task<Result<GetCategoryResponse>> CreateCategoryAsync(CategoryRequest request);
+    Task<Result<List<GetActiveCategoryResponse>>> GetActiveCategoriesAsync();
     Task<Result<bool>> EditCategoryAsync(Guid categoryId, CategoryRequest request);
     Task<Result<bool>> DeleteCategoryAsync(Guid categoryId);
 }
