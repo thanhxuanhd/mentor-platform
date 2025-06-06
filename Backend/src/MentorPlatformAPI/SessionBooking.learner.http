@@ -1,0 +1,58 @@
+@MentorConnectAPI_HostAddress = https://localhost:5000
+
+### Authorize as Learner
+POST {{MentorConnectAPI_HostAddress}}/api/Auth/sign-in
+Accept: application/json
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {%
+ client.global.set("auth_token", response.body.value.token);
+%}
+
+### Get Available Mentors
+GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/available-mentors?pageIndex={{pageIndex}}&pageSize={{pageSize}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Get Available Time Slot of a Mentor By Date
+< {%
+    const currentDate = new Date().toISOString().split('T')[0]
+    request.variables.set("currentDate", currentDate)
+%}
+
+GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/available-mentors/timeslots/{{mentorId}}?date={{currentDate}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
+### Request Booking Session
+POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "timeSlotId": "{{availableTimeSlotId}}",
+    "sessionType": "OnSite"
+}
+
+### Request Booking Session that is unavailable
+POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}
+
+{
+    "timeSlotId": "{{unavailableTimeSlotId}}",
+    "sessionType": "OnSite"
+}
+
+### List all booking request
+GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/timeslots/requests/me
+Accept: application/json
+Content-Type: application/json
+Authorization: Bearer {{auth_token}}

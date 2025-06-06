@@ -1,21 +1,22 @@
 import editUserProfileData from "../../test-data/user-edit-profile-data.json";
 import { EditUserProfile } from "../../../pages/edit-user-profile/edit-user-profile-page";
-import { test } from "../../../core/fixture/authFixture";
+import { test } from "../../../core/fixture/auth-fixture";
 import { EditUserProfileInterface } from "../../../models/edit-user/edit-user";
 
 test.describe("@Edit profile test", () => {
   let editUserProfile: EditUserProfile;
 
-  test.beforeEach(async ({ loggedInPage, page }) => {
+  test.beforeEach(async ({ loggedInPageByLearnerRole, page }) => {
     editUserProfile = new EditUserProfile(page);
   });
 
   const userData: { [label: string]: EditUserProfileInterface } = {
-    "Verify update user profile successfully": editUserProfileData.valid_case,
-    "Empty fullname": editUserProfileData.empty_fullname,
-    "Empty phone number": editUserProfileData.empty_phone_number,
-    "Empty availability": editUserProfileData.empty_availability,
-    "Incorrect phone number format":
+    "@SmokeTest Verify update user profile successfully":
+      editUserProfileData.valid_case,
+    "@SmokeTest Empty fullname": editUserProfileData.empty_fullname,
+    "@SmokeTest Empty phone number": editUserProfileData.empty_phone_number,
+    "@SmokeTest Empty availability": editUserProfileData.empty_availability,
+    "@SmokeTest Incorrect phone number format":
       editUserProfileData.wrong_phone_number_format,
     "Verify display error message when skills exceed 200 characters":
       editUserProfileData.professional_skills_exceed_200_characters,
@@ -34,7 +35,7 @@ test.describe("@Edit profile test", () => {
         await editUserProfile.selectExpertise(data.expertise!);
         await editUserProfile.fillProfessionalSkillsField(data.skills!);
         await editUserProfile.fillExperienceField(data.experience!);
-        await editUserProfile.unselectedAvailabilityOptions();
+        await editUserProfile.unselectAvailabilityOptions();
         await editUserProfile.selectAvailabilityOptions(data.availbility);
         await editUserProfile.selectTeaching(data.teaching!);
         await editUserProfile.selectCategory(data.category!);

@@ -14,13 +14,13 @@
   "create_empty_category_name": {
     "name": "",
     "description": "This is category des",
-    "isActive": false,
+    "isActive": true,
     "expectedMessage": "Please enter category name"
   },
   "create_over_length_category_name": {
     "name": "This is over 50 characters category name abc def ghi klm opq rst uvxyz",
     "description": "This is category des",
-    "isActive": false,
+    "isActive": true,
     "expectedMessage": "Category name should not exceed 50 characters"
   },
   "update_valid_category": {
@@ -32,13 +32,13 @@
   "update_duplicate_category": {
     "name": "Career Development",
     "description": "This is category des",
-    "isActive": false,
+    "isActive": true,
     "expectedMessage": "Already have this category"
   },
   "update_empty_category_name": {
     "name": "",
     "description": "This is category des",
-    "isActive": false,
+    "isActive": true,
     "expectedMessage": "Please enter category name"
   },
   "update_over_length_category_name": {

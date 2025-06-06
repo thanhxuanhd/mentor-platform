@@ -11,11 +11,12 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using System.Net;
 
 namespace Application.Services.Users;
 
-public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env) : IUserService
+public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env, ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<GetUserResponse>> GetUserByEmailAsync(string email)
     {
@@ -29,7 +30,6 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         return Result.Success(userResponse, HttpStatusCode.OK);
     }
-
 
     public async Task<Result<GetUserResponse>> GetUserByIdAsync(Guid id)
     {
@@ -254,12 +254,18 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
         }
 
-        if (file.Length > FileConstants.MAX_IMAGE_SIZE)
+        if (file.Length > FileConstants.MAX_FILE_SIZE)
         {
             return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
         }
 
-        var imagesPath = Path.Combine(env.WebRootPath, "images");
+        var path = Directory.GetCurrentDirectory();
+        logger.LogInformation($"RootPath: {env.WebRootPath}");
+        if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
+        {
+            Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
+        }
+        var imagesPath = Path.Combine(path, env.WebRootPath, "images");
 
         if (!Directory.Exists(imagesPath))
         {
@@ -314,7 +320,9 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         try
         {
             var fileName = Path.GetFileName(uri.LocalPath);
+
             var imagesPath = Path.Combine(env.WebRootPath, "images");
+
             var filePath = Path.Combine(imagesPath, fileName);
 
             if (!File.Exists(filePath))
@@ -329,6 +337,119 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         catch (Exception ex)
         {
             return Result.Failure<bool>($"Failed to remove avatar: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
+    }
+
+    public async Task<Result<string>> UploadDocumentAsync(Guid userId, HttpRequest request, IFormFile file)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Result.Failure<string>("File not selected", HttpStatusCode.BadRequest);
+        }
+
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<string>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        var fileContentType = file.ContentType;
+
+        if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+        {
+            return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
+        }
+
+        if (file.Length > FileConstants.MAX_FILE_SIZE)
+        {
+            return Result.Failure<string>("File size must not exceed 1MB.", HttpStatusCode.BadRequest);
+        }
+
+        var path = Directory.GetCurrentDirectory();
+
+        logger.LogInformation($"RootPath: {env.WebRootPath}");
+
+        if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
+        {
+            Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
+        }
+        var documentsPath = Path.Combine(path, env.WebRootPath, "documents", $"{userId}");
+
+        if (!Directory.Exists(documentsPath))
+        {
+            Directory.CreateDirectory(documentsPath);
+        }
+
+        long epoch = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+        string fileName = $"{epoch}_{file.FileName}";
+
+        var filePath = Path.Combine(documentsPath, fileName);
+
+        try
+        {
+            using var stream = new FileStream(filePath, FileMode.Create);
+
+            await file.CopyToAsync(stream);
+
+            var baseUrl = $"{request?.Scheme}://{request?.Host}";
+
+            var fileUrl = $"{baseUrl}/documents/{userId}/{fileName}";
+
+            return Result.Success(fileUrl, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
+        }
+    }
+    public async Task<Result<bool>> RemoveDocumentAsync(Guid userId, string documentUrl)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+        {
+            return Result.Failure<bool>($"User with ID {userId} not found", HttpStatusCode.NotFound);
+        }
+
+        if (string.IsNullOrWhiteSpace(documentUrl))
+        {
+            return Result.Failure<bool>("Document URL is required.", HttpStatusCode.BadRequest);
+        }
+
+        if (!Uri.TryCreate(documentUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        {
+            return Result.Failure<bool>("Invalid document URL format.", HttpStatusCode.BadRequest);
+        }
+
+        var fileName = Path.GetFileName(uri.LocalPath);
+
+        var documentsPath = Path.Combine(env.WebRootPath, "documents", $"{userId}");
+
+        var filePath = Path.Combine(documentsPath, fileName);
+
+        var segments = uri.Segments;
+
+        string userIdString = segments[2].TrimEnd('/');
+
+        if (!userId.ToString().Equals(userIdString, StringComparison.OrdinalIgnoreCase))
+        {
+            return Result.Failure<bool>("You are not allowed to delete this file.", HttpStatusCode.Forbidden);
+        }
+
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                return Result.Failure<bool>("Document file not found.", HttpStatusCode.NotFound);
+            }
+
+            File.Delete(filePath);
+
+            return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (Exception ex)
+        {
+            return Result.Failure<bool>($"Failed to remove file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
     }
 }

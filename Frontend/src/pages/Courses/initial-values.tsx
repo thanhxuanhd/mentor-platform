@@ -1,4 +1,5 @@
 import type { CourseFormDataOptions } from "./types.tsx";
+import dayjs from "dayjs";
 
 export type CourseStatus = "draft" | "published" | "archived" | string;
 export const CourseStatesEnumMember: Record<CourseStatus, string> = {
@@ -7,7 +8,8 @@ export const CourseStatesEnumMember: Record<CourseStatus, string> = {
   archived: "Archived",
 };
 
-export type CourseDifficulty = "beginner" | "intermediate" | "advanced" | string;
+export type CourseDifficulty = "beginner" | "intermediate" | "advanced";
+
 export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
   beginner: "Beginner",
   intermediate: "Intermediate",
@@ -15,17 +17,19 @@ export const CourseDifficultyEnumMember: Record<CourseDifficulty, string> = {
 };
 
 export type CourseMimeType = "application/pdf" | "application/octet-stream";
-export const CourseMediaTypeEnumMember: Record<CourseMimeType, string> = {
+export const CourseResourceTypeEnumMember: Record<CourseMimeType, string> = {
   "application/pdf": "pdf",
   "application/octet-stream": "binary",
 };
 
 export const initialFormData: CourseFormDataOptions = {
+  id: undefined,
   title: "",
   description: "",
-  categoryId: "",
+  categoryId: undefined,
+  categoryName: undefined,
   status: "draft",
-  dueDate: "",
+  dueDate: dayjs().toString(),
   difficulty: "beginner",
   tags: [],
 };

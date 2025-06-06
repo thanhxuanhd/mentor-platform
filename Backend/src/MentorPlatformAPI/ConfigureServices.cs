@@ -1,8 +1,9 @@
-﻿using Contract.Dtos.Users.Requests;
+﻿using System.Text.Json.Serialization;
+using Contract.Dtos.Users.Requests;
 using FluentValidation;
 using MentorPlatformAPI.ExceptionHandler;
 using MentorPlatformAPI.Extensions;
-using System.Text.Json.Serialization;
+using MentorPlatformAPI.Filter;
 
 namespace MentorPlatformAPI;
 
@@ -13,7 +14,8 @@ public static class ConfigureServices
         services.AddEndpointsApiExplorer()
             .AddSwaggerGenWithAuth();
 
-        services.AddControllers()
+        services.AddControllers(options => 
+                options.Filters.Add<AutoValidateFilter>())
             .AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;

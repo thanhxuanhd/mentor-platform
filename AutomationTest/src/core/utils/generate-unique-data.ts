@@ -36,3 +36,47 @@ export function withTimestampEmail(data: any) {
     email: `${timestamp}${data.email}`,
   };
 }
+
+function formatDateToYYYYMMDD(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export function withTimestampTitleAndFutureDate(data: any, daysOffset: number = 1) {
+  const timestamp = new Date().toISOString();
+
+  let updatedDueDate = data.dueDate;
+  if (data.dueDate && typeof data.dueDate === 'string') {
+    const now = new Date();
+    now.setDate(now.getDate() + daysOffset);
+    updatedDueDate = formatDateToYYYYMMDD(now);
+  }
+
+  return {
+    ...data,
+    dueDate: updatedDueDate,
+    title: `${data.title} ${timestamp}`,
+  };
+}
+
+export function withFutureDate(data: any, daysOffset: number = 1) {
+  let updatedDueDate = data.dueDate;
+  if (data.dueDate && typeof data.dueDate === 'string') {
+    const now = new Date();
+    now.setDate(now.getDate() + daysOffset);
+    updatedDueDate = formatDateToYYYYMMDD(now);
+  }
+
+  return {
+    ...data,
+    dueDate: updatedDueDate
+  };
+}
+
+
+export function endWithTimestamp(original: string): string {
+  return `${original}_${Date.now()}`;
+}
+

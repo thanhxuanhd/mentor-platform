@@ -1,15 +1,24 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Data;
-using Infrastructure.Persistence.Settings;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
-using MentorPlatformAPI.Filter;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddUserSecrets<Program>();
+
+#region Configurations
+
 var configuration = builder.Configuration;
+configuration.AddUserSecrets<Program>();
 var allowedOrigins = configuration.GetSection("AllowedOrigins").Value!.Split(';');
+
+builder.Logging
+    .AddLog4Net("log4net.config", true)
+    .AddAzureWebAppDiagnostics();
+
+#endregion
+
+#region Services
 
 // Add CORS policy to allow requests from specific origins
 builder.Services.AddCors(options =>
@@ -24,25 +33,19 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<AutoValidateFilter>();
-});
-builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSetting"));
-
 builder.Services
     .AddApplicationServices()
     .AddPresentationServices()
     .AddInfrastructureServices(configuration);
 
+#endregion
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwaggerWithUI();
-    app.ApplyMigrations();
-}
+app.UseSwaggerWithUI();
+
+app.ApplyMigrations();
 
 app.UseExceptionHandler();
 

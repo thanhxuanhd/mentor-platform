@@ -21,6 +21,11 @@ export const getCategoryById = async (categoryId: string) => {
   return response.data.value;
 }
 
+export const getActiveCategories = async () => {
+  const response = await axiosClient.get(`categories/active-categories`);
+  return response.data.value;
+}
+
 export const createCategory = async (category: any) => {
   const response = await axiosClient.post('categories', category);
   return response.data.value;
@@ -40,3 +45,8 @@ export const deleteCategory = async (categoryId: string) => {
   const response = await axiosClient.delete(`categories/${categoryId}`);
   return response.data;
 };
+
+export const getCoursesByCategoryId = async (categoryId: string) => {
+  const response = await axiosClient.get(`categories/${categoryId}/courses`);
+  return response.data.value;
+}

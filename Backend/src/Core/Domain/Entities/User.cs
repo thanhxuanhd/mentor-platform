@@ -25,10 +25,14 @@ public class User : BaseEntity<Guid>
     public bool IsPrivate { get; set; }
     public bool IsAllowedMessage { get; set; }
     public bool IsReceiveNotification { get; set; }
-
+    public virtual ICollection<MentorApplication> MentorApplications { get; set; } = [];
+    public virtual ICollection<MentorApplication> ReviewedMentorApplications { get; set; } = [];
     public virtual ICollection<UserTeachingApproach> UserTeachingApproaches { get; set; } = [];
     public virtual ICollection<UserCategory> UserCategories { get; set; } = [];
     public virtual ICollection<UserAvailability> UserAvailabilities { get; set; } = [];
     public virtual ICollection<UserExpertise> UserExpertises { get; set; } = [];
     public virtual Role Role { get; set; } = null!;
+
+    public virtual ICollection<Schedules>? Schedules { get; set; }
+    public virtual ICollection<Sessions>? Sessions { get; set; }
 }

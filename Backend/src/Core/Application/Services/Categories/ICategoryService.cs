@@ -1,5 +1,4 @@
-﻿
-using Contract.Dtos.Categories.Requests;
+﻿using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Shared;
 
@@ -9,8 +8,9 @@ public interface ICategoryService
 {
     Task<Result<GetCategoryResponse>> GetCategoryByIdAsync(Guid id);
     Task<Result<PaginatedList<GetCategoryResponse>>> GetCategoriesAsync(FilterCategoryRequest request);
-    Task<Result<PaginatedList<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id, FilterCourseByCategoryRequest request);
+    Task<Result<List<GetActiveCategoryResponse>>> GetActiveCategoriesAsync();
+    Task<Result<List<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id);
     Task<Result<GetCategoryResponse>> CreateCategoryAsync(CategoryRequest request);
     Task<Result<bool>> EditCategoryAsync(Guid categoryId, CategoryRequest request);
-    Task<Result<bool>> SoftDeleteCategoryAsync(Guid categoryId);
+    Task<Result<bool>> DeleteCategoryAsync(Guid categoryId);
 }
