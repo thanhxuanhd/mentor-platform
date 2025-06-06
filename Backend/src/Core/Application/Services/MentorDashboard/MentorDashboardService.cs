@@ -28,7 +28,7 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         int pendingSessions = 0;
         int completedSessions = 0;
         int upcomingSessions = 0;
-        int totalCourses = mentor.Courses!.Count(c => c.Status == CourseStatus.Published);
+        int totalCourses = mentor.Courses!.Count();
         List<UpcomingSessionResponse> upcomingSessionsList = new();
         HashSet<Guid> uniqueLearners = new();
         var now = DateTime.Now;
