@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
 import { App } from "antd"
-import { TrophyOutlined } from "@ant-design/icons"
 import { dashboardService } from "../../../services/adminDashboard/adminDashboardService"
 import Loading from "../../../components/Loading"
 import type { NotificationProps } from "../../../types/Notification"
@@ -9,7 +8,7 @@ import type { ActivityLogRequest, ActivityLogResponse } from "../../../types/Act
 import { getCurrentWeekDates } from "../../../utils/CurrentDate"
 import { activityLogService } from "../../../services/adminDashboard/activityLogService"
 import QuickActions from "./components/QuickActions"
-import type { DashboardMetrics } from "../../../types/DashboardType"
+import type { AdminDashboardMetrics } from "../../../types/DashboardType"
 import AdminDashboardStatistics from "./components/AdminDashboardStatistics"
 import ReportActions from "./components/ReportActions"
 
@@ -22,7 +21,7 @@ const defaultLogFilter: ActivityLogRequest = {
 }
 
 export default function AdminDashboard() {
-  const [metrics, setMetrics] = useState<DashboardMetrics | undefined>()
+  const [metrics, setMetrics] = useState<AdminDashboardMetrics | undefined>()
   const [loading, setLoading] = useState<boolean>(true)
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const { notification } = App.useApp();

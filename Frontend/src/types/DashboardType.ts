@@ -1,6 +1,6 @@
 import type { FileType } from "./enums/FileType";
 
-export interface DashboardMetrics {
+export interface AdminDashboardMetrics {
   totalUsers: number;
   totalMentors: number;
   totalLearners: number;
@@ -11,4 +11,11 @@ export interface DashboardMetrics {
     resourceType: keyof typeof FileType;
     count: number;
   }[];
+}
+
+export interface MentorDashboardMetrics {
+  totalLearners: number;
+  totalCourses: number;
+  upcomingSessions: number;
+  completedSessions: number;
 }

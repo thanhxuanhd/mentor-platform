@@ -18,7 +18,6 @@ import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
-import MentorDashboard from "../pages/Dashboard/MentorDashboard";
 import AvailabilityManager from "../pages/Availability";
 import DashboardSelector from "./DashboardSelector";
 

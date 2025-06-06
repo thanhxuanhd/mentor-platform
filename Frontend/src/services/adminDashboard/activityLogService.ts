@@ -15,7 +15,7 @@ export const activityLogService = {
         params: {
           startDateTime: getSystemStartDate(params.startDateTime) || undefined,
           endDateTime: getSystemEndDate(params.endDateTime) || undefined,
-          keyword: params.keyword || undefined,
+          keyword: params.keyword?.trimStart().trimEnd() || undefined,
           pageSize: params.pageSize ?? 5,
           pageIndex: params.pageIndex ?? 1,
         },

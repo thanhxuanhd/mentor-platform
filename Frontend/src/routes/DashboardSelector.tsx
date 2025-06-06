@@ -3,6 +3,7 @@ import { useAuth } from "../hooks";
 import AdminDashboard from "../pages/Dashboard/AdminDashboard";
 import { applicationRole } from "../constants/role";
 import DashboardPage from "../pages/Dashboard";
+import MentorDashboard from "../pages/Dashboard/MentorDashboard";
 
 const DashboardSelector: React.FC = () => {
   const { user } = useAuth();
@@ -11,7 +12,7 @@ const DashboardSelector: React.FC = () => {
     case applicationRole.ADMIN:
       return <AdminDashboard />;
     case applicationRole.MENTOR:
-      return <DashboardPage />;
+      return <MentorDashboard />;
     case applicationRole.LEARNER:
       return <DashboardPage />;
     default:
