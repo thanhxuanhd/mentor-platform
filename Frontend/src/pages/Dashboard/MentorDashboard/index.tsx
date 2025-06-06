@@ -30,7 +30,6 @@ interface UpcomingSession {
 export default function MentorDashboard() {
   const { user } = useAuth()
   const [mentorDashboardData, setMentorDashboardData] = useState<MentorDashboardResponse | undefined>()
-  const [userDetails, setUserDetails] = useState<UserDetail | undefined>()
   const [loading, setLoading] = useState(true)
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const { notification } = App.useApp();
@@ -51,7 +50,6 @@ export default function MentorDashboard() {
 
   useEffect(() => {
     fetchMentorDashboardData()
-    fetchUserDetails()
   }, [])
 
   const fetchMentorDashboardData = async () => {
@@ -71,24 +69,6 @@ export default function MentorDashboard() {
     }
   }
 
-  const fetchUserDetails = async () => {
-    try {
-      setLoading(true)
-      if (user?.id) {
-        const response = await userService.getUserDetail(user.id)
-        setUserDetails(response)
-      }
-    } catch (error: any) {
-      setNotify({
-        type: "error",
-        message: "Failed to load activity log data",
-        description:
-          error?.response?.data?.error || "Error loading activity log data",
-      });
-    } finally {
-      setLoading(false)
-    }
-  }
   const upcomingSessions: UpcomingSession[] = mentorDashboardData?.upcomingSessionsList?.map((session) => {
     const { time, duration } = parseTimeRange(session.timeRange)
     return {
@@ -114,16 +94,6 @@ export default function MentorDashboard() {
             <p className="text-slate-300 text-sm">
               Organize your sessions and statistics overview
             </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Avatar src={userDetails?.profilePhotoUrl || DefaultAvatar} size={80} className="ring-2 ring-blue-400/20" />
-          <div>
-            <h2 className="text-2xl font-bold">Welcome back, {userDetails?.fullName || user?.fullName || 'Mentor'}!</h2>
-            <span className="text-slate-300 block">Member Since: {formatDate(userDetails?.joinedDate) || 'N/A'}</span>
           </div>
         </div>
       </div>

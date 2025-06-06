@@ -148,7 +148,7 @@ export default function MentorApplicationPage() {
         description: `You have approved ${selectedApplication.mentorName}'s application.`,
       });
       await fetchApplications(filters);
-      await fetchApplicationDetail(selectedApplication.mentorApplicationId);
+      setSelectedApplication(null)
     } catch (error: any) {
       setNotify({
         type: "error",
@@ -182,7 +182,7 @@ export default function MentorApplicationPage() {
         description: `You have rejected ${selectedApplication.mentorName}'s application.`,
       });
       await fetchApplications(filters);
-      await fetchApplicationDetail(selectedApplication.mentorApplicationId);
+      setSelectedApplication(null)
     } catch (error: any) {
       setNotify({
         type: "error",
@@ -215,7 +215,7 @@ export default function MentorApplicationPage() {
         description: `You have requested additional info from ${selectedApplication.mentorName}.`,
       });
       await fetchApplications(filters);
-      await fetchApplicationDetail(selectedApplication.mentorApplicationId);
+      setSelectedApplication(null)
     } catch (error: any) {
       setNotify({
         type: "error",
