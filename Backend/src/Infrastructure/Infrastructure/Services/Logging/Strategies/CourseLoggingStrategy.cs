@@ -30,8 +30,8 @@ public class CourseLoggingStrategy : IEntityLoggingStrategy
         return entry.State switch
         {
             EntityState.Added => $"Mentor {fullName} added the new Course {course.Title} to the system",
-            EntityState.Modified => $"Mentor {fullName} updated the Course {course.Title} to the system",
-            _ => $"Mentor {fullName} deleted the new Course {course.Title} to the system"
+            EntityState.Modified => $"Mentor {fullName} updated the Course {course.Title} in the system",
+            _ => $"Mentor {fullName} deleted the new Course {course.Title} from the system"
         };
     }
 

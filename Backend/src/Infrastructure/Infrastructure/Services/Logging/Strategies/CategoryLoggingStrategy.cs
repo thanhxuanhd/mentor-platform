@@ -29,8 +29,8 @@ public class CategoryLoggingStrategy : IEntityLoggingStrategy
         return entry.State switch
         {
             EntityState.Added => $"Admin {user.Id} added the new Category {category.Name} to the system",
-            EntityState.Modified => $"Admin {user.Id} updated the Category {category.Name} to the system",
-            _ => $"Admin {user.Id} deleted the new Category {category.Name} to the system"
+            EntityState.Modified => $"Admin {user.Id} updated the Category {category.Name} in the system",
+            _ => $"Admin {user.Id} deleted the Category {category.Name} from the system"
         };
     }
 
