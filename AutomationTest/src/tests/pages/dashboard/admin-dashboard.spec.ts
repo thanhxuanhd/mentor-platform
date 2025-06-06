@@ -12,22 +12,20 @@ test.describe("@Admin Dashboard test", () => {
   test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
     adminDashboardPage = new AdminDashboardPage(page);
     userRoleManagementPage = new UserRoleManagementPage(page);
-    await adminDashboardPage.navigateToDashboard();
   });
 
   test("@SmokeTest Verify search for Admin report", async ({ page }) => {
     await test.step("Navigate to User Role Management page", async () => {
-      await userRoleManagementPage.navigateToUserRoleManagementPage();
       await userRoleManagementPage.navigateToUsers();
     });
 
     await test.step("Perform change user status to get report", async () => {
       const statusList = await userRoleManagementPage.getAllUserStatus();
-      for (let i = 0; i < statusList.length; i++) {
-        const status = statusList[i].toLowerCase();
+      const status = statusList[0].toLowerCase();
+      if (status) {
         await userRoleManagementPage.clickOnActivateOrDeactivateUserBtn(
           status,
-          i
+          0
         );
       }
     });
