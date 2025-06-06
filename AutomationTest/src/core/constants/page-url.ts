@@ -9,4 +9,5 @@ export const PAGE_ENDPOINT_URL = {
   AVAILABILITY: '/availability',
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
+  DASHBOARD: "/dashboard",
 };
