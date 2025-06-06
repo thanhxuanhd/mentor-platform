@@ -87,9 +87,15 @@ const CourseResourceModalSimple: React.FC<CourseResourceModalSimpleProps> = ({
         if (fileList.length > 0) {
           resourceValue = fileList[0].originFileObj
             ? fileList[0].originFileObj
-            : await getBinaryFileFromUrl(fileList[0].url as string);
+            : await getBinaryFileFromUrl(
+                initialValues?.id as string,
+                getFileNameFromUrl(
+                  initialValues?.resourceUrl as string,
+                ) as string,
+              );
         }
-        onSubmit({ ...values, resource: resourceValue, courseId: course.id });
+
+        onSubmit({ ...values, resource: resourceValue });
       })
       .catch((err) => console.log("Validation failed:", err));
   };
