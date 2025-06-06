@@ -110,7 +110,7 @@ export default function MentorDashboard() {
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <div>
-            <h2 className="text-2xl font-semibold">Mentor Dashboard</h2>
+            <h1 className="text-2xl font-semibold">Mentor Dashboard</h1>
             <p className="text-slate-300 text-sm">
               Organize your sessions and statistics overview
             </p>

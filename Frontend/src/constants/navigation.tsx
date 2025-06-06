@@ -11,7 +11,7 @@ import { applicationRole } from "./role";
 
 interface MenuItemProps {
   key: string;
-icon: React.ReactNode;
+  icon: React.ReactNode;
   label: string;
   link: string;
   role: string[];
@@ -23,7 +23,7 @@ export const menuItems: MenuItemProps[] = [
     key: "dashboard",
     icon: <BarChartOutlined />,
     label: "Dashboard",
-    link: "dashboard",
+    link: "",
     role: [
       applicationRole.ADMIN,
       applicationRole.LEARNER,

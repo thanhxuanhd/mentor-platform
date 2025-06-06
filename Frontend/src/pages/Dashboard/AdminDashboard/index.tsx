@@ -113,7 +113,7 @@ export default function AdminDashboard() {
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <div>
-            <h2 className="text-2xl font-semibold">Admin Dashboard</h2>
+            <h1 className="text-2xl font-semibold">Admin Dashboard</h1>
             <p className="text-slate-300 text-sm">
               Platform metrics and statistics overview
             </p>
