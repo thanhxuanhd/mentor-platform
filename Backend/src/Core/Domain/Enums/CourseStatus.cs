@@ -1,11 +1,9 @@
-﻿using System.Text.Json.Serialization;
-
-namespace Domain.Enums;
-
-[JsonConverter(typeof(JsonStringEnumConverter<CourseStatus>))]
-public enum CourseStatus
+﻿namespace Domain.Enums
 {
-    Draft,
-    Published,
-    Archived
+    public enum CourseStatus
+    {
+        Draft,
+        Published,
+        Archived
+    }
 }

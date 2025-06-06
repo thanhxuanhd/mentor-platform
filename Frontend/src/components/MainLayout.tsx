@@ -1,42 +1,29 @@
 import { Button, Layout, Menu, Tooltip } from "antd";
-import { SettingFilled, LogoutOutlined } from "@ant-design/icons";
+import {
+  SettingFilled,
+  LogoutOutlined,
+} from "@ant-design/icons";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks";
 import { menuItems } from "../constants/navigation";
 import type { MenuItemType } from "antd/es/menu/interface";
-import { applicationRole } from "../constants/role";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, removeToken, isMentorApproved } = useAuth();
+  const { user, removeToken } = useAuth();
 
   const roleMenuItems: MenuItemType[] = menuItems
-    .filter((item) => item.role.includes(user?.role || "unauthorized"))
-    .filter((item) => {
-      if (
-        user?.role === applicationRole.MENTOR &&
-        !isMentorApproved &&
-        item.isMentorApprovedRequired
-      ) {
-        return false;
-      }
-      return true;
-    })
+    .filter((item) => item.role.includes(user?.role || 'unauthorized'))
     .map((item) => ({
       key: item.key,
       icon: item.icon,
       label: item.label,
-      onClick: () => navigate(item.link),
+      onClick: () => navigate(item.link)
     }));
-
-  const defaultSelectedKeys =
-    location.pathname === "/"
-      ? ["dashboard"]
-      : [location.pathname.substring(1)];
 
   return (
     <Layout>
@@ -56,7 +43,7 @@ const MainLayout = () => {
             theme="dark"
             mode="inline"
             items={roleMenuItems}
-            selectedKeys={defaultSelectedKeys}
+            selectedKeys={[location.pathname.substring(1)]}
           />
         </div>
 
@@ -70,7 +57,7 @@ const MainLayout = () => {
             icon={<LogoutOutlined />}
             onClick={() => {
               removeToken();
-              navigate("/login");
+              navigate('/login')
             }}
           >
             Logout

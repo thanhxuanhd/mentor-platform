@@ -24,16 +24,7 @@ namespace Infrastructure.Services.Background
                     var pendingUsers = userRepository
                         .GetAll().Where(u => u.Status == UserStatus.Pending).ToList();
 
-                    var path = Directory.GetCurrentDirectory();
-
-                    logger.LogInformation($"RootPath: {env.WebRootPath}");
-
-                    if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
-                    {
-                        Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
-                    }
-
-                    var imagesDir = Path.Combine(path, env.WebRootPath, "images");
+                    var imagesDir = Path.Combine(env.WebRootPath, "images");
 
                     if (pendingUsers.Count == 0 || !Directory.Exists(imagesDir))
                     {

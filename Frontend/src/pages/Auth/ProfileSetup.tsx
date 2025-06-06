@@ -119,12 +119,11 @@ export default function ProfileSetup() {
         message: "Success",
         description: "Your profile has been created successfully.",
       });
-    } catch (error: any) {
+    } catch {
       setNotify({
         type: "error",
         message: "Error",
-        description:
-          error.response?.data?.error || "Failed to create new profile",
+        description: "Failed to create new profile",
       });
     }
   };

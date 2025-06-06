@@ -1,9 +1,10 @@
-﻿namespace Domain.Entities;
-
-public class CourseTag
+﻿namespace Domain.Entities
 {
-    public Guid CourseId { get; set; }
-    public Guid TagId { get; set; }
-    public virtual Course Course { get; set; } = null!;
-    public virtual Tag Tag { get; set; } = null!;
+    public class CourseTag
+    {
+        public Guid CourseId { get; set; }
+        public Guid TagId { get; set; }
+        public virtual Course Course { get; set; } = null!;
+        public virtual Tag Tag { get; set; } = null!;
+    }
 }

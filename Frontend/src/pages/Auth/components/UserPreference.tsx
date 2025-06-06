@@ -9,7 +9,7 @@ import {
   type SelectProps,
 } from "antd";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
-import { getActiveCategories } from "../../../services/category/categoryServices";
+import { getListCategories } from "../../../services/category/categoryServices";
 import type { TeachingApproach, UserDetail } from "../../../types/UserTypes";
 import { getAllTeachingApproaches } from "../../../services/user/userService";
 import { LearningStyle } from "../../../types/enums/LearningStyle";
@@ -49,14 +49,9 @@ const UserPreference: React.FC<UserProfileProps> = ({
 
   const fetchCategories = useCallback(async (keyword: string = "") => {
     try {
-      const response = await getActiveCategories();
-      const filteredCategories = keyword
-        ? response.filter((category: { name: string }) =>
-          category.name.toLowerCase().includes(keyword.toLowerCase()),
-        )
-        : response;
+      const response = await getListCategories(1, 5, keyword);
       setTags(
-        filteredCategories.map((category: { name: any; id: any }) => ({
+        response.items.map((category: { name: string; id: string }) => ({
           label: category.name,
           value: category.id,
         })),
@@ -116,12 +111,12 @@ const UserPreference: React.FC<UserProfileProps> = ({
         "isPrivate" | "isAllowedMessage" | "isReceiveNotification"
       >,
     ) =>
-      (e: CheckboxChangeEvent) => {
-        updateUserDetail((prev) => ({
-          ...prev,
-          [setting]: e.target.checked,
-        }));
-      };
+    (e: CheckboxChangeEvent) => {
+      updateUserDetail((prev) => ({
+        ...prev,
+        [setting]: e.target.checked,
+      }));
+    };
 
   const handleTeachingApproachChange = (
     approachId: string,
@@ -253,10 +248,11 @@ const UserPreference: React.FC<UserProfileProps> = ({
               <div
                 key={style.label}
                 onClick={() => handleLearningStyleClick(style.value)}
-                className={`py-4 px-6 rounded-lg cursor-pointer text-center transition-all duration-300 transform ${userDetail.preferredLearningStyle === style.value
-                  ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8533] text-white shadow-lg"
-                  : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
-                  }`}
+                className={`py-4 px-6 rounded-lg cursor-pointer text-center transition-all duration-300 transform ${
+                  userDetail.preferredLearningStyle === style.value
+                    ? "bg-gradient-to-r from-[#FF6B00] to-[#FF8533] text-white shadow-lg"
+                    : "bg-[#2D3748] text-gray-300 hover:bg-[#374151]"
+                }`}
               >
                 {style.label}
               </div>
@@ -277,10 +273,10 @@ const UserPreference: React.FC<UserProfileProps> = ({
                     userDetail.teachingApproachIds.length > 0
                       ? Promise.resolve()
                       : Promise.reject(
-                        new Error(
-                          "As a mentor, please choose at least a Teaching Approach.",
+                          new Error(
+                            "As a mentor, please choose at least a Teaching Approach.",
+                          ),
                         ),
-                      ),
                 },
               ]}
             >
@@ -294,10 +290,11 @@ const UserPreference: React.FC<UserProfileProps> = ({
                     onChange={(checked) =>
                       handleTeachingApproachChange(approach.id, checked)
                     }
-                    className={`group p-8 rounded-2xl cursor-pointer text-left transition-all duration-300 transform ${userDetail.teachingApproachIds.includes(approach.id)
-                      ? "!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg"
-                      : "!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]"
-                      }`}
+                    className={`group p-8 rounded-2xl cursor-pointer text-left transition-all duration-300 transform ${
+                      userDetail.teachingApproachIds.includes(approach.id)
+                        ? "!bg-gradient-to-r from-[#FF6B00] to-[#FF8533] !text-white shadow-lg"
+                        : "!bg-[#2D3748] !text-gray-300 hover:!bg-[#374151]"
+                    }`}
                   >
                     <div className="text-lg m-4">{approach.name}</div>
                   </Tag.CheckableTag>

@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import {
-  CourseDifficultyEnumMember,
-  CourseStatesEnumMember,
-  initialFormData,
-} from "./initial-values.tsx";
+import {CourseDifficultyEnumMember, CourseStatesEnumMember, initialFormData} from "./initial-values.tsx";
 import type {
   Category,
   Course,
@@ -12,21 +8,16 @@ import type {
   Mentor,
 } from "./types.tsx";
 import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
-import { CourseTable } from "./components/CourseTable.tsx";
-import { CourseForm } from "./components/CourseForm.tsx";
+import { CourseTable } from "./CourseTable.tsx";
+import { CourseForm } from "./CourseForm.tsx";
 
-import { CourseResource } from "./components/CourseResource.tsx";
-import { courseService } from "../../services/course";
-import { categoryService } from "../../services/category";
-import { mentorService } from "../../services/mentor";
-import { CourseDetail } from "./components/CourseDetail.tsx";
-import { SearchBar } from "./components/SearchBar.tsx";
-import { App, Modal } from "antd";
-import { useAuth } from "../../hooks/useAuth.ts";
-import { applicationRole } from "../../constants/role.ts";
+import { CourseResource } from "./CourseResource.tsx";
+import * as CourseClient from "./courseClient.tsx";
+import { CourseDetail } from "./CourseDetail.tsx";
+import { SearchBar } from "./SearchBar.tsx";
 
 const Page: React.FC = () => {
-  const [pageIndex, setPageIndex] = useState<number>(1);
+  const [pageIndex, setPageIndex] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [totalCount, setTotalCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -34,127 +25,45 @@ const Page: React.FC = () => {
   const [difficulty, setDifficulty] = useState<string | undefined>();
   const [categoryId, setCategoryId] = useState<string | undefined>();
   const [mentorId, setMentorId] = useState<string | undefined>();
-  const [status, setStatus] = useState<string | undefined>();
-  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
-  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   const [popoverTarget, setPopoverTarget] = useState<string | undefined>();
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [states] = useState<Record<string, string>>(CourseStatesEnumMember);
-  const [difficulties] = useState<Record<string, string>>(
-    CourseDifficultyEnumMember,
-  );
+  const [difficulties] = useState<Record<string, string>>(CourseDifficultyEnumMember);
   const [courses, setCourses] = useState<Course[]>([]);
   const [item, setItem] = useState<Course | undefined>();
   const [formData, setFormData] =
     useState<CourseFormDataOptions>(initialFormData);
-  const { modal, message } = App.useApp();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    if (refreshTrigger > 0) {
-      setIsRefreshing(true);
-      const refreshData = async () => {
-        try {
-          const courseResponse = await courseService.list({
-            pageIndex,
-            pageSize,
-            keyword,
-            difficulty,
-            categoryId,
-            mentorId,
-          });
-
-          setCourses(courseResponse.items);
-          setTotalCount(courseResponse.totalPages);
-          console.log("Course list refreshed after create/update");
-        } catch (error) {
-          console.error("Error refreshing courses:", error);
-        } finally {
-          setIsRefreshing(false);
-        }
-      };
-
-      refreshData();
-    }
-  }, [refreshTrigger]);
 
   useEffect(() => {
     const fetchCourses = async () => {
       setLoading(true);
 
-      try {
-        // Get courses
-        const courseResponse = await courseService.list({
-          pageIndex,
-          pageSize,
-          keyword: keyword,
-          difficulty: difficulty,
-          categoryId: categoryId,
-          mentorId: mentorId,
-          status: status,
-        });
+      const courseResponse = await CourseClient.list({
+        pageIndex,
+        pageSize,
+        keyword: keyword,
+        difficulty: difficulty,
+        categoryId: categoryId,
+        mentorId: mentorId,
+      });
 
-        console.log(
-          "Course list refreshed after fetch courses:",
-          courseResponse,
-        );
+      const categoryResponse = await CourseClient.categoryList();
 
-        const categoryResponse = await categoryService.list({
-          pageSize: 100
-        });
-        const mentorResponse = await mentorService.list({
-          pageSize: 100
-        });
+      const mentorResponse = await CourseClient.mentorList();
 
-        setTotalCount(courseResponse.totalPages);
-        setCategories(categoryResponse.items);
-        setMentors(mentorResponse.items);
-        setCourses(courseResponse.items);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
+      setTotalCount(courseResponse.totalPages);
+      setCategories(categoryResponse.items);
+      setMentors(mentorResponse.items);
+      setCourses(courseResponse.items);
+
+      setLoading(false);
     };
 
     fetchCourses();
-  }, [
-    pageIndex,
-    pageSize,
-    keyword,
-    difficulty,
-    categoryId,
-    mentorId,
-    refreshTrigger,
-    status,
-  ]);
-
-  const handleDeleteCourse = async (course: Course) => {
-    modal.confirm({
-      title: "Are you sure delete this course?",
-      content: `Course: ${course.title}`,
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      onOk: async () => {
-        try {
-          await courseService.delete(course.id);
-          message.success("Delete successfully!");
-          setRefreshTrigger((prev) => prev + 1); // Refresh the list after deletion
-        } catch (error) {
-          console.error("Error deleting course:", error);
-          Modal.error({
-            title: "Failed to delete course",
-            content:
-              "There was an error deleting the course. Please try again.",
-          });
-        }
-      },
-    });
-  };
+  }, [pageIndex, pageSize, keyword, difficulty, categoryId, mentorId]);
 
   return (
     <>
@@ -163,22 +72,21 @@ const Page: React.FC = () => {
           <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-semibold">Course Management</h1>
-                {user?.role === applicationRole.MENTOR && (
-                  <button
-                    onClick={() => {
-                      setPopoverTarget(CoursePopoverTarget.add);
-                      setFormData(initialFormData);
-                    }}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
-                  >
-                    Add New Course
-                  </button>
-                )}
+                <h1 className="text-2xl font-semibold">
+                  Course Management (Admin)
+                </h1>
+                <button
+                  onClick={() => {
+                    setPopoverTarget(CoursePopoverTarget.add);
+                    setFormData(initialFormData);
+                  }}
+                  className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
+                >
+                  Add New Course
+                </button>
               </div>
 
               <SearchBar
-                states={states}
                 categories={categories}
                 difficulties={difficulties}
                 mentors={mentors}
@@ -187,49 +95,43 @@ const Page: React.FC = () => {
                   setDifficulty(options.difficulty);
                   setCategoryId(options.categoryId);
                   setMentorId(options.mentorId);
-                  setStatus(options.status);
                 }}
               />
+
               <CourseTable
                 courses={courses}
                 states={states}
                 tableProps={{
-                  loading: loading || isRefreshing,
+                  loading: loading,
                   pagination: {
-                    showSizeChanger: true,
-                    onShowSizeChange: (current, pageSize) => {
-                      setPageIndex(current);
-                      setPageSize(pageSize);
-                    },
                     pageSize: pageSize,
                     total: totalCount,
                     position: ["bottomRight"],
                     showTotal: (total, range) =>
                       `${range[0]}-${range[1]} of ${total} items`,
-                    onChange: (pageNumber, pageSize) => {
-                      setPageIndex(pageNumber);
+                    onChange: async (pageNumber, pageSize) => {
+                      setPageIndex(pageNumber - 1);
                       setPageSize(pageSize);
                     },
                   },
                 }}
-                onResourceView={async (course) => {
-                  const resource = await courseService.get(course.id);
-                  setItem(resource);
+                onResourceView={(course) => {
+                  setItem(course);
                   setPopoverTarget(CoursePopoverTarget.resource);
                 }}
-                onView={async (course) => {
-                  const resource = await courseService.get(course.id);
-                  setItem(resource);
+                onView={(course) => {
+                  setItem(course);
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
-                onDelete={handleDeleteCourse}
-                onEdit={async (course) => {
-                  const resource = await courseService.get(course.id);
-                  setItem(resource);
+                onDelete={(course) => {
+                  // TODO: handle within CourseTable
+                  setItem(course);
+                  setPopoverTarget(CoursePopoverTarget.remove);
+                }}
+                onEdit={(course) => {
+                  setItem(course);
                   setFormData({
-                    id: course.id,
                     categoryId: course.categoryId,
-                    categoryName: course.categoryName,
                     description: course.description,
                     difficulty: course.difficulty,
                     dueDate: course.dueDate,
@@ -240,6 +142,7 @@ const Page: React.FC = () => {
                   setPopoverTarget(CoursePopoverTarget.edit);
                 }}
               />
+
               <CourseForm
                 formData={formData}
                 categories={categories}
@@ -248,36 +151,21 @@ const Page: React.FC = () => {
                   popoverTarget === CoursePopoverTarget.add ||
                   popoverTarget === CoursePopoverTarget.edit
                 }
-                onClose={(targetAction) => {
-                  if (targetAction === "refresh") {
-                    // Trigger a refresh of the course list
-                    setRefreshTrigger((prev) => prev + 1);
-                  }
-                  setPopoverTarget(targetAction);
-                }}
+                onClose={(targetAction) => setPopoverTarget(targetAction)}
               />
+
               <CourseDetail
                 course={item}
                 states={states}
                 active={popoverTarget === CoursePopoverTarget.detail}
-                onClose={(targetAction) => {
-                  if (targetAction === "refresh") {
-                    // Trigger a refresh of the course list
-                    setRefreshTrigger((prev) => prev + 1);
-                  }
-                  setPopoverTarget(targetAction);
-                }}
+                onClose={(targetAction) => setPopoverTarget(targetAction)}
               />
+
               <CourseResource
                 course={item}
-                onDownload={(material) => window.alert(material.resourceUrl)}
+                onDownload={(material) => window.alert(material.url)}
                 active={popoverTarget === CoursePopoverTarget.resource}
-                onClose={(targetAction) => {
-                  if (targetAction === "refresh") {
-                    setRefreshTrigger((prev) => prev + 1);
-                  }
-                  setPopoverTarget(targetAction);
-                }}
+                onClose={(targetAction) => setPopoverTarget(targetAction)}
               />
             </div>
           </div>

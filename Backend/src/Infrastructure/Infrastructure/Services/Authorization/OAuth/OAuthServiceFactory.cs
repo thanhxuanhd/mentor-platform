@@ -1,8 +1,9 @@
 ﻿using Contract.Services;
 using Contract.Shared;
+using Infrastructure.Services.Authorization.OAuth;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Infrastructure.Services.Authorization.OAuth;
+namespace Infrastructure.Services.Authorization;
 
 public class OAuthServiceFactory : IOAuthServiceFactory
 {

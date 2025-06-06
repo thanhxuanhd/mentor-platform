@@ -3,9 +3,6 @@ export const PAGE_ENDPOINT_URL = {
   CATEGORIES: "/categories",
   FORGOT_PASSWORD: "/forgot-password",
   RESET_PASSWORD: "/reset-password",
-  SIGN_UP: "/signup",
+  REGISTRATION_STEP_1: "/signup",
   VIEW_PROFILE: "/profile",
-  COURSE_MANAGEMENT: "/courses",
-  STATUS_TRACKING: "/my-applications",
-  APPLICATIONS: "/applications",
 };

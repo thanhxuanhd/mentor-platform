@@ -64,4 +64,9 @@ export class ResetPasswordPage extends BasePage {
     async clickResetPasswordButton() {
         await this.click(this.BTN_RESETPASSWORD_LOCATOR);
     }
+
+    async expectMessage(message: string) {
+        const locator: Locator = this.page.getByText(message);
+        await this.isVisible(locator);
+    }
 }

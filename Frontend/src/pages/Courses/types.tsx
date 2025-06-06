@@ -1,7 +1,6 @@
 export type Mentor = {
   id: string;
-  fullName: string;
-  email: string;
+  name: string;
 };
 
 export type Category = {
@@ -15,21 +14,26 @@ export type Course = {
   description: string;
   categoryId: string;
   categoryName: string;
-  mentorId: string;
-  mentorName: string;
-  difficulty: string;
-  dueDate: string;
-  resources: CourseResource[];
-  tags: string[];
+  createdAt: string;
+  updatedAt: string;
   status: string;
+  enrolledStudents: number;
+  completionRate: number;
+  dueDate: string;
+  difficulty: string;
+  tags: string[];
+  materials: CourseMaterial[];
+  mentorId: string;
+  mentorName?: string;
+  feedback: Feedback[];
 };
 
-export type CourseResource = {
+export type CourseMaterial = {
   id: string;
-  title: string;
-  description: string;
-  resourceType: string;
-  resourceUrl: string;
+  name: string;
+  mediaType: string;
+  url: string;
+  uploadedAt: string;
 };
 
 export type Feedback = {
@@ -41,11 +45,9 @@ export type Feedback = {
 };
 
 export type CourseFormDataOptions = {
-  id?: string;
   title: string;
   description: string;
-  categoryId?: string;
-  categoryName?: string;
+  categoryId: string;
   status: string;
   dueDate: string;
   difficulty: string;

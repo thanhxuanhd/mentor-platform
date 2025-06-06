@@ -1,15 +1,13 @@
 import categoryData from '../../test-data/category-data.json';
-import { test } from '../../../core/fixture/auth-fixture';
+import { test } from '../../../core/fixture/authFixture';
 import { CategoryPage } from '../../../pages/categories/categories-page';
 import { withTimestamp } from '../../../core/utils/generate-unique-data';
 import { CUCategory } from '../../../models/categories/create-category';
-import { deleteTestCategory, getLatestCategory } from '../../../core/utils/api-helper';
 
 test.describe('@Category Create category tests', () => {
     let categoryPage: CategoryPage;
-    let categoryId: string | null = null;
 
-    test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
+    test.beforeEach(async ({ loggedInPage, page }) => {
         categoryPage = new CategoryPage(page);
         await categoryPage.goToCategoryPage();
         await categoryPage.clickAddCategoryButton();
@@ -34,13 +32,4 @@ test.describe('@Category Create category tests', () => {
             });
         });
     }
-
-    test.afterEach("Clean up test data", async ({ request }, testInfo) => {
-        if (testInfo.title.includes('@SmokeTest')) {
-            categoryId = await getLatestCategory(request);
-            await deleteTestCategory(request, categoryId);
-            categoryId = null;
-        }
-    });
 });
-
