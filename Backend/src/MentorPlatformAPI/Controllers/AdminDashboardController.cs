@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
+[Authorize(Roles = RequiredRole.Admin)]
 [Route("api/dashboards/admin")]
 [ApiController]
 public class AdminDashboardController(IAdminDashboardService adminDashboardService) : ControllerBase
@@ -17,7 +18,7 @@ public class AdminDashboardController(IAdminDashboardService adminDashboardServi
         return StatusCode((int)result.StatusCode, result);
     }
 
-    [HttpPost("/report/monthly-mentor-application")]
+    [HttpGet("report/monthly-mentor-application")]
     public async Task<IActionResult> GetMentorApplicationReport()
     {
         var currentYear = DateTime.Now.Year;
@@ -26,7 +27,7 @@ public class AdminDashboardController(IAdminDashboardService adminDashboardServi
         return File(resultBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{currentYear}_MentorApplicationReport");
     }
 
-    [HttpPost("/report/mentor-activity")]
+    [HttpGet("report/mentor-activity")]
     public async Task<IActionResult> GetMentorActivityReport()
     {
         var resultBytes = await adminDashboardService.GetMentorActivityReportAsync();

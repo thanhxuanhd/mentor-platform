@@ -58,7 +58,7 @@ export default function AdminDashboardStatistics({ metrics }: AdminDashboardStat
         </div>
         <div className="flex items-center gap-2">
           <CalendarOutlined className="text-slate-400" />
-          <span className="text-slate-400 text-sm">Avg. 22 sessions/day</span>
+          <span className="text-slate-400 text-sm">Avg. {metrics?.sessionsThisWeek ? (metrics?.sessionsThisWeek / 7)?.toFixed(2) : '0.00'} sessions/day</span>
         </div>
       </Card>
 
@@ -94,14 +94,16 @@ export default function AdminDashboardStatistics({ metrics }: AdminDashboardStat
             <Text className="text-slate-300">Pending Approvals</Text>
           </div>
         </div>
-        <Button
-          type="primary"
-          className="w-full bg-orange-500 hover:bg-orange-600 border-orange-500 flex items-center justify-center gap-2"
-          icon={<ArrowRightOutlined />}
-          onClick={() => navigate('/applications')}
-        >
-          Review Applications
-        </Button>
+        {(metrics?.pendingApplications === undefined || metrics.pendingApplications > 0) &&
+          <Button
+            type="primary"
+            className="w-full bg-orange-500 hover:bg-orange-600 border-orange-500 flex items-center justify-center gap-2"
+            icon={<ArrowRightOutlined />}
+            onClick={() => navigate('/applications')}
+          >
+            Review Applications
+          </Button>
+        }
       </Card>
     </>
   )

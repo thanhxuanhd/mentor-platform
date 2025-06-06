@@ -11,6 +11,7 @@ import { activityLogService } from "../../../services/adminDashboard/activityLog
 import QuickActions from "./components/QuickActions"
 import type { DashboardMetrics } from "../../../types/DashboardType"
 import AdminDashboardStatistics from "./components/AdminDashboardStatistics"
+import ReportActions from "./components/ReportActions"
 
 const defaultLogFilter: ActivityLogRequest = {
   startDateTime: getCurrentWeekDates().startDate,
@@ -138,7 +139,10 @@ export default function AdminDashboard() {
           pagination={pagination}
           onFilter={handleFilterChange || (() => { })}
         />
-        <QuickActions />
+        <div className="flex flex-col gap-4">
+          <QuickActions />
+          <ReportActions />
+        </div>
       </div>
     </div>
   )

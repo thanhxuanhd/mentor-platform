@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 using Application.Helpers;
 using Contract.Dtos.AdminDashboard.Responses;
 using Contract.Repositories;
@@ -78,6 +79,7 @@ public class AdminDashboardService(
     public async Task<byte[]> GetMentorApplicationReportCurrentYearAsync()
     {
         var currentYear = DateTime.Now.Year;
+        var currentMonth = DateTime.Now.Month;
         var approvedApps = mentorApplicationRepository.GetAll()
             .Where(ma => ma.Status == ApplicationStatus.Approved && ma.ReviewedAt.HasValue &&
                          ma.ReviewedAt.Value.Year == currentYear)
@@ -99,9 +101,11 @@ public class AdminDashboardService(
         var monthlyRejectedApps = await mentorApplicationRepository.ToListAsync(rejectedApps);
         var monthlyTotalApps = await mentorApplicationRepository.ToListAsync(totalApps);
 
-        var monthlyCounts = Enumerable.Range(1, 12).Select(month => new MonthlyApplicationReportResponse 
-        { 
-            Month = month,
+        var monthlyCounts = Enumerable.Range(1, 12)
+            .Where(month => month <= currentMonth)
+            .Select(month => new MonthlyApplicationReportResponse 
+        {
+            Month = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month),
             TotalApplications = monthlyTotalApps.FirstOrDefault(a => a.Month == month)?.Count ?? 0,
             ApprovedApplications = monthlyApprovedApps.FirstOrDefault(a => a.Month == month)?.Count ?? 0, 
             RejectedApplications = monthlyRejectedApps.FirstOrDefault(a => a.Month == month)?.Count ?? 0

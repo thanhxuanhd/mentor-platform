@@ -2,7 +2,7 @@
 
 public class MonthlyApplicationReportResponse
 {
-    public int Month { get; set; }
+    public string Month { get; set; } = null!;
     public int ApprovedApplications { get; set; }
     public int RejectedApplications { get; set; }
     public int TotalApplications { get; set; }
