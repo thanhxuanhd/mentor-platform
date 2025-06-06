@@ -138,7 +138,6 @@ public class AdminDashboardService(
 
         var mentorActivityReport = mentorList.Select(m => new MentorActivityReportResponse
         {
-            MentorId = m.Id,
             MentorName = m.FullName,
             Email = m.Email,
             PhoneNumber = m.PhoneNumber!,

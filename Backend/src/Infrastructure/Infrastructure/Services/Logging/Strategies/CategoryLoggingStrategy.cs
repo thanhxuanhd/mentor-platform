@@ -20,17 +20,18 @@ public class CategoryLoggingStrategy : IEntityLoggingStrategy
             (int)UserRole.Learner => nameof(UserRole.Learner),
             _ => throw new InvalidOperationException("Unrecognized role")
         };
+        var fullName = user?.FullName ?? $"{user!.Id} (name not found)";
 
         if (user.RoleId != (int)UserRole.Admin)
         {
-            return $"Unauthorized user {user.Id} with role {role} make changes to the Category {category.Name}";
+            return $"Unauthorized user {fullName} with role {role} make changes to the Category {category.Name}";
         }
 
         return entry.State switch
         {
-            EntityState.Added => $"Admin {user.Id} added the new Category {category.Name} to the system",
-            EntityState.Modified => $"Admin {user.Id} updated the Category {category.Name} in the system",
-            _ => $"Admin {user.Id} deleted the Category {category.Name} from the system"
+            EntityState.Added => $"Admin {fullName} added the new Category {category.Name} to the system",
+            EntityState.Modified => $"Admin {fullName} updated the Category {category.Name} in the system",
+            _ => $"Admin {fullName} deleted the Category {category.Name} from the system"
         };
     }
 

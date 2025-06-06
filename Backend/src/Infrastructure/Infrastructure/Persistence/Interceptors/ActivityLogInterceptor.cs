@@ -17,7 +17,8 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
     {
         { typeof(User), new UserLoggingStrategy() },
         { typeof(Course), new CourseLoggingStrategy() },
-        { typeof(Category), new CategoryLoggingStrategy() }
+        { typeof(Category), new CategoryLoggingStrategy() },
+        { typeof(MentorApplication), new MentorApplicationLoggingStrategy(serviceProvider) }
     };
     private readonly List<ActivityLog> _pendingLogs = new();
 

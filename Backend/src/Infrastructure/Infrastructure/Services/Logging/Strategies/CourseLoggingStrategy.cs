@@ -13,7 +13,7 @@ public class CourseLoggingStrategy : IEntityLoggingStrategy
             return string.Empty;
 
         var course = (Course)entry.Entity;
-        var fullName = user!.FullName ?? "unknown";
+        var fullName = user?.FullName ?? $"{user!.Id} (name not found)";
         var role = user.RoleId switch
         {
             (int)UserRole.Admin => nameof(UserRole.Admin),
@@ -24,7 +24,7 @@ public class CourseLoggingStrategy : IEntityLoggingStrategy
 
         if (user.RoleId != (int)UserRole.Mentor)
         {
-            return $"Unauthorized user {user.Id} with role {role} make changes to the Course {course.Title}";
+            return $"Unauthorized user {fullName} with role {role} make changes to the Course {course.Title}";
         }
 
         return entry.State switch

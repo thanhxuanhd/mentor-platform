@@ -19,7 +19,7 @@ public class UserLoggingStrategy : IEntityLoggingStrategy
 
         var user = (User)entry.Entity;
         var userId = user.Id;
-        var fullName = user.FullName ?? "unknown";
+        var fullName = user?.FullName ?? $"{user!.Id} (name not found)";
         var role = user.RoleId switch
         {
             (int)UserRole.Admin => nameof(UserRole.Admin),
@@ -30,7 +30,7 @@ public class UserLoggingStrategy : IEntityLoggingStrategy
 
         if (entry.State == EntityState.Added && user.RoleId == (int)UserRole.Admin)
         {
-            return $"New User {userId} registered to the system as role {role}";
+            return $"New User {fullName} registered to the system as role {role}";
         }
 
         if (entry.State != EntityState.Modified)

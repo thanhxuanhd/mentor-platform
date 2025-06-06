@@ -2,7 +2,6 @@
 
 public class MentorActivityReportResponse
 {
-    public Guid MentorId { get; set; }
     public string MentorName { get; set; } = string.Empty;
     public string Status { get; set; } = null!;
     public string Email { get; set; } = null!;
