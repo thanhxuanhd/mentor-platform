@@ -1,13 +1,6 @@
 using System.Security.Claims;
-using Application.Services.Categories;
 using Application.Services.SessionBooking;
-using Application.Services.TeachingApproaches;
-using Application.Services.Users;
-using Azure;
-using Azure.Core;
 using Contract.Dtos.SessionBooking.Requests;
-using Contract.Dtos.Users.Requests;
-using Domain.Entities;
 using Infrastructure.Services.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

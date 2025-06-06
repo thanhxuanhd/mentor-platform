@@ -388,14 +388,13 @@ public static class ApplicationDbExtensions
                         EndTime = new TimeOnly(10, 0),
                     });
                 }
-                // Thêm một time slot cụ thể để 2 learner mới book cùng lúc
                 dbContext.MentorAvailableTimeSlots.Add(new MentorAvailableTimeSlot
                 {
-                    Id = Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"), // ID cụ thể cho việc book chung
+                    Id = Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"), 
                     ScheduleId = schedule.Id,
-                    Date = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10)), // Ngày trong tương lai, ví dụ 10 ngày tới
-                    StartTime = new TimeOnly(14, 0), // Thời gian bắt đầu: 14:00
-                    EndTime = new TimeOnly(15, 0),   // Thời gian kết thúc: 15:00 (1 tiếng)
+                    Date = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10)), 
+                    StartTime = new TimeOnly(14, 0),
+                    EndTime = new TimeOnly(15, 0), 
                 });
 
                 dbContext.SaveChanges();
@@ -416,7 +415,6 @@ public static class ApplicationDbExtensions
             var timeSlots = dbContext.MentorAvailableTimeSlots.Take(5).ToList();
             var sharedTimeSlot = dbContext.MentorAvailableTimeSlots.FirstOrDefault(ts => ts.Id == Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"));
 
-            // Đảm bảo các learner và time slot chung tồn tại
             if (learner is null) throw new Exception("Session seeding: David Copperfield learner does not exist.");
             if (newLearner1 is null) throw new Exception("Session seeding: New Learner 1 (Nguyen Van A) does not exist.");
             if (newLearner2 is null) throw new Exception("Session seeding: New Learner 2 (Tran Thi B) does not exist.");
@@ -438,7 +436,6 @@ public static class ApplicationDbExtensions
                 dbContext.Sessions.Add(session);
             }
 
-            // Seed các session cho 2 learner mới, cùng một time slot
             dbContext.Sessions.AddRange(
                 new Sessions
                 {
@@ -446,9 +443,9 @@ public static class ApplicationDbExtensions
                     LearnerId = newLearner1.Id,
                     Learner = newLearner1,
                     TimeSlotId = sharedTimeSlot.Id,
-                    TimeSlot = sharedTimeSlot, // Gán đối tượng TimeSlot để đảm bảo liên kết
+                    TimeSlot = sharedTimeSlot, 
                     Status = SessionStatus.Pending,
-                    Type = SessionType.Onsite, // Ví dụ: Có thể khác
+                    Type = SessionType.Onsite,
                 },
                 new Sessions
                 {
@@ -456,9 +453,9 @@ public static class ApplicationDbExtensions
                     LearnerId = newLearner2.Id,
                     Learner = newLearner2,
                     TimeSlotId = sharedTimeSlot.Id,
-                    TimeSlot = sharedTimeSlot, // Gán đối tượng TimeSlot để đảm bảo liên kết
+                    TimeSlot = sharedTimeSlot,
                     Status = SessionStatus.Pending,
-                    Type = SessionType.Onsite, // Ví dụ: Có thể khác
+                    Type = SessionType.Onsite,
                 }
             );
 
