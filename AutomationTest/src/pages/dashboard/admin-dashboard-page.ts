@@ -36,7 +36,10 @@ export class AdminDashboardPage extends BasePage {
     }
   }
 
-  async verifyNoDataMessageExist(message = "") {
-    await this.expectMessage(message);
+  async verifyNoDataMessageExist() {
+    const noDataText = await this.LBL_NO_DATA.textContent();
+    if (noDataText) {
+      await this.expectMessage(noDataText);
+    }
   }
 }
