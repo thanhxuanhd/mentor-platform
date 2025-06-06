@@ -26,7 +26,7 @@ public class GoogleOAuthService(IHttpClientFactory httpClientFactory, IConfigura
             { "grant_type", "authorization_code" }
         };
 
-        logger.LogInformation("GitHub Payload: {0}, {1}, {2}, {3}", payload["code"], payload["client_id"], payload["client_secret"], payload["redirect_uri"]);
+        logger.LogInformation("Google Payload: {payload}", payload.ToString());
 
         var response = await client.PostAsync(
             "https://oauth2.googleapis.com/token",

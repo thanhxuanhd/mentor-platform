@@ -80,8 +80,6 @@ export interface UserDetail {
   skills: string;
   experiences: string;
   goal: string;
-  joinedDate: string;
-  lastActive: string;
   preferredCommunicationMethod: CommunicationMethod;
   preferredSessionFrequency: SessionFrequency;
   preferredSessionDuration: number;

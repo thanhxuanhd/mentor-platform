@@ -31,8 +31,7 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         builder.HasOne(c => c.Mentor)
             .WithMany()
-            .HasForeignKey(c => c.MentorId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(c => c.MentorId);
 
         builder.HasMany(c => c.Tags)
             .WithMany()

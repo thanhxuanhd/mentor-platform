@@ -68,6 +68,7 @@ export const userService = {
         return response.data.value;
       });
   },
+
   getUserProfile: async (userId: string): Promise<UserProfile> => {
     return await axiosClient
       .get(`Users/${userId}/detail`)
