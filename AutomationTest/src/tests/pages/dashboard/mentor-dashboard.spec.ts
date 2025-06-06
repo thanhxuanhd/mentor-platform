@@ -13,7 +13,7 @@ test.describe("@Mentor Dashboard", () => {
     });
 
     await test.step("Verify start date is after today", async () => {
-      await mentorDashBoard.verifyStartDateIsAfterOrEqualCurrentDate();
+      await mentorDashBoard.verifyStartDateIsAfterCurrentDate();
     });
   });
 });

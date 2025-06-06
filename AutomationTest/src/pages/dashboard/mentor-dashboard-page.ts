@@ -14,21 +14,18 @@ export class MentorDashBoardPage extends BasePage {
     await this.page.goto(PAGE_ENDPOINT_URL.DASHBOARD);
   }
 
-  async verifyStartDateIsAfterOrEqualCurrentDate() {
+  async verifyStartDateIsAfterCurrentDate() {
     const startDateText = await this.LBL_START_DATE.textContent();
-    if (!startDateText) {
-      throw new Error("startDateText is undefined");
+    const match = startDateText?.match(
+      /(\d{2})\/(\d{2})\/(\d{4}) • (\d{2}:\d{2})/
+    );
+    if (!match) {
+      throw new Error("Start date format is invalid or not found.");
     }
-    const [datePart] = startDateText.split(" • ");
-    if (!datePart)
-      throw new Error(`Could not extract date part from: ${startDateText}`);
+    const [_, datePart, startTime] = match;
+    const sessionDateTime = new Date(`${datePart}T${startTime}:00`);
+    const now = new Date();
 
-    const sessionDate = new Date(datePart);
-    const today = new Date();
-
-    const sessionDay = new Date(sessionDate.toDateString());
-    const todayDay = new Date(today.toDateString());
-
-    expect(sessionDay.getTime()).toBeGreaterThanOrEqual(todayDay.getTime());
+    expect(sessionDateTime.getTime()).toBeGreaterThan(now.getTime());
   }
 }
