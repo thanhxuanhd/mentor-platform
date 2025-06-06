@@ -109,7 +109,6 @@ const CustomNotification = ({
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0 mt-0.5">{getIcon()}</div>
           <div className="flex-1 min-w-0">
-            {/* Fixed: Consistent font size and style, removed emojis */}
             <p className={`text-sm font-normal ${getTextColor()} leading-5`}>{message}</p>
           </div>
           <div className="flex-shrink-0">
@@ -223,15 +222,12 @@ export default function ScheduleSession() {
     }
   }
 
-  // Fixed: Proper date/time handling for session categorization
   const now = dayjs()
   const upcomingSessions = sessions.filter((session) => {
     const sessionDateTime = dayjs(`${session.date} ${session.startTime}`)
     const isOvertime = sessionDateTime.isBefore(now)
 
-    // If session is overtime, it should be cancelled and moved to past
     if (isOvertime && ["Pending", "Approved"].includes(session.status)) {
-      // Auto-cancel overtime sessions (this should ideally be handled by backend)
       handleStatusChange(session.id, "Canceled")
       return false
     }
@@ -257,13 +253,10 @@ export default function ScheduleSession() {
         return
       }
 
-      // Create a unique key for the time slot
       const timeSlotKey = `${session.date}_${session.startTime}_${session.endTime}`
 
-      // Set this session as processing
       setProcessingSessionIds((prev) => ({ ...prev, [sessionId]: true }))
 
-      // If approving, also mark the time slot as processing
       if (newStatus === "Approved") {
         setProcessingTimeSlots((prev) => ({ ...prev, [timeSlotKey]: true }))
       }
@@ -274,7 +267,6 @@ export default function ScheduleSession() {
 
       await loadSessions()
 
-      // Fixed: Removed emojis from system messages
       switch (newStatus) {
         case "Approved":
           showNotification("success", "Session approved successfully")
@@ -299,7 +291,6 @@ export default function ScheduleSession() {
       showNotification("error", `Failed to update session status: ${errorMessage}`)
       console.error("Error updating session status:", error)
     } finally {
-      // Clear processing states
       const session = sessions.find((s) => s.id === sessionId)
       if (session) {
         const timeSlotKey = `${session.date}_${session.startTime}_${session.endTime}`
@@ -344,14 +335,12 @@ export default function ScheduleSession() {
         ),
       )
 
-      // Fixed: Consistent message format without emojis
       const message = session.studentEmail
         ? `Session rescheduled successfully. Email notification sent to ${session.studentEmail}`
         : "Session rescheduled successfully"
 
       showNotification("success", message)
 
-      // Close modal after successful reschedule
       setIsModalVisible(false)
     } catch (error) {
       showNotification("error", "Failed to reschedule session")
@@ -502,7 +491,7 @@ export default function ScheduleSession() {
         setNewStartTime(dayjs(selectedSession.startTime, "HH:mm:ss"))
         setNewEndTime(dayjs(selectedSession.endTime, "HH:mm:ss"))
         setReason("")
-        setSubmitting(false) // Reset submitting state when modal opens
+        setSubmitting(false) 
       }
     }, [selectedSession, isModalVisible])
 
@@ -515,7 +504,6 @@ export default function ScheduleSession() {
     }
 
     const handleSubmit = async () => {
-      // Prevent multiple submissions
       if (submitting) {
         return
       }
@@ -540,7 +528,6 @@ export default function ScheduleSession() {
         return
       }
 
-      // Check if there are actual changes before proceeding
       const isSameDate = newDate.format("YYYY-MM-DD") === selectedSession.date
       const isSameStart = newStartTime.format("HH:mm:ss") === selectedSession.startTime
       const isSameEnd = newEndTime.format("HH:mm:ss") === selectedSession.endTime
@@ -562,7 +549,6 @@ export default function ScheduleSession() {
           newEndTime.format("HH:mm:ss"),
           reason,
         )
-        // Modal will be closed by handleReschedule function
       } catch (error) {
         console.error("Error in handleSubmit:", error)
       } finally {
@@ -573,7 +559,7 @@ export default function ScheduleSession() {
     const handleCancel = () => {
       if (!submitting) {
         setIsModalVisible(false)
-        setSubmitting(false) // Reset submitting state
+        setSubmitting(false) 
       }
     }
 
@@ -586,7 +572,7 @@ export default function ScheduleSession() {
         confirmLoading={submitting}
         maskClosable={!submitting}
         closable={!submitting}
-        destroyOnClose={true} // This ensures modal state is reset when closed
+        destroyOnClose={true} 
       >
         <Space direction="vertical" style={{ width: "100%" }}>
           <DatePicker
