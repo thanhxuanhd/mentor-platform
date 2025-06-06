@@ -30,7 +30,7 @@ export default function ActivityLogTable({ items, loading, filter, pagination, o
   ]
 
   const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const keyword = e.target.value.trimStart().trimEnd() || undefined;
+    const keyword = e.target.value || undefined;
     onFilter({ ...filter, keyword, pageIndex: 1 });
   };
 
