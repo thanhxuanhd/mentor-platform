@@ -1,4 +1,5 @@
 ﻿using Contract.Dtos.Categories.Requests;
+using Contract.Dtos.Schedule.Responses;
 using Contract.Dtos.SessionBooking.Requests;
 using Contract.Dtos.SessionBooking.Response;
 using Contract.Dtos.Users.Requests;
@@ -33,4 +34,5 @@ public interface ISessionBookingService
     Task<Result<LearnerSessionBookingResponse>> GetSessionsBookingByIdAsync(Guid id);
     Task<Result<bool>> UpdateStatusSessionAsync(Guid id, SessionBookingRequest request);
     Task<Result<bool>> UpdateRecheduleSessionAsync(Guid id, SessionUpdateRecheduleRequest request);
+    //Task<Result<ScheduleSettingsResponse>> GetTimeSlotByMentorIdAsync(Guid id);
 }

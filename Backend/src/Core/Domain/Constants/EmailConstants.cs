@@ -246,6 +246,26 @@
             text-align: center;
             color: #999;
         }}
+        .btn-container {{
+            text-align: center;
+            margin-top: 30px;
+        }}
+        .btn {{
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 5px;
+        }}
+        .accept {{
+            background-color: #28a745;
+            color: white;
+        }}
+        .cancel {{
+            background-color: #dc3545;
+            color: white;
+        }}
     </style>
 </head>
 <body>
@@ -255,6 +275,12 @@
         <p>Your mentoring session (Request ID: <strong>{id}</strong>) has been successfully rescheduled.</p>
         <p><strong>New Schedule:</strong> {date:MMM dd, yyyy}, from {startTime} to {endTime}</p>
         {(string.IsNullOrWhiteSpace(reason) ? "" : $"<p><strong>Reason:</strong> {reason}</p>")}
+
+        <div class=""btn-container"">
+            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn accept"">Accept</a>
+            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn cancel"">Cancel</a>
+        </div>
+
         <p>If you have any questions or concerns, feel free to contact our support team.</p>
         <p>Thank you,</p>
         <p>The Mentoring Team</p>
@@ -264,7 +290,6 @@
     </div>
 </body>
 </html>";
-
 
     }
 }

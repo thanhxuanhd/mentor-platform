@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
   Table,
   Button,
@@ -49,6 +49,7 @@ interface Session {
   timeSlotId?: string
   learnerId?: string
   type?: number
+  lastStatusUpdate?: string
 }
 
 const CustomNotification = ({
@@ -67,11 +68,11 @@ const CustomNotification = ({
   const getIcon = () => {
     switch (type) {
       case "success":
-        return <CheckCircleOutlined className="text-green-500 text-lg" />
+        return <CheckCircleOutlined className="text-green-500 text-base" />
       case "error":
-        return <CloseCircleOutlined className="text-red-500 text-lg" />
+        return <CloseCircleOutlined className="text-red-500 text-base" />
       default:
-        return <ExclamationCircleOutlined className="text-blue-500 text-lg" />
+        return <ExclamationCircleOutlined className="text-blue-500 text-base" />
     }
   }
 
@@ -109,7 +110,7 @@ const CustomNotification = ({
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0 mt-0.5">{getIcon()}</div>
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-normal ${getTextColor()} leading-5`}>{message}</p>
+            <p className={`text-sm font-medium ${getTextColor()} leading-5`}>{message}</p>
           </div>
           <div className="flex-shrink-0">
             <Button
@@ -133,6 +134,7 @@ export default function ScheduleSession() {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null)
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [activeTab, setActiveTab] = useState("upcoming")
+  const [currentTime, setCurrentTime] = useState(dayjs())
 
   const [notification, setNotification] = useState({
     visible: false,
@@ -142,6 +144,9 @@ export default function ScheduleSession() {
 
   const [processingSessionIds, setProcessingSessionIds] = useState<Record<string, boolean>>({})
   const [processingTimeSlots, setProcessingTimeSlots] = useState<Record<string, boolean>>({})
+
+  // Add ref to track if we're already processing overtime sessions
+  const processingOvertimeRef = useRef(false)
 
   const statusColors = {
     Pending: "orange",
@@ -164,6 +169,15 @@ export default function ScheduleSession() {
     AudioCall: "Audio Call",
     Chat: "Chat",
   }
+
+  // Update current time every minute
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(dayjs())
+    }, 60000) // Update every minute
+
+    return () => clearInterval(interval)
+  }, [])
 
   const showNotification = (type: "success" | "error" | "info", message: string) => {
     setNotification({
@@ -193,8 +207,62 @@ export default function ScheduleSession() {
       timeSlotId: apiData.timeSlotId,
       learnerId: apiData.learnerId,
       type: apiData.type,
+      lastStatusUpdate: apiData.lastStatusUpdate || dayjs().toISOString(),
     }
   }
+
+  const handleOvertimeSessions = useCallback(async () => {
+    if (processingOvertimeRef.current) return
+
+    processingOvertimeRef.current = true
+
+    try {
+      const now = currentTime
+      const overtimeSessions = sessions.filter((session) => {
+        const sessionDateTime = dayjs(`${session.date} ${session.startTime}`)
+        return sessionDateTime.isBefore(now) && ["Pending", "Approved"].includes(session.status)
+      })
+
+      if (overtimeSessions.length > 0) {
+        const updatePromises = overtimeSessions.map(async (session) => {
+          try {
+            await sessionBookingService.updateSessionStatus(session.id, "Canceled")
+            return { ...session, status: "Canceled" as const, lastStatusUpdate: now.toISOString() }
+          } catch (error) {
+            console.error(`Failed to cancel overtime session ${session.id}:`, error)
+            return session
+          }
+        })
+
+        const updatedSessions = await Promise.all(updatePromises)
+
+        setSessions((prevSessions) =>
+          prevSessions.map((session) => {
+            const updated = updatedSessions.find((u) => u.id === session.id)
+            return updated || session
+          }),
+        )
+
+        if (updatedSessions.some((s) => s.status === "Canceled")) {
+          showNotification(
+            "info",
+            `${updatedSessions.filter((s) => s.status === "Canceled").length} overtime sessions have been cancelled and moved to Past Sessions`,
+          )
+        }
+      }
+    } catch (error) {
+      console.error("Error handling overtime sessions:", error)
+    } finally {
+      processingOvertimeRef.current = false
+    }
+  }, [sessions, currentTime])
+
+  // Check for overtime sessions when current time or sessions change
+  useEffect(() => {
+    if (sessions.length > 0) {
+      handleOvertimeSessions()
+    }
+  }, [currentTime, handleOvertimeSessions])
 
   useEffect(() => {
     loadSessions()
@@ -222,26 +290,23 @@ export default function ScheduleSession() {
     }
   }
 
-  const now = dayjs()
+  // Improved session filtering logic
   const upcomingSessions = sessions.filter((session) => {
     const sessionDateTime = dayjs(`${session.date} ${session.startTime}`)
-    const isOvertime = sessionDateTime.isBefore(now)
+    const isOvertime = sessionDateTime.isBefore(currentTime)
 
-    if (isOvertime && ["Pending", "Approved"].includes(session.status)) {
-      handleStatusChange(session.id, "Canceled")
-      return false
-    }
-
-    return ["Pending", "Approved", "Rescheduled"].includes(session.status) && !isOvertime
+    // Only show sessions that are not overtime and have active statuses
+    return !isOvertime && ["Pending", "Approved", "Rescheduled"].includes(session.status)
   })
 
   const pastSessions = sessions.filter((session) => {
     const sessionDateTime = dayjs(`${session.date} ${session.startTime}`)
-    const isOvertime = sessionDateTime.isBefore(now)
+    const isOvertime = sessionDateTime.isBefore(currentTime)
 
+    // Show completed/cancelled sessions OR overtime sessions that were active
     return (
       ["Completed", "Canceled"].includes(session.status) ||
-      (isOvertime && !["Pending", "Approved"].includes(session.status))
+      (isOvertime && session.lastStatusUpdate && dayjs(session.lastStatusUpdate).isAfter(sessionDateTime))
     )
   })
 
@@ -263,7 +328,11 @@ export default function ScheduleSession() {
 
       await sessionBookingService.updateSessionStatus(sessionId, newStatus)
 
-      setSessions((prevSessions) => prevSessions.map((s) => (s.id === sessionId ? { ...s, status: newStatus } : s)))
+      setSessions((prevSessions) =>
+        prevSessions.map((s) =>
+          s.id === sessionId ? { ...s, status: newStatus, lastStatusUpdate: dayjs().toISOString() } : s,
+        ),
+      )
 
       await loadSessions()
 
@@ -313,6 +382,17 @@ export default function ScheduleSession() {
       return
     }
 
+    const isSameDate = newDate === session.date
+    const isSameStart = newStartTime === session.startTime
+    const isSameEnd = newEndTime === session.endTime
+    const isEmptyReason = reason.trim() === ""
+
+    if (isSameDate && isSameStart && isSameEnd && isEmptyReason) {
+      showNotification("info", "No changes detected. Session remains unchanged")
+      setIsModalVisible(false)
+      return
+    }
+
     try {
       await sessionBookingService.rescheduleSession(sessionId, {
         date: newDate,
@@ -330,6 +410,7 @@ export default function ScheduleSession() {
                 startTime: newStartTime,
                 endTime: newEndTime,
                 status: "Rescheduled" as const,
+                lastStatusUpdate: dayjs().toISOString(),
               }
             : session,
         ),
@@ -484,6 +565,7 @@ export default function ScheduleSession() {
     const [newEndTime, setNewEndTime] = useState<dayjs.Dayjs | null>(null)
     const [reason, setReason] = useState("")
     const [submitting, setSubmitting] = useState(false)
+    const submitRef = useRef(false)
 
     useEffect(() => {
       if (selectedSession && isModalVisible) {
@@ -491,7 +573,8 @@ export default function ScheduleSession() {
         setNewStartTime(dayjs(selectedSession.startTime, "HH:mm:ss"))
         setNewEndTime(dayjs(selectedSession.endTime, "HH:mm:ss"))
         setReason("")
-        setSubmitting(false) 
+        setSubmitting(false)
+        submitRef.current = false
       }
     }, [selectedSession, isModalVisible])
 
@@ -504,7 +587,8 @@ export default function ScheduleSession() {
     }
 
     const handleSubmit = async () => {
-      if (submitting) {
+      // Prevent multiple submissions
+      if (submitting || submitRef.current) {
         return
       }
 
@@ -528,18 +612,8 @@ export default function ScheduleSession() {
         return
       }
 
-      const isSameDate = newDate.format("YYYY-MM-DD") === selectedSession.date
-      const isSameStart = newStartTime.format("HH:mm:ss") === selectedSession.startTime
-      const isSameEnd = newEndTime.format("HH:mm:ss") === selectedSession.endTime
-      const isEmptyReason = reason.trim() === ""
-
-      if (isSameDate && isSameStart && isSameEnd && isEmptyReason) {
-        showNotification("info", "No changes detected. Session remains unchanged")
-        setIsModalVisible(false)
-        return
-      }
-
       setSubmitting(true)
+      submitRef.current = true
 
       try {
         await handleReschedule(
@@ -553,13 +627,15 @@ export default function ScheduleSession() {
         console.error("Error in handleSubmit:", error)
       } finally {
         setSubmitting(false)
+        submitRef.current = false
       }
     }
 
     const handleCancel = () => {
-      if (!submitting) {
+      if (!submitting && !submitRef.current) {
         setIsModalVisible(false)
-        setSubmitting(false) 
+        setSubmitting(false)
+        submitRef.current = false
       }
     }
 
@@ -570,9 +646,15 @@ export default function ScheduleSession() {
         onCancel={handleCancel}
         onOk={handleSubmit}
         confirmLoading={submitting}
-        maskClosable={!submitting}
-        closable={!submitting}
-        destroyOnClose={true} 
+        maskClosable={!submitting && !submitRef.current}
+        closable={!submitting && !submitRef.current}
+        destroyOnClose={true}
+        okButtonProps={{
+          disabled: submitting || submitRef.current,
+        }}
+        cancelButtonProps={{
+          disabled: submitting || submitRef.current,
+        }}
       >
         <Space direction="vertical" style={{ width: "100%" }}>
           <DatePicker
@@ -580,7 +662,7 @@ export default function ScheduleSession() {
             onChange={setNewDate}
             style={{ width: "100%" }}
             disabledDate={(d) => d.isBefore(dayjs(), "day")}
-            disabled={submitting}
+            disabled={submitting || submitRef.current}
           />
           <Row gutter={8}>
             <Col span={12}>
@@ -591,7 +673,7 @@ export default function ScheduleSession() {
                 format="HH:mm"
                 placeholder="Start Time"
                 minuteStep={30}
-                disabled={submitting}
+                disabled={submitting || submitRef.current}
               />
             </Col>
             <Col span={12}>
@@ -602,7 +684,7 @@ export default function ScheduleSession() {
                 format="HH:mm"
                 placeholder="End Time"
                 minuteStep={30}
-                disabled={submitting}
+                disabled={submitting || submitRef.current}
               />
             </Col>
           </Row>
@@ -613,7 +695,7 @@ export default function ScheduleSession() {
             maxLength={100}
             placeholder="Reason for rescheduling"
             showCount
-            disabled={submitting}
+            disabled={submitting || submitRef.current}
           />
         </Space>
       </Modal>
