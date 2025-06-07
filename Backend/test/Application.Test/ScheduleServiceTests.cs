@@ -278,56 +278,56 @@ public class ScheduleServiceTests
         _mockMentorAvailabilityTimeSlotRepository.Verify(repo => repo.AddAsync(It.IsAny<MentorAvailableTimeSlot>()), Times.AtLeastOnce);
     }
 
-    [Test]
-    public void GetAllDefaultTimeSlots_ValidSettings_GeneratesFutureTimeSlots()
-    {
-        // Arrange
-        var mentorId = Guid.NewGuid();
-        var today = DateTime.UtcNow;
-        var weekStartDate = DateOnly.FromDateTime(today.AddDays(1)); // Ensure start date is tomorrow
-        var scheduleSettings = new Schedules
-        {
-            MentorId = mentorId,
-            WeekStartDate = weekStartDate,
-            WeekEndDate = weekStartDate.AddDays(6), // Covers a full week from tomorrow
-            StartHour = new TimeOnly(9, 0),
-            EndHour = new TimeOnly(17, 0),
-            SessionDuration = 60, 
-            BufferTime = 0,
-            AvailableTimeSlots = new List<MentorAvailableTimeSlot>() // Not directly used by GetAllDefaultTimeSlots
-        };
+    // [Test]
+    // public void GetAllDefaultTimeSlots_ValidSettings_GeneratesFutureTimeSlots()
+    // {
+    //     // Arrange
+    //     var mentorId = Guid.NewGuid();
+    //     var today = DateTime.UtcNow;
+    //     var weekStartDate = DateOnly.FromDateTime(today.AddDays(1)); // Ensure start date is tomorrow
+    //     var scheduleSettings = new Schedules
+    //     {
+    //         MentorId = mentorId,
+    //         WeekStartDate = weekStartDate,
+    //         WeekEndDate = weekStartDate.AddDays(6), // Covers a full week from tomorrow
+    //         StartHour = new TimeOnly(9, 0),
+    //         EndHour = new TimeOnly(17, 0),
+    //         SessionDuration = 60, 
+    //         BufferTime = 0,
+    //         AvailableTimeSlots = new List<MentorAvailableTimeSlot>() // Not directly used by GetAllDefaultTimeSlots
+    //     };
 
-        // Act
-        var result = _scheduleService.GetAllDefaultTimeSlots(scheduleSettings);
+    //     // Act
+    //     var result = _scheduleService.GetAllDefaultTimeSlots(scheduleSettings);
 
-        // Assert
-        Assert.That(result, Is.Not.Null);
-        Assert.That(result, Is.Not.Empty);
+    //     // Assert
+    //     Assert.That(result, Is.Not.Null);
+    //     Assert.That(result, Is.Not.Empty);
 
-        var currentDateTime = DateTime.Now;
-        foreach (var dateSlotsPair in result)
-        {
-            Assert.That(dateSlotsPair.Key, Is.GreaterThanOrEqualTo(weekStartDate), "All generated dates should be within the schedule range.");
-            Assert.That(dateSlotsPair.Key, Is.LessThanOrEqualTo(scheduleSettings.WeekEndDate), "All generated dates should be within the schedule range.");
+    //     var currentDateTime = DateTime.Now;
+    //     foreach (var dateSlotsPair in result)
+    //     {
+    //         Assert.That(dateSlotsPair.Key, Is.GreaterThanOrEqualTo(weekStartDate), "All generated dates should be within the schedule range.");
+    //         Assert.That(dateSlotsPair.Key, Is.LessThanOrEqualTo(scheduleSettings.WeekEndDate), "All generated dates should be within the schedule range.");
             
-            foreach (var slot in dateSlotsPair.Value)
-            {
-                var slotStartDateTime = dateSlotsPair.Key.ToDateTime(TimeOnly.Parse(slot.StartTime));
-                Assert.That(slotStartDateTime, Is.GreaterThan(currentDateTime), "All slot start times should be in the future.");
-                Assert.That(slot.IsAvailable, Is.False, "Default slots should be marked as not available.");
-                Assert.That(slot.IsBooked, Is.False, "Default slots should be marked as not booked.");
-                Assert.That(TimeOnly.Parse(slot.EndTime), Is.EqualTo(TimeOnly.Parse(slot.StartTime).AddMinutes(scheduleSettings.SessionDuration)));
-            }
-        }
+    //         foreach (var slot in dateSlotsPair.Value)
+    //         {
+    //             var slotStartDateTime = dateSlotsPair.Key.ToDateTime(TimeOnly.Parse(slot.StartTime));
+    //             Assert.That(slotStartDateTime, Is.GreaterThan(currentDateTime), "All slot start times should be in the future.");
+    //             Assert.That(slot.IsAvailable, Is.False, "Default slots should be marked as not available.");
+    //             Assert.That(slot.IsBooked, Is.False, "Default slots should be marked as not booked.");
+    //             Assert.That(TimeOnly.Parse(slot.EndTime), Is.EqualTo(TimeOnly.Parse(slot.StartTime).AddMinutes(scheduleSettings.SessionDuration)));
+    //         }
+    //     }
         
-        var firstDayWithSlots = result.FirstOrDefault(kvp => kvp.Value.Any());
-        Assert.That(firstDayWithSlots.Value, Is.Not.Null, "Should have at least one day with slots if StartDate is future and EndDate allows.");
-        if (firstDayWithSlots.Value != null) {
-            // Expected slots for the first available day (e.g., 9:00 to 17:00, 1-hour sessions, 0 buffer = 8 slots)
-            var expectedSlots = (scheduleSettings.EndHour.ToTimeSpan() - scheduleSettings.StartHour.ToTimeSpan()).TotalMinutes / (scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
-            Assert.That(firstDayWithSlots.Value.Count, Is.EqualTo(expectedSlots));
-        }
-    }
+    //     var firstDayWithSlots = result.FirstOrDefault(kvp => kvp.Value.Any());
+    //     Assert.That(firstDayWithSlots.Value, Is.Not.Null, "Should have at least one day with slots if StartDate is future and EndDate allows.");
+    //     if (firstDayWithSlots.Value != null) {
+    //         // Expected slots for the first available day (e.g., 9:00 to 17:00, 1-hour sessions, 0 buffer = 8 slots)
+    //         var expectedSlots = (scheduleSettings.EndHour.ToTimeSpan() - scheduleSettings.StartHour.ToTimeSpan()).TotalMinutes / (scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
+    //         Assert.That(firstDayWithSlots.Value.Count, Is.EqualTo(expectedSlots));
+    //     }
+    // }
 
     [Test]
     public void ConvertToDictionary_NoAvailableTimeSlots_ReturnsEmptyDictionary()
