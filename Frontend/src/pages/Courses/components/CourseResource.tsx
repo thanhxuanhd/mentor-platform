@@ -4,6 +4,8 @@ import { PlusOutlined } from "@ant-design/icons";
 import CourseMaterialForm from "./CourseMaterialForm.tsx";
 import { courseService } from "../../../services/course";
 import type { CourseResourceProps } from "../../../types/pages/courses/types.ts";
+import { useAuth } from "../../../hooks/useAuth.ts";
+import { applicationRole } from "../../../constants/role.ts";
 
 export const CourseResource: FC<CourseResourceProps> = ({
   course,
@@ -12,6 +14,7 @@ export const CourseResource: FC<CourseResourceProps> = ({
   onClose,
 }) => {
   const [materialModalVisible, setMaterialModalVisible] = useState(false);
+  const { user } = useAuth();
   const { message, modal } = App.useApp();
   const handleDeleteMaterial = async (materialId: string) => {
     if (!course) return;
@@ -60,18 +63,20 @@ export const CourseResource: FC<CourseResourceProps> = ({
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <p className="text-sm text-gray-400">Course Materials</p>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setMaterialModalVisible(true)}
-              className="bg-orange-500"
-            >
-              Add Material
-            </Button>
+            {user?.role === applicationRole.MENTOR && (
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setMaterialModalVisible(true)}
+                className="bg-orange-500"
+              >
+                Add Material
+              </Button>
+            )}
           </div>
-          {course.items.length > 0 ? (
+          {course.resources.length > 0 ? (
             <div className="space-y-2">
-              {course.items.map((item) => (
+              {course.resources.map((item) => (
                 <div
                   key={item.id}
                   className="bg-gray-700 p-3 rounded-md flex justify-between items-center"
@@ -91,12 +96,14 @@ export const CourseResource: FC<CourseResourceProps> = ({
                     >
                       Download
                     </Button>
-                    <Button
-                      danger
-                      onClick={() => handleDeleteMaterial(item.id)}
-                    >
-                      Delete
-                    </Button>
+                    {user?.role === applicationRole.MENTOR && (
+                      <Button
+                        danger
+                        onClick={() => handleDeleteMaterial(item.id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}

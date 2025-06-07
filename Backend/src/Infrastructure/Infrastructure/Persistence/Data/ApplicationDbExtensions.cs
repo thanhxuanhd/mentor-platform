@@ -86,7 +86,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
                     FullName = "Alice Wonderland",
                     Email = "alice.wonderland@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("password123"),
+                    PasswordHash = PasswordHelper.HashPassword("password@123"),
                     RoleId = mentorRole.Id,
                     Status = UserStatus.Active
                 },
@@ -95,7 +95,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
                     FullName = "Bob Builder",
                     Email = "bob.builder@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("securepassword"),
+                    PasswordHash = PasswordHelper.HashPassword("securepassword@345"),
                     RoleId = mentorRole.Id,
                     Status = UserStatus.Active
                 },
@@ -104,7 +104,16 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
                     FullName = "Charlie Chaplin",
                     Email = "charlie.chaplin@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("anotherpassword"),
+                    PasswordHash = PasswordHelper.HashPassword("anotherpassword@345"),
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                    FullName = "John Doe",
+                    Email = "johndoe@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("anotherpassword@345"),
                     RoleId = mentorRole.Id,
                     Status = UserStatus.Active
                 },
@@ -113,7 +122,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                     FullName = "David Copperfield",
                     Email = "david.copperfield@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("mypassword"),
+                    PasswordHash = PasswordHelper.HashPassword("mypassword@123"),
                     RoleId = learnerRole.Id,
                     Status = UserStatus.Active
                 },
@@ -256,6 +265,61 @@ public static class ApplicationDbExtensions
             {
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
                 TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
+            });
+
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.MentorApplications.Any())
+        {
+            dbContext.MentorApplications.AddRange(new MentorApplication
+            {
+                Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Bachelor's in Computer Science",
+                Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("7ad56b17-cb7d-4ca8-9058-8a05def6229f"),
+                MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Master's in Business Administration",
+                Certifications = "Project Management Professional (PMP), Six Sigma Green Belt",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Rejected,
+                SubmittedAt = new DateTime(2000, 1, 1),
+                ReviewedAt = null,
+                Education = "Bachelor's in Arts",
+                Certifications = "Certified Art Therapist",
+                Statement = null,
+                Note = "Invalid"
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("c9ad54d7-f90e-4ecf-b8ec-8b5badedf171"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Approved,
+                SubmittedAt = DateTime.UtcNow.AddDays(-10),
+                ReviewedAt = DateTime.UtcNow,
+                AdminId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
+                Education = "Bachelor's in Graphic Design",
+                Certifications = null,
+                Statement = null,
+                Note = null
             });
             dbContext.SaveChanges();
         }

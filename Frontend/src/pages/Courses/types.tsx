@@ -19,7 +19,7 @@ export type Course = {
   mentorName: string;
   difficulty: string;
   dueDate: string;
-  items: CourseResource[];
+  resources: CourseResource[];
   tags: string[];
   status: string;
 };
