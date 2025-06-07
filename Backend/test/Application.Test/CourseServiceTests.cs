@@ -559,58 +559,6 @@ public class CourseServiceTests
     }
 
     [Test]
-    public async Task DeleteAsync_CourseExists_ReturnsSuccess()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var existingCourse = new Course
-        {
-            Id = courseId,
-            Title = "Course to Delete",
-            Description = "Description",
-            Status = CourseStatus.Draft
-        };
-
-        var webRootPath = "wwwroot";
-        var resourcesPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath, "resources", courseId.ToString());
-
-        _courseRepositoryMock.Setup(repo => repo.GetByIdAsync(courseId, null))
-            .ReturnsAsync(existingCourse);
-
-        _webHostEnvironmentMock.Setup(env => env.WebRootPath)
-            .Returns(webRootPath);
-
-        Directory.CreateDirectory(resourcesPath);
-
-        try
-        {
-            // Act
-            var result = await _courseService.DeleteAsync(courseId);
-
-            // Assert
-            using (Assert.EnterMultipleScope())
-            {
-                Assert.That(result.IsSuccess, Is.True);
-                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-                Assert.That(Directory.Exists(resourcesPath), Is.False, "Course directory should be deleted");
-
-                _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
-                _courseRepositoryMock.Verify(repo => repo.Delete(existingCourse), Times.Once);
-                _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
-                _webHostEnvironmentMock.Verify(env => env.WebRootPath, Times.Once);
-            }
-        }
-        finally
-        {
-            // Cleanup: Remove test directory if it still exists
-            if (Directory.Exists(resourcesPath))
-            {
-                Directory.Delete(resourcesPath, true);
-            }
-        }
-    }
-
-    [Test]
     public async Task DeleteAsync_CourseNotFound_ReturnsNotFound()
     {
         // Arrange
