@@ -5,7 +5,7 @@ namespace Contract.Dtos.SessionBooking.Response;
 
 public record SessionSlotStatusResponse
 {
-    public required Guid SessionId { get; init; }
+    //public required Guid SessionId { get; init; }
     public required Guid SlotId { get; init; }
     public required Guid MentorId { get; init; }
     public required DateOnly Day { get; init; }

@@ -4,7 +4,7 @@ namespace Contract.Dtos.SessionBooking.Response;
 
 public record GetAllRequestByLearnerResponse
 {
-    public required Guid SessionId { get; init; }
+    //public required Guid SessionId { get; init; }
     public required Guid SlotId { get; init; }
     public required string MentorName { get; init; }
     public required List<string>? Expertise { get; init; } = [];

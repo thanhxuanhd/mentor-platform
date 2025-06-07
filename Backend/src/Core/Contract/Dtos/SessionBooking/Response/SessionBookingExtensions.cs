@@ -58,7 +58,7 @@ public static class SessionBookingExtensions
         var mats = booking.TimeSlot;
         return new SessionSlotStatusResponse
         {
-            SessionId = booking.Id,
+            //SessionId = booking.Id,
             SlotId = booking.Id,
             MentorId = mats.Schedules.MentorId,
             Day = mats.Date,
@@ -73,7 +73,7 @@ public static class SessionBookingExtensions
         var mats = booking.TimeSlot;
         return new GetAllRequestByLearnerResponse
         {
-            SessionId = booking.Id,
+            //SessionId = booking.Id,
             SlotId = booking.Id,
             MentorName = booking.TimeSlot.Schedules.Mentor.FullName,
             Expertise = booking.TimeSlot.Schedules.Mentor.UserExpertises.Select(ue => ue.Expertise!.Name).ToList(),

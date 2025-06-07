@@ -9,6 +9,7 @@ export interface SessionBookingRequest {
   date: string
   fullNameLearner: string
   preferredCommunicationMethod: "VideoCall" | "AudioCall" | "Chat"
+  lastStatusUpdate: string
 }
 
 export interface UpdateSessionStatusRequest {

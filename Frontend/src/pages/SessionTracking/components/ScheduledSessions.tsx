@@ -145,7 +145,6 @@ export default function ScheduleSession() {
   const [processingSessionIds, setProcessingSessionIds] = useState<Record<string, boolean>>({})
   const [processingTimeSlots, setProcessingTimeSlots] = useState<Record<string, boolean>>({})
 
-  // Add ref to track if we're already processing overtime sessions
   const processingOvertimeRef = useRef(false)
 
   const statusColors = {
@@ -170,11 +169,10 @@ export default function ScheduleSession() {
     Chat: "Chat",
   }
 
-  // Update current time every minute
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(dayjs())
-    }, 60000) // Update every minute
+    }, 60000) 
 
     return () => clearInterval(interval)
   }, [])
@@ -257,7 +255,6 @@ export default function ScheduleSession() {
     }
   }, [sessions, currentTime])
 
-  // Check for overtime sessions when current time or sessions change
   useEffect(() => {
     if (sessions.length > 0) {
       handleOvertimeSessions()
@@ -295,7 +292,6 @@ export default function ScheduleSession() {
     const sessionDateTime = dayjs(`${session.date} ${session.startTime}`)
     const isOvertime = sessionDateTime.isBefore(currentTime)
 
-    // Only show sessions that are not overtime and have active statuses
     return !isOvertime && ["Pending", "Approved", "Rescheduled"].includes(session.status)
   })
 
@@ -303,7 +299,6 @@ export default function ScheduleSession() {
     const sessionDateTime = dayjs(`${session.date} ${session.startTime}`)
     const isOvertime = sessionDateTime.isBefore(currentTime)
 
-    // Show completed/cancelled sessions OR overtime sessions that were active
     return (
       ["Completed", "Canceled"].includes(session.status) ||
       (isOvertime && session.lastStatusUpdate && dayjs(session.lastStatusUpdate).isAfter(sessionDateTime))
@@ -429,22 +424,14 @@ export default function ScheduleSession() {
     }
   }
 
-  const openRescheduleModal = async (session: Session) => {
-    try {
-      const sessionDetails = await sessionBookingService.getSessionDetails(session.id)
-      setSelectedSession({
-        ...session,
-        date: sessionDetails.date,
-        startTime: sessionDetails.startTime,
-        endTime: sessionDetails.endTime,
-      })
-      setIsModalVisible(true)
-    } catch (error) {
-      showNotification("error", "Failed to load session details")
-      console.error("Error loading session details:", error)
-      setSelectedSession(session)
-      setIsModalVisible(true)
-    }
+  const openRescheduleModal = (session: Session) => {
+    setSelectedSession({
+      ...session,
+      date: session.date,
+      startTime: session.startTime,
+      endTime: session.endTime,
+    })
+    setIsModalVisible(true)
   }
 
   const getActionsColumn = (): ColumnsType<Session>[0] => ({

@@ -81,7 +81,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             throw new Exception("Cannot cancel this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Cancelled;
+        bookingSession.Status = SessionStatus.Canceled;
     }
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
@@ -113,7 +113,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             throw new Exception("Cannot cancel this booking session at this time.");
         }
 
-        bookingSession.Status = SessionStatus.Cancelled;
+        bookingSession.Status = SessionStatus.Canceled;
     }
     public async Task<List<Sessions>> GetAllBookingAsync()
     {

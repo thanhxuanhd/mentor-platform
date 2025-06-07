@@ -136,7 +136,6 @@ public static class ApplicationDbExtensions
                     RoleId = adminRole.Id,
                     Status = UserStatus.Active
                 },
-                // Thêm 2 Learner mới
                 new User
                 {
                     Id = Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
@@ -290,52 +289,6 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
-            dbContext.Schedules.AddRange(
-                new Schedules
-                {
-                    MentorId = mentor1Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
-                    StartHour = new TimeOnly(09, 00),
-                    EndHour = new TimeOnly(17, 00),
-                    SessionDuration = 60,
-                    BufferTime = 15,
-                },
-                new Schedules
-                {
-                    MentorId = mentor1Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
-                    StartHour = new TimeOnly(10, 00),
-                    EndHour = new TimeOnly(18, 00),
-                    SessionDuration = 45,
-                    BufferTime = 10,
-                },
-                new Schedules
-                {
-                    MentorId = mentor2Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
-                    StartHour = new TimeOnly(13, 00),
-                    EndHour = new TimeOnly(21, 00),
-                    SessionDuration = 30,
-                    BufferTime = 5,
-                },
-                new Schedules
-                {
-                    MentorId = mentor2Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
-                    StartHour = new TimeOnly(09, 00),
-                    EndHour = new TimeOnly(12, 00),
-                    SessionDuration = 60,
-                    BufferTime = 0,
-                }
-            );
-
-            dbContext.SaveChanges();
-        }
-
         if (!dbContext.MentorApplications.Any())
         {
             dbContext.MentorApplications.AddRange(new MentorApplication
@@ -390,17 +343,15 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
-        var scheduleId = Guid.NewGuid();
-
+        var scheduleId = Guid.Parse("A1B2C3D4-E5F6-7890-ABCD-EF1234567890");
         if (!dbContext.Schedules.Any())
         {
             var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
             var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
-            // current week
+
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
             var endOfWeek = startOfWeek.AddDays(6);
-
 
             dbContext.Schedules.AddRange(
                 new Schedules
@@ -445,56 +396,38 @@ public static class ApplicationDbExtensions
                     BufferTime = 0,
                 }
             );
-
             dbContext.SaveChanges();
         }
 
-        var slotId1 = Guid.NewGuid();
-        var slotId2 = Guid.NewGuid();
-        var slotId3 = Guid.NewGuid();
-        var slotId4 = Guid.NewGuid();
         if (!dbContext.MentorAvailableTimeSlots.Any())
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
-            var endOfWeek = startOfWeek.AddDays(6);
 
-            dbContext.MentorAvailableTimeSlots.AddRange(
-                new MentorAvailableTimeSlot
-                {
-                    Id = slotId1,
-                    ScheduleId = scheduleId,
-                    Date = endOfWeek,
-                    StartTime = new TimeOnly(9, 0),
-                    EndTime = new TimeOnly(10, 0),
+            var existingSchedule = dbContext.Schedules.FirstOrDefault(s => s.Id == scheduleId);
+            if (existingSchedule == null)
+            {
+                throw new Exception("Schedule not found for time slot seeding");
+            }
 
-                },
-                new MentorAvailableTimeSlot
+            var timeSlots = new List<MentorAvailableTimeSlot>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                timeSlots.Add(new MentorAvailableTimeSlot
                 {
-                    Id = slotId2,
+                    Id = Guid.NewGuid(),
                     ScheduleId = scheduleId,
-                    Date = endOfWeek,
-                    StartTime = new TimeOnly(10, 15),
-                    EndTime = new TimeOnly(11, 15),
-                },
-                new MentorAvailableTimeSlot
-                {
-                    Id = slotId3,
-                    ScheduleId = scheduleId,
-                    Date = endOfWeek,
-                    StartTime = new TimeOnly(13, 0),
-                    EndTime = new TimeOnly(14, 0),
-                },
-                new MentorAvailableTimeSlot
-                {
-                    Id = slotId4,
-                    ScheduleId = scheduleId,
-                    Date = endOfWeek,
-                    StartTime = new TimeOnly(15, 30),
-                    EndTime = new TimeOnly(16, 30),
-                }
-            );
+                    Date = today.AddDays(i + 1),
+                    StartTime = new TimeOnly(9 + i, 0), 
+                    EndTime = new TimeOnly(10 + i, 0),
+                });
+            }
+
+            dbContext.MentorAvailableTimeSlots.AddRange(timeSlots);
             dbContext.SaveChanges();
+
+            var createdSlots = dbContext.MentorAvailableTimeSlots.Count();
+            Console.WriteLine($"Created {createdSlots} time slots");
         }
 
         if (!dbContext.CourseResources.Any())
@@ -550,96 +483,66 @@ public static class ApplicationDbExtensions
             });
             dbContext.SaveChanges();
         }
-        if (!dbContext.MentorAvailableTimeSlots.Any())
+        if (!dbContext.Sessions.Any())
         {
-            var schedule = dbContext.Schedules.FirstOrDefault();
-            if (schedule != null)
+            dbContext.Sessions.RemoveRange(dbContext.Sessions);
+            dbContext.SaveChanges();
+
+            var learnerIds = new List<Guid>
             {
-                for (int i = 0; i < 5; i++)
+                Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
+                Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
+                Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2")
+            };
+
+            var allTimeSlots = dbContext.MentorAvailableTimeSlots.ToList();
+
+            if (!allTimeSlots.Any())
+            {
+                var schedule = dbContext.Schedules.FirstOrDefault();
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                for (int i = 0; i < 20; i++)
                 {
-                    dbContext.MentorAvailableTimeSlots.Add(new MentorAvailableTimeSlot
+                    var slot = new MentorAvailableTimeSlot
                     {
                         Id = Guid.NewGuid(),
                         ScheduleId = schedule.Id,
-                        Date = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(i + 1)),
-                        StartTime = new TimeOnly(9, 0),
-                        EndTime = new TimeOnly(10, 0),
-                    });
+                        Date = today.AddDays(i + 1),
+                        StartTime = new TimeOnly(9 + i, 0),
+                        EndTime = new TimeOnly(10 + i, 0)
+                    };
+                    dbContext.MentorAvailableTimeSlots.Add(slot);
+                    allTimeSlots.Add(slot);
                 }
-                dbContext.MentorAvailableTimeSlots.Add(new MentorAvailableTimeSlot
-                {
-                    Id = Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"), 
-                    ScheduleId = schedule.Id,
-                    Date = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10)), 
-                    StartTime = new TimeOnly(14, 0),
-                    EndTime = new TimeOnly(15, 0), 
-                });
-
                 dbContext.SaveChanges();
             }
-        }
 
-        if (!dbContext.Sessions.Any())
-        {
-            var learnerId = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C");
-            var newLearner1Id = Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1");
-            var newLearner2Id = Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2");
+            var sessionsToAdd = new List<Sessions>();
+            var random = new Random();
 
-
-            var learner = dbContext.Users.FirstOrDefault(u => u.Id == learnerId);
-            var newLearner1 = dbContext.Users.FirstOrDefault(u => u.Id == newLearner1Id);
-            var newLearner2 = dbContext.Users.FirstOrDefault(u => u.Id == newLearner2Id);
-
-            var timeSlots = dbContext.MentorAvailableTimeSlots.Take(5).ToList();
-            var sharedTimeSlot = dbContext.MentorAvailableTimeSlots.FirstOrDefault(ts => ts.Id == Guid.Parse("E5E6F7E8-9A0B-4C1D-2E3F-4A5B6C7D8E9F"));
-
-            if (learner is null) throw new Exception("Session seeding: David Copperfield learner does not exist.");
-            if (newLearner1 is null) throw new Exception("Session seeding: New Learner 1 (Nguyen Van A) does not exist.");
-            if (newLearner2 is null) throw new Exception("Session seeding: New Learner 2 (Tran Thi B) does not exist.");
-            if (sharedTimeSlot is null) throw new Exception("Session seeding: Shared time slot does not exist.");
-
-            foreach (var timeSlot in timeSlots)
+            for (int i = 0; i < 20; i++)
             {
-                var session = new Sessions
+                var timeSlot = allTimeSlots[i % allTimeSlots.Count];
+                var learner = learnerIds[i % 3]; 
+
+                sessionsToAdd.Add(new Sessions
                 {
                     Id = Guid.NewGuid(),
-                    LearnerId = learner.Id,
-                    Learner = learner,
+                    LearnerId = learner,
                     TimeSlotId = timeSlot.Id,
-                    TimeSlot = timeSlot,
                     Status = SessionStatus.Pending,
                     Type = SessionType.Onsite,
-                };
-
-                dbContext.Sessions.Add(session);
+                    BookedOn = DateTime.UtcNow.AddMinutes(-random.Next(1, 1440))
+                });
             }
 
-            dbContext.Sessions.AddRange(
-                new Sessions
-                {
-                    Id = Guid.NewGuid(),
-                    LearnerId = newLearner1.Id,
-                    Learner = newLearner1,
-                    TimeSlotId = sharedTimeSlot.Id,
-                    TimeSlot = sharedTimeSlot, 
-                    Status = SessionStatus.Pending,
-                    Type = SessionType.Onsite,
-                },
-                new Sessions
-                {
-                    Id = Guid.NewGuid(),
-                    LearnerId = newLearner2.Id,
-                    Learner = newLearner2,
-                    TimeSlotId = sharedTimeSlot.Id,
-                    TimeSlot = sharedTimeSlot,
-                    Status = SessionStatus.Pending,
-                    Type = SessionType.Onsite,
-                }
-            );
-
+            dbContext.Sessions.AddRange(sessionsToAdd);
             dbContext.SaveChanges();
-        }
 
+            Console.WriteLine($"Force created exactly {sessionsToAdd.Count} sessions");
+            Console.WriteLine($"Total sessions in database: {dbContext.Sessions.Count()}");
+        }
     }
 
     private static string GetMediaUrl(FileType mediaType, int moduleNumber)
