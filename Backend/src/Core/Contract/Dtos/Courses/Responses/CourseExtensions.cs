@@ -33,6 +33,8 @@ public static class CourseExtensions
             Title = courseResource.Title,
             ResourceType = courseResource.ResourceType,
             ResourceUrl = courseResource.ResourceUrl,
+            CourseId = courseResource.CourseId,
+            MentorId = courseResource.Course.MentorId,
             CourseTitle = courseResource.Course.Title,
         };
     }

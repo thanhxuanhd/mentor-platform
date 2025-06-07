@@ -19,6 +19,19 @@ export const resourceService = {
       });
   },
 
+  getResourceById: async (
+    courseResourceId: string,
+  ): Promise<CourseResourceResponse> => {
+    return await axiosClient
+      .get(`Resources/${courseResourceId}`)
+      .then((response) => {
+        return response.data.value;
+      })
+      .catch((error) => {
+        throw error;
+      });
+  },
+
   createResource: async (
     resource: FormData,
   ): Promise<CourseResourceResponse> => {

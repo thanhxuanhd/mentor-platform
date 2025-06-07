@@ -8,14 +8,18 @@ import {
   Input,
   Popconfirm,
   Row,
-  Segmented,
+  Select,
   Tag,
   Tooltip,
 } from "antd";
-import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+} from "@ant-design/icons";
 import PaginationControls from "../../components/shared/Pagination";
 import { useCallback, useEffect, useState } from "react";
-import { FileType } from "../../types/enums/FileType";
 import type { CourseResourceResponse } from "../../types/ResourceType";
 import type { NotificationProps } from "../../types/Notification";
 import { resourceService } from "../../services/resource/resourceService";
@@ -23,18 +27,12 @@ import CourseResourceModal from "./components/CourseResourceModal"; // Import th
 import { useAuth } from "../../hooks";
 import { downloadFile, getFileNameFromUrl } from "../../utils/FileHelper";
 import { applicationRole } from "../../constants/role";
+import type { Category } from "../Courses/types";
+import categoryService from "../../services/category";
 
 type SearchProps = GetProps<typeof Input.Search>;
 
 const { Search } = Input;
-
-const typeOptions = [
-  { label: "All", value: null },
-  { label: "Pdf", value: FileType.Pdf },
-  { label: "Video", value: FileType.Video },
-  { label: "Audio", value: FileType.Audio },
-  { label: "Image", value: FileType.Image },
-];
 
 const fileTypeColors: Record<string, string> = {
   pdf: "orange",
@@ -50,8 +48,10 @@ export default function CourseResourcesPage() {
   const [pageIndex, setPageIndex] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedTypeSegment, setSelectedTypeSegment] =
-    useState<FileType | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null,
+  );
   const [searchValue, setSearchValue] = useState<string | null>(null);
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const [loading, setLoading] = useState(false);
@@ -60,8 +60,25 @@ export default function CourseResourcesPage() {
   // Modal state
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editingResource, setEditingResource] =
-    useState<CourseResourceResponse | null>(null);
+  const [editingResourceId, setEditingResourceId] = useState<string | null>(
+    null,
+  );
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const response = await categoryService.list({
+        pageIndex: 1,
+        pageSize: 10,
+      });
+      setCategories(response.items);
+    } catch {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: "Failed to fetch categories",
+      });
+    }
+  }, []);
 
   const fetchResources = useCallback(async () => {
     try {
@@ -70,7 +87,7 @@ export default function CourseResourcesPage() {
         .getResources({
           pageIndex: pageIndex,
           pageSize: pageSize,
-          resourceType: selectedTypeSegment,
+          categoryId: selectedCategoryId,
           keyWord: searchValue,
         })
         .then((response) => {
@@ -87,11 +104,12 @@ export default function CourseResourcesPage() {
     } finally {
       setLoading(false);
     }
-  }, [pageIndex, pageSize, searchValue, selectedTypeSegment]);
+  }, [pageIndex, pageSize, searchValue, selectedCategoryId]);
 
   useEffect(() => {
     fetchResources();
-  }, [fetchResources]);
+    fetchCategories();
+  }, [fetchCategories, fetchResources]);
 
   useEffect(() => {
     if (notify) {
@@ -116,11 +134,6 @@ export default function CourseResourcesPage() {
     setPageIndex(1);
   }, []);
 
-  const handleFilterChange = useCallback((value: FileType | null) => {
-    setSelectedTypeSegment(value);
-    setPageIndex(1);
-  }, []);
-
   const handleSearchInput: SearchProps["onSearch"] = useCallback(
     (value: string) => {
       setSearchValue(value.trim());
@@ -133,13 +146,12 @@ export default function CourseResourcesPage() {
   const handleCreateResource = () => {
     setIsModalVisible(true);
     setIsEditing(false);
-    setEditingResource(null);
   };
 
-  const handleEditResource = (resource: CourseResourceResponse) => {
+  const handleEditResource = (resourceId: string) => {
+    setEditingResourceId(resourceId);
     setIsModalVisible(true);
     setIsEditing(true);
-    setEditingResource(resource);
   };
 
   const handleDeleteResource = async (resourceId: string) => {
@@ -164,9 +176,9 @@ export default function CourseResourcesPage() {
   };
 
   const handleModalCancel = () => {
+    setEditingResourceId(null);
     setIsModalVisible(false);
     setIsEditing(false);
-    setEditingResource(null);
   };
 
   const handleModalSubmit = async (values: any) => {
@@ -178,9 +190,9 @@ export default function CourseResourcesPage() {
       formData.append("courseId", values.courseId);
       formData.append("resource", values.resource);
 
-      if (isEditing && editingResource) {
+      if (isEditing && editingResourceId) {
         //Edit
-        await resourceService.editResource(editingResource.id, formData);
+        await resourceService.editResource(editingResourceId, formData);
         setNotify({
           type: "success",
           message: "Resource updated",
@@ -208,8 +220,13 @@ export default function CourseResourcesPage() {
     }
   };
 
-  const handleDownload = (url: string, filename: string) => {
-    downloadFile(url, filename);
+  const handleDownload = (courseResourceId: string, filename: string) => {
+    downloadFile(courseResourceId, filename);
+  };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategoryId(value);
+    setPageIndex(1);
   };
 
   return (
@@ -233,14 +250,23 @@ export default function CourseResourcesPage() {
       </div>
 
       <div className="flex justify-between mb-6 flex-wrap">
-        <Segmented<FileType | null>
-          key={selectedTypeSegment}
-          options={typeOptions}
+        <Select
+          showSearch
+          allowClear
+          value={selectedCategoryId}
+          placeholder="Select category"
           size="large"
-          value={selectedTypeSegment}
-          onChange={handleFilterChange}
-          name="roleSegment"
-          className="h-content!"
+          options={categories}
+          filterOption={(input, option) =>
+            (option?.name ?? "")
+              .trim()
+              .toLowerCase()
+              .includes(input.trim().toLowerCase())
+          }
+          className="w-25 sm:w-50 lg:w-100"
+          onChange={handleCategoryChange}
+          onClick={fetchCategories}
+          fieldNames={{ label: "name", value: "id" }}
         />
         {user?.role === applicationRole.MENTOR && (
           <Button
@@ -295,10 +321,11 @@ export default function CourseResourcesPage() {
                       className="flex-1"
                       onClick={() =>
                         handleDownload(
-                          resource.resourceUrl,
+                          resource.id,
                           getFileNameFromUrl(resource.resourceUrl),
                         )
                       }
+                      icon={<DownloadOutlined />}
                     >
                       Download
                     </Button>
@@ -308,7 +335,7 @@ export default function CourseResourcesPage() {
                           <Button
                             size="large"
                             icon={<EditOutlined />}
-                            onClick={() => handleEditResource(resource)}
+                            onClick={() => handleEditResource(resource.id)}
                           >
                             Edit
                           </Button>
@@ -355,12 +382,13 @@ export default function CourseResourcesPage() {
         totalCount={totalCount}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        pageSizeOptions={[6, 8, 12, 24]}
       />
 
       <CourseResourceModal
         visible={isModalVisible}
         isEditing={isEditing}
-        initialValues={editingResource ?? undefined}
+        resourceId={editingResourceId ?? undefined}
         onCancel={handleModalCancel}
         onSubmit={handleModalSubmit}
         title={isEditing ? "Edit Resource" : "Add New Resource"}

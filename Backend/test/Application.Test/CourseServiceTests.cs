@@ -571,20 +571,42 @@ public class CourseServiceTests
             Status = CourseStatus.Draft
         };
 
+        var webRootPath = "wwwroot";
+        var resourcesPath = Path.Combine(Directory.GetCurrentDirectory(), webRootPath, "resources", courseId.ToString());
+
         _courseRepositoryMock.Setup(repo => repo.GetByIdAsync(courseId, null))
             .ReturnsAsync(existingCourse);
 
-        // Act
-        var result = await _courseService.DeleteAsync(courseId);
+        _webHostEnvironmentMock.Setup(env => env.WebRootPath)
+            .Returns(webRootPath);
 
-        // Assert
-        using (Assert.EnterMultipleScope())
+        Directory.CreateDirectory(resourcesPath);
+
+        try
         {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
-            _courseRepositoryMock.Verify(repo => repo.Delete(existingCourse), Times.Once);
-            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+            // Act
+            var result = await _courseService.DeleteAsync(courseId);
+
+            // Assert
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(Directory.Exists(resourcesPath), Is.False, "Course directory should be deleted");
+
+                _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
+                _courseRepositoryMock.Verify(repo => repo.Delete(existingCourse), Times.Once);
+                _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
+                _webHostEnvironmentMock.Verify(env => env.WebRootPath, Times.Once);
+            }
+        }
+        finally
+        {
+            // Cleanup: Remove test directory if it still exists
+            if (Directory.Exists(resourcesPath))
+            {
+                Directory.Delete(resourcesPath, true);
+            }
         }
     }
 

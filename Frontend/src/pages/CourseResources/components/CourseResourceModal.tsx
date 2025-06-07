@@ -1,6 +1,6 @@
 import { App, Button, Form, Input, Modal, Select, Upload } from "antd";
 import type { UploadFile } from "antd/es/upload/interface";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type {
   CourseResourceRequest as CourseResource,
   CourseResourceResponse,
@@ -13,10 +13,11 @@ import {
   getBinaryFileFromUrl,
   getFileNameFromUrl,
 } from "../../../utils/FileHelper";
+import { resourceService } from "../../../services/resource/resourceService";
 
 interface CourseResourceModalProps {
   visible: boolean;
-  initialValues?: CourseResourceResponse;
+  resourceId?: string;
   onCancel: () => void;
   onSubmit: (values: CourseResource) => void;
   title: string;
@@ -26,7 +27,7 @@ interface CourseResourceModalProps {
 
 const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
   visible,
-  initialValues,
+  resourceId,
   onCancel,
   onSubmit,
   title,
@@ -34,6 +35,8 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
   isEditing,
 }) => {
   const [form] = Form.useForm();
+  const [courseResource, setCourseResource] =
+    useState<CourseResourceResponse | null>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [keyword, setKeyword] = useState<string | null>(null);
@@ -43,16 +46,11 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
   );
   const { notification } = App.useApp();
 
-  useEffect(() => {
-    const fetchCourses = async () => {
+  const fetchResource = async () => {
+    if (resourceId) {
       try {
-        // Get courses
-        const courseResponse = await courseService.list({
-          pageIndex: 1,
-          pageSize: 10,
-          keyword: keyword ?? undefined,
-        });
-        setCourses(courseResponse.items);
+        const response = await resourceService.getResourceById(resourceId);
+        setCourseResource(response);
       } catch (error: any) {
         setNotify({
           type: "error",
@@ -60,28 +58,48 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
           description: error.response?.data?.value || "Error fetching data",
         });
       }
-    };
+    }
+  };
 
-    fetchCourses();
-  }, [keyword]);
+  const fetchCourses = useCallback(async () => {
+    try {
+      // Get courses
+      const courseResponse = await courseService.list({
+        pageIndex: 1,
+        pageSize: 10,
+        keyword: keyword ?? undefined,
+      });
+      setCourses(courseResponse.items);
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Error",
+        description: error.response?.data?.value || "Error fetching data",
+      });
+    }
+  }, []);
 
   useEffect(() => {
-    if (visible && isEditing && initialValues) {
-      // Assuming initialValues.resource is a URL
-      if (initialValues.resourceUrl) {
+    fetchResource();
+    fetchCourses();
+  }, [resourceId]);
+
+  useEffect(() => {
+    if (visible && isEditing && courseResource) {
+      if (courseResource.resourceUrl) {
         const initialFileList: UploadFile[] = [
           {
-            uid: initialValues.courseId, // Unique ID
-            name: getFileNameFromUrl(initialValues.resourceUrl), // Display name
+            uid: courseResource.courseId, // Unique ID
+            name: getFileNameFromUrl(courseResource.resourceUrl), // Display name
             status: "done" as const,
-            url: initialValues.resourceUrl,
+            url: courseResource.resourceUrl,
           },
         ];
         setFileList(initialFileList);
         form.setFieldsValue({
-          title: initialValues.title,
-          description: initialValues.description,
-          courseId: initialValues.courseId,
+          title: courseResource.title,
+          description: courseResource.description,
+          courseId: courseResource.courseId,
           resource: initialFileList,
         });
       } else {
@@ -92,7 +110,7 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
       setFileList([]);
       setSelectedCourseId(undefined);
     }
-  }, [visible, form, initialValues, isEditing]);
+  }, [visible, form, courseResource, isEditing]);
 
   useEffect(() => {
     if (notify) {
@@ -116,7 +134,12 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
         if (fileList.length > 0) {
           resourceValue = fileList[0].originFileObj
             ? fileList[0].originFileObj
-            : await getBinaryFileFromUrl(fileList[0].url as string);
+            : await getBinaryFileFromUrl(
+                courseResource?.id as string,
+                getFileNameFromUrl(
+                  courseResource?.resourceUrl as string,
+                ) as string,
+              );
         }
 
         onSubmit({ ...values, resource: resourceValue });
@@ -126,6 +149,7 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
 
   const handleCancel = () => {
     form.resetFields();
+    setKeyword(null);
     onCancel();
     setFileList([]);
   };
@@ -158,6 +182,7 @@ const CourseResourceModal: React.FC<CourseResourceModalProps> = ({
 
   const onSearch = (value: string) => {
     setKeyword(value);
+    fetchCourses();
   };
   return (
     <Modal

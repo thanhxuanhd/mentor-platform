@@ -1,4 +1,5 @@
 using Domain.Enums;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Application.Helpers
 {
@@ -29,6 +30,24 @@ namespace Application.Helpers
                 ".mp3" or ".wav" or ".aac" => FileType.Audio,
                 _ => throw new ArgumentException($"Unsupported file extension: {extension}", nameof(url))
             };
+        }
+
+        public static string GetFileContentTypeFromExtension(string fileExtension)
+        {
+            // Ensure the extension starts with a dot
+            if (!fileExtension.StartsWith("."))
+            {
+                fileExtension = "." + fileExtension;
+            }
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (provider.TryGetContentType(fileExtension, out string mimeType))
+            {
+                return mimeType;
+            }
+
+            return "application/octet-stream"; // default for unknown types
         }
     }
 }

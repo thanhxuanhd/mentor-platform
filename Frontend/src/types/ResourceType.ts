@@ -15,7 +15,7 @@ export interface FilterResourceRequest {
   pageIndex: number;
   pageSize: number;
   keyWord?: string | null;
-  resourceType?: FileType | null;
+  categoryId?: string | null;
 }
 
 export interface CourseResourceRequest {

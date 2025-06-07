@@ -54,5 +54,32 @@ namespace MentorPlatformAPI.Controllers
             var serviceResult = await courseResourceService.DeleteAsync(mentorId, courseResourceId);
             return StatusCode((int)serviceResult.StatusCode, serviceResult);
         }
+
+        [Authorize]
+        [HttpGet("download")]
+        public async Task<IActionResult> DownloadFileAsync(Guid courseResourceId, string fileName)
+        {
+            try
+            {
+                var serviceResult = await courseResourceService.DownloadFileAsync(courseResourceId, fileName);
+
+                return serviceResult;
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            when (ex is KeyNotFoundException
+            or FileNotFoundException
+            or DirectoryNotFoundException)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An error occurred while processing your request");
+            }
+        }
     }
 }

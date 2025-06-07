@@ -52,7 +52,6 @@ export const CourseResourceDialog: FC<CourseResourceProps> = ({
   };
 
   const handleFormSubmit = async (values: any) => {
-
     try {
       setLoading(true);
       const formData = new FormData();
@@ -94,12 +93,11 @@ export const CourseResourceDialog: FC<CourseResourceProps> = ({
     }
   };
 
-  const handleDownload = (url: string, filename: string) => {
-    downloadFile(url, filename);
+  const handleDownload = (courseResourceId: string, filename: string) => {
+    downloadFile(courseResourceId, filename);
   };
 
   const handleDeleteResource = async (resourceId: string) => {
-
     try {
       if (!course) return;
       setLoading(true);
@@ -201,7 +199,7 @@ export const CourseResourceDialog: FC<CourseResourceProps> = ({
                       icon={<DownloadOutlined />}
                       onClick={() =>
                         handleDownload(
-                          item.resourceUrl,
+                          item.id,
                           getFileNameFromUrl(item.resourceUrl),
                         )
                       }

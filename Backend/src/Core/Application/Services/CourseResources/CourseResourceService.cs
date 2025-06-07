@@ -8,6 +8,7 @@ using Domain.Constants;
 using Domain.Entities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using static System.Net.HttpStatusCode;
 
@@ -37,7 +38,7 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
 
     public async Task<Result<CourseResourceResponse>> GetByIdAsync(Guid courseResourceId)
     {
-        var resource = await courseResourceRepository.GetByIdAsync(courseResourceId);
+        var resource = await courseResourceRepository.GetByIdAsync(courseResourceId, cr => cr.Course);
         return resource == null
             ? Result.Failure<CourseResourceResponse>(
                 $"Course resource with id = {courseResourceId} not found",
@@ -179,14 +180,14 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
     {
         var resources = courseResourceRepository.GetAll();
 
+        if (request.CategoryId.HasValue)
+        {
+            resources = resources.Where(c => c.Course.CategoryId == request.CategoryId);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Keyword))
         {
             resources = resources.Where(c => c.Title.Contains(request.Keyword));
-        }
-        
-        if (request.ResourceType.HasValue)
-        {
-            resources = resources.Where(c => c.ResourceType == request.ResourceType);
         }
 
         var filteredResources = resources.Select(
@@ -283,5 +284,48 @@ public class CourseResourceService(ICourseResourceRepository courseResourceRepos
         {
             return Result.Failure($"Failed to delete file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
+    }
+
+    public async Task<FileResult> DownloadFileAsync(Guid courseResourceId, string fileName)
+    {
+        if (string.IsNullOrEmpty(fileName))
+        {
+            throw new ArgumentException("File name cannot be empty", nameof(fileName));
+        }
+
+        var resource = await courseResourceRepository.GetByIdAsync(courseResourceId, cr => cr.Course);
+        if (resource == null)
+        {
+            throw new KeyNotFoundException($"Resource with ID {courseResourceId} not found");
+        }
+
+        var path = Directory.GetCurrentDirectory();
+        var resourcesPath = Path.Combine(path, env.WebRootPath, "resources", $"{resource.CourseId}");
+
+        if (!Directory.Exists(resourcesPath))
+        {
+            throw new DirectoryNotFoundException($"Directory not found");
+        }
+
+        var filePath = Path.Combine(resourcesPath, fileName);
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException($"Physical file {fileName} not found");
+        }
+
+        var contentType = FileHelper.GetFileContentTypeFromExtension(Path.GetExtension(fileName));
+
+        var fileStream = new FileStream(
+        filePath,
+        FileMode.Open,
+        FileAccess.Read,
+        FileShare.Read,
+        bufferSize: 4096,
+        FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+        return new FileStreamResult(fileStream, contentType)
+        {
+            FileDownloadName = fileName
+        };
     }
 }
