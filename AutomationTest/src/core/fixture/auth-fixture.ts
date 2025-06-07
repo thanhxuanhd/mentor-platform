@@ -9,15 +9,15 @@ export type AuthFixtures = {
     loggedInPageByMentorRole: any;
 };
 
-const defaultAdmin: LoginUser = {
+export const defaultAdmin: LoginUser = {
     email: process.env.ADMIN_USER_NAME!,
     password: process.env.ADMIN_PASSWORD!,
 };
-const defaultLearner: LoginUser = {
+export const defaultLearner: LoginUser = {
     email: process.env.LEARNER_USER_NAME!,
     password: process.env.LEARNER_PASSWORD!,
 };
-const defaultMentor: LoginUser = {
+export const defaultMentor: LoginUser = {
     email: process.env.MENTOR_USER_NAME!,
     password: process.env.MENTOR_PASSWORD!,
 };
