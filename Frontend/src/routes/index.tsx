@@ -58,7 +58,6 @@ const AppRoutes = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="sessions" element={<ScheduleSession />} />
         <Route path="availability" element={<AvailabilityManager />} />
       </Route>
 
@@ -117,6 +116,7 @@ const AppRoutes = () => {
             />
           }
         />
+        <Route path="sessions-tracking" element={<ScheduleSession />} />
         <Route path="mentor-application" element={<MentorApplicationForm />} />
       </Route>
     </Routes>
