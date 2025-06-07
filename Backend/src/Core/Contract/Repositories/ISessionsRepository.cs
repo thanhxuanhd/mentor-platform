@@ -1,11 +1,14 @@
 ﻿using Domain.Entities;
+using Domain.Enums;
 
 namespace Contract.Repositories;
 
 public interface ISessionsRepository : IBaseRepository<Sessions, Guid>
 {
-    IQueryable<Sessions> GetAllSessionsByTimeSlotId(Guid timeSlotId);
     Task<Sessions?> GetByIdAsync(Guid id);
+    Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId);
+    void CancelBookingSession(Sessions bookingSession, Guid learnerId);
+    IQueryable<Sessions> GetSessionsByLearnerId(Guid learnerId);
     void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId);
     void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId);
     Task<List<Sessions?>> GetAllBookingAsync();

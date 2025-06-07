@@ -9,5 +9,4 @@ public interface IMentorAvailabilityTimeSlotRepository : IBaseRepository<MentorA
     Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id);
     IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot();
     IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking();
-    Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, Guid learnerId);
 }

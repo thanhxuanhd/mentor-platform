@@ -4,6 +4,7 @@ using Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Persistence.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250603085433_ChangeMentorAvailableTimeSlot_RemoveSessionId")]
+    partial class ChangeMentorAvailableTimeSlot_RemoveSessionId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,33 +24,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("Domain.Entities.ApplicationDocument", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("DocumentType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Pdf");
-
-                    b.Property<string>("DocumentUrl")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<Guid>("MentorApplicationId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("MentorApplicationId");
-
-                    b.ToTable("ApplicationDocuments");
-                });
 
             modelBuilder.Entity("Domain.Entities.Availability", b =>
                 {
@@ -72,6 +48,9 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -134,7 +113,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("Domain.Entities.CourseResource", b =>
+            modelBuilder.Entity("Domain.Entities.CourseItem", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -148,27 +127,25 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
-                    b.Property<string>("ResourceType")
+                    b.Property<string>("MediaType")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Pdf");
-
-                    b.Property<string>("ResourceUrl")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("WebAddress")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("CourseResources");
+                    b.ToTable("CourseItems");
                 });
 
             modelBuilder.Entity("Domain.Entities.CourseTag", b =>
@@ -203,83 +180,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Expertises");
-                });
-
-            modelBuilder.Entity("Domain.Entities.MentorApplication", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("AdminId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Certifications")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Education")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<Guid>("MentorId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<DateTime?>("ReviewedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Statement")
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("Submitted");
-
-                    b.Property<DateTime>("SubmittedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AdminId");
-
-                    b.HasIndex("MentorId");
-
-                    b.ToTable("MentorApplications");
-                });
-
-            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<TimeOnly>("EndTime")
-                        .HasColumnType("time");
-
-                    b.Property<Guid>("ScheduleId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<TimeOnly>("StartTime")
-                        .HasColumnType("time");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ScheduleId");
-
-                    b.ToTable("MentorAvailableTimeSlots");
                 });
 
             modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
@@ -365,14 +265,8 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("BookedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid>("LearnerId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("ProcessedOn")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -381,9 +275,8 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<Guid>("TimeSlotId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -628,17 +521,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("UserTeachingApproaches");
                 });
 
-            modelBuilder.Entity("Domain.Entities.ApplicationDocument", b =>
-                {
-                    b.HasOne("Domain.Entities.MentorApplication", "MentorApplication")
-                        .WithMany("ApplicationDocuments")
-                        .HasForeignKey("MentorApplicationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("MentorApplication");
-                });
-
             modelBuilder.Entity("Domain.Entities.Course", b =>
                 {
                     b.HasOne("Domain.Entities.Category", "Category")
@@ -657,10 +539,10 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Mentor");
                 });
 
-            modelBuilder.Entity("Domain.Entities.CourseResource", b =>
+            modelBuilder.Entity("Domain.Entities.CourseItem", b =>
                 {
                     b.HasOne("Domain.Entities.Course", "Course")
-                        .WithMany("Resources")
+                        .WithMany("Items")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -685,24 +567,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Course");
 
                     b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("Domain.Entities.MentorApplication", b =>
-                {
-                    b.HasOne("Domain.Entities.User", "Admin")
-                        .WithMany("ReviewedMentorApplications")
-                        .HasForeignKey("AdminId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.HasOne("Domain.Entities.User", "Mentor")
-                        .WithMany("MentorApplications")
-                        .HasForeignKey("MentorId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Admin");
-
-                    b.Navigation("Mentor");
                 });
 
             modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
@@ -849,17 +713,12 @@ namespace Infrastructure.Persistence.Data.Migrations
                 {
                     b.Navigation("CourseTags");
 
-                    b.Navigation("Resources");
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("Domain.Entities.Expertise", b =>
                 {
                     b.Navigation("UserExpertises");
-                });
-
-            modelBuilder.Entity("Domain.Entities.MentorApplication", b =>
-                {
-                    b.Navigation("ApplicationDocuments");
                 });
 
             modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
@@ -889,10 +748,6 @@ namespace Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
-                    b.Navigation("MentorApplications");
-
-                    b.Navigation("ReviewedMentorApplications");
-
                     b.Navigation("Schedules");
 
                     b.Navigation("Sessions");

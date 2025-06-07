@@ -4,58 +4,116 @@ using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 namespace Infrastructure.Repositories;
 
-public class SessionsRepository(ApplicationDbContext context)
+public class SessionsRepository(ApplicationDbContext context, TimeProvider timeProvider)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
-    public IQueryable<Sessions> GetAllSessionsByTimeSlotId(Guid timeSlotId)
+    private static bool HasOverlappingSessionTime(Sessions existingSession, Sessions newSession)
+    {
+        var source = existingSession.TimeSlot;
+        var target = newSession.TimeSlot;
+        return existingSession.Id != newSession.Id
+               && existingSession.Status == SessionStatus.Approved
+               && existingSession.TimeSlot.Date == newSession.TimeSlot.Date
+               && (
+                   (source.StartTime <= target.StartTime && source.EndTime > target.StartTime)
+                   || (source.StartTime < target.EndTime && source.EndTime >= target.EndTime)
+               );
+    }
+
+    public new IQueryable<Sessions> GetAll()
     {
         return _context.Sessions
+            .AsSplitQuery()
             .Include(s => s.TimeSlot)
-            .ThenInclude(mats => mats.Schedules)
-            .Where(s => s.TimeSlotId == timeSlotId);
+            .ThenInclude(mats => mats.Schedules);
     }
 
     public async Task<Sessions?> GetByIdAsync(Guid id)
     {
         return await _context.Sessions
+            .AsSplitQuery()
             .Include(s => s.TimeSlot)
             .ThenInclude(mats => mats.Schedules)
+            .ThenInclude(s => s.Mentor)
             .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    public IQueryable<Sessions> GetSessionsByLearnerId(Guid learnerId)
+    {
+        return _context.Sessions
+            .Include(s => s.TimeSlot)
+                .ThenInclude(mats => mats.Schedules)
+                    .ThenInclude(s => s.Mentor)
+                        .ThenInclude(m => m.UserExpertises)
+                            .ThenInclude(ue => ue.Expertise)
+            .Where(s => s.LearnerId == learnerId);
+    }
+
+    public Sessions AddNewBookingSession(MentorAvailableTimeSlot timeSlot, SessionType sessionType, Guid learnerId)
+    {
+        if (timeSlot.Sessions.Any(sessions => sessions.Status is SessionStatus.Approved or SessionStatus.Completed))
+        {
+            throw new Exception("Cannot add new booking session at this time.");
+        }
+
+        var bookingSession = new Sessions
+        {
+            Status = SessionStatus.Pending,
+            LearnerId = learnerId,
+            TimeSlot = timeSlot,
+            Type = sessionType,
+            BookedOn = timeProvider.GetLocalNow().DateTime,
+        };
+
+        timeSlot.Sessions.Add(bookingSession);
+
+        return bookingSession;
+    }
+
+    public void CancelBookingSession(Sessions bookingSession, Guid learnerId)
+    {
+        if (bookingSession.Status is not SessionStatus.Pending)
+        {
+            throw new Exception("Cannot cancel this booking session.");
+        }
+
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var timeSlot = bookingSession.TimeSlot;
-        var isBooked = timeSlot.SessionId != Guid.Empty
-                       || timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
-        if (isBooked)
+        Debug.Assert(_context.Entry(bookingSession.TimeSlot).Reference(t => t.Sessions).IsLoaded);
+        if (bookingSession.TimeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed))
         {
-            throw new Exception("Cannot accept this booking session.");
+            throw new Exception("Cannot accept this booking session at this time.");
         }
 
-        timeSlot.ScheduleId = bookingSession.Id;
+        Debug.Assert(_context.Entry(bookingSession.Learner).Reference(t => t.Sessions).IsLoaded);
+        var hasOverlappingSession =
+            bookingSession.Learner.Sessions!.Any(s => HasOverlappingSessionTime(s, bookingSession));
+
+        if (hasOverlappingSession)
+        {
+            throw new Exception(
+                "Cannot accept this booking session. The learner has another session scheduled during this time range.");
+        }
+
         bookingSession.Status = SessionStatus.Approved;
     }
 
     public void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId)
     {
-        var timeSlot = bookingSession.TimeSlot;
+        Debug.Assert(_context.Entry(bookingSession.TimeSlot).Reference(t => t.Sessions).IsLoaded);
         if (bookingSession.Status is not SessionStatus.Pending)
         {
-            throw new Exception("Cannot reject this booking session.");
+            throw new Exception("Cannot cancel this booking session at this time.");
         }
 
-        var isBooked = timeSlot.SessionId != Guid.Empty
-                       || timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed);
-        if (isBooked)
-        {
-            throw new Exception("Cannot reject this booking session.");
-        }
-
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
     public async Task<List<Sessions>> GetAllBookingAsync()
     {

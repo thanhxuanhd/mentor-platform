@@ -23,28 +23,28 @@ public class SessionBookingController(
     }
 
     [HttpGet("available-timeslots/{mentorId:guid}")]
-    [Authorize(Policy = RequiredRole.Admin)]
-    public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAsync(Guid mentorId,
+    public async Task<IActionResult> GetAllTimeSlotByMentorAsync(Guid mentorId,
         [FromQuery] AvailableTimeSlotListRequest request)
     {
-        var result = await sessionBookingService.GetAllAvailableTimeSlotByMentorAsync(mentorId, request);
+        // TODO: Admin + Resource Owner
+        var result = await sessionBookingService.GetAllTimeSlotByMentorAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
     [HttpGet("available-mentors")]
-    public async Task<IActionResult> GetAllAvailableMentorForBooking(
-        [FromQuery] AvailableMentorForBookingListRequest request)
+    public async Task<IActionResult> GetAllAvailableMentorForBooking()
     {
-        var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync(request);
+        var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync();
         return StatusCode((int)result.StatusCode, result);
     }
-
+    
     [HttpGet("available-mentors/timeslots/{mentorId:guid}")]
-    public async Task<IActionResult> GetAllAvailableTimeSlotByMentorAndDateAsync(Guid mentorId,
+    [Authorize(Policy = RequiredRole.Learner)]
+    public async Task<IActionResult> GetAllTimeSlotByMentorAndDate(Guid mentorId,
         [FromQuery] AvailableTimeSlotByDateListRequest request)
     {
-        // TODO: resource owner authorization + admin
-        var result = await sessionBookingService.GetAllAvailableTimeSlotByMentorAndDateAsync(mentorId, request);
+        var learnerId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await sessionBookingService.GetAllTimeSlotByMentorAndDateAsync(mentorId, learnerId, request);
         return StatusCode((int)result.StatusCode, result);
     }
 
@@ -56,6 +56,15 @@ public class SessionBookingController(
         return StatusCode((int)result.StatusCode, result);
     }
     
+    [HttpGet("timeslots/requests/me")]
+    [Authorize(Policy = RequiredRole.Learner)]
+    public async Task<IActionResult> GetAllBookingRequestByLearner()
+    {
+        var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var result = await sessionBookingService.GetAllBookingRequestByLearnerId(userId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
     [HttpPost("request")]
     [Authorize(Policy = RequiredRole.Learner)]
     public async Task<IActionResult> RequestBooking([FromBody] CreateSessionBookingRequest request)
@@ -75,9 +84,9 @@ public class SessionBookingController(
     }
 
     [HttpPost("request/{bookingId:guid}/cancel")]
-    [Authorize(Policy = RequiredRole.Mentor)]
     public async Task<IActionResult> CancelBooking(Guid bookingId)
     {
+        // TODO: resource owner authorization + learner that made the booking request
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var result = await sessionBookingService.CancelBookingAsync(bookingId, userId);
         return StatusCode((int)result.StatusCode, result);

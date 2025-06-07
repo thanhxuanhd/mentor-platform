@@ -30,6 +30,6 @@ public static class ConfigureServices
         services.AddScoped<IScheduleService, ScheduleService>();
         services.AddScoped<ISessionBookingService, SessionBookingService>();
 
-        return services;
-    }
+                return services;
+        }
 }

@@ -289,10 +289,6 @@ public static class ApplicationDbExtensions
 
             dbContext.SaveChanges();
         }
-        if (!dbContext.Schedules.Any())
-        {
-            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
-            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
 
             dbContext.Schedules.AddRange(
                 new Schedules
@@ -391,6 +387,113 @@ public static class ApplicationDbExtensions
                 Statement = null,
                 Note = null
             });
+            dbContext.SaveChanges();
+        }
+
+        var scheduleId = Guid.NewGuid();
+
+        if (!dbContext.Schedules.Any())
+        {
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+            // current week
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+
+            dbContext.Schedules.AddRange(
+                new Schedules
+                {
+                    Id = scheduleId,
+                    MentorId = mentor1Id,
+                    WeekStartDate = startOfWeek,
+                    WeekEndDate = endOfWeek,
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
+                new Schedules
+                {
+                    MentorId = mentor1Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(13, 00),
+                    EndHour = new TimeOnly(21, 00),
+                    SessionDuration = 30,
+                    BufferTime = 5,
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(12, 00),
+                    SessionDuration = 60,
+                    BufferTime = 0,
+                }
+            );
+
+            dbContext.SaveChanges();
+        }
+
+        var slotId1 = Guid.NewGuid();
+        var slotId2 = Guid.NewGuid();
+        var slotId3 = Guid.NewGuid();
+        var slotId4 = Guid.NewGuid();
+        if (!dbContext.MentorAvailableTimeSlots.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.MentorAvailableTimeSlots.AddRange(
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId1,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(10, 0),
+
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId2,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(10, 15),
+                    EndTime = new TimeOnly(11, 15),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId3,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(13, 0),
+                    EndTime = new TimeOnly(14, 0),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId4,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(15, 30),
+                    EndTime = new TimeOnly(16, 30),
+                }
+            );
             dbContext.SaveChanges();
         }
 
