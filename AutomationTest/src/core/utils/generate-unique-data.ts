@@ -75,7 +75,6 @@ export function withFutureDate(data: any, daysOffset: number = 1) {
   };
 }
 
-
 export function endWithTimestamp(original: string): string {
   return `${original}_${Date.now()}`;
 }
