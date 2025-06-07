@@ -95,7 +95,7 @@ const CourseResourceModalSimple: React.FC<CourseResourceModalSimpleProps> = ({
               );
         }
 
-        onSubmit({ ...values, resource: resourceValue });
+        onSubmit({ ...values, courseId: course.id, resource: resourceValue });
       })
       .catch((err) => console.log("Validation failed:", err));
   };
