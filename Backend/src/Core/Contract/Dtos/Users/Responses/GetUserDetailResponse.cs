@@ -10,6 +10,7 @@ public record GetUserDetailResponse(
     string? PhoneNumber,
     string? Skills,
     string? Experiences,
+    DateOnly? JoinedDate,
     CommunicationMethod? PreferredCommunicationMethod,
     string? Goal,
     SessionFrequency PreferredSessionFrequency,

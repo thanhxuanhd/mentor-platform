@@ -32,6 +32,7 @@ public static class UserResponseExtensions
             IsReceiveNotification: user.IsReceiveNotification,
             ProfilePhotoUrl: user.ProfilePhotoUrl,
             PhoneNumber: user.PhoneNumber,
+            JoinedDate: user.JoinedDate,
             PreferredSessionFrequency: user.PreferredSessionFrequency,
             PreferredCommunicationMethod: user.PreferredCommunicationMethod,
             PreferredLearningStyle: user.PreferredLearningStyle,

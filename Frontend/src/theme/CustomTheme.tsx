@@ -24,5 +24,10 @@ export const CustomTheme = {
       colorText: "#fff",
       colorBgElevated: "#1f2937",
     },
+    Card: {
+      colorBgContainer: "#161616",
+      colorText: "#fff",
+      colorBorderSecondary: "#4b5563"
+    }
   },
 };

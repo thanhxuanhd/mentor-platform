@@ -21,8 +21,7 @@ test.describe
     statusTrackingPage = new MentorApplicationStatusTrackingPage(page);
     mentorApplicationReview = new MentorApplicationReview(page);
     loginPage = new LoginPage(page);
-    const status = await requestCreateNewApplication(request);
-    console.log(status);
+    await requestCreateNewApplication(request);
     await test.step("Navigate to applications page", async () => {
       await mentorApplicationReview.navigateToApplicationsPage();
     });

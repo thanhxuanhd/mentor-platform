@@ -22,7 +22,7 @@ internal class GitHubOAuthService(IHttpClientFactory httpClientFactory, IConfigu
             { "client_secret", _gitHubConfigurationSection["ClientSecret"]! }
         };
 
-        logger.LogInformation("GitHub Payload: {payload}", payload.ToString());
+        logger.LogInformation("GitHub Payload: {0}, {1}, {2}", payload["code"], payload["client_id"], payload["client_secret"]);
 
         var tokenResponse = await client.PostAsync(
             "https://github.com/login/oauth/access_token",

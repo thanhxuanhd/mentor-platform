@@ -1,5 +1,6 @@
 import { expect, Locator, Page } from "@playwright/test";
 import { BasePage } from "../base-page";
+import { PAGE_ENDPOINT_URL } from "../../core/constants/page-url";
 
 export class UserRoleManagementPage extends BasePage {
   //Side header
@@ -133,7 +134,7 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   async navigateToUsers() {
-    await this.LNK_USER_ROLE_MANAGEMENT_LOC.click();
+    await this.page.goto(PAGE_ENDPOINT_URL.USERS);
   }
 
   //View detailed user information

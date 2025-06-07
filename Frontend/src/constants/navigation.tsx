@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  ScheduleOutlined,
   HddOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
@@ -22,7 +23,7 @@ export const menuItems: MenuItemProps[] = [
     key: "dashboard",
     icon: <BarChartOutlined />,
     label: "Dashboard",
-    link: "dashboard",
+    link: "",
     role: [
       applicationRole.ADMIN,
       applicationRole.LEARNER,
@@ -82,4 +83,12 @@ export const menuItems: MenuItemProps[] = [
     link: "my-applications",
     role: [applicationRole.MENTOR],
   },
+  {
+    key: "availability",
+    icon: <ScheduleOutlined />,
+    label: "Availability",
+    link: "availability",
+    role: [applicationRole.MENTOR],
+    isMentorApprovedRequired: true,
+  }
 ];

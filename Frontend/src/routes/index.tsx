@@ -1,6 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
-import DashboardPage from "../pages/Dashboard";
 import UsersPage from "../pages/Users";
 import CategoriesPage from "../pages/Categories";
 import CoursesPage from "../pages/Courses";
@@ -19,6 +18,8 @@ import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
+import AvailabilityManager from "../pages/Availability";
+import DashboardSelector from "./DashboardSelector";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -50,8 +51,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="/" element={<DashboardSelector />} />
+        <Route path="dashboard" element={<DashboardSelector />} />
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
@@ -83,7 +84,6 @@ const AppRoutes = () => {
       >
         <Route path="users" element={<UsersPage />} />
       </Route>
-
       <Route
         element={
           <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
@@ -103,7 +103,18 @@ const AppRoutes = () => {
         />
         <Route path="mentor-application" element={<MentorApplicationForm />} />
       </Route>
+      <Route
+        element={
+          <ProtectedRoute requiredRole={[applicationRole.MENTOR]} checkMentorApplication={true}>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="availability" element={<AvailabilityManager />} />
+      </Route>
     </Routes>
+
+
   );
 };
 
