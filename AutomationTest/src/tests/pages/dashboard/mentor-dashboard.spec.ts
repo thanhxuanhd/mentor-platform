@@ -59,7 +59,7 @@ test.describe.serial("@Mentor Dashboard test", () => {
     coursePage = new CoursePage(page);
   });
 
-  test(`Verify create new course update the total course`, async ({ page }) => {
+  test(`@SmokeTest Verify create new course update the total course`, async ({ page }) => {
     let beforeResult: number;
     let afterResult: number;
     await test.step("Get total course before update", async () => {
@@ -87,7 +87,7 @@ test.describe.serial("@Mentor Dashboard test", () => {
     });
   });
 
-  test(`Verify delete course update the total course`, async ({ page }) => {
+  test(`@SmokeTest Verify delete course update the total course`, async ({ page }) => {
     let beforeResult: number;
     let afterResult: number;
     await test.step("Get total course before update", async () => {
