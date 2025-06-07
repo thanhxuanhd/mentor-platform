@@ -4,7 +4,7 @@
     {
         public const long MAX_FILE_SIZE = 1 * 1024 * 1024;
         public static readonly string[] IMAGE_CONTENT_TYPES = { "image/jpeg", "image/png" };
-        public static readonly string[] DOCUMENT_CONTENT_TYPES = {
+        public static readonly string[] FILE_CONTENT_TYPES = {
             // PDF
             "application/pdf",
             // Images

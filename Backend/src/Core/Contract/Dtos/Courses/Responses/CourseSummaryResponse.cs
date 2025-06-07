@@ -1,3 +1,4 @@
+using Contract.Dtos.CourseResources.Responses;
 using Domain.Enums;
 
 namespace Contract.Dtos.Courses.Responses;
