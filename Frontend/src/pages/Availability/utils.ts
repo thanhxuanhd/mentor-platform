@@ -1,66 +1,43 @@
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import { v4 as uuidv4 } from 'uuid';
 import type { TimeBlock, DayAvailability } from './types';
-import type { ScheduleSettingsResponse, TimeSlotResponse } from '../../services/availability/availabilityService';
+import type { ScheduleSettingsResponse } from '../../services/availability/availabilityService';
+import { convertUTCTimeSlotsToLocal, convertLocalTimeSlotsToUTC } from '../../utils/timezoneUtils';
 
-/**
- * Convert API time slot to frontend TimeBlock format
- */
-export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse): TimeBlock => {
-  const startTime = dayjs(`2024-01-01 ${apiSlot.startTime}`);
-  const endTime = dayjs(`2024-01-01 ${apiSlot.endTime}`);
-    return {
-    id: apiSlot.id,
-    time: `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`,
-    startTime: apiSlot.startTime,
-    endTime: apiSlot.endTime,
-    available: apiSlot.isAvailable,
-    booked: apiSlot.isBooked
-  };
-};
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
-/**
- * Convert API schedule settings to frontend availability format
- */
-export const convertApiScheduleToAvailability = (apiSettings: ScheduleSettingsResponse): DayAvailability => {
+export const convertApiScheduleToAvailability = (
+  apiSettings: ScheduleSettingsResponse, 
+  userTimezone: string
+): DayAvailability => {
   const availability: DayAvailability = {};
-    Object.entries(apiSettings.availableTimeSlots).forEach(([date, slots]) => {
-    // Filter out past time slots when converting from API
-    const currentSlots = slots.filter(slot => {
-      const slotDateTime = dayjs(`${date} ${slot.startTime}`);
-      return slotDateTime.isAfter(dayjs());
-    });
+  
+  const localTimeSlots = convertUTCTimeSlotsToLocal(apiSettings.availableTimeSlots, userTimezone);
+  
+  Object.entries(localTimeSlots).forEach(([localDate, slots]) => {
+    const timeBlocks: TimeBlock[] = slots.map(slot => ({
+      id: slot.id,
+      time: `${slot.startTime} - ${slot.endTime}`,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      available: slot.isAvailable,
+      booked: slot.isBooked,
+      originalDate: slot.originalDate,
+      originalStartTime: slot.originalStartTime,
+      originalEndTime: slot.originalEndTime
+    }));
     
-    if (currentSlots.length > 0) {
-      availability[date] = currentSlots.map(slot => convertApiTimeSlotToTimeBlock(slot));
+    if (timeBlocks.length > 0) {
+      availability[localDate] = timeBlocks;
     }
   });
   
   return availability;
 };
 
-/**
- * Convert frontend TimeBlock to API format
- */
-export const convertTimeBlockToApiSlot = (timeBlock: TimeBlock): {
-  id?: string;
-  startTime: string;
-  endTime: string;
-  isAvailable: boolean;
-  isBooked: boolean;
-} => {
-  return {
-    id: timeBlock.id,
-    startTime: timeBlock.startTime,
-    endTime: timeBlock.endTime,
-    isAvailable: timeBlock.available,
-    isBooked: timeBlock.booked
-  };
-};
-
-/**
- * Convert frontend availability to API format for saving
- */
 export const convertAvailabilityToApiFormat = (
   availability: DayAvailability,
   settings: {
@@ -70,25 +47,42 @@ export const convertAvailabilityToApiFormat = (
     endTime: string;
     sessionDuration: number;
     bufferTime: number;
-  }
+  },
+  userTimezone: string
 ) => {
-  const availableTimeSlots: Record<string, Array<{
+  // Filter only available (selected) slots
+  const localAvailableSlots: Record<string, Array<{
     id?: string;
     startTime: string;
     endTime: string;
     isAvailable: boolean;
     isBooked: boolean;
-  }>> = {};  Object.entries(availability).forEach(([date, timeBlocks]) => {
-    // Only include time slots that are available (selected by the user)
-    // Exclude booked and unavailable slots
+    originalDate?: string;
+    originalStartTime?: string;
+    originalEndTime?: string;
+  }>> = {};
+
+  Object.entries(availability).forEach(([localDate, timeBlocks]) => {
     const availableSlots = timeBlocks.filter(slot => 
       slot.available && !slot.booked
     );
+    
     if (availableSlots.length > 0) {
-      availableTimeSlots[date] = availableSlots.map(convertTimeBlockToApiSlot);
+      localAvailableSlots[localDate] = availableSlots.map(slot => ({
+        id: slot.id,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        isAvailable: slot.available,
+        isBooked: slot.booked,
+        originalDate: slot.originalDate,
+        originalStartTime: slot.originalStartTime,
+        originalEndTime: slot.originalEndTime
+      }));
     }
   });
-  
+
+  const utcTimeSlots = convertLocalTimeSlotsToUTC(localAvailableSlots, userTimezone);
+
   return {
     weekStartDate: settings.weekStartDate,
     weekEndDate: settings.weekEndDate,
@@ -96,13 +90,10 @@ export const convertAvailabilityToApiFormat = (
     endTime: settings.endTime,
     sessionDuration: settings.sessionDuration,
     bufferTime: settings.bufferTime,
-    availableTimeSlots
+    availableTimeSlots: utcTimeSlots
   };
 };
 
-/**
- * Generate time slots for a single day based on work hours and session settings
- */
 export const generateTimeSlotsForDay = (
   date: string, // YYYY-MM-DD format
   startTime: string, // HH:mm format
@@ -124,7 +115,9 @@ export const generateTimeSlotsForDay = (
       const key = `${slot.startTime}-${slot.endTime}`;
       bookedSlotsMap.set(key, slot);
     }
-  });  let currentTime = dayStart;
+  });  
+
+  let currentTime = dayStart;
   
   // Generate slots only if they can completely fit within work hours and are in the future
   while (currentTime.add(sessionDuration, 'minute').isSameOrBefore(dayEnd)) {
@@ -144,21 +137,19 @@ export const generateTimeSlotsForDay = (
       continue;
     }
     
-    // Check if this slot already exists and is booked (only preserve future booked slots)
     const existingBookedSlot = bookedSlotsMap.get(key);
     
-    if (existingBookedSlot && !isPast) {      // Preserve the existing booked slot (only if it's not in the past)
+    if (existingBookedSlot && !isPast) {      
       slots.push({
         ...existingBookedSlot
       });
     } else if (!isPast) {
-      // Create a new slot (unselected by default, only if it's not in the past)
       slots.push({
         id: uuidv4(),
         time: `${startTimeStr} - ${endTimeStr}`,
         startTime: startTimeStr,
         endTime: endTimeStr,
-        available: false, // New slots are unselected by default
+        available: false, 
         booked: false
       });
     }
@@ -170,9 +161,6 @@ export const generateTimeSlotsForDay = (
   return slots;
 };
 
-/**
- * Generate time slots for a week based on work hours and session settings
- */
 export const generateTimeSlotsForWeek = (
   weekStartDate: string, // YYYY-MM-DD format
   startTime: string, // HH:mm format

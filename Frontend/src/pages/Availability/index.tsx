@@ -9,20 +9,17 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
-// Import components
 import { WeekNavigation } from "./components/WeekNavigation";
 import { ScheduleSettings } from "./components/ScheduleSettings";
 import { BulkActions } from "./components/BulkActions";
 import { WeekCalendar } from "./components/WeekCalendar";
 import { TimeBlocks } from "./components/TimeBlocks";
 
-// Import types and services
 import type { DayAvailability, TimeBlock, WeekDay } from "./types";
 import { availabilityService } from "../../services/availability/availabilityService";
 import { AuthContext } from "../../contexts/AuthContext";
 import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat, generateTimeSlotsForWeek, generateTimeSlotsForDay } from "./utils";
 
-// Configure dayjs plugins
 dayjs.extend(weekday);
 dayjs.extend(isoWeek);
 dayjs.extend(isSameOrBefore);
@@ -32,29 +29,24 @@ export default function AvailabilityManager() {
   const { user } = useContext(AuthContext);
   const { notification } = App.useApp();
   
-  // Settings state - these will be loaded from backend
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [sessionDuration, setSessionDuration] = useState(60);
   const [bufferTime, setBufferTime] = useState(15);
 
-  // Calendar state
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const [currentWeekStart, setCurrentWeekStart] = useState<Dayjs>(
     dayjs().startOf('week').weekday(0) // Start from Sunday 
   );
 
-  // Availability data
   const [availability, setAvailability] = useState<DayAvailability>({});
 
-  // UI state
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const [notify, setNotify] = useState<{ type: "success" | "error" | "info" | "warning"; message: string; description: string; } | null>(null);
 
-  // Load initial data from API
   const loadScheduleSettings = async (weekStart?: Dayjs) => {
     if (!user?.id) return;
     
@@ -68,15 +60,12 @@ export default function AvailabilityManager() {
         weekEndDate
       });
       
-      // Update settings state
       setStartTime(settings.startTime);
       setEndTime(settings.endTime);
       setSessionDuration(settings.sessionDuration);
       setBufferTime(settings.bufferTime);
       setIsLocked(settings.isLocked);
-      
-      // Convert and set availability data
-      const availabilityData = convertApiScheduleToAvailability(settings);
+      const availabilityData = convertApiScheduleToAvailability(settings, user.timezone);
       setAvailability(availabilityData);
       
     } catch (error) {
@@ -147,8 +136,6 @@ export default function AvailabilityManager() {
       : currentWeekStart.add(1, "week");
     setCurrentWeekStart(newWeekStart);
 
-    // Update selected date to be within the new week
-    // If current selected date is not in the new week, move it to the same day of week in new week
     const currentDayOfWeek = selectedDate.day(); // 0 = Sunday, 1 = Monday, etc.
     let newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
     
@@ -325,15 +312,14 @@ export default function AvailabilityManager() {
     try {
       const weekStartDate = currentWeekStart.format('YYYY-MM-DD');
       const weekEndDate = currentWeekStart.add(6, 'days').format('YYYY-MM-DD');
-      
-      const saveRequest = convertAvailabilityToApiFormat(availability, {
+        const saveRequest = convertAvailabilityToApiFormat(availability, {
         weekStartDate,
         weekEndDate,
         startTime,
         endTime,
         sessionDuration,
         bufferTime
-      });      
+      }, user.timezone);
       
       const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
 

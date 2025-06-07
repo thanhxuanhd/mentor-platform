@@ -7,6 +7,9 @@ export interface TimeBlock {
   endTime: string;
   available: boolean;
   booked: boolean;
+  originalDate?: string;
+  originalStartTime?: string;
+  originalEndTime?: string;
 }
 
 export interface DayAvailability {
