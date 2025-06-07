@@ -3,6 +3,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection.Metadata;
 
 namespace Infrastructure.Persistence.Data;
 
@@ -133,6 +134,24 @@ public static class ApplicationDbExtensions
                     Email = "mini@mentorplatform.local",
                     PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
                     RoleId = adminRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
+                    FullName = "Lerbon James",
+                    Email = "nguyenvana@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("passA123"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2"),
+                    FullName = "Stephen Curry",
+                    Email = "ngominh24122001@gmail.com",
+                    PasswordHash = PasswordHelper.HashPassword("passB123"),
+                    RoleId = learnerRole.Id,
                     Status = UserStatus.Active
                 }
             );
@@ -324,6 +343,93 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        var scheduleId = Guid.Parse("A1B2C3D4-E5F6-7890-ABCD-EF1234567890");
+        if (!dbContext.Schedules.Any())
+        {
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.Schedules.AddRange(
+                new Schedules
+                {
+                    Id = scheduleId,
+                    MentorId = mentor1Id,
+                    WeekStartDate = startOfWeek,
+                    WeekEndDate = endOfWeek,
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
+                new Schedules
+                {
+                    MentorId = mentor1Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(13, 00),
+                    EndHour = new TimeOnly(21, 00),
+                    SessionDuration = 30,
+                    BufferTime = 5,
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(12, 00),
+                    SessionDuration = 60,
+                    BufferTime = 0,
+                }
+            );
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.MentorAvailableTimeSlots.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+            var existingSchedule = dbContext.Schedules.FirstOrDefault(s => s.Id == scheduleId);
+            if (existingSchedule == null)
+            {
+                throw new Exception("Schedule not found for time slot seeding");
+            }
+
+            var timeSlots = new List<MentorAvailableTimeSlot>();
+
+            for (int i = 0; i < 7; i++)
+            {
+                timeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = scheduleId,
+                    Date = today.AddDays(i + 1),
+                    StartTime = new TimeOnly(9 + i, 0), 
+                    EndTime = new TimeOnly(10 + i, 0),
+                });
+            }
+
+            dbContext.MentorAvailableTimeSlots.AddRange(timeSlots);
+            dbContext.SaveChanges();
+
+            var createdSlots = dbContext.MentorAvailableTimeSlots.Count();
+            Console.WriteLine($"Created {createdSlots} time slots");
+        }
+
         if (!dbContext.CourseResources.Any())
         {
             dbContext.CourseResources.Add(new CourseResource
@@ -376,6 +482,66 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
             });
             dbContext.SaveChanges();
+        }
+        if (!dbContext.Sessions.Any())
+        {
+            dbContext.Sessions.RemoveRange(dbContext.Sessions);
+            dbContext.SaveChanges();
+
+            var learnerIds = new List<Guid>
+            {
+                Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
+                Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
+                Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2")
+            };
+
+            var allTimeSlots = dbContext.MentorAvailableTimeSlots.ToList();
+
+            if (!allTimeSlots.Any())
+            {
+                var schedule = dbContext.Schedules.FirstOrDefault();
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                for (int i = 0; i < 20; i++)
+                {
+                    var slot = new MentorAvailableTimeSlot
+                    {
+                        Id = Guid.NewGuid(),
+                        ScheduleId = schedule.Id,
+                        Date = today.AddDays(i + 1),
+                        StartTime = new TimeOnly(9 + i, 0),
+                        EndTime = new TimeOnly(10 + i, 0)
+                    };
+                    dbContext.MentorAvailableTimeSlots.Add(slot);
+                    allTimeSlots.Add(slot);
+                }
+                dbContext.SaveChanges();
+            }
+
+            var sessionsToAdd = new List<Sessions>();
+            var random = new Random();
+
+            for (int i = 0; i < 20; i++)
+            {
+                var timeSlot = allTimeSlots[i % allTimeSlots.Count];
+                var learner = learnerIds[i % 3]; 
+
+                sessionsToAdd.Add(new Sessions
+                {
+                    Id = Guid.NewGuid(),
+                    LearnerId = learner,
+                    TimeSlotId = timeSlot.Id,
+                    Status = SessionStatus.Pending,
+                    Type = SessionType.Onsite,
+                    BookedOn = DateTime.UtcNow.AddMinutes(-random.Next(1, 1440))
+                });
+            }
+
+            dbContext.Sessions.AddRange(sessionsToAdd);
+            dbContext.SaveChanges();
+
+            Console.WriteLine($"Force created exactly {sessionsToAdd.Count} sessions");
+            Console.WriteLine($"Total sessions in database: {dbContext.Sessions.Count()}");
         }
     }
 

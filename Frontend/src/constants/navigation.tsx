@@ -4,7 +4,10 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  SettingOutlined,
   HddOutlined,
+  ScheduleOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
@@ -44,7 +47,7 @@ export const menuItems: MenuItemProps[] = [
     link: "categories",
     role: [
       applicationRole.ADMIN,
-      applicationRole.LEARNER,
+
       applicationRole.MENTOR,
     ],
     isMentorApprovedRequired: true,
@@ -80,6 +83,27 @@ export const menuItems: MenuItemProps[] = [
     icon: <HddOutlined />,
     label: "My Applications",
     link: "my-applications",
+    role: [applicationRole.MENTOR],
+  },
+  {
+    key: "availability",
+    icon: <ScheduleOutlined />,
+    label: "Availability",
+    link: "availability",
+    role: [applicationRole.MENTOR],
+  },
+  {
+    key: "sessions",
+    icon: <TeamOutlined />,
+    label: "Sessions",
+    link: "sessions",
+    role: [applicationRole.LEARNER],
+  },
+  {
+    key: "Sessions Tracking",
+    icon: <SettingOutlined />,
+    label: "Sessions Tracking",
+    link: "sessions",
     role: [applicationRole.MENTOR],
   },
 ];
