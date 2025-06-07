@@ -31,15 +31,16 @@ public class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         builder.HasOne(c => c.Mentor)
             .WithMany()
-            .HasForeignKey(c => c.MentorId);
+            .HasForeignKey(c => c.MentorId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(c => c.Tags)
             .WithMany()
             .UsingEntity<CourseTag>();
 
-        builder.HasMany(c => c.Items)
-            .WithOne(ci => ci.Course)
-            .HasForeignKey(ci => ci.CourseId)
+        builder.HasMany(c => c.Resources)
+            .WithOne(cr => cr.Course)
+            .HasForeignKey(cr => cr.CourseId)
             .IsRequired();
     }
 }

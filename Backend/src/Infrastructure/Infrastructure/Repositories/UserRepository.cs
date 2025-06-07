@@ -1,11 +1,11 @@
-﻿using Contract.Repositories;
+﻿using System.Linq.Expressions;
+using Contract.Repositories;
 using Domain.Abstractions;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Persistence.Data;
 using Infrastructure.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace Infrastructure.Repositories;
 
@@ -46,6 +46,7 @@ public class UserRepository(ApplicationDbContext context) : BaseRepository<User,
             .Include(u => u.UserCategories)
             .Include(u => u.UserAvailabilities)
             .Include(u => u.UserExpertises)
+            .ThenInclude(u => u.Expertise)
             .Include(u => u.UserTeachingApproaches)
             .Where(u => !u.Status.Equals(UserStatus.Deactivated))
             .FirstOrDefaultAsync(u => u.Id.Equals(id));

@@ -65,9 +65,20 @@ public static class ApplicationDbExtensions
             var mentorRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Mentor);
             var learnerRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Learner);
             var adminRole = dbContext.Roles.FirstOrDefault(r => r.Name == UserRole.Admin);
-            if (mentorRole is null) throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
-            if (learnerRole is null) throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
-            if (adminRole is null) throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            if (mentorRole is null)
+            {
+                throw new Exception("User seeding: role name 'Mentor' does not exist in stores.");
+            }
+
+            if (learnerRole is null)
+            {
+                throw new Exception("User seeding: role name 'Learner' does not exist in stores.");
+            }
+
+            if (adminRole is null)
+            {
+                throw new Exception("User seeding: role name 'Admin' does not exist in stores.");
+            }
 
             dbContext.Users.AddRange(
                 new User
@@ -75,7 +86,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
                     FullName = "Alice Wonderland",
                     Email = "alice.wonderland@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("password123"),
+                    PasswordHash = PasswordHelper.HashPassword("password@123"),
                     RoleId = mentorRole.Id,
                     Status = UserStatus.Active
                 },
@@ -84,7 +95,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
                     FullName = "Bob Builder",
                     Email = "bob.builder@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("securepassword"),
+                    PasswordHash = PasswordHelper.HashPassword("securepassword@345"),
                     RoleId = mentorRole.Id,
                     Status = UserStatus.Active
                 },
@@ -93,7 +104,16 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
                     FullName = "Charlie Chaplin",
                     Email = "charlie.chaplin@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("anotherpassword"),
+                    PasswordHash = PasswordHelper.HashPassword("anotherpassword@345"),
+                    RoleId = mentorRole.Id,
+                    Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+                    FullName = "John Doe",
+                    Email = "johndoe@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("anotherpassword@345"),
                     RoleId = mentorRole.Id,
                     Status = UserStatus.Active
                 },
@@ -102,7 +122,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                     FullName = "David Copperfield",
                     Email = "david.copperfield@mentorplatform.local",
-                    PasswordHash = PasswordHelper.HashPassword("mypassword"),
+                    PasswordHash = PasswordHelper.HashPassword("mypassword@123"),
                     RoleId = learnerRole.Id,
                     Status = UserStatus.Active
                 },
@@ -114,6 +134,15 @@ public static class ApplicationDbExtensions
                     PasswordHash = PasswordHelper.HashPassword("mypassword88$"),
                     RoleId = adminRole.Id,
                     Status = UserStatus.Active
+                },
+                new User
+                {
+                    Id = Guid.Parse("aa8777db-dfed-4a68-a3a3-e1374fb38572"),
+                    FullName = "Eve Adams",
+                    Email = "learner123@mentorplatform.local",
+                    PasswordHash = PasswordHelper.HashPassword("learnerpassword"),
+                    RoleId = learnerRole.Id,
+                    Status = UserStatus.Active
                 }
             );
             dbContext.SaveChanges();
@@ -123,24 +152,34 @@ public static class ApplicationDbExtensions
         {
             dbContext.Categories.AddRange(new Category
             {
-                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"), Name = "Leadership Coaching",
-                Description = "Courses related to developing leadership skills and strategies", Status = true
+                Id = Guid.Parse("3144da58-deaa-4bf7-a777-cd96e7f1e3b1"),
+                Name = "Leadership Coaching",
+                Description = "Courses related to developing leadership skills and strategies",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"), Name = "Communication Skills",
-                Description = "Effective communication in professional settings", Status = true
+                Id = Guid.Parse("07e80bb4-5fbb-4016-979d-847878ab81d5"),
+                Name = "Communication Skills",
+                Description = "Effective communication in professional settings",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"), Name = "Public Speaking",
-                Description = "Techniques to improve public speaking and presentation skills", Status = true
+                Id = Guid.Parse("4aa8eb25-7bb0-4bdc-b391-9924bc218eb2"),
+                Name = "Public Speaking",
+                Description = "Techniques to improve public speaking and presentation skills",
+                Status = true
             }, new Category
             {
-                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"), Name = "Time Management",
-                Description = "Strategies for better time management and productivity", Status = false
+                Id = Guid.Parse("4b896130-3727-46c7-98d1-214107bd4709"),
+                Name = "Time Management",
+                Description = "Strategies for better time management and productivity",
+                Status = false
             }, new Category
             {
-                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"), Name = "Career Development",
-                Description = "Resources for career advancement and job hunting", Status = false
+                Id = Guid.Parse("ead230f7-76ff-4c10-b025-d1f80fcdd277"),
+                Name = "Career Development",
+                Description = "Resources for career advancement and job hunting",
+                Status = false
             });
             dbContext.SaveChanges();
         }
@@ -236,71 +275,314 @@ public static class ApplicationDbExtensions
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6"),
                 TagId = Guid.Parse("1f5c7b87-a572-46b7-9ed2-7be81520fff2")
             });
+
             dbContext.SaveChanges();
         }
 
-        if (!dbContext.CourseItems.Any())
+        var scheduleId = Guid.NewGuid();
+
+        if (!dbContext.Schedules.Any())
         {
-            dbContext.CourseItems.Add(new CourseItem
+            var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
+            var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+            // current week
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+
+            dbContext.Schedules.AddRange(
+                new Schedules
+                {
+                    Id = scheduleId,
+                    MentorId = mentor1Id,
+                    WeekStartDate = startOfWeek,
+                    WeekEndDate = endOfWeek,
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
+                new Schedules
+                {
+                    MentorId = mentor1Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15,
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(13, 00),
+                    EndHour = new TimeOnly(21, 00),
+                    SessionDuration = 30,
+                    BufferTime = 5,
+                },
+                new Schedules
+                {
+                    MentorId = mentor2Id,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(12, 00),
+                    SessionDuration = 60,
+                    BufferTime = 0,
+                }
+            );
+
+            dbContext.SaveChanges();
+        }
+
+        var slotId1 = Guid.NewGuid();
+        var slotId2 = Guid.NewGuid();
+        var slotId3 = Guid.NewGuid();
+        var slotId4 = Guid.NewGuid();
+        if (!dbContext.MentorAvailableTimeSlots.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.MentorAvailableTimeSlots.AddRange(
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId1,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(10, 0),
+
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId2,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(10, 15),
+                    EndTime = new TimeOnly(11, 15),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId3,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(13, 0),
+                    EndTime = new TimeOnly(14, 0),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId4,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(15, 30),
+                    EndTime = new TimeOnly(16, 30),
+                }
+            );
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.Sessions.Any())
+        {
+            var learnerId1 = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C");
+            var learnerId2 = Guid.Parse("aa8777db-dfed-4a68-a3a3-e1374fb38572");
+            var sessionId1 = Guid.NewGuid();
+            var sessionId2 = Guid.NewGuid();
+            var sessionId3 = Guid.NewGuid();
+            var sessionId4 = Guid.NewGuid();
+            var sessionId5 = Guid.NewGuid();
+            var sessionId6 = Guid.NewGuid();
+            var sessionId7 = Guid.NewGuid();
+            var sessionId8 = Guid.NewGuid();
+
+            dbContext.Sessions.AddRange(
+                new Sessions
+                {
+                    Id = sessionId1,
+                    TimeSlotId = slotId1,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Rescheduled,
+                },
+                new Sessions
+                {
+                    Id = sessionId2,
+                    TimeSlotId = slotId2,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId3,
+                    TimeSlotId = slotId3,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Rescheduled,
+                },
+                new Sessions
+                {
+                    Id = sessionId4,
+                    TimeSlotId = slotId4,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId5,
+                    TimeSlotId = slotId1,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId6,
+                    TimeSlotId = slotId2,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Pending,
+                },
+                new Sessions
+                {
+                    Id = sessionId7,
+                    TimeSlotId = slotId3,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                },
+                new Sessions
+                {
+                    Id = sessionId8,
+                    TimeSlotId = slotId4,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                }
+            );
+        }
+
+        if (!dbContext.MentorApplications.Any())
+        {
+            dbContext.MentorApplications.AddRange(new MentorApplication
+            {
+                Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Bachelor's in Computer Science",
+                Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("7ad56b17-cb7d-4ca8-9058-8a05def6229f"),
+                MentorId = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Master's in Business Administration",
+                Certifications = "Project Management Professional (PMP), Six Sigma Green Belt",
+                Statement = null,
+                Note = null
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("078c407e-31d6-4bf6-93e5-b794123e1177"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Rejected,
+                SubmittedAt = new DateTime(2000, 1, 1),
+                ReviewedAt = null,
+                Education = "Bachelor's in Arts",
+                Certifications = "Certified Art Therapist",
+                Statement = null,
+                Note = "Invalid"
+            },
+            new MentorApplication
+            {
+                Id = Guid.Parse("c9ad54d7-f90e-4ecf-b8ec-8b5badedf171"),
+                MentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"),
+                Status = ApplicationStatus.Approved,
+                SubmittedAt = DateTime.UtcNow.AddDays(-10),
+                ReviewedAt = DateTime.UtcNow,
+                AdminId = Guid.Parse("831A3848-7D77-4BE0-958B-4EFE064752F1"),
+                Education = "Bachelor's in Graphic Design",
+                Certifications = null,
+                Statement = null,
+                Note = null
+            });
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.CourseResources.Any())
+        {
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
                 Title = "Introduction to Leadership Concepts",
                 Description = "Understand the core principles and theories of leadership.",
-                MediaType = CourseMediaType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 1),
+                ResourceType = FileType.ExternalWebAddress,
+                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 1),
                 CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
                 Title = "Non-Verbal Communication Essentials",
                 Description = "Learn about the importance of body language and other non-verbal cues in communication.",
-                MediaType = CourseMediaType.Pdf,
-                WebAddress = GetMediaUrl(CourseMediaType.Pdf, 1),
+                ResourceType = FileType.Pdf,
+                ResourceUrl = GetMediaUrl(FileType.Pdf, 1),
                 CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
                 Title = "Structuring Your Speech",
                 Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
-                MediaType = CourseMediaType.Video,
-                WebAddress = GetMediaUrl(CourseMediaType.Video, 1),
+                ResourceType = FileType.Video,
+                ResourceUrl = GetMediaUrl(FileType.Video, 1),
                 CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
                 Title = "Prioritization Techniques",
                 Description = "Effective methods for prioritizing tasks and managing workloads.",
-                MediaType = CourseMediaType.ExternalWebAddress,
-                WebAddress = GetMediaUrl(CourseMediaType.ExternalWebAddress, 2),
+                ResourceType = FileType.ExternalWebAddress,
+                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 2),
                 CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
             });
 
-            dbContext.CourseItems.Add(new CourseItem
+            dbContext.CourseResources.Add(new CourseResource
             {
                 Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
                 Title = "Building Trust and Rapport",
                 Description = "Strategies for establishing trust and positive relationships within a team.",
-                MediaType = CourseMediaType.Video,
-                WebAddress = GetMediaUrl(CourseMediaType.Video, 2),
+                ResourceType = FileType.Video,
+                ResourceUrl = GetMediaUrl(FileType.Video, 2),
                 CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
             });
             dbContext.SaveChanges();
         }
     }
 
-    private static string GetMediaUrl(CourseMediaType mediaType, int moduleNumber)
+    private static string GetMediaUrl(FileType mediaType, int moduleNumber)
     {
         return mediaType switch
         {
-            CourseMediaType.Video => $"/content/videos/module{moduleNumber}.mp4",
-            CourseMediaType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
-            CourseMediaType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
+            FileType.Video => $"/content/videos/module{moduleNumber}.mp4",
+            FileType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
+            FileType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
             _ => $"/content/other/module{moduleNumber}"
         };
     }

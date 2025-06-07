@@ -1,9 +1,9 @@
-﻿using System.Net;
-using Contract.Dtos.Categories.Requests;
+﻿using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Categories.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
+using System.Net;
 
 namespace Application.Services.Categories;
 
@@ -22,7 +22,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Id = category.Id,
             Name = category.Name,
             Description = category.Description!,
-            Courses = category.Courses!.Count(),
+            Courses = category.Courses!.Count,
             Status = category.Status
         };
         return Result.Success(categoryInfo, HttpStatusCode.OK);
@@ -36,7 +36,7 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         {
             categories = categories.Where(c => c.Name.Contains(request.Keyword));
         }
-        
+
         if (request.Status.HasValue)
         {
             categories = categories.Where(c => c.Status == request.Status);
@@ -47,25 +47,37 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Id = c.Id,
             Name = c.Name,
             Description = c.Description!,
-            Courses = c.Courses!.Count(),
+            Courses = c.Courses!.Count,
             Status = c.Status
-        });
+        }).OrderBy(c => c.Name);
 
         PaginatedList<GetCategoryResponse> paginatedCategories =
             await categoryRepository.ToPaginatedListAsync(categoryInfos, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedCategories, HttpStatusCode.OK);
     }
+    public async Task<Result<List<GetActiveCategoryResponse>>> GetActiveCategoriesAsync()
+    {
+        var activeCategories = categoryRepository.GetAll()
+            .Where(c => c.Status == true)
+            .Select(c => new GetActiveCategoryResponse
+            {
+                Id = c.Id,
+                Name = c.Name,
+            });
 
-    public async Task<Result<PaginatedList<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id,
-        FilterCourseByCategoryRequest request)
+        var listActiveCategories = await categoryRepository.ToListAsync(activeCategories);
+
+        return Result.Success(listActiveCategories, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<List<FilterCourseByCategoryResponse>>> FilterCourseByCategoryAsync(Guid id)
     {
         var category = await categoryRepository.GetByIdAsync(id);
 
         if (category == null)
         {
-            return Result.Failure<PaginatedList<FilterCourseByCategoryResponse>>("Category not found",
-                HttpStatusCode.NotFound);
+            return Result.Failure<List<FilterCourseByCategoryResponse>>("Category not found", HttpStatusCode.NotFound);
         }
 
         var courses = categoryRepository.FilterCourseByCategory(id);
@@ -80,12 +92,11 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
             Difficulty = c.Difficulty.ToString(),
             DueDate = c.DueDate,
             Tags = c.CourseTags.Select(ct => ct.Tag.Name).ToList()
-        });
+        }).OrderBy(c => c.Title);
 
-        PaginatedList<FilterCourseByCategoryResponse> paginatedCourses =
-            await categoryRepository.ToPaginatedListAsync(courseInfos, request.PageSize, request.PageIndex);
+        List<FilterCourseByCategoryResponse> courseList = await categoryRepository.ToListAsync(courseInfos);
 
-        return Result.Success(paginatedCourses, HttpStatusCode.OK);
+        return Result.Success(courseList, HttpStatusCode.OK);
     }
 
     public async Task<Result<GetCategoryResponse>> CreateCategoryAsync(CategoryRequest request)
@@ -134,17 +145,28 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return Result.Success(true, HttpStatusCode.OK);
     }
 
-    public async Task<Result<bool>> SoftDeleteCategoryAsync(Guid categoryId)
+    public async Task<Result<bool>> DeleteCategoryAsync(Guid categoryId)
     {
-        var category = await categoryRepository.GetByIdAsync(categoryId);
+        var category = await categoryRepository.GetByIdAsync(categoryId, c => c.Courses!);
         if (category == null)
         {
             return Result.Failure<bool>("Categories is not found or is deleted", HttpStatusCode.NotFound);
         }
 
-        category.IsDeleted = true;
-        categoryRepository.Update(category);
-        var result = await categoryRepository.SaveChangesAsync();
-        return Result.Success(true, HttpStatusCode.OK);
+        if (category.Courses != null && category.Courses.Count > 0)
+        {
+            return Result.Failure<bool>("Cannot delete category because it is in use", HttpStatusCode.BadRequest);
+        }
+
+        try
+        {
+            categoryRepository.Delete(category);
+            await categoryRepository.SaveChangesAsync();
+            return Result.Success(true, HttpStatusCode.OK);
+        }
+        catch (Exception)
+        {
+            return Result.Failure<bool>("An error occurred while deleting the category.", HttpStatusCode.BadRequest);
+        }
     }
 }

@@ -33,17 +33,6 @@ export const userService = {
       });
   },
 
-  getUserDetail: async (userId: string): Promise<UserDetail> => {
-    return await axiosClient
-      .get(`Users/${userId}/detail`)
-      .then((response) => {
-        return response.data.value;
-      })
-      .catch((error) => {
-        throw error;
-      });
-  },
-
   updateUser: async (userId: string, userData: EditUserRequest) => {
     await axiosClient.put(`Users/${userId}`, userData).then((response) => {
       return response.data.value;
@@ -79,17 +68,30 @@ export const userService = {
         return response.data.value;
       });
   },
-
   getUserProfile: async (userId: string): Promise<UserProfile> => {
-  return await axiosClient
-    .get(`Users/${userId}/detail`)
-    .then((response) => response.data.value)
-    .catch((error) => {
-      throw error;
-    });
+    return await axiosClient
+      .get(`Users/${userId}/detail`)
+      .then((response) => response.data.value)
+      .catch((error) => {
+        throw error;
+      });
   },
 
-  updateUserProfile: async (userId: string, profileData: UpdateProfileRequest): Promise<UserProfile> => {
+  getUserDetail: async (userId: string): Promise<UserDetail> => {
+    return await axiosClient
+      .get(`Users/${userId}/detail`)
+      .then((response) => {
+        return response.data.value;
+      })
+      .catch((error) => {
+        throw error;
+      });
+  },
+
+  updateUserProfile: async (
+    userId: string,
+    profileData: UpdateProfileRequest,
+  ): Promise<UserProfile> => {
     return await axiosClient
       .put(`Users/${userId}/detail`, profileData)
       .then((response) => response.data.value)
