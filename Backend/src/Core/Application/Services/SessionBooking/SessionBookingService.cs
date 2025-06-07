@@ -220,7 +220,7 @@ public class SessionBookingService(
         sessionBookingRepository.CancelBookingSession(bookingSession, cancellingLearner.Id);
         await sessionBookingRepository.SaveChangesAsync();
 
-        return Result.Success(sessionsSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
+        return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
 
     public async Task<Result<List<LearnerSessionBookingResponse>>> GetAllBooking()
@@ -417,25 +417,8 @@ public class SessionBookingService(
 
         sessionBookingRepository.Update(session);
         await sessionBookingRepository.SaveChangesAsync();
-        if (sendMail)
-        {
-            var mailSent =
-                await emailService.SendEmailAsync(cancellingLearner.Email,
-                    EmailConstants.SUBJECT_MEETING_BOOKING_CANCELLED,
-                    EmailConstants.BodyMeetingBookingConfirmationEmail(cancellingLearner.FullName,
-                        new DateTime(bookingSession.TimeSlot.Date, bookingSession.TimeSlot.EndTime),
-                        bookingSession.TimeSlot.Schedules.Mentor.FullName));
-
-            if (!mailSent)
-            {
-                return Result.Failure<SessionSlotStatusResponse>(
-                    "Failed to send email",
-                    HttpStatusCode.InternalServerError);
-            }
-        }
-
+        
         return Result.Success(true, HttpStatusCode.OK);
-        return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
 
 }
