@@ -4,14 +4,55 @@ import { withTimestampTitleAndFutureDate } from "../../../core/utils/generate-un
 import { CoursePage } from "../../../pages/courses/course-management-page";
 import { MentorDashboardPage } from "../../../pages/dashboard/mentor-dashboard-page";
 import courseData from "../../test-data/course-data.json";
+import { MentorApplicationReview } from "../../../pages/mentor-application/mentor-application-review-page";
+import statusTrackingData from "../../test-data/mentor-application-status-tracking-data.json";
+import { loginStep } from "../../../core/utils/login-helper";
+import { LoginUser } from "../../../models/user/user";
+import { LoginPage } from "../../../pages/authentication/login-page";
 
 test.describe.serial("@Mentor Dashboard test", () => {
   let mentorDashboardPage: MentorDashboardPage;
+  let mentorApplicationReview: MentorApplicationReview;
   let coursePage: CoursePage;
+  let loginPage: LoginPage;
+
+  const mentorUser = statusTrackingData.mentor_role;
+  const statusApplication = statusTrackingData.tracking_status;
   const validCourse = withTimestampTitleAndFutureDate(
     courseData.create_valid_course,
     2
   );
+  const defaultAdmin: LoginUser = {
+    email: process.env.ADMIN_USER_NAME!,
+    password: process.env.ADMIN_PASSWORD!,
+  };
+
+  test.beforeAll(async ({ browser }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    loginPage = new LoginPage(page);
+    mentorApplicationReview = new MentorApplicationReview(page);
+
+    await test.step("Login as Admin", async () => {
+      await loginStep(page, defaultAdmin);
+    });
+
+    await test.step("Navigate to applications page", async () => {
+      await mentorApplicationReview.navigateToApplicationsPage();
+    });
+    await test.step("Approve mentor application", async () => {
+      await mentorApplicationReview.clickOnMentorApplicationAdmin(
+        mentorUser.mentor_name
+      );
+      await mentorApplicationReview.clickOnStatusActionButton(
+        statusApplication.approve
+      );
+      await mentorApplicationReview.verifyNotificationMessage();
+    });
+    await test.step("Logout as Admin", async () => {
+      await loginPage.clickOnLogoutButton();
+    });
+  });
 
   test.beforeEach(async ({ loggedInPageByMentorRole, page }) => {
     mentorDashboardPage = new MentorDashboardPage(page);
