@@ -75,8 +75,14 @@ export function withFutureDate(data: any, daysOffset: number = 1) {
   };
 }
 
-
 export function endWithTimestamp(original: string): string {
   return `${original}_${Date.now()}`;
 }
 
+export function titleWithTimestamp(data: any) {
+  const timestamp = new Date().toISOString();
+  return {
+    ...data,
+    title: `${data.title} ${timestamp}`,
+  };
+}
