@@ -1,13 +1,16 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Contract.Dtos.CourseResources.Requests;
 
 public record CourseResourceRequest
 {
     public Guid CourseId { get; init; }
+    [FromForm(Name = "title")]
     public required string Title { get; init; }
     public string? Description { get; init; }
+    [FromForm(Name = "resource")]
     public required IFormFile Resource { get; init; }
 }
 
