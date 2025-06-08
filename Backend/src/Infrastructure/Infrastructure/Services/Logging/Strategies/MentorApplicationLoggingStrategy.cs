@@ -7,43 +7,42 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Services.Logging.Strategies;
 
-public class MentorApplicationLoggingStrategy(IServiceProvider serviceProvider) : IEntityLoggingStrategy
+public class MentorApplicationLoggingStrategy(IServiceScopeFactory serviceScopeFactory) : IEntityLoggingStrategy
 {
-    public string GetLoggingAction(EntityEntry entry, User? user)
+    public string GetLoggingAction(EntityEntry entry, User? claimUser)
     {
         if (!IsLoggingState(entry))
             return string.Empty;
 
         var mentorApplication = (MentorApplication)entry.Entity;
         var mentorId = mentorApplication.MentorId;
-        User? mentor = null;
-        var userName = user?.FullName ?? $"{user!.Id} (not found)";
+        var userName = claimUser?.FullName ?? $"{claimUser!.Id} (not found)";
 
         if (entry.State == EntityState.Added)
         {
             return $"Mentor {userName} submitted a new mentor application";
         }
 
-        if (user.RoleId == (int)UserRole.Mentor)
+        if (claimUser.RoleId == (int)UserRole.Mentor)
         {
             return $"Mentor {userName} updated their mentor application";
         }
 
         var currentStatus = mentorApplication.Status;
 
-        var userRepository = serviceProvider.GetService<IUserRepository>();
-        mentor = userRepository!.GetByIdAsync(mentorId).GetAwaiter().GetResult();
+        using var scope = serviceScopeFactory.CreateScope();
+        var userRepository = scope.ServiceProvider.GetService<IUserRepository>();
+        var mentor = userRepository!.GetByIdAsync(mentorId).GetAwaiter().GetResult();
         var mentorName = mentor?.FullName ?? $"{mentorId} (not found)";
 
-        switch (currentStatus)
+        return currentStatus switch
         {
-            case ApplicationStatus.WaitingInfo:
-                return $"Admin {userName} request Mentor Application info for mentor {mentorName}. Note: {mentorApplication.Note}";
-            case ApplicationStatus.Approved or ApplicationStatus.Rejected:
-                return $"Admin {userName} {currentStatus.ToString()} Mentor Application for mentor {mentorName}. Note: {mentorApplication.Note}";
-        }
-
-        return "";
+            ApplicationStatus.WaitingInfo =>
+                $"Admin {userName} request Mentor Application info for mentor {mentorName}. Note: {mentorApplication.Note}",
+            ApplicationStatus.Approved or ApplicationStatus.Rejected =>
+                $"Admin {userName} {currentStatus.ToString()} Mentor Application for mentor {mentorName}. Note: {mentorApplication.Note}",
+            _ => ""
+        };
     }
 
     public bool IsLoggingState(EntityEntry entry)

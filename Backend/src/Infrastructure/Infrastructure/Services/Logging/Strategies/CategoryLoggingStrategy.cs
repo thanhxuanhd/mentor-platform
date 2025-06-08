@@ -7,22 +7,22 @@ namespace Infrastructure.Services.Logging.Strategies;
 
 public class CategoryLoggingStrategy : IEntityLoggingStrategy
 {
-    public string GetLoggingAction(EntityEntry entry, User? user)
+    public string GetLoggingAction(EntityEntry entry, User? claimUser)
     {
         if (!IsLoggingState(entry))
             return string.Empty;
 
         var category = (Category)entry.Entity;
-        var role = user!.RoleId switch
+        var role = claimUser!.RoleId switch
         {
             (int)UserRole.Admin => nameof(UserRole.Admin),
             (int)UserRole.Mentor => nameof(UserRole.Mentor),
             (int)UserRole.Learner => nameof(UserRole.Learner),
             _ => throw new InvalidOperationException("Unrecognized role")
         };
-        var fullName = user?.FullName ?? $"{user!.Id} (name not found)";
+        var fullName = claimUser?.FullName ?? $"{claimUser!.Id} (name not found)";
 
-        if (user.RoleId != (int)UserRole.Admin)
+        if (claimUser.RoleId != (int)UserRole.Admin)
         {
             return $"Unauthorized user {fullName} with role {role} make changes to the Category {category.Name}";
         }

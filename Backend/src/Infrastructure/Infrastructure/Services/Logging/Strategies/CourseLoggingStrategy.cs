@@ -7,14 +7,14 @@ namespace Infrastructure.Services.Logging.Strategies;
 
 public class CourseLoggingStrategy : IEntityLoggingStrategy
 {
-    public string GetLoggingAction(EntityEntry entry, User? user)
+    public string GetLoggingAction(EntityEntry entry, User? claimUser)
     {
         if (!IsLoggingState(entry))
             return string.Empty;
 
         var course = (Course)entry.Entity;
-        var fullName = user?.FullName ?? $"{user!.Id} (name not found)";
-        var role = user.RoleId switch
+        var fullName = claimUser?.FullName ?? $"{claimUser!.Id} (name not found)";
+        var role = claimUser.RoleId switch
         {
             (int)UserRole.Admin => nameof(UserRole.Admin),
             (int)UserRole.Mentor => nameof(UserRole.Mentor),
@@ -22,7 +22,7 @@ public class CourseLoggingStrategy : IEntityLoggingStrategy
             _ => throw new InvalidOperationException("Unrecognized role")
         };
 
-        if (user.RoleId != (int)UserRole.Mentor)
+        if (claimUser.RoleId != (int)UserRole.Mentor)
         {
             return $"Unauthorized user {fullName} with role {role} make changes to the Course {course.Title}";
         }

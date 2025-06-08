@@ -6,11 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Security.Claims;
 
 namespace Infrastructure.Persistence.Interceptors;
 
-public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
+public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IServiceScopeFactory serviceScopeFactory)
     : SaveChangesInterceptor
 {
     private readonly Dictionary<Type, IEntityLoggingStrategy> _loggingStrategies = new()
@@ -18,7 +19,7 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
         { typeof(User), new UserLoggingStrategy() },
         { typeof(Course), new CourseLoggingStrategy() },
         { typeof(Category), new CategoryLoggingStrategy() },
-        { typeof(MentorApplication), new MentorApplicationLoggingStrategy(serviceProvider) }
+        { typeof(MentorApplication), new MentorApplicationLoggingStrategy(serviceScopeFactory) }
     };
     private readonly List<ActivityLog> _pendingLogs = new();
 
@@ -70,9 +71,11 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
         int result,
         CancellationToken cancellationToken = default)
     {
-        if (_pendingLogs.Count <= 0) return await base.SavedChangesAsync(eventData, result, cancellationToken);
+        if (_pendingLogs.Count <= 0)
+            return await base.SavedChangesAsync(eventData, result, cancellationToken);
 
-        await using var applicationDbContext = serviceProvider.GetService<ApplicationDbContext>();
+        using var scope = serviceScopeFactory.CreateScope();
+        await using var applicationDbContext = scope.ServiceProvider.GetService<ApplicationDbContext>();
         if (applicationDbContext is null)
         {
             throw new InvalidOperationException("Could not resolve DbContext for logging.");
