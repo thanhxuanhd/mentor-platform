@@ -10,4 +10,5 @@ export const PAGE_ENDPOINT_URL = {
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
   DASHBOARD: "/dashboard",
+  USERS: "/users",
 };
