@@ -16,18 +16,18 @@ const stepItems: {
   title: string;
   disabled?: boolean;
 }[] = [
-  {
-    status: "finish",
-    title: "Step 1",
-    disabled: true,
-  },
-  {
-    title: "Step 2",
-  },
-  {
-    title: "Step 3",
-  },
-];
+    {
+      status: "finish",
+      title: "Step 1",
+      disabled: true,
+    },
+    {
+      title: "Step 2",
+    },
+    {
+      title: "Step 3",
+    },
+  ];
 
 export default function ProfileSetup() {
   const { state } = useLocation();
@@ -35,7 +35,7 @@ export default function ProfileSetup() {
   const formRef = useRef<FormInstance<UserDetail>>(null);
   const navigate = useNavigate();
   const { notification } = App.useApp();
-  const [userDetail, setUserDetail] = useState<UserDetail>({
+  const [userDetail, setUserDetail] = useState<UserDetail | any>({
     fullName: "",
     roleId: 0,
     bio: "",
