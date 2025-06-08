@@ -21,6 +21,7 @@ import type {
   UpdateProfileRequest,
   UserProfile as UserProfileType,
 } from "../../../types/UserTypes"; // Explicitly used now
+import { useUser } from "../../../hooks/useUser";
 
 const { TextArea } = Input;
 
@@ -96,6 +97,7 @@ export default function EditProfile() {
 
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
+  const { setProfileUpdated } = useUser();
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -361,7 +363,7 @@ export default function EditProfile() {
         message: "Success",
         description: "Profile updated successfully!",
       });
-
+      setProfileUpdated(true)
       setTimeout(() => {
         navigate("/profile");
       }, 1000);

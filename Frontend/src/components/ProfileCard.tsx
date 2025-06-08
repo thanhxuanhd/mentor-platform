@@ -10,18 +10,6 @@ export default function UserProfileDropdown({
   userDetail,
   user,
 }: UserProfileDropdownProps) {
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case "admin":
-        return "red"
-      case "mentor":
-        return "blue"
-      case "learner":
-        return "green"
-      default:
-        return "default"
-    }
-  }
 
   return (
     <div className="flex items-center pr-2 gap-4 px-3 rounded-lg hover:bg-slate-600/50 cursor-pointer transition-all duration-200 group">

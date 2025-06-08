@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
 import { App as AntdApp } from "antd";
 import { AuthProvider } from "./contexts/AuthContext";
+import { UserProvider } from "./contexts/UserContext";
 
 function App() {
   window.addEventListener("storage", () => {
@@ -16,7 +17,9 @@ function App() {
       <AntdApp>
         <BrowserRouter>
           <AuthProvider>
-            <AppRoutes />
+            <UserProvider>
+              <AppRoutes />
+            </UserProvider>
           </AuthProvider>
         </BrowserRouter>
       </AntdApp>

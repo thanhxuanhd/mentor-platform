@@ -7,11 +7,12 @@ import { menuItems } from "../constants/navigation";
 import type { MenuItemType } from "antd/es/menu/interface";
 import { applicationRole } from "../constants/role";
 import UserProfileDropdown from "./ProfileCard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { UserDetail } from "../types/UserTypes";
 import { userService } from "../services/user/userService";
 import type { NotificationProps } from "../types/Notification";
 import Loading from "./Loading";
+import { useUser } from "../hooks/useUser";
 
 const { Header, Sider, Content, Footer } = Layout;
 
@@ -23,6 +24,7 @@ const MainLayout = () => {
   const { user, removeToken, isMentorApproved } = useAuth();
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const { notification } = App.useApp();
+  const { isProfileUpdated, setProfileUpdated } = useUser();
 
   useEffect(() => {
     if (notify) {
@@ -38,31 +40,30 @@ const MainLayout = () => {
     }
   }, [notify, notification]);
 
-  useEffect(() => {
-    if (user) {
-      fetchUserDetails()
-    }
-    return;
-  }, [user])
-
-  const fetchUserDetails = async () => {
+  const fetchUserDetails = useCallback(async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       if (user?.id) {
-        const response = await userService.getUserDetail(user.id)
-        setUserDetails(response)
+        const response = await userService.getUserDetail(user.id);
+        setUserDetails(response);
+        setProfileUpdated(false); // Reset the flag after successful fetch
       }
     } catch (error: any) {
       setNotify({
         type: "error",
-        message: "Failed to load activity log data",
-        description:
-          error?.response?.data?.error || "Error loading activity log data",
+        message: "Failed to load user details",
+        description: error?.response?.data?.error || "Error loading user details",
       });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [user, setProfileUpdated]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserDetails();
+    }
+  }, [user, isProfileUpdated, fetchUserDetails]);
 
   const roleMenuItems: MenuItemType[] = menuItems
     .filter((item) => item.role.includes(user?.role || "unauthorized"))
