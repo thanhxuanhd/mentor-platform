@@ -23,13 +23,8 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
         builder.Property(m => m.SentAt)
             .IsRequired();
 
-        builder.HasOne(m => m.Conversation)
-            .WithMany()
-            .HasForeignKey(m => m.ConversationId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne(m => m.Sender)
-            .WithMany()
+            .WithMany(s => s.Messages)
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
 

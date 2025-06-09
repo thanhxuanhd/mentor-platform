@@ -345,9 +345,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<Guid>("ConversationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ConversationId1")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
 
@@ -357,8 +354,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ConversationId");
-
-                    b.HasIndex("ConversationId1");
 
                     b.HasIndex("SenderId");
 
@@ -813,14 +808,10 @@ namespace Infrastructure.Persistence.Data.Migrations
             modelBuilder.Entity("Domain.Entities.Message", b =>
                 {
                     b.HasOne("Domain.Entities.Conversation", "Conversation")
-                        .WithMany()
+                        .WithMany("Messages")
                         .HasForeignKey("ConversationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Domain.Entities.Conversation", null)
-                        .WithMany("Messages")
-                        .HasForeignKey("ConversationId1");
 
                     b.HasOne("Domain.Entities.User", "Sender")
                         .WithMany("Messages")

@@ -60,8 +60,7 @@ namespace Infrastructure.Persistence.Data.Migrations
                     ConversationId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
-                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ConversationId1 = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    SentAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,11 +71,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                         principalTable: "Conversations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Messages_Conversations_ConversationId1",
-                        column: x => x.ConversationId1,
-                        principalTable: "Conversations",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Messages_Users_SenderId",
                         column: x => x.SenderId,
@@ -125,11 +119,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                 name: "IX_Messages_ConversationId",
                 table: "Messages",
                 column: "ConversationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Messages_ConversationId1",
-                table: "Messages",
-                column: "ConversationId1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Messages_SenderId",
