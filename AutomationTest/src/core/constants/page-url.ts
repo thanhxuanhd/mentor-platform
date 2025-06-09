@@ -8,4 +8,5 @@ export const PAGE_ENDPOINT_URL = {
   COURSE_MANAGEMENT: "/courses",
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
+  DASHBOARD: "/dashboard",
 };
