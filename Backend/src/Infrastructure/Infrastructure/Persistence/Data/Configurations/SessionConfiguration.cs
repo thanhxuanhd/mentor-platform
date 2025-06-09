@@ -14,10 +14,13 @@ public class SessionConfiguration : IEntityTypeConfiguration<Sessions>
             .HasConversion<string>()
             .IsRequired();
 
+<<<<<<< HEAD
         builder.Property(b => b.Type)
             .HasConversion<string>()
             .IsRequired();
         
+=======
+>>>>>>> origin
         builder.HasOne(b => b.TimeSlot)
             .WithMany(ts => ts.Sessions)
             .HasForeignKey(b => b.TimeSlotId)

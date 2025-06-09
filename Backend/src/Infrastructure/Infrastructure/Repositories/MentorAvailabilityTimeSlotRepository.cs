@@ -31,6 +31,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
 
         return confirmedTimeSlots;
     }
+<<<<<<< HEAD
     
     public IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot()
     {
@@ -88,4 +89,6 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
 
         return bookingSession;
     }
+=======
+>>>>>>> origin
 }

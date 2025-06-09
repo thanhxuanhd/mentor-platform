@@ -56,6 +56,7 @@ const AppRoutes = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
+        <Route path="availability" element={<AvailabilityManager />} />
       </Route>
 
       <Route

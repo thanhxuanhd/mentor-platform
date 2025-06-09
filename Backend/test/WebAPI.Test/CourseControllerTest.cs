@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Net;
 using System.Security.Claims;
+using static Infrastructure.Services.Authorization.Policies.CourseResourcePolicyName;
 
 namespace WebAPI.Test;
 
@@ -338,5 +339,242 @@ public class CourseControllerTest
         // Assert
         AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
         _courseResourceServiceMock.Verify(s => s.DeleteAsync(itemId), Times.Once);
+    }
+
+    [Test]
+    public async Task Create_ValidRequest_ReturnsCreatedResult()
+    {
+        // Arrange
+        var request = new CourseCreateRequest
+        {
+            Title = "New Course",
+            Description = "Description of New Course",
+            CategoryId = Guid.NewGuid(),
+            Difficulty = CourseDifficulty.Beginner,
+            Tags = new List<string> { "Tag1", "Tag2" },
+            DueDate = DateTime.UtcNow.AddDays(30)
+        };
+
+        var createdCourseResponse = new CourseSummaryResponse { Id = Guid.NewGuid(), Title = request.Title };
+        var serviceResult = Result.Success(createdCourseResponse, HttpStatusCode.Created);
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        _courseServiceMock.Setup(s => s.CreateAsync(mentorId, request))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.Create(request);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.Created, serviceResult);
+        _courseServiceMock.Verify(s => s.CreateAsync(mentorId, request), Times.Once);
+    }
+
+    [Test]
+    public async Task Create_ServiceReturnsError_ReturnsErrorStatusCode()
+    {
+        // Arrange
+        var request = new CourseCreateRequest
+        {
+            Title = "New Course",
+            Description = "Description of New Course",
+            CategoryId = Guid.NewGuid(),
+            Difficulty = CourseDifficulty.Beginner,
+            Tags = new List<string> { "Tag1", "Tag2" },
+            DueDate = DateTime.UtcNow.AddDays(30)
+        };
+        var serviceResult = Result.Failure<CourseSummaryResponse>("Error creating course", HttpStatusCode.BadRequest);
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+        _courseServiceMock.Setup(s => s.CreateAsync(mentorId, request))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.Create(request);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.BadRequest, serviceResult);
+    }
+
+    [Test]
+    public async Task Update_ValidRequest_ReturnsOkResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var request = new CourseUpdateRequest
+        {
+            Title = "New Course",
+            Description = "Description of New Course",
+            CategoryId = Guid.NewGuid(),
+            Difficulty = CourseDifficulty.Beginner,
+            Tags = new List<string> { "Tag1", "Tag2" },
+            DueDate = DateTime.UtcNow.AddDays(30)
+        };
+        var updatedCourseResponse = new CourseSummaryResponse { Id = courseId, Title = request.Title };
+        var serviceResult = Result.Success(updatedCourseResponse, HttpStatusCode.OK);
+
+        _courseServiceMock.Setup(s => s.UpdateAsync(courseId, request))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.Update(courseId, request);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
+        _courseServiceMock.Verify(s => s.UpdateAsync(courseId, request), Times.Once);
+    }
+
+    [Test]
+    public async Task Update_CourseNotFound_ReturnsNotFoundResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var request = new CourseUpdateRequest
+        {
+            Title = "New Course",
+            Description = "Description of New Course",
+            CategoryId = Guid.NewGuid(),
+            Difficulty = CourseDifficulty.Beginner,
+            Tags = new List<string> { "Tag1", "Tag2" },
+            DueDate = DateTime.UtcNow.AddDays(30)
+        };
+        var serviceResult = Result.Failure<CourseSummaryResponse>("Course not found", HttpStatusCode.NotFound);
+
+        _courseServiceMock.Setup(s => s.UpdateAsync(courseId, request))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.Update(courseId, request);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.NotFound, serviceResult);
+    }
+
+    [Test]
+    public async Task Delete_CourseExistsAndAuthorized_ReturnsOkResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        SetupCourseFoundAndAuthorized(courseId, UserCanEditCoursePolicyName);
+        var serviceResult = Result.Success(true, HttpStatusCode.OK);
+        _courseServiceMock.Setup(s => s.DeleteAsync(courseId)).ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.Delete(courseId);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
+        _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
+        _authorizationServiceMock.Verify(s => s.AuthorizeAsync(_user, It.IsAny<CourseSummaryResponse>(), UserCanEditCoursePolicyName), Times.Once);
+        _courseServiceMock.Verify(s => s.DeleteAsync(courseId), Times.Once);
+    }
+
+    [Test]
+    public async Task Delete_CourseNotFound_ReturnsNotFoundResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var serviceResult = SetupCourseNotFound(courseId);
+
+        // Act
+        var result = await _controller.Delete(courseId);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.NotFound, serviceResult);
+        _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
+        _authorizationServiceMock.Verify(s => s.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()), Times.Never);
+        _courseServiceMock.Verify(s => s.DeleteAsync(courseId), Times.Never);
+    }
+
+    [Test]
+    public async Task Delete_NotAuthorized_ReturnsForbidResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var courseSummary = new CourseSummaryResponse { Id = courseId, Title = "Test Course" };
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId)).ReturnsAsync(Result.Success(courseSummary, HttpStatusCode.OK));
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_user, courseSummary, UserCanEditCoursePolicyName))
+            .ReturnsAsync(AuthorizationResult.Failed());
+
+        // Act
+        var result = await _controller.Delete(courseId);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ForbidResult>());
+        _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
+        _authorizationServiceMock.Verify(s => s.AuthorizeAsync(_user, courseSummary, UserCanEditCoursePolicyName), Times.Once);
+        _courseServiceMock.Verify(s => s.DeleteAsync(courseId), Times.Never);
+    }
+
+    [Test]
+    public async Task ArchiveCourse_CourseNotFound_ReturnsNotFoundResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var getByIdResult = SetupCourseNotFound(courseId);
+
+        // Act
+        var result = await _controller.ArchiveCourse(courseId);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.NotFound, getByIdResult); // The controller returns the GetByIdAsync result directly
+        _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
+        _authorizationServiceMock.Verify(s => s.AuthorizeAsync(It.IsAny<ClaimsPrincipal>(), It.IsAny<object>(), It.IsAny<string>()), Times.Never);
+        _courseServiceMock.Verify(s => s.ArchiveCourseAsync(courseId), Times.Never);
+    }
+
+    [Test]
+    public async Task ArchiveCourse_NotAuthorized_ReturnsForbidResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var courseSummary = new CourseSummaryResponse { Id = courseId, Title = "Test Course" };
+        _courseServiceMock.Setup(s => s.GetByIdAsync(courseId)).ReturnsAsync(Result.Success(courseSummary, HttpStatusCode.OK));
+        _authorizationServiceMock.Setup(s => s.AuthorizeAsync(_user, courseSummary, UserCanEditCoursePolicyName))
+            .ReturnsAsync(AuthorizationResult.Failed());
+
+        // Act
+        var result = await _controller.ArchiveCourse(courseId);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<ForbidResult>());
+        _courseServiceMock.Verify(s => s.GetByIdAsync(courseId), Times.Once);
+        _authorizationServiceMock.Verify(s => s.AuthorizeAsync(_user, courseSummary, UserCanEditCoursePolicyName), Times.Once);
+        _courseServiceMock.Verify(s => s.ArchiveCourseAsync(courseId), Times.Never);
+    }
+
+    [Test]
+    public async Task PublishCourse_WhenServiceSucceeds_ReturnsOkResult()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+
+        var response = new CourseSummaryResponse
+        {
+            Id = courseId,
+            Title = "Test Course",
+            Description = "Test Course Description",
+            CategoryId = Guid.NewGuid(),
+            CategoryName = "Test Category",
+            MentorId = Guid.NewGuid(),
+            MentorName = "Test Mentor",
+            Difficulty = CourseDifficulty.Intermediate,
+            DueDate = DateTime.UtcNow.AddMonths(1),
+            Status = CourseStatus.Published,
+            Resources = new List<CourseResourceResponse>(),
+            Tags = new List<string> { "TestTag1", "TestTag2" }
+        };
+
+        var serviceResult = Result.Success(response, HttpStatusCode.OK);
+
+        _courseServiceMock.Setup(s => s.PublishCourseAsync(courseId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _controller.PublishCourse(courseId);
+
+        // Assert
+        AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
+        _courseServiceMock.Verify(s => s.PublishCourseAsync(courseId), Times.Once);
     }
 }

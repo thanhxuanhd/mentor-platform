@@ -4,10 +4,12 @@ using Contract.Dtos.Users.Requests;
 using Contract.Dtos.Users.Responses;
 using Contract.Shared;
 using MentorPlatformAPI.Controllers;
+using Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System.Net;
+using System.Security.Claims;
 
 namespace WebAPI.Test;
 
@@ -382,4 +384,411 @@ public class UsersControllerTests
         });
     }
 
+    [Test]
+    public async Task UploadMentorDocument_WhenSuccess_ReturnsOkWithUrl()
+    {
+        // Arrange
+        var testUserIdGuid = Guid.NewGuid();
+        var testUserIdString = testUserIdGuid.ToString();
+        var mockFile = new Mock<IFormFile>();
+        var expectedUrl = "http://localhost/documents/mentor_document.pdf";
+        var serviceResult = Result.Success(expectedUrl, HttpStatusCode.OK);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, testUserIdString),
+            new Claim(ClaimTypes.Role, "Mentor") // Role is checked by [Authorize(Roles = "Mentor")]
+        }, "TestAuthentication"));
+
+        var httpContext = new DefaultHttpContext { User = user };
+        // Setup request properties as the service might use them (e.g., to construct URLs)
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Host = new HostString("localhost");
+
+        _usersController.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        _userServiceMock
+            .Setup(s => s.UploadDocumentAsync(testUserIdGuid, httpContext.Request, mockFile.Object))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.UploadMentorDocument(mockFile.Object);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+
+            var returnedResult = objectResult.Value as Result<string>;
+            Assert.That(returnedResult, Is.Not.Null, "Value of ObjectResult should be Result<string>.");
+            Assert.That(returnedResult!.IsSuccess, Is.True);
+            Assert.That(returnedResult.Value, Is.EqualTo(expectedUrl));
+
+            _userServiceMock.Verify(s => s.UploadDocumentAsync(testUserIdGuid, httpContext.Request, mockFile.Object), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task UploadMentorDocument_WhenServiceFails_ReturnsStatusCodeFromService()
+    {
+        // Arrange
+        var testUserIdGuid = Guid.NewGuid();
+        var testUserIdString = testUserIdGuid.ToString();
+        var mockFile = new Mock<IFormFile>();
+        var errorMessage = "Upload failed due to invalid file type.";
+        var serviceResult = Result.Failure<string>(errorMessage, HttpStatusCode.BadRequest);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, testUserIdString),
+            new Claim(ClaimTypes.Role, "Mentor")
+        }, "TestAuthentication"));
+
+        var httpContext = new DefaultHttpContext { User = user };
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Host = new HostString("localhost");
+
+        _usersController.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+
+        _userServiceMock
+            .Setup(s => s.UploadDocumentAsync(testUserIdGuid, httpContext.Request, mockFile.Object))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.UploadMentorDocument(mockFile.Object);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+
+            var returnedResult = objectResult.Value as Result<string>;
+            Assert.That(returnedResult, Is.Not.Null, "Value of ObjectResult should be Result<string>.");
+            Assert.That(returnedResult!.IsSuccess, Is.False);
+            Assert.That(returnedResult.Error, Is.EqualTo(errorMessage));
+
+            _userServiceMock.Verify(s => s.UploadDocumentAsync(testUserIdGuid, httpContext.Request, mockFile.Object), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task RemoveMentorDocument_WhenSuccess_ReturnsOk()
+    {
+        // Arrange
+        var testUserIdGuid = Guid.NewGuid();
+        var testUserIdString = testUserIdGuid.ToString();
+        var documentUrl = "http://localhost/documents/mentor_document.pdf";
+        var serviceResult = Result.Success(true, HttpStatusCode.OK);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, testUserIdString),
+            new Claim(ClaimTypes.Role, "Mentor")
+        }, "TestAuthentication"));
+
+        _usersController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = user }
+        };
+
+        _userServiceMock
+            .Setup(s => s.RemoveDocumentAsync(testUserIdGuid, documentUrl))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.RemoveMentorDocument(documentUrl);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            var returnedResult = objectResult.Value as Result<bool>;
+            Assert.That(returnedResult, Is.Not.Null, "Value of ObjectResult should be Result<bool>.");
+            Assert.That(returnedResult!.IsSuccess, Is.True);
+            Assert.That(returnedResult.Value, Is.True);
+            _userServiceMock.Verify(s => s.RemoveDocumentAsync(testUserIdGuid, documentUrl), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task RemoveMentorDocument_WhenServiceFails_ReturnsStatusCodeFromService()
+    {
+        // Arrange
+        var testUserIdGuid = Guid.NewGuid();
+        var testUserIdString = testUserIdGuid.ToString();
+        var documentUrl = "http://localhost/documents/nonexistent_document.pdf";
+        var errorMessage = "Document not found";
+        var serviceResult = Result.Failure<bool>(errorMessage, HttpStatusCode.NotFound);
+
+        var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim(ClaimTypes.NameIdentifier, testUserIdString),
+            new Claim(ClaimTypes.Role, "Mentor")
+        }, "TestAuthentication"));
+
+        _usersController.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = user }
+        };
+
+        _userServiceMock
+            .Setup(s => s.RemoveDocumentAsync(testUserIdGuid, documentUrl))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.RemoveMentorDocument(documentUrl);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            var returnedResult = objectResult.Value as Result<bool>;
+            Assert.That(returnedResult, Is.Not.Null, "Value of ObjectResult should be Result<bool>.");
+            Assert.That(returnedResult!.IsSuccess, Is.False);
+            Assert.That(returnedResult.Error, Is.EqualTo(errorMessage));
+            _userServiceMock.Verify(s => s.RemoveDocumentAsync(testUserIdGuid, documentUrl), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task EditUserDetailAsync_WhenSuccess_ReturnsOk()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var request = new EditUserProfileRequest(
+            FullName: "Test User",
+            RoleId: 1, // Assuming 1 is a valid RoleId, e.g., Admin or Learner
+            Bio: "This is a test bio for the user.",
+            ProfilePhotoUrl: "http://example.com/profile.jpg",
+            PhoneNumber: "1234567890",
+            Skills: "C#, ASP.NET Core",
+            Experiences: "5 years in software development",
+            PreferredCommunicationMethod: CommunicationMethod.AudioCall,
+            Goal: "To become a senior developer.",
+            PreferredSessionFrequency: SessionFrequency.EveryTwoWeeks,
+            PreferredSessionDuration: 30, // e.g., 30 minutes
+            PreferredLearningStyle: LearningStyle.Visual,
+            IsPrivate: false,
+            IsAllowedMessage: true,
+            IsReceiveNotification: true,
+            AvailabilityIds: new List<Guid>(),
+            ExpertiseIds: new List<Guid>(),
+            TeachingApproachIds: new List<Guid>(),
+            CategoryIds: new List<Guid>()
+        );
+
+        var serviceResult = Result.Success(true, HttpStatusCode.OK);
+
+        _userServiceMock
+            .Setup(s => s.EditUserDetailAsync(userId, request))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.EditUserDetailAsync(userId, request);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.EditUserDetailAsync(userId, request), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task EditUserDetailAsync_WhenServiceFails_ReturnsStatusCodeFromService()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var request = new EditUserProfileRequest(
+            FullName: "Test User Update Attempt",
+            RoleId: 3, // Another valid RoleId
+            Bio: "Attempting to update bio for a user that might not exist.",
+            ProfilePhotoUrl: "http://example.com/attempt_profile.png",
+            PhoneNumber: "0987654321",
+            Skills: "Java, Spring",
+            Experiences: "2 years as Junior Developer",
+            PreferredCommunicationMethod: CommunicationMethod.VideoCall,
+            Goal: "To understand microservices.",
+            PreferredSessionFrequency: SessionFrequency.Weekly,
+            PreferredSessionDuration: 45, // e.g., 45 minutes
+            PreferredLearningStyle: LearningStyle.Auditory,
+            IsPrivate: true,
+            IsAllowedMessage: false,
+            IsReceiveNotification: false,
+            AvailabilityIds: new List<Guid>(),
+            ExpertiseIds: new List<Guid>(),
+            TeachingApproachIds: new List<Guid>(),
+            CategoryIds: new List<Guid>()
+        );
+        var errorMessage = "User not found to update details.";
+        var serviceResult = Result.Failure<bool>(errorMessage, HttpStatusCode.NotFound);
+
+        _userServiceMock
+            .Setup(s => s.EditUserDetailAsync(userId, request))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.EditUserDetailAsync(userId, request);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.EditUserDetailAsync(userId, request), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task GetUserDetailAsync_WhenUserExists_ReturnsOkWithUserDetails()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var userDetailResponse = new GetUserDetailResponse(
+            FullName: "Test User",
+            RoleId: 1,
+            Bio: "This is a test bio for the user.",
+            ProfilePhotoUrl: "http://example.com/profile.jpg",
+            PhoneNumber: "1234567890",
+            Skills: "C#, ASP.NET Core",
+            Experiences: "5 years in software development",
+            PreferredCommunicationMethod: CommunicationMethod.AudioCall,
+            Goal: "To become a senior developer.",
+            PreferredSessionFrequency: SessionFrequency.EveryTwoWeeks,
+            PreferredSessionDuration: 30, // e.g., 30 minutes
+            PreferredLearningStyle: LearningStyle.Visual,
+            IsPrivate: false,
+            IsAllowedMessage: true,
+            IsReceiveNotification: true,
+            AvailabilityIds: new List<Guid>(),
+            ExpertiseIds: new List<Guid>(),
+            TeachingApproachIds: new List<Guid>(),
+            CategoryIds: new List<Guid>()
+        );
+        
+        var serviceResult = Result.Success(userDetailResponse, HttpStatusCode.OK);
+
+        _userServiceMock
+            .Setup(s => s.GetUserDetailAsync(userId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.GetUserDetailAsync(userId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.GetUserDetailAsync(userId), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task GetUserDetailAsync_WhenUserDoesNotExist_ReturnsNotFound()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var errorMessage = "User details not found.";
+        var serviceResult = Result.Failure<GetUserDetailResponse>(errorMessage, HttpStatusCode.NotFound);
+
+        _userServiceMock
+            .Setup(s => s.GetUserDetailAsync(userId))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.GetUserDetailAsync(userId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null, "Result should be ObjectResult.");
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.GetUserDetailAsync(userId), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task GetUserByEmail_WhenUserExists_ReturnsOkWithUser()
+    {
+        // Arrange
+        var email = "test@example.com";
+        var userResponse = new GetUserResponse { Email = email, FullName = "Test User" };
+        var serviceResult = Result.Success(userResponse, HttpStatusCode.OK);
+
+        _userServiceMock
+            .Setup(s => s.GetUserByEmailAsync(email))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.GetUserByEmail(email);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.GetUserByEmailAsync(email), Times.Once);
+        });
+    }
+
+    [Test]
+    public async Task ForgotPasswordRequest_WhenEmailExists_ReturnsOk()
+    {
+        // Arrange
+        var email = "user@example.com";
+        var serviceResult = Result.Success(true, HttpStatusCode.OK); // Assuming success means true
+
+        _userServiceMock
+            .Setup(s => s.ForgotPasswordRequest(email))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var actionResult = await _usersController.ForgotPasswordRequest(email);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
+            var objectResult = actionResult as ObjectResult;
+            Assert.That(objectResult, Is.Not.Null);
+            Assert.That(objectResult!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(objectResult.Value, Is.EqualTo(serviceResult));
+            _userServiceMock.Verify(s => s.ForgotPasswordRequest(email), Times.Once);
+        });
+    }
 }

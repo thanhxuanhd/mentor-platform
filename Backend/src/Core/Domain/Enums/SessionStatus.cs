@@ -1,9 +1,14 @@
 ﻿
+<<<<<<< HEAD
 using System.Text.Json.Serialization;
 
 namespace Domain.Enums;
 
 [JsonConverter(typeof(JsonStringEnumConverter<SessionStatus>))]
+=======
+namespace Domain.Enums;
+
+>>>>>>> origin
 public enum SessionStatus
 {
     Pending = 0,
