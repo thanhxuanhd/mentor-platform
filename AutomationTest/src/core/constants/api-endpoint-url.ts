@@ -7,5 +7,7 @@ export const API_ENDPOINTS = {
   SIGN_IN: baseAPIUrl + "/api/Auth/sign-in",
   COURSE: baseAPIUrl + "/api/Courses",
   MENTOR_SUBMISSION: baseAPIUrl + "/api/mentor-applications",
-  RESOURCE: baseAPIUrl +"/api/Resources"
+  RESOURCE: baseAPIUrl +"/api/Resources",
+  SIGN_UP: baseAPIUrl + "/api/Users/test",
+  USER: baseAPIUrl + "/api/Users",
 };

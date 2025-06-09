@@ -19,6 +19,7 @@ import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
+import AvailabilityManager from "../pages/Availability";
 import CourseResourcesPage from "../pages/CourseResources";
 
 const AppRoutes = () => {
@@ -56,6 +57,7 @@ const AppRoutes = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
+        <Route path="availability" element={<AvailabilityManager />} />
         <Route path="resources" element={<CourseResourcesPage />} />
       </Route>
 

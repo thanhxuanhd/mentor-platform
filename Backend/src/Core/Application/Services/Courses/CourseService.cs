@@ -162,18 +162,21 @@ public class CourseService(
 
         var resourcesPath = Path.Combine(path, env.WebRootPath, "resources", $"{id}");
 
-        if (!Directory.Exists(resourcesPath))
-        {
-            return Result.Failure<bool>("Directory not found or deleted.", HttpStatusCode.NotFound);
-        }
 
-        try
+        if (course.Resources.Count > 0)
         {
-            Directory.Delete(resourcesPath, true);
-        }
-        catch (Exception ex)
-        {
-            return Result.Failure<bool>($"Failed to remove directory: {ex.Message}", HttpStatusCode.InternalServerError);
+            if (!Directory.Exists(resourcesPath))
+            {
+                return Result.Failure<bool>("Directory not found or deleted.", HttpStatusCode.NotFound);
+            }
+            try
+            {
+                Directory.Delete(resourcesPath, true);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<bool>($"Failed to remove directory: {ex.Message}", HttpStatusCode.InternalServerError);
+            }
         }
 
         courseRepository.Delete(course);
