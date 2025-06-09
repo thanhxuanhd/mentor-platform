@@ -247,7 +247,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
         form={form}
         layout="vertical"
         name="user_profile_form"
-        requiredMark={false}
+        requiredMark={true}
         onValuesChange={handleFormChange}
       >
         <h1 className="text-2xl font-semibold mb-6">
@@ -322,6 +322,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                       message: "Full name can only contain letters and spaces!",
                     },
                     {
+                      required: true,
                       validator: (_, value) =>
                         value && value.trim().length > 0
                           ? Promise.resolve()
