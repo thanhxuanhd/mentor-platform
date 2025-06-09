@@ -66,13 +66,15 @@ public class SessionBookingService(
         Guid learnerId,
         AvailableTimeSlotByDateListRequest request)
     {
+        var currentDateTime = DateTime.Now; 
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
-
+       
         var availableTimeSlot =
             await mentorAvailableTimeSlotRepository.ToListAsync(
                 mentorAvailableTimeSlots
                     .Where(mats => mats.Schedules.MentorId == mentorId)
                     .Where(mats => mats.Date == request.Date)
+                    .Where(mats => mats.StartTime >= TimeOnly.FromDateTime(currentDateTime))
                     .Select(mats => SessionBookingExtensions.CreateTimeSlotByMentorAndDateListResponse(mats, learnerId)));
 
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
