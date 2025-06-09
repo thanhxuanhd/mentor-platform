@@ -6,25 +6,16 @@ import type { ScheduleSettingsResponse, TimeSlotResponse } from '../../services/
 /**
  * Convert API time slot to frontend TimeBlock format
  */
-export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse, date?: string): TimeBlock => {
+export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse): TimeBlock => {
   const startTime = dayjs(`2024-01-01 ${apiSlot.startTime}`);
   const endTime = dayjs(`2024-01-01 ${apiSlot.endTime}`);
-  
-  // Calculate if this slot is in the past
-  let isPast = false;
-  if (date) {
-    const slotDateTime = dayjs(`${date} ${apiSlot.startTime}`);
-    isPast = slotDateTime.isSameOrBefore(dayjs());
-  }
-  
-  return {
+    return {
     id: apiSlot.id,
     time: `${startTime.format("HH:mm")} - ${endTime.format("HH:mm")}`,
     startTime: apiSlot.startTime,
     endTime: apiSlot.endTime,
     available: apiSlot.isAvailable,
-    booked: apiSlot.isBooked,
-    isPast
+    booked: apiSlot.isBooked
   };
 };
 
@@ -33,9 +24,16 @@ export const convertApiTimeSlotToTimeBlock = (apiSlot: TimeSlotResponse, date?: 
  */
 export const convertApiScheduleToAvailability = (apiSettings: ScheduleSettingsResponse): DayAvailability => {
   const availability: DayAvailability = {};
-  
-  Object.entries(apiSettings.availableTimeSlots).forEach(([date, slots]) => {
-    availability[date] = slots.map(slot => convertApiTimeSlotToTimeBlock(slot, date));
+    Object.entries(apiSettings.availableTimeSlots).forEach(([date, slots]) => {
+    // Filter out past time slots when converting from API
+    const currentSlots = slots.filter(slot => {
+      const slotDateTime = dayjs(`${date} ${slot.startTime}`);
+      return slotDateTime.isAfter(dayjs());
+    });
+    
+    if (currentSlots.length > 0) {
+      availability[date] = currentSlots.map(slot => convertApiTimeSlotToTimeBlock(slot));
+    }
   });
   
   return availability;
@@ -80,12 +78,11 @@ export const convertAvailabilityToApiFormat = (
     endTime: string;
     isAvailable: boolean;
     isBooked: boolean;
-  }>> = {};
-  Object.entries(availability).forEach(([date, timeBlocks]) => {
+  }>> = {};  Object.entries(availability).forEach(([date, timeBlocks]) => {
     // Only include time slots that are available (selected by the user)
-    // Exclude booked, unavailable, and past slots
+    // Exclude booked and unavailable slots
     const availableSlots = timeBlocks.filter(slot => 
-      slot.available && !slot.booked && !slot.isPast
+      slot.available && !slot.booked
     );
     if (availableSlots.length > 0) {
       availableTimeSlots[date] = availableSlots.map(convertTimeBlockToApiSlot);
@@ -141,31 +138,28 @@ export const generateTimeSlotsForDay = (
     // Check if this slot is in the past or currently happening
     const isPast = slotStart.isSameOrBefore(dayjs());
     
-    // Skip generating past time slots entirely (backend change requirement)
+    // Skip generating past time slots entirely
     if (isPast) {
       currentTime = currentTime.add(sessionDuration + bufferTime, 'minute');
       continue;
     }
     
-    // Check if this slot already exists and is booked
+    // Check if this slot already exists and is booked (only preserve future booked slots)
     const existingBookedSlot = bookedSlotsMap.get(key);
     
-    if (existingBookedSlot) {
-      // Preserve the existing booked slot but update isPast
+    if (existingBookedSlot && !isPast) {      // Preserve the existing booked slot (only if it's not in the past)
       slots.push({
-        ...existingBookedSlot,
-        isPast
+        ...existingBookedSlot
       });
-    } else {
-      // Create a new slot (unselected by default)
+    } else if (!isPast) {
+      // Create a new slot (unselected by default, only if it's not in the past)
       slots.push({
         id: uuidv4(),
         time: `${startTimeStr} - ${endTimeStr}`,
         startTime: startTimeStr,
         endTime: endTimeStr,
         available: false, // New slots are unselected by default
-        booked: false,
-        isPast
+        booked: false
       });
     }
     

@@ -120,11 +120,8 @@ export default function AvailabilityManager() {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const targetSlot = currentSlots.find(slot => slot.id === slotId);
     
-    // Prevent modification of past slots and booked slots only
-    if (!targetSlot || targetSlot.booked || targetSlot.isPast) {
-      if (targetSlot?.isPast) {
-        message.warning("Cannot modify time slots in the past");
-      }
+    // Prevent modification of booked slots only (past slots are already filtered out)
+    if (!targetSlot || targetSlot.booked) {
       return;
     }
     
@@ -211,12 +208,11 @@ export default function AvailabilityManager() {
       });
     }
     return days;
-  };
-  // Select all slots for current date
+  };  // Select all slots for current date
   const selectAllSlots = () => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const updatedSlots = currentSlots.map(slot =>
-      slot.booked || slot.isPast ? slot : { ...slot, available: true }
+      slot.booked ? slot : { ...slot, available: true }
     );
 
     setAvailability(prev => ({
@@ -226,12 +222,11 @@ export default function AvailabilityManager() {
 
     message.success("All available time slots enabled for this date");
   };
-
   // Clear all slots for current date
   const clearAllSlots = () => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const updatedSlots = currentSlots.map(slot =>
-      slot.booked || slot.isPast ? slot : { ...slot, available: false }
+      slot.booked ? slot : { ...slot, available: false }
     );
 
     setAvailability(prev => ({
@@ -431,13 +426,9 @@ export default function AvailabilityManager() {
   const previewData = weekDays.map(day => {
     const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
     const daySlots = availability[dateKey] || [];
-    
-    // Only show future slots (not past slots)
-    const futureSlots = daySlots.filter(slot => !slot.isPast);
-    
-    // Separate available and booked slots for different styling
-    const availableSlots = futureSlots.filter(slot => slot.available && !slot.booked);
-    const bookedSlots = futureSlots.filter(slot => slot.booked);
+      // Separate available and booked slots for different styling
+    const availableSlots = daySlots.filter(slot => slot.available && !slot.booked);
+    const bookedSlots = daySlots.filter(slot => slot.booked);
     
     return {
       day: day.shortDay,

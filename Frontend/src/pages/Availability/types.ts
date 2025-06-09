@@ -7,7 +7,6 @@ export interface TimeBlock {
   endTime: string;
   available: boolean;
   booked: boolean;
-  isPast?: boolean;
 }
 
 export interface DayAvailability {
