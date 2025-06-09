@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  ScheduleOutlined,
   FolderOpenOutlined,
   HddOutlined,
 } from "@ant-design/icons";
@@ -93,6 +94,13 @@ export const menuItems: MenuItemProps[] = [
     icon: <HddOutlined />,
     label: "My Applications",
     link: "my-applications",
+    role: [applicationRole.MENTOR],
+  },
+  {
+    key: "availability",
+    icon: <ScheduleOutlined />,
+    label: "Availability",
+    link: "availability",
     role: [applicationRole.MENTOR],
   },
 ];

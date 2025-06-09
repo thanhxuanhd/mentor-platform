@@ -59,6 +59,8 @@ public static class ConfigureServices
         provider.GetRequiredService<IWebHostEnvironment>(),
         provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
         {
