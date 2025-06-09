@@ -1,6 +1,22 @@
 import { axiosClient } from "../apiClient"
 import type { SessionBookingRequest } from "../../types/SessionBookingTypes"
 
+export interface TimeSlot {
+  id: string
+  startTime: string
+  endTime: string
+  date: string
+  mentorId: string
+  mentorName: string
+  isBooked: boolean
+}
+
+export interface AvailableTimeslotsResponse {
+  value: {
+    items: TimeSlot[]
+  }
+}
+
 export const sessionBookingService = {
   getSessionBookings: async (): Promise<SessionBookingRequest[]> => {
     return await axiosClient
@@ -25,6 +41,43 @@ export const sessionBookingService = {
         throw error
       })
   },
+
+  getAvailableTimeslots: async (mentorId: string): Promise<TimeSlot[]> => {
+    return await axiosClient
+      .get(`SessionBooking/available-timeslots/${mentorId}`)
+      .then((response) => {
+        const data = response.data.value || response.data
+        return data.items || data || []
+      })
+      .catch((error) => {
+        console.error("Error fetching available timeslots:", error)
+        throw error
+      })
+  },
+
+  getAvailableTimeslotsByDate: async (mentorId: string, date?: string): Promise<TimeSlot[]> => {
+    const formattedDate = date?.split("T")[0]
+    const url = formattedDate
+      ? `SessionBooking/available-mentors/timeslots/get/${mentorId}?date=${formattedDate}`
+      : `SessionBooking/available-mentors/timeslots/get/${mentorId}`
+
+    try {
+      const response = await axiosClient.get(url)
+      let data = response.data.value || response.data
+      data = data.items || data
+
+      if (!Array.isArray(data)) return []
+
+      return data.map((slot) => ({
+        ...slot,
+        date: typeof slot.date === "string" ? slot.date.split("T")[0] : slot.date,
+      }))
+    } catch (error) {
+      console.error("Error fetching available timeslots by date:", error)
+      throw error
+    }
+  },
+
 
   updateSessionStatus: async (id: string, status: string): Promise<void> => {
     const statusMap: { [key: string]: number } = {
@@ -90,9 +143,7 @@ export const sessionBookingService = {
   rescheduleSession: async (
     id: string,
     rescheduleData: {
-      date: string
-      startTime: string
-      endTime: string
+      timeslotId: string
       reason: string
     },
   ): Promise<void> => {

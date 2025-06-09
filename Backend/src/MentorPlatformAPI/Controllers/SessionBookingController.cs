@@ -99,6 +99,7 @@ public class SessionBookingController(
         var result = await sessionBookingService.GetAllBooking();
         return StatusCode((int)result.StatusCode, result);
     }
+
     [HttpGet("request/get/{id}")]
     public async Task<IActionResult> GetSessionsBookingById(Guid id)
     {
@@ -117,6 +118,14 @@ public class SessionBookingController(
     public async Task<IActionResult> UpdateRecheduleSession(Guid id, [FromBody] SessionUpdateRecheduleRequest request)
     {
         var result = await sessionBookingService.UpdateRecheduleSessionAsync(id, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("available-mentors/timeslots/get/{mentorId}")]
+    //[Authorize(Policy = RequiredRole.Learner)]
+    public async Task<IActionResult> GetAllTimeSlotByMentor(Guid mentorId, DateOnly date)
+        {
+        var result = await sessionBookingService.GetAllTimeSlotByMentorAsync(mentorId, date);
         return StatusCode((int)result.StatusCode, result);
     }
 }

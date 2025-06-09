@@ -10,8 +10,6 @@ public class SessionBookingRequest
 }
 public class SessionUpdateRecheduleRequest
 {
-    public DateOnly Date { get; set; }
-    public TimeOnly StartTime { get; set; }
-    public TimeOnly EndTime { get; set; }
+    public Guid TimeSlotId { get; init; }
     public string? Reason { get; set; }
 }

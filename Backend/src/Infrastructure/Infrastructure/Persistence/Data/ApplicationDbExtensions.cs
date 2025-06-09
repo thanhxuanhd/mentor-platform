@@ -399,6 +399,94 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        if (!dbContext.Schedules.Any(s => s.MentorId == Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C")))
+        {
+            var charlieScheduleId = Guid.NewGuid();
+            var charlieMentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C");
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.Schedules.Add(new Schedules
+            {
+                Id = charlieScheduleId,
+                MentorId = charlieMentorId,
+                WeekStartDate = startOfWeek,
+                WeekEndDate = endOfWeek,
+                StartHour = new TimeOnly(08, 00), 
+                EndHour = new TimeOnly(18, 00),  
+                SessionDuration = 45,             
+                BufferTime = 10,                  
+            });
+            dbContext.SaveChanges();
+
+            var charlieTimeSlots = new List<MentorAvailableTimeSlot>();
+            var random = new Random();
+
+            for (int week = 0; week < 2; week++)
+            {
+                for (int day = 1; day <= 5; day++) 
+                {
+                    var slotDate = today.AddDays((week * 7) + day);
+
+                    var slotsPerDay = random.Next(3, 5);
+                    for (int slot = 0; slot < slotsPerDay; slot++)
+                    {
+                        var startHour = 8 + (slot * 2);
+                        if (startHour >= 18) break; 
+
+                        charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                        {
+                            Id = Guid.NewGuid(),
+                            ScheduleId = charlieScheduleId,
+                            Date = slotDate,
+                            StartTime = new TimeOnly(startHour, 0),
+                            EndTime = new TimeOnly(startHour + 1, 0), 
+                        });
+                    }
+                }
+            }
+
+            for (int week = 0; week < 2; week++)
+            {
+                var saturdayDate = today.AddDays((week * 7) + 6);
+                charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = charlieScheduleId,
+                    Date = saturdayDate,
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(10, 0),
+                });
+
+                charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = charlieScheduleId,
+                    Date = saturdayDate,
+                    StartTime = new TimeOnly(14, 0),
+                    EndTime = new TimeOnly(15, 0),
+                });
+
+                // Chủ nhật
+                var sundayDate = today.AddDays((week * 7) + 7);
+                charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = charlieScheduleId,
+                    Date = sundayDate,
+                    StartTime = new TimeOnly(10, 0),
+                    EndTime = new TimeOnly(11, 0),
+                });
+            }
+
+            dbContext.MentorAvailableTimeSlots.AddRange(charlieTimeSlots);
+            dbContext.SaveChanges();
+
+            Console.WriteLine($"Created {charlieTimeSlots.Count} time slots for Charlie Chaplin (Mentor ID: 01047F62-6E87-442B-B1E8-2A54C9E17D7C)");
+        }
+
         if (!dbContext.MentorAvailableTimeSlots.Any())
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -418,7 +506,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.NewGuid(),
                     ScheduleId = scheduleId,
                     Date = today.AddDays(i + 1),
-                    StartTime = new TimeOnly(9 + i, 0), 
+                    StartTime = new TimeOnly(9 + i, 0),
                     EndTime = new TimeOnly(10 + i, 0),
                 });
             }
@@ -524,7 +612,7 @@ public static class ApplicationDbExtensions
             for (int i = 0; i < 20; i++)
             {
                 var timeSlot = allTimeSlots[i % allTimeSlots.Count];
-                var learner = learnerIds[i % 3]; 
+                var learner = learnerIds[i % 3];
 
                 sessionsToAdd.Add(new Sessions
                 {

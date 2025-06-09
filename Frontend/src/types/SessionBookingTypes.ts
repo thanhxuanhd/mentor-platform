@@ -1,4 +1,5 @@
 export interface SessionBookingRequest {
+  mentorId: string | undefined
   id: string
   timeSlotId: string
   learnerId: string
