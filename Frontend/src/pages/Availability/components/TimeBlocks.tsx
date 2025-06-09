@@ -18,14 +18,16 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBloc
       
       {timeBlocks.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {timeBlocks.map((block) => (             <Tooltip 
+          {timeBlocks.map((block) => (
+            <Tooltip 
               key={block.id} 
               title={
                 block.booked 
                   ? "This slot is already booked" 
                   : null
               }
-            >              {/* 
+            >
+              {/* 
                 block color change based on block status
                 if booked, show gray
                 if available, show orange
@@ -42,14 +44,15 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBloc
                       : 'bg-slate-600 hover:bg-slate-500 text-slate-300'
                   }
                 `}
-              >                <div className="text-sm font-medium">{block.time}</div>
+              >
+                <div className="text-sm font-medium">{block.time}</div>
                 <div className="text-xs mt-1">
                   {block.booked 
                     ? 'Booked' 
                     : (block.available ? 'Available' : 'Unavailable')
                   }
                 </div>
-                  {block.booked && (
+                {block.booked && (
                   <div className="absolute top-2 right-2">
                     <LockOutlined />
                   </div>
