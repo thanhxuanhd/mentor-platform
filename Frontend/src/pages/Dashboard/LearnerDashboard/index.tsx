@@ -1,56 +1,42 @@
-import { useState, useEffect } from 'react';
-import { App, Avatar, Badge, Button, Modal } from 'antd';
-import { CalendarOutlined, VideoCameraOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
-import { learnerDashboardService, type GetLearnerDashboardResponse, type LearnerUpcomingSessionResponse } from '../../../services/learnerDashboard/learnerDashboardService';
-import dayjs from 'dayjs';
-import type { NotificationProps } from '../../../types/Notification';
+"use client"
 
-interface Session {
-  id: string;
-  name: string;
-  date: string;
-  time: string;
-  avatarUrl?: string;
-  type: 'Virtual' | 'OneOnOne' | 'Onsite';
-  sessionStatus: 'Approved' | 'Rescheduled';
+import { useState, useEffect } from "react"
+import { Card, Avatar, List, App } from "antd"
+import {
+  CalendarOutlined
+} from "@ant-design/icons"
+import {
+  learnerDashboardService,
+  type GetLearnerDashboardResponse,
+  type LearnerUpcomingSessionResponse,
+} from "../../../services/learnerDashboard/learnerDashboardService"
+import dayjs from "dayjs"
+import type { NotificationProps } from "../../../types/Notification"
+import DefaultAvatar from "../../../assets/images/default-account.svg"
+import { Modal, Button } from "antd"
+import QuickActions from "./components/QuickActions"
+import { getSessionTypeIcon, getSessionTypeText, parseTimeRange } from "./utils/LearnerDashboardUtils"
+
+interface UpcomingSession {
+  id: string
+  mentorName: string
+  mentorAvatar: string
+  date: string
+  time: string
+  duration: string
+  sessionType: "Virtual" | "OneOnOne" | "Onsite"
+  topic: string
+  sessionStatus: "Approved" | "Rescheduled"
 }
 
 export default function LearnerDashboard() {
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
-  const [notify, setNotify] = useState<NotificationProps | null>(null);
-  const { notification } = App.useApp();
-
-  useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        setLoading(true);
-        const response: GetLearnerDashboardResponse = await learnerDashboardService.getLearnerDashboard();
-
-        const mappedSessions: Session[] = response.upcomingSessions.map((session: LearnerUpcomingSessionResponse) => ({
-          id: session.sessionId,
-          name: session.mentorName,
-          date: dayjs(session.scheduledDate).format('MMM D, YYYY'),
-          time: session.timeRange,
-          type: session.type as 'Virtual' | 'OneOnOne' | 'Onsite',
-          avatarUrl: session.mentorProfilePictureUrl,
-          sessionStatus: session.status as 'Approved' | 'Rescheduled'
-        }));
-
-        setSessions(mappedSessions);
-      } catch (err) {
-        setError('Failed to fetch sessions. Please try again later.');
-        console.error('Error fetching learner dashboard:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchSessions();
-  }, []);
+  const [sessions, setSessions] = useState<UpcomingSession[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
+  const [selectedSession, setSelectedSession] = useState<UpcomingSession | null>(null)
+  const [notify, setNotify] = useState<NotificationProps | null>(null)
+  const { notification } = App.useApp()
 
   useEffect(() => {
     if (notify) {
@@ -61,218 +47,215 @@ export default function LearnerDashboard() {
         showProgress: true,
         duration: 3,
         pauseOnHover: true,
-      });
-      setNotify(null);
+      })
+      setNotify(null)
     }
-  }, [notify, notification]);
+  }, [notify, notification])
 
+  useEffect(() => {
+    fetchSessions()
+  }, [])
 
-  const getSessionTypeButton = (type: string) => {
-    switch (type) {
-      case 'Virtual':
-        return (
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-blue-600">
-            <VideoCameraOutlined />
-            Virtual
-          </button>
-        );
-      case 'OneOnOne':
-        return (
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-green-600">
-            <UserOutlined />
-            One On One
-          </button>
-        );
-      case 'Onsite':
-        return (
-          <button className="flex items-center gap-2 px-3 py-1.5 bg-orange-400">
-            <HomeOutlined />
-            Onsite
-          </button>
-        );
-      default:
-        return null;
+  const fetchSessions = async () => {
+    try {
+      setLoading(true)
+      const response: GetLearnerDashboardResponse = await learnerDashboardService.getLearnerDashboard()
+
+      const upcomingSessions: UpcomingSession[] = response.upcomingSessions.map((session: LearnerUpcomingSessionResponse) => {
+        const { time, duration } = parseTimeRange(session.timeRange)
+        return {
+          id: session.sessionId,
+          mentorName: session.mentorName,
+          mentorAvatar: session.mentorProfilePictureUrl || DefaultAvatar,
+          date: dayjs(session.scheduledDate).format("MMM D, YYYY"),
+          time,
+          duration,
+          sessionType: session.type as "Virtual" | "OneOnOne" | "Onsite",
+          topic: "Mentoring Session",
+          sessionStatus: session.status as "Approved" | "Rescheduled",
+        }
+      }) || []
+
+      setSessions(upcomingSessions)
+    } catch (err) {
+      setError("Failed to fetch sessions. Please try again later.")
+      console.error("Error fetching learner dashboard:", err)
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      Approved: 'bg-green-600 text-white',
-      Rescheduled: 'bg-purple-700 text-white'
-    };
-
-    return (
-      <span
-        className={`px-3 py-1.5 rounded-md text-sm font-medium
-           ${statusStyles[status as keyof typeof statusStyles]
-          }`}
-      >
-        {status}
-      </span>
-    );
-  };
-
-  const handleSessionClick = (session: Session) => {
-    if (session.sessionStatus === 'Rescheduled') {
-      setSelectedSession(session);
-      setIsModalVisible(true);
+  const handleSessionClick = (session: UpcomingSession) => {
+    if (session.sessionStatus === "Rescheduled") {
+      setSelectedSession(session)
+      setIsModalVisible(true)
     }
-  };
+  }
 
   const handleAgree = async () => {
-    if (!selectedSession) return;
+    if (!selectedSession) return
     try {
-      await learnerDashboardService.acceptSessionBooking(selectedSession.id);
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.id === selectedSession.id
-            ? { ...s, sessionStatus: 'Approved' }
-            : s
-        )
-      );
-      setIsModalVisible(false);
-      setSelectedSession(null);
+      await learnerDashboardService.acceptSessionBooking(selectedSession.id)
+      setSessions((prev) => prev.map((s) => (s.id === selectedSession.id ? { ...s, sessionStatus: "Approved" } : s)))
+      setIsModalVisible(false)
+      setSelectedSession(null)
       setNotify({
         type: "success",
         message: "Success",
         description: "Rescheduled successfully",
-      });
+      })
     } catch (err: any) {
       setNotify({
         type: "error",
         message: "Error",
         description: err?.response?.data?.error || "Failed to accept rescheduled session",
-      });
+      })
     }
-  };
+  }
 
   const handleDecline = async () => {
-    if (!selectedSession) return;
+    if (!selectedSession) return
 
     try {
-      await learnerDashboardService.cancelSessionBooking(selectedSession.id);
-      setSessions((prev) => prev.filter((s) => s.id !== selectedSession.id));
-      setIsModalVisible(false);
-      setSelectedSession(null);
+      await learnerDashboardService.cancelSessionBooking(selectedSession.id)
+      setSessions((prev) => prev.filter((s) => s.id !== selectedSession.id))
+      setIsModalVisible(false)
+      setSelectedSession(null)
       setNotify({
         type: "success",
         message: "Success",
         description: "Canceled reschedule successfully",
-      });
+      })
     } catch (err: any) {
       setNotify({
         type: "error",
         message: "Error",
         description: err?.response?.data?.error || "Rescheduled error",
-      });
+      })
     }
-  };
+  }
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
-
+      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">
           <div>
             <h1 className="text-2xl font-semibold">Learner Dashboard</h1>
-            <p className="text-slate-300 text-sm">
-              Welcome to your learning dashboard. Navigate using the sidebar
-            </p>
+            <p className="text-slate-300 text-sm">Track your learning journey and connect with mentors</p>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-slate-800 rounded-lg p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-white">Upcoming Sessions</h2>
-              <Badge
-                count={sessions.length}
-                style={{ backgroundColor: '#dc2626' }}
-              />
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Upcoming Sessions */}
+        <Card
+          title={
+            <div className="flex items-center justify-between">
+              <span className="text-white text-lg font-semibold flex items-center gap-2">
+                <CalendarOutlined className="text-blue-400" />
+                Upcoming Sessions
+              </span>
+              <span className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm font-medium">
+                {sessions.length} sessions
+              </span>
             </div>
-            <button className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
-              View Schedule →
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            {loading ? (
-              <p className="text-gray-300">Loading sessions...</p>
-            ) : error ? (
+          }
+          className="lg:col-span-2"
+          loading={loading}
+        >
+          {error ? (
+            <div className="text-center py-8">
               <p className="text-red-400">{error}</p>
-            ) : sessions.length === 0 ? (
-              <p className="text-gray-300">No upcoming sessions.</p>
-            ) : (
-              sessions.map((session) => (
-                <div
-                  key={session.id}
-                  className={`bg-slate-700 hover:bg-slate-600 rounded-lg p-5 transition-colors ${session.sessionStatus === 'Rescheduled' ? 'cursor-pointer' : 'cursor-default'
-                    }`}
+            </div>
+          ) : (
+            <List
+              dataSource={sessions}
+              locale={{ emptyText: "No upcoming sessions" }}
+              renderItem={(session, index) => (
+                <List.Item
+                  className={`border-b border-slate-500/20 last:border-b-0 py-4 cursor-pointer hover:bg-slate-700/30 transition-colors ${index === 0 && sessions.length > 0 ? "bg-blue-500/10 border-blue-400/30 rounded-lg" : ""
+                    } ${session.sessionStatus === "Rescheduled" ? "bg-yellow-500/10 border-yellow-400/30" : ""}`}
                   onClick={() => handleSessionClick(session)}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                      <Avatar
-                        src={session.avatarUrl || undefined}
-                        icon={!session.avatarUrl ? <UserOutlined /> : undefined}
-                        size={100}
-                        className="flex-shrink-0"
-                      />
-                      <div>
-                        <h3 className="text-lg font-medium text-white mb-3">
-                          {session.name}
-                        </h3>
-                        <div className="flex items-center gap-2 text-gray-300 mb-4">
-                          <CalendarOutlined className="text-gray-400" />
-                          <span className="text-sm">
-                            {session.date} • {session.time}
-                          </span>
-                        </div>
-                        {getSessionTypeButton(session.type)}
+                  <List.Item.Meta
+                    avatar={
+                      <div className="relative">
+                        <Avatar src={session.mentorAvatar} size={48} />
+                        <div className="absolute -top-1 -right-1">{getSessionTypeIcon(session.sessionType)}</div>
+                        {session.sessionStatus === "Rescheduled" && (
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-yellow-500 rounded-full border-2 border-gray-800"></div>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center">
-                      {getStatusBadge(session.sessionStatus)}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                    }
+                    title={
+                      <div className="flex items-center justify-between">
+                        <span className="text-white font-semibold text-lg">{session.mentorName}</span>
+                        {index === 0 && sessions.length > 0 && session.sessionStatus === "Approved" && (
+                          <span className="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded text-xs font-medium">
+                            Next Session
+                          </span>
+                        )}
+                        {session.sessionStatus === "Rescheduled" && (
+                          <span className="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded text-xs font-medium">
+                            Rescheduled
+                          </span>
+                        )}
+                      </div>
+                    }
+                    description={
+                      <div className="space-y-2">
+                        <p className="text-slate-300 font-medium">{session.topic}</p>
+                        <div className="flex items-center gap-4 text-sm text-slate-400">
+                          <span className="flex items-center gap-1">
+                            {getSessionTypeIcon(session.sessionType)}
+                            {getSessionTypeText(session.sessionType)}
+                          </span>
+                          <span>📅 {session.date}</span>
+                          <span>🕐 {session.time}</span>
+                          <span>⏱️ {session.duration}</span>
+                        </div>
+                      </div>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          )}
+        </Card>
+
+        <div className="flex flex-col gap-4">
+          {/* Quick Actions */}
+          <QuickActions />
         </div>
       </div>
 
+      {/* Reschedule Modal */}
       <Modal
-        title="Confirm Reschedule"
+        title={<span className="text-white">Confirm Reschedule</span>}
         open={isModalVisible}
         onCancel={() => {
-          setIsModalVisible(false);
-          setSelectedSession(null);
+          setIsModalVisible(false)
+          setSelectedSession(null)
         }}
         footer={[
-          <Button
-            key="decline"
-            onClick={handleDecline}
-            className="bg-red-600 hover:bg-red-700 text-white border-none"
-          >
+          <Button key="decline" onClick={handleDecline} className="bg-red-500 hover:bg-red-600 text-white border-none">
             Cancel
           </Button>,
           <Button
             key="agree"
             type="primary"
             onClick={handleAgree}
-            className="bg-green-600 hover:bg-green-700 border-none"
+            className="bg-green-500 hover:bg-green-600 border-none"
           >
             Accept
           </Button>,
         ]}
+        className="[&_.ant-modal-content]:bg-slate-800 [&_.ant-modal-content]:border [&_.ant-modal-content]:border-slate-700"
       >
-        <p>
-          Your mentor has rescheduled the session. Do you agree to reschedule?
-        </p>
+        <p className="text-slate-300">Your mentor has rescheduled the session. Do you agree to reschedule?</p>
       </Modal>
     </div>
-  );
-};
+  )
+}
