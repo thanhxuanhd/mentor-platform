@@ -12,7 +12,7 @@ export class LearnerDashboardPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.TAG_RESCHEDULE_BUTTON = page.locator("span.bg-purple-700").first();
+    this.TAG_RESCHEDULE_BUTTON = page.getByText("Rescheduled").first();
     this.BTN_CANCEL_BUTTON = page.getByRole("button", { name: "Cancel" });
     this.BTN_ACCEPT_BUTTON = page.getByRole("button", { name: "Accept" });
     this.BTN_CLOSE_BUTTON = page.getByRole("button", { name: "Close" });
