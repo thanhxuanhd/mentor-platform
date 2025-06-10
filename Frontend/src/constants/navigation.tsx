@@ -6,8 +6,7 @@ import {
   ProfileOutlined,
   ScheduleOutlined,
   FolderOpenOutlined,
-  HddOutlined,
-  ScheduleOutlined,
+  HddOutlined
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
