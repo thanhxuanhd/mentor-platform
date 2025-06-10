@@ -42,7 +42,10 @@ export const CourseForm: FC<CourseFormProps> = ({
         status: true,
       });
 
-      const assignedCategory = { name: form.getFieldValue("categoryName"), id: form.getFieldValue("categoryId") };
+      const assignedCategory = {
+        name: form.getFieldValue("categoryName"),
+        id: form.getFieldValue("categoryId"),
+      };
 
       setMyCategories(
         assignedCategory.id &&
@@ -50,7 +53,6 @@ export const CourseForm: FC<CourseFormProps> = ({
           ? [...response.items, assignedCategory]
           : [...response.items],
       );
-
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -317,7 +319,18 @@ export const CourseForm: FC<CourseFormProps> = ({
           <Form.Item
             name="difficulty"
             label="Difficulty"
-            rules={[{ required: true, message: "Please select a difficulty!" }]}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Please select a difficulty!"),
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Select>
               {Object.entries(CourseDifficultyEnumMember).map(
@@ -332,7 +345,18 @@ export const CourseForm: FC<CourseFormProps> = ({
           <Form.Item
             name="dueDate"
             label="Due Date"
-            rules={[{ required: true, message: "Please select a due date!" }]}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Please select a due date!"),
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <DatePicker
               style={{ width: "100%" }}

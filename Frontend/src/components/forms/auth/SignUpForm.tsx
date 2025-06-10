@@ -1,26 +1,15 @@
 "use client";
 import React, { useState } from "react";
 import { CheckCircleOutlined } from "@ant-design/icons";
+import { Form, Input, Button, Checkbox } from "antd";
 import { useNavigate } from "react-router-dom";
 import type { SignUpReq } from "../../../models";
 import authService from "../../../services/auth/authService";
 
 const SignUpForm: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-    confirmPassword?: string;
-    terms?: string;
-  }>({});
+  const [form] = Form.useForm();
   const [showNotification, setShowNotification] = useState(false);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-
   const navigate = useNavigate();
-
-  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
 
   const validatePassword = (password: string) => {
     const lengthValid = password.length >= 8 && password.length <= 32;
@@ -32,53 +21,18 @@ const SignUpForm: React.FC = () => {
     return lengthValid && containsMix && noSpaces;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: typeof errors = {};
-
-    const trimmedEmail = email.trim();
-
-    if (!trimmedEmail) {
-      newErrors.email = "Please enter your email";
-    } else if (!validateEmail(trimmedEmail)) {
-      newErrors.email = "Email must be in a correct format";
-    } else if (trimmedEmail.length > 50) {
-      newErrors.email = "Email should not exceed 50 characters";
-    }
-
-    if (!password) {
-      newErrors.password = "Please enter your password";
-    } else {
-      if (password.length < 8 || password.length > 32) {
-        newErrors.password = "Password should be in 8-32 characters";
-      } else if (!validatePassword(password)) {
-        if (/\s/.test(password)) {
-          newErrors.password = "Password should not include space characters";
-        } else {
-          newErrors.password =
-            "Password must include a mix of letters, numbers, symbols";
-        }
-      }
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = "Please enter your confirm password";
-    } else if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Confirm password is incorrect";
-    }
-
-    if (!agreeToTerms) {
-      newErrors.terms = "Please agree with Terms of Service and Privacy Policy";
-    }
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length > 0) return;
+  const handleSubmit = async (values: {
+    email: string;
+    password: string;
+    confirmPassword: string;
+    agreeToTerms: boolean;
+  }) => {
+    const trimmedEmail = values.email.trim();
 
     const signUpData: SignUpReq = {
       email: trimmedEmail,
-      password,
-      confirmpassword: confirmPassword,
+      password: values.password,
+      confirmpassword: values.confirmPassword,
       roleId: 3,
     };
 
@@ -94,7 +48,10 @@ const SignUpForm: React.FC = () => {
       }, 1000);
     } catch (err) {
       console.error("Signup failed:", err);
-      setErrors({ email: "Already have this email" });
+      form.setFields([{
+        name: 'email',
+        errors: ['Already have this email']
+      }]);
     }
   };
 
@@ -116,101 +73,158 @@ const SignUpForm: React.FC = () => {
           <div className="text-orange-500 text-sm">
             <span>Step 1</span> of 3
           </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-1">
-            <label htmlFor="email" className="block text-base">
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="text"
-              value={email}
-              placeholder="Enter your email"
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="password" className="block text-base">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
-            />
-            {errors.password && (
-              <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-            )}
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="confirmPassword" className="block text-base">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              placeholder="Enter your confirm password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-xs mt-1">
-                {errors.confirmPassword}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center">
-            <input
-              id="terms"
-              type="checkbox"
-              checked={agreeToTerms}
-              onChange={(e) => setAgreeToTerms(e.target.checked)}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-500 rounded"
-            />
-            <label htmlFor="terms" className="ml-2 block text-xs">
-              I agree to the{" "}
-              <a href="/terms" className="text-orange-500 hover:underline">
-                Terms of Service
-              </a>{" "}
-              and{" "}
-              <a href="/privacy" className="text-orange-500 hover:underline">
-                Privacy Policy
-              </a>
-            </label>
-          </div>
-          {errors.terms && (
-            <p className="text-red-500 text-xs mt-1">{errors.terms}</p>
-          )}
-
-          <button
-            type="submit"
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition-colors text-sm"
+        </div>        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="vertical"
+          requiredMark={true}
+          className="space-y-6"
+        >
+          <Form.Item
+            name="email"
+            label={<span className="text-base text-white">Email Address</span>}
+            rules={[
+              {
+                required: true,
+                message: "Please enter your email",
+              },
+              {
+                type: "email",
+                message: "Email must be in a correct format",
+              },
+              {
+                max: 50,
+                message: "Email should not exceed 50 characters",
+              },
+            ]}
           >
-            Continue to Profile Setup
-          </button>
+            <Input
+              placeholder="Enter your email"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
+              style={{
+                backgroundColor: "#374151",
+                borderColor: "#D1D5DB",
+                color: "white",
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            label={<span className="text-base text-white">Password</span>}
+            rules={[
+              {
+                required: true,
+                message: "Please enter your password",
+              },
+              {
+                min: 8,
+                max: 32,
+                message: "Password should be in 8-32 characters",
+              },
+              {
+                validator: (_, value) => {
+                  if (value && !validatePassword(value)) {
+                    if (/\s/.test(value)) {
+                      return Promise.reject(new Error("Password should not include space characters"));
+                    } else {
+                      return Promise.reject(new Error("Password must include a mix of letters, numbers, symbols"));
+                    }
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+          >
+            <Input.Password
+              placeholder="Enter your password"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
+              style={{
+                backgroundColor: "#374151",
+                borderColor: "#D1D5DB",
+                color: "white",
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="confirmPassword"
+            label={<span className="text-base text-white">Confirm Password</span>}
+            dependencies={['password']}
+            rules={[
+              {
+                required: true,
+                message: "Please enter your confirm password",
+              },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Confirm password is incorrect'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password
+              placeholder="Enter your confirm password"
+              className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white focus:outline-none focus:border-blue-500"
+              style={{
+                backgroundColor: "#374151",
+                borderColor: "#D1D5DB",
+                color: "white",
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="agreeToTerms"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_, value) =>
+                  value ? Promise.resolve() : Promise.reject(new Error('Please agree with Terms of Service and Privacy Policy')),
+              },
+            ]}
+          >
+            <Checkbox className="text-white">
+              <span className="text-xs text-gray-300">
+                I agree to the{" "}
+                <a href="/terms" className="text-orange-500 hover:underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="/privacy" className="text-orange-500 hover:underline">
+                  Privacy Policy
+                </a>
+              </span>
+            </Checkbox>
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded transition-colors text-sm"
+              style={{
+                backgroundColor: "#F97316",
+                borderColor: "#F97316",
+                height: "40px",
+              }}
+            >
+              Continue to Profile Setup
+            </Button>
+          </Form.Item>
 
           <div className="text-center text-sm">
-            <p>
+            <p className="text-gray-300">
               Already have an account?{" "}
               <a href="/login" className="text-orange-500 hover:underline">
                 Sign in
               </a>
             </p>
           </div>
-        </form>
+        </Form>
       </div>
     </div>
   );

@@ -266,14 +266,13 @@ const UserPreference: React.FC<UserProfileProps> = ({
         </div>
         {userDetail.roleId === 2 && (
           <div className="mb-8 rounded-lg">
-            <h3 className="text-lg mb-2">Your Teaching Approach</h3>
-            <p className="text-gray-400 mb-4">
-              Select all teaching methods that match your style
-            </p>
             <Form.Item
               name="teachingApproachIds"
+              label={<span className="text-lg">Your Teaching Approach</span>}
+              extra={<p className="text-gray-400 mt-2">Select all teaching methods that match your style</p>}
               rules={[
                 {
+                  required: true,
                   validator: () =>
                     userDetail.teachingApproachIds.length > 0
                       ? Promise.resolve()
