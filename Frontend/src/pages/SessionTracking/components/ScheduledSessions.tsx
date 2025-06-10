@@ -99,7 +99,6 @@ const CustomNotification = ({
   </div>
 ) : null);
 
-// Moved RescheduleModal outside to prevent re-renders
 interface RescheduleModalProps {
   visible: boolean;
   onCancel: () => void;
@@ -128,19 +127,17 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Use useEffect to initialize state only when modal becomes visible
   useEffect(() => {
     if (visible && selectedSession) {
       const sessionDate = dayjs(selectedSession.date);
       setNewDate(sessionDate);
-      setSelectedTimeSlotId(selectedSession.timeSlotId || undefined); // Ensure it's string or undefined
+      setSelectedTimeSlotId(selectedSession.timeSlotId || undefined);
       setReason("");
 
-      // Automatically load timeslots for the initial date when modal opens
       if (user?.id) {
         loadAvailableTimeslots(user.id, sessionDate.format("YYYY-MM-DD"));
       }
-    } else if (!visible) { // Reset state when modal is closed
+    } else if (!visible) { 
       setNewDate(null);
       setSelectedTimeSlotId(undefined);
       setReason("");
@@ -189,14 +186,13 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
 
   const handleDateChange = async (date: dayjs.Dayjs | null) => {
     setNewDate(date);
-    setSelectedTimeSlotId(undefined); // Clear selected timeslot when date changes
+    setSelectedTimeSlotId(undefined);
     
     if (date && user?.id) {
       const dateStr = date.format("YYYY-MM-DD");
       await loadAvailableTimeslots(user.id, dateStr);
     } else {
-      // Clear available timeslots if no date is selected or user is not available
-      if (availableTimeslots.length > 0) { // Only clear if there are existing slots
+      if (availableTimeslots.length > 0) {
         showNotification("info", "Date changed. Please select a new time slot.");
       }
     }
@@ -301,7 +297,7 @@ const ScheduleSession = () => {
   const [currentTime, setCurrentTime] = useState(dayjs());
   const [availableTimeslots, setAvailableTimeslots] = useState<TimeSlot[]>([]);
   const [loadingTimeslots, setLoadingTimeslots] = useState(false);
-  const [notification, setNotification] = useState({ visible: false, type: "success" as const, message: "" });
+  const [notification, setNotification] = useState<{ visible: boolean; type: "success" | "error" | "info"; message: string }>({ visible: false, type: "success", message: "" });
   const [processingSessionIds, setProcessingSessionIds] = useState<Record<string, boolean>>({});
   const [processingTimeSlots, setProcessingTimeSlots] = useState<Record<string, boolean>>({});
   const processingOvertimeRef = useRef(false);
@@ -417,7 +413,7 @@ const ScheduleSession = () => {
         ...slot,
         startTime: slot.startTime || "00:00",
         endTime: slot.endTime || "00:00",
-        date: slot.date || date, // Ensure date is present
+        date: slot.date || date, 
       }));
       setAvailableTimeslots(enrichedTimeslots); 
       
@@ -457,8 +453,7 @@ const ScheduleSession = () => {
       }
 
       setProcessingSessionIds(prev => ({ ...prev, [sessionId]: true }));
-      // This logic needs careful consideration. If approving a session means no other can use that slot,
-      // then `timeSlotId` would be a more precise key.
+ 
       if (newStatus === "Approved" && session.timeSlotId) {
         setProcessingTimeSlots(prev => ({ ...prev, [session.timeSlotId!]: true }));
       }
@@ -467,13 +462,13 @@ const ScheduleSession = () => {
       setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: newStatus, lastStatusUpdate: dayjs().toISOString() } : s));
       await loadSessions();
 
-      const messages = {
+      const messages: Record<string, string> = {
         Approved: "Session approved successfully",
         Completed: "Session completed and moved to Past Sessions",
         Canceled: "Session cancelled and moved to Past Sessions",
         default: `Status updated to ${newStatus} successfully`,
       };
-      showNotification("success", messages[newStatus] || messages.default);
+      showNotification("success", messages[newStatus] ?? messages.default);
     } catch (error) {
       showNotification("error", `Failed to update session status: ${error instanceof Error ? error.message : "Unknown error"}`);
       console.error("Error updating session status:", error);
@@ -504,30 +499,27 @@ const ScheduleSession = () => {
     } catch (error) {
       showNotification("error", "Failed to reschedule session");
       console.error("Error rescheduling session:", error);
-      throw error; // Re-throw to allow the modal's internal submission handler to catch it
+      throw error;
     }
   };
 
   const openRescheduleModal = async (session: Session) => {
     try {
-      // Fetch session details again to ensure we have the latest timeSlotId and mentorId
-      // This is crucial if the session object in state is stale
+
       const sessionDetails = await sessionBookingService.getSessionDetails(session.id);
       const sessionWithDetails: Session = {
         ...session,
         timeSlotId: sessionDetails.timeSlotId,
         startTime: sessionDetails.startTime,
         endTime: sessionDetails.endTime,
-        mentorId: sessionDetails.mentorId || session.mentorId, // Ensure mentorId is picked up
+        mentorId: sessionDetails.mentorId || session.mentorId,
       };
       setSelectedSession(sessionWithDetails);
       setIsModalVisible(true);
 
-      // Timeslots will be loaded by the RescheduleModal's useEffect when it becomes visible
     } catch (error) {
       showNotification("error", "Failed to load session details for rescheduling. Please try again.");
       console.error("Error loading session details for reschedule:", error);
-      // Fallback: if details fail, still open modal with partial info if possible
       setSelectedSession(session);
       setIsModalVisible(true);
     }
@@ -549,7 +541,6 @@ const ScheduleSession = () => {
                 size="small"
                 onClick={() => handleStatusChange(record.id, "Approved")}
                 loading={isProcessing}
-                // Disable if current session is processing OR if the time slot it uses is being processed by another action
                 disabled={isProcessing || (isTimeSlotProcessing && !processingSessionIds[record.id])}
               >
                 Accept
@@ -633,7 +624,7 @@ const ScheduleSession = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
+      render: (status: Session["status"]) => (
         <Tag color={statusStyles.colors[status]} icon={statusStyles.icons[status]}>
           {status.toUpperCase()}
         </Tag>
@@ -672,7 +663,7 @@ const ScheduleSession = () => {
               { title: "Completed Sessions", value: sessionStats.completed, color: "#52c41a", icon: <CheckCircleOutlined /> },
               { title: "Cancelled Sessions", value: sessionStats.cancelled, color: "#ff4d4f", icon: <CloseCircleOutlined /> },
               { title: "Rescheduled Sessions", value: sessionStats.rescheduled, color: "#8a2be2", icon: <ClockCircleOutlined /> },
-              { title: "Total Sessions", value: sessionStats.total, color: "#000", icon: <CalendarOutlined /> },
+              { title: "Total Sessions", value: sessionStats.total, color: "white", icon: <CalendarOutlined /> },
             ].map((stat, index) => (
               <Col span={4} key={index}>
                 <Card>

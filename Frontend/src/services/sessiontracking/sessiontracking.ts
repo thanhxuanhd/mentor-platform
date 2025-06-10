@@ -71,7 +71,7 @@ export const sessionBookingService = {
         return [];
       }
 
-      return data.map((slot: any) => ({
+      return data.map((slot: TimeSlot) => ({
         id: slot.id || "",
         startTime: slot.startTime || "00:00",
         endTime: slot.endTime || "00:00",

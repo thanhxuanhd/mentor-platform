@@ -7,7 +7,6 @@ using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.SessionBooking;
 
@@ -67,15 +66,13 @@ public class SessionBookingService(
         Guid learnerId,
         AvailableTimeSlotByDateListRequest request)
     {
-        var currentDateTime = DateTime.Now; 
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
-       
+
         var availableTimeSlot =
             await mentorAvailableTimeSlotRepository.ToListAsync(
                 mentorAvailableTimeSlots
                     .Where(mats => mats.Schedules.MentorId == mentorId)
                     .Where(mats => mats.Date == request.Date)
-                    .Where(mats => mats.StartTime >= TimeOnly.FromDateTime(currentDateTime))
                     .Select(mats => SessionBookingExtensions.CreateTimeSlotByMentorAndDateListResponse(mats, learnerId)));
 
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
@@ -129,7 +126,7 @@ public class SessionBookingService(
         MentorAvailableTimeSlot timeSlot,
         User learner,
         SessionType sessionType)
-    {   
+    {
         if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
             return Result.Failure<SessionSlotStatusResponse>(
@@ -423,13 +420,13 @@ public class SessionBookingService(
     {
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
 
-        var availableTimeSlots =
-            await mentorAvailableTimeSlots
+        var query = mentorAvailableTimeSlots
                 .Where(mats => mats.Schedules.MentorId == mentorId && mats.Date == date)
-                .Select(mats => mats.ToAvailableTimeSlotResponse())
-                .ToListAsync();
+                .Select(mats => mats.ToAvailableTimeSlotResponse());
+
+        var availableTimeSlots = await mentorAvailableTimeSlotRepository.ToListAsync(query);
 
         return Result.Success(availableTimeSlots, HttpStatusCode.OK);
     }
-  
+
 }

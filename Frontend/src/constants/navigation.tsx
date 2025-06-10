@@ -116,7 +116,7 @@ export const menuItems: MenuItemProps[] = [
     key: "Sessions Tracking",
     icon: <SettingOutlined />,
     label: "Sessions Tracking",
-    link: "sessions",
+    link: "sessions-tracking",
     role: [applicationRole.MENTOR],
   },
 ];
