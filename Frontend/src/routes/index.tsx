@@ -20,7 +20,7 @@ import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import AvailabilityManager from "../pages/Availability";
-import MessagingLayout from "../pages/Messaging/MessageLayout";
+import MessagingLayout from "../pages/Messaging/MessagingLayout";
 import MessagingSession from "../pages/Messaging/components/MessagingSession";
 
 const AppRoutes = () => {
@@ -75,7 +75,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="messages" element={<MessagingLayout />}>
-          <Route path="conversation/:converId" element={<MessagingSession />} />
+          <Route path=":converId" element={<MessagingSession />} />
         </Route>
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />

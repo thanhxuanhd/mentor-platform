@@ -1,15 +1,15 @@
-﻿using System.Security.Claims;
-using Application.Services.Messages;
+﻿using Application.Services.Messages;
 using Contract.Dtos.Messages.Requests;
 using Microsoft.AspNetCore.SignalR;
+using System.Security.Claims;
 
 namespace MentorPlatformAPI.Hubs;
 
-public class MessageHub(IHttpContextAccessor httpContextAccessor, IMessageService messageService) : Hub
+public class MessageHub(IMessageService messageService) : Hub
 {
     public async Task SendMessage(AddMessageRequest request)
     {
-        var senderId = Guid.Parse(httpContextAccessor.HttpContext!.User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var senderId = Guid.Parse(Context.User!.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var result = await messageService.AddMessageAsync(senderId, request);
         if (!result.IsSuccess)
         {
@@ -28,6 +28,7 @@ public class MessageHub(IHttpContextAccessor httpContextAccessor, IMessageServic
                 lastMessage.MessageId.ToString(),
                 lastMessage.SenderName,
                 lastMessage.SenderProfilePhotoUrl,
+                lastMessage.SentAt,
                 response.ConversationId.ToString()
             );
         }

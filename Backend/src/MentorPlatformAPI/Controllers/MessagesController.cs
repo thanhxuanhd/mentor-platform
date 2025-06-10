@@ -1,4 +1,5 @@
 ﻿using Application.Services.Messages;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Contract.Dtos.Messages.Requests;
@@ -21,7 +22,7 @@ public class MessagesController(IMessageService messageService) : ControllerBase
     }
 
     [HttpGet("conversations/{conversationId}")]
-    public async Task<IActionResult> GetAllUserConversationsAsync(Guid conversationId, int pageIndex)
+    public async Task<IActionResult> GetConversationByIdAsync(Guid conversationId, int pageIndex)
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var result = await messageService.GetConversationMessageHistory(userId, conversationId, pageIndex);

@@ -7,5 +7,5 @@ public class GetMessageResponse
     public string Content { get; set; } = null!;
     public DateTime SentAt { get; set; }
     public Guid SenderId { get; set; }
-    public string SenderProfilePhotoUrl { get; set; } = null!;
+    public string? SenderProfilePhotoUrl { get; set; }
 }

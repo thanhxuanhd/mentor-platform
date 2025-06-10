@@ -81,7 +81,7 @@ public class MessageService(
                 MessageId = message.Id,
                 SenderId = message.SenderId,
                 SenderName = message.Sender.FullName,
-                SenderProfilePhotoUrl = message.Sender.ProfilePhotoUrl ?? string.Empty,
+                SenderProfilePhotoUrl = message.Sender.ProfilePhotoUrl,
             }
         };
 
@@ -100,7 +100,7 @@ public class MessageService(
                 {
                     Id = p.User.Id,
                     FullName = p.User.FullName,
-                    ProfilePhotoUrl = p.User.ProfilePhotoUrl ?? string.Empty,
+                    ProfilePhotoUrl = p.User.ProfilePhotoUrl,
                     Role = p.User.Role.Name.ToString()
                 }).ToList(),
                 LastMessage = conv.Messages
@@ -112,7 +112,7 @@ public class MessageService(
                         MessageId = m.Id,
                         SenderId = m.SenderId,
                         SenderName = m.Sender.FullName,
-                        SenderProfilePhotoUrl = m.Sender.ProfilePhotoUrl ?? string.Empty,
+                        SenderProfilePhotoUrl = m.Sender.ProfilePhotoUrl,
                     })
                     .FirstOrDefault() ?? null
             });
@@ -140,7 +140,7 @@ public class MessageService(
                 MessageId = m.Id,
                 SenderId = m.SenderId,
                 SenderName = m.Sender.FullName,
-                SenderProfilePhotoUrl = m.Sender.ProfilePhotoUrl ?? string.Empty,
+                SenderProfilePhotoUrl = m.Sender.ProfilePhotoUrl,
             });
 
         var paginatedMessages = await messageRepository.ToPaginatedListAsync(messagesQuery, 10, pageIndex);
@@ -197,7 +197,7 @@ public class MessageService(
             .Select(x => new GetFilterConversationResponse
             {
                 Id = x.ConversationId != Guid.Empty ? x.ConversationId : x.User.Id,
-                PhotoUrl = x.User.ProfilePhotoUrl ?? string.Empty,
+                PhotoUrl = x.User.ProfilePhotoUrl,
                 Name = x.User.FullName,
                 ConversationId = x.ConversationId != Guid.Empty ? x.ConversationId : null,
                 IsGroup = false
