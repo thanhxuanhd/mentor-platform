@@ -7,6 +7,7 @@ const PaginationControls = ({
   totalCount,
   onPageChange,
   onPageSizeChange,
+  pageSizeOptions = [5, 10, 25],
   itemName = "items",
 }: PaginationProps) => {
   // Only show pagination if there are items
@@ -34,11 +35,9 @@ const PaginationControls = ({
         <Select
           value={pageSize}
           onChange={onPageSizeChange}
-          options={[
-            { value: 5, label: "5" },
-            { value: 10, label: "10" },
-            { value: 25, label: "25" },
-          ]}
+          options={pageSizeOptions.map((option) => {
+            return { label: option.toString(), value: option };
+          })}
           style={{ width: 80 }}
         />
       </div>

@@ -5,6 +5,7 @@ import {
   BookOutlined,
   ProfileOutlined,
   ScheduleOutlined,
+  FolderOpenOutlined,
   HddOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
@@ -56,6 +57,18 @@ export const menuItems: MenuItemProps[] = [
     icon: <BookOutlined />,
     label: "Courses",
     link: "courses",
+    role: [
+      applicationRole.LEARNER,
+      applicationRole.ADMIN,
+      applicationRole.MENTOR,
+    ],
+    isMentorApprovedRequired: true,
+  },
+  {
+    key: "resources",
+    icon: <FolderOpenOutlined />,
+    label: "Resources",
+    link: "resources",
     role: [
       applicationRole.LEARNER,
       applicationRole.ADMIN,

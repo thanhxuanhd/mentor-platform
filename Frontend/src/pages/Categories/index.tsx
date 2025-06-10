@@ -26,9 +26,9 @@ import {
   getCoursesByCategoryId,
   getListCategories,
 } from "../../services/category/categoryServices";
-import DisplayCourseModal from "./components/DisplayCoursesModal";
 import { useAuth } from "../../hooks";
 import { applicationRole } from "../../constants/role";
+import DisplayCourseModal from "./components/DisplayCoursesModal";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
