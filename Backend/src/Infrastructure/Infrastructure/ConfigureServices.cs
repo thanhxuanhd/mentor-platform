@@ -52,6 +52,9 @@ public static class ConfigureServices
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
         services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IConversationParticipantRepository, ConversationParticipantRepository>();
 
         services.AddHostedService(provider =>
         new UserProfilePhotoCleanupService(

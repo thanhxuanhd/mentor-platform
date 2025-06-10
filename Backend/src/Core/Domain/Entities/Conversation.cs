@@ -4,7 +4,6 @@ namespace Domain.Entities;
 
 public class Conversation : BaseEntity<Guid>
 {
-    public bool IsGroup { get; set; }
     public string Name { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 

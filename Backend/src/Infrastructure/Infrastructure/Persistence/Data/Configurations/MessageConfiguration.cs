@@ -24,12 +24,12 @@ public class MessageConfiguration : IEntityTypeConfiguration<Message>
             .IsRequired();
 
         builder.HasOne(m => m.Conversation)
-            .WithMany()
+            .WithMany(m => m.Messages)
             .HasForeignKey(m => m.ConversationId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(m => m.Sender)
-            .WithMany()
+            .WithMany(m => m.Messages)
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
 

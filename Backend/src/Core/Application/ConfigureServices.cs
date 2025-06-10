@@ -6,6 +6,7 @@ using Application.Services.Courses;
 using Application.Services.Expertises;
 using Application.Services.Schedule;
 using Application.Services.MentorApplications;
+using Application.Services.Messages;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,7 @@ public static class ConfigureServices
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IScheduleService, ScheduleService>();
         services.AddScoped<IMentorApplicationService, MentorApplicationService>();
+        services.AddScoped<IMessageService, MessageService>();
 
         return services;
     }

@@ -10,9 +10,6 @@ public class ConversationConfiguration : IEntityTypeConfiguration<Conversation>
     {
         builder.HasKey(c => c.Id);
 
-        builder.Property(c => c.IsGroup)
-            .IsRequired();
-
         builder.Property(c => c.Name)
             .IsRequired()
             .HasMaxLength(255);
