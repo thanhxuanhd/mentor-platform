@@ -1,3 +1,5 @@
+import type { FileType } from "../../types/enums/FileType";
+
 export type Mentor = {
   id: string;
   fullName: string;
@@ -28,8 +30,10 @@ export type CourseResource = {
   id: string;
   title: string;
   description: string;
-  resourceType: string;
+  resourceType: FileType;
   resourceUrl: string;
+  courseId: string;
+  courseTitle: string;
 };
 
 export type Feedback = {

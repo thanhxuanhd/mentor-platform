@@ -17,7 +17,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<Sessions>
         builder.Property(b => b.Type)
             .HasConversion<string>()
             .IsRequired();
-        
+
         builder.HasOne(b => b.TimeSlot)
             .WithMany(ts => ts.Sessions)
             .HasForeignKey(b => b.TimeSlotId)

@@ -144,7 +144,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
 
@@ -167,6 +166,9 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CourseId");
+
+                    b.HasIndex("ResourceUrl")
+                        .IsUnique();
 
                     b.ToTable("CourseResources");
                 });
@@ -718,6 +720,47 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("TimeSlot");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.HasOne("Domain.Entities.Schedules", "Schedules")
+                        .WithMany("AvailableTimeSlots")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Schedules");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Schedules", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Mentor")
+                        .WithMany("Schedules")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mentor");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Sessions", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Learner")
+                        .WithMany("Sessions")
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.MentorAvailableTimeSlot", "TimeSlot")
+                        .WithMany("Sessions")
+                        .HasForeignKey("TimeSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Learner");
+
+                    b.Navigation("TimeSlot");
+                });
+
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.HasOne("Domain.Entities.Role", "Role")
@@ -839,9 +882,19 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Sessions");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.Navigation("Sessions");
+                });
+
             modelBuilder.Entity("Domain.Entities.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Schedules", b =>
+                {
+                    b.Navigation("AvailableTimeSlots");
                 });
 
             modelBuilder.Entity("Domain.Entities.Schedules", b =>
@@ -864,6 +917,10 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("MentorApplications");
 
                     b.Navigation("ReviewedMentorApplications");
+
+                    b.Navigation("Schedules");
+
+                    b.Navigation("Sessions");
 
                     b.Navigation("Schedules");
 

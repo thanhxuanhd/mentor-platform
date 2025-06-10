@@ -76,6 +76,7 @@ export function ScheduleSettings({
               help={!isEndTimeValid() && "Start time must be before end time"}
             >
               <Select
+                id="start-time-form-item"
                 value={startTime}
                 onChange={onStartTimeChange}
                 className="w-full"
@@ -84,12 +85,12 @@ export function ScheduleSettings({
                 {generateTimeOptions()}
               </Select>
             </Form.Item>
-
             <Form.Item
               label={<span className="text-slate-300">End time</span>}
               validateStatus={isEndTimeValid() ? '' : 'error'}
             >
               <Select
+                id="end-time-form-item"
                 value={endTime}
                 onChange={onEndTimeChange}
                 className="w-full"
@@ -108,6 +109,7 @@ export function ScheduleSettings({
           <div className="grid grid-cols-2 gap-4 items-end">
             <Form.Item label={<span className="text-slate-300">Session duration</span>} className="mb-0">
               <Select
+                id="session-duration-form-item"
                 value={sessionDuration}
                 onChange={onSessionDurationChange}
                 className="w-full h-10"
@@ -124,6 +126,7 @@ export function ScheduleSettings({
 
             <Form.Item label={<span className="text-slate-300">Buffer time</span>} className="mb-0">
               <Select
+                id="buffer-time-form-item"
                 value={bufferTime}
                 onChange={onBufferTimeChange}
                 className="w-full h-10"

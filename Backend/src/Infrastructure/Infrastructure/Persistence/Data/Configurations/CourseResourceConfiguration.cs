@@ -16,7 +16,6 @@ public class CourseResourceConfiguration : IEntityTypeConfiguration<CourseResour
             .HasMaxLength(100);
 
         builder.Property(cr => cr.Description)
-            .IsRequired()
             .HasMaxLength(1024);
 
         builder.Property(cr => cr.ResourceType)
@@ -27,6 +26,9 @@ public class CourseResourceConfiguration : IEntityTypeConfiguration<CourseResour
         builder.Property(cr => cr.ResourceUrl)
             .IsRequired()
             .HasMaxLength(300);
+
+        builder.HasIndex(cr => cr.ResourceUrl)
+            .IsUnique();
 
         builder.HasOne(cr => cr.Course)
             .WithMany(c => c.Resources)

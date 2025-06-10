@@ -31,16 +31,6 @@ interface CreateSessionBookingRequest {
   sessionType: string; // Assuming SessionType is serialized as string (e.g., "Virtual")
 }
 
-interface SessionSlotStatusResponse {
-  sessionId: string;
-  slotId: string;
-  mentorId: string;
-  day: string; // ISO date (e.g., "2025-06-04")
-  startTime: string; // HH:mm:ss
-  endTime: string; // HH:mm:ss
-  bookingStatus: SessionStatus;
-}
-
 export const getAvailableMentors = async () => {
   const response = await axiosClient.get('sessionbooking/available-mentors');
   console.log("Available Mentors Response:", response.data.value);
@@ -79,19 +69,10 @@ export const getAvailableTimeSlots = async (mentorId: string, request: Available
 };
 
 export const requestBooking = async (request: CreateSessionBookingRequest) => {
-  try {
-    const response = await axiosClient.post('sessionbooking/request', request);
-    console.log("Booking Response:", response.data);
+  const response = await axiosClient.post('sessionbooking/request', request);
+  console.log("Booking Response:", response.data);
 
-    const data = response.data.value || response.data;
-    if (!data || !data.sessionId) {
-      throw new Error("Invalid booking response");
-    }
-    return data as SessionSlotStatusResponse;
-  } catch (error) {
-    console.error("Booking Error:", error);
-    throw error;
-  }
+  return response.data.value;
 };
 
 export const getBookingRequestsByLearner = async () => {
