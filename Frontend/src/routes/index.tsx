@@ -21,6 +21,7 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import ScheduleSession from "../pages/SessionTracking/components/ScheduledSessions";
 import AvailabilityManager from "../pages/Availability";
+import CourseResourcesPage from "../pages/CourseResources";
 import SessionBooking from "../pages/Sessions";
 
 const AppRoutes = () => {
@@ -59,6 +60,7 @@ const AppRoutes = () => {
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="availability" element={<AvailabilityManager />} />
+        <Route path="resources" element={<CourseResourcesPage />} />
       </Route>
 
       <Route
@@ -107,6 +109,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="my-applications" element={<MentorStatusTrackingPage />} />
+        <Route path="sessions-tracking" element={<ScheduleSession />} />
         <Route
           path="mentor-application/edit"
           element={
@@ -118,6 +121,9 @@ const AppRoutes = () => {
         />
         <Route path="sessions-tracking" element={<ScheduleSession />} />
         <Route path="mentor-application" element={<MentorApplicationForm />} />
+
+        <Route path="profile" element={<Profile />} />
+        <Route path="profile/edit" element={<EditProfile />} />
       </Route>
     </Routes>
   );

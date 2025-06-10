@@ -399,6 +399,94 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        if (!dbContext.Schedules.Any(s => s.MentorId == Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C")))
+        {
+            var charlieScheduleId = Guid.NewGuid();
+            var charlieMentorId = Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C");
+
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.Schedules.Add(new Schedules
+            {
+                Id = charlieScheduleId,
+                MentorId = charlieMentorId,
+                WeekStartDate = startOfWeek,
+                WeekEndDate = endOfWeek,
+                StartHour = new TimeOnly(08, 00), 
+                EndHour = new TimeOnly(18, 00),  
+                SessionDuration = 45,             
+                BufferTime = 10,                  
+            });
+            dbContext.SaveChanges();
+
+            var charlieTimeSlots = new List<MentorAvailableTimeSlot>();
+            var random = new Random();
+
+            for (int week = 0; week < 2; week++)
+            {
+                for (int day = 1; day <= 5; day++) 
+                {
+                    var slotDate = today.AddDays((week * 7) + day);
+
+                    var slotsPerDay = random.Next(3, 5);
+                    for (int slot = 0; slot < slotsPerDay; slot++)
+                    {
+                        var startHour = 8 + (slot * 2);
+                        if (startHour >= 18) break; 
+
+                        charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                        {
+                            Id = Guid.NewGuid(),
+                            ScheduleId = charlieScheduleId,
+                            Date = slotDate,
+                            StartTime = new TimeOnly(startHour, 0),
+                            EndTime = new TimeOnly(startHour + 1, 0), 
+                        });
+                    }
+                }
+            }
+
+            for (int week = 0; week < 2; week++)
+            {
+                var saturdayDate = today.AddDays((week * 7) + 6);
+                charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = charlieScheduleId,
+                    Date = saturdayDate,
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(10, 0),
+                });
+
+                charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = charlieScheduleId,
+                    Date = saturdayDate,
+                    StartTime = new TimeOnly(14, 0),
+                    EndTime = new TimeOnly(15, 0),
+                });
+
+                // Chủ nhật
+                var sundayDate = today.AddDays((week * 7) + 7);
+                charlieTimeSlots.Add(new MentorAvailableTimeSlot
+                {
+                    Id = Guid.NewGuid(),
+                    ScheduleId = charlieScheduleId,
+                    Date = sundayDate,
+                    StartTime = new TimeOnly(10, 0),
+                    EndTime = new TimeOnly(11, 0),
+                });
+            }
+
+            dbContext.MentorAvailableTimeSlots.AddRange(charlieTimeSlots);
+            dbContext.SaveChanges();
+
+            Console.WriteLine($"Created {charlieTimeSlots.Count} time slots for Charlie Chaplin (Mentor ID: 01047F62-6E87-442B-B1E8-2A54C9E17D7C)");
+        }
+
         if (!dbContext.MentorAvailableTimeSlots.Any())
         {
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -418,7 +506,7 @@ public static class ApplicationDbExtensions
                     Id = Guid.NewGuid(),
                     ScheduleId = scheduleId,
                     Date = today.AddDays(i + 1),
-                    StartTime = new TimeOnly(9 + i, 0), 
+                    StartTime = new TimeOnly(9 + i, 0),
                     EndTime = new TimeOnly(10 + i, 0),
                 });
             }
@@ -428,60 +516,6 @@ public static class ApplicationDbExtensions
 
             var createdSlots = dbContext.MentorAvailableTimeSlots.Count();
             Console.WriteLine($"Created {createdSlots} time slots");
-        }
-
-        if (!dbContext.CourseResources.Any())
-        {
-            dbContext.CourseResources.Add(new CourseResource
-            {
-                Id = Guid.Parse("F6F4362D-233E-4188-8F31-63F108F67142"),
-                Title = "Introduction to Leadership Concepts",
-                Description = "Understand the core principles and theories of leadership.",
-                ResourceType = FileType.ExternalWebAddress,
-                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 1),
-                CourseId = Guid.Parse("b5ffe7dc-ead8-4072-84fc-2aa39908fffe")
-            });
-
-            dbContext.CourseResources.Add(new CourseResource
-            {
-                Id = Guid.Parse("7B7BD4ED-915A-48BF-868F-ABD7D90E06C7"),
-                Title = "Non-Verbal Communication Essentials",
-                Description = "Learn about the importance of body language and other non-verbal cues in communication.",
-                ResourceType = FileType.Pdf,
-                ResourceUrl = GetMediaUrl(FileType.Pdf, 1),
-                CourseId = Guid.Parse("e262d134-e6f3-48d3-83b0-4bedf783aa8f")
-            });
-
-            dbContext.CourseResources.Add(new CourseResource
-            {
-                Id = Guid.Parse("504E9A5C-6A8C-42D8-9D51-D7BF17B73420"),
-                Title = "Structuring Your Speech",
-                Description = "Guidance on organizing your thoughts and content for a compelling presentation.",
-                ResourceType = FileType.Video,
-                ResourceUrl = GetMediaUrl(FileType.Video, 1),
-                CourseId = Guid.Parse("08ab0125-927c-43b5-8263-7ebaab51c18a")
-            });
-
-            dbContext.CourseResources.Add(new CourseResource
-            {
-                Id = Guid.Parse("2B86F247-0D9F-4E55-A640-A175D4E9205C"),
-                Title = "Prioritization Techniques",
-                Description = "Effective methods for prioritizing tasks and managing workloads.",
-                ResourceType = FileType.ExternalWebAddress,
-                ResourceUrl = GetMediaUrl(FileType.ExternalWebAddress, 2),
-                CourseId = Guid.Parse("2c330f36-9bf0-49dd-8ce9-c0c20cd0ddb6")
-            });
-
-            dbContext.CourseResources.Add(new CourseResource
-            {
-                Id = Guid.Parse("3E2C5855-D43D-4671-B84F-53C38456018D"),
-                Title = "Building Trust and Rapport",
-                Description = "Strategies for establishing trust and positive relationships within a team.",
-                ResourceType = FileType.Video,
-                ResourceUrl = GetMediaUrl(FileType.Video, 2),
-                CourseId = Guid.Parse("621c9cf6-aa10-40c8-aace-2d649a261a4a")
-            });
-            dbContext.SaveChanges();
         }
         if (!dbContext.Sessions.Any())
         {
@@ -524,7 +558,7 @@ public static class ApplicationDbExtensions
             for (int i = 0; i < 20; i++)
             {
                 var timeSlot = allTimeSlots[i % allTimeSlots.Count];
-                var learner = learnerIds[i % 3]; 
+                var learner = learnerIds[i % 3];
 
                 sessionsToAdd.Add(new Sessions
                 {
@@ -543,16 +577,5 @@ public static class ApplicationDbExtensions
             Console.WriteLine($"Force created exactly {sessionsToAdd.Count} sessions");
             Console.WriteLine($"Total sessions in database: {dbContext.Sessions.Count()}");
         }
-    }
-
-    private static string GetMediaUrl(FileType mediaType, int moduleNumber)
-    {
-        return mediaType switch
-        {
-            FileType.Video => $"/content/videos/module{moduleNumber}.mp4",
-            FileType.Pdf => $"/content/docs/module{moduleNumber}.pdf",
-            FileType.ExternalWebAddress => $"https://learning.mentorplatform.local/module{moduleNumber}",
-            _ => $"/content/other/module{moduleNumber}"
-        };
     }
 }

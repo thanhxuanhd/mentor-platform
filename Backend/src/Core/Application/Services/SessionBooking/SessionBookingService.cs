@@ -126,7 +126,7 @@ public class SessionBookingService(
         MentorAvailableTimeSlot timeSlot,
         User learner,
         SessionType sessionType)
-    {   
+    {
         if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
             return Result.Failure<SessionSlotStatusResponse>(
@@ -268,7 +268,6 @@ public class SessionBookingService(
         return Result.Success(result, HttpStatusCode.OK);
     }
 
-
     public async Task<Result<bool>> UpdateStatusSessionAsync(Guid id, SessionBookingRequest request)
     {
         var sessionList = await sessionBookingRepository.GetAllBookingAsync();
@@ -357,44 +356,34 @@ public class SessionBookingService(
 
     public async Task<Result<bool>> UpdateRecheduleSessionAsync(Guid id, SessionUpdateRecheduleRequest request)
     {
-        var sessionList = await sessionBookingRepository.GetAllBookingAsync();
-        var session = sessionList.FirstOrDefault(s => s.Id == id);
+        var session = (await sessionBookingRepository.GetAllBookingAsync())
+            .FirstOrDefault(s => s.Id == id);
 
         if (session == null)
         {
             return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
         }
 
-        if (
-            session.TimeSlot.Date == request.Date &&
-            session.TimeSlot.StartTime == request.StartTime &&
-            session.TimeSlot.EndTime == request.EndTime
-        )
+        var newTimeSlot = await mentorAvailableTimeSlotRepository.GetByIdAsync(request.TimeSlotId);
+        if (newTimeSlot == null)
         {
-            return Result.Failure<bool>("No changes detected. Reschedule not applied.", HttpStatusCode.BadRequest);
+            return Result.Failure<bool>("Selected TimeSlot does not exist.", HttpStatusCode.BadRequest);
         }
 
-        var overlappingSession = sessionList
-            .Where(s => s.Id != id && s.TimeSlot.Date == request.Date && s.LearnerId == session.LearnerId)
-            .FirstOrDefault(s =>
-                (request.StartTime < s.TimeSlot.EndTime) &&
-                (request.EndTime > s.TimeSlot.StartTime)
-            );
-
-        if (overlappingSession != null)
+        if (newTimeSlot.Sessions.Any(b =>
+            b.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
-            return Result.Failure<bool>("There has existed a same time slot for this learner.", HttpStatusCode.Conflict);
+            return Result.Failure<bool>(
+                $"Selected slot in {newTimeSlot.StartTime} - {newTimeSlot.EndTime} by {newTimeSlot.Schedules.Mentor.FullName} is not available.",
+                HttpStatusCode.Conflict);
         }
 
-        var duration = (request.EndTime - request.StartTime).TotalMinutes;
-        if (duration > 90)
+        if (newTimeSlot.Sessions.Any(b => b.LearnerId == session.LearnerId && b.Status == SessionStatus.Pending))
         {
-            return Result.Failure<bool>("Session duration cannot exceed 90 minutes.", HttpStatusCode.BadRequest);
+            return Result.Failure<bool>("You already have a booking for this time slot.", HttpStatusCode.Conflict);
         }
 
-        session.TimeSlot.Date = request.Date;
-        session.TimeSlot.StartTime = request.StartTime;
-        session.TimeSlot.EndTime = request.EndTime;
+        session.TimeSlot = newTimeSlot;
         session.Status = SessionStatus.Rescheduled;
 
         var user = await userRepository.GetByIdAsync(session.LearnerId);
@@ -406,7 +395,13 @@ public class SessionBookingService(
         if (user.IsReceiveNotification)
         {
             string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
-            string body = EmailConstants.BodySessionRescheduledEmail(id, request.Date, request.StartTime, request.EndTime, request.Reason);
+            string body = EmailConstants.BodySessionRescheduledEmail(
+                id,
+                newTimeSlot.Date,
+                newTimeSlot.StartTime,
+                newTimeSlot.EndTime,
+                request.Reason
+            );
 
             var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
             if (!emailResult)
@@ -417,8 +412,21 @@ public class SessionBookingService(
 
         sessionBookingRepository.Update(session);
         await sessionBookingRepository.SaveChangesAsync();
-        
+
         return Result.Success(true, HttpStatusCode.OK);
+    }
+
+    public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateOnly date)
+    {
+        var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
+
+        var query = mentorAvailableTimeSlots
+                .Where(mats => mats.Schedules.MentorId == mentorId && mats.Date == date)
+                .Select(mats => mats.ToAvailableTimeSlotResponse());
+
+        var availableTimeSlots = await mentorAvailableTimeSlotRepository.ToListAsync(query);
+
+        return Result.Success(availableTimeSlots, HttpStatusCode.OK);
     }
 
 }

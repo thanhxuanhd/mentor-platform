@@ -2,6 +2,7 @@
 using Contract.Dtos.Schedule.Requests;
 using Contract.Dtos.Schedule.Responses;
 using Contract.Repositories;
+using Contract.Services;
 using Contract.Shared;
 using Domain.Constants;
 using Domain.Entities;
@@ -11,7 +12,7 @@ using System.Text;
 
 namespace Application.Services.Schedule;
 
-public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository, IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository) : IScheduleService
+public class ScheduleService(IScheduleRepository scheduleRepository, IUserRepository userRepository, IMentorAvailabilityTimeSlotRepository mentorAvailableTimeSlotRepository, IEmailService emailService) : IScheduleService
 {
     public async Task<Result<ScheduleSettingsResponse>> GetScheduleSettingsAsync(Guid mentorId, GetScheduleSettingsRequest request)
     {
@@ -105,7 +106,38 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         }
         await scheduleRepository.SaveChangesAsync();
 
-        mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
+        List<MentorAvailableTimeSlot> deletingTimeSlots = mentorAvailableTimeSlotRepository.DeletePendingAndCancelledTimeSlots(scheduleSettings.Id);
+
+        Dictionary<string, string> uniqueLearnerInfos = new Dictionary<string, string>();
+
+        if (deletingTimeSlots is not null)
+        {
+            foreach (var timeSlot in deletingTimeSlots)
+            {
+                if (timeSlot.Sessions == null || !timeSlot.Sessions.Any())
+                {
+                    continue;
+                }
+
+                foreach (var session in timeSlot.Sessions)
+                {
+                    if (session.Status == SessionStatus.Pending)
+                    {
+                        uniqueLearnerInfos[session.Learner!.Email] = session.Learner.FullName;
+                    }
+                }
+            }
+        }
+
+        if (uniqueLearnerInfos.Any())
+        {
+            foreach (var learnerInfo in uniqueLearnerInfos)
+            {
+                var subject = EmailConstants.SUBJECT_MENTOR_UPDATED_SCHEDULE;
+                var body = EmailConstants.BodyMentorUpdatedScheduleEmail(learnerInfo.Value, mentor.FullName);
+                await emailService.SendEmailAsync(learnerInfo.Key, subject, body);
+            }
+        }
 
         var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
         StringBuilder stringBuilder = new();
@@ -120,17 +152,20 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                 var slotStartDateTime = date.ToDateTime(slot.StartTime);
                 var slotEndDateTime = date.ToDateTime(slot.EndTime);
 
-                bool isOverlap = existingActiveSessions.Any(s => s.Date == date && (
-                    (s.StartTime <= slot.StartTime && s.EndTime > slot.StartTime) ||
-                    (s.StartTime < slot.EndTime && s.EndTime >= slot.EndTime) ||
-                    (s.StartTime >= slot.StartTime && s.EndTime <= slot.EndTime)
-                ));
-
-                if (isOverlap)
+                if (existingActiveSessions is not null && existingActiveSessions.Any())
                 {
-                    var msg = $"Time slot {slot.StartTime} - {slot.EndTime} on {date} overlaps with an existing session. ";
-                    stringBuilder.AppendLine(msg);
-                    continue;
+                    bool isOverlap = existingActiveSessions.Any(s => s.Date == date && (
+                        (s.StartTime <= slot.StartTime && s.EndTime > slot.StartTime) ||
+                        (s.StartTime < slot.EndTime && s.EndTime >= slot.EndTime) ||
+                        (s.StartTime >= slot.StartTime && s.EndTime <= slot.EndTime)
+                    ));
+
+                    if (isOverlap)
+                    {
+                        var msg = $"Time slot {slot.StartTime} - {slot.EndTime} on {date} overlaps with an existing session. ";
+                        stringBuilder.AppendLine(msg);
+                        continue;
+                    }
                 }
 
                 var mentorAvailableTimeSlot = new MentorAvailableTimeSlot
@@ -167,7 +202,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     public Dictionary<DateOnly, List<TimeSlotResponse>> GetAllDefaultTimeSlots(Schedules scheduleSettings)
     {
         Dictionary<DateOnly, List<TimeSlotResponse>> allTimeSlots = new();
-        
+
         // Get current date and time
         DateTime now = DateTime.Now;
 
@@ -187,7 +222,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             while (slotDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
             {
                 var sessionEndDateTime = slotDateTime.AddMinutes(scheduleSettings.SessionDuration);
-                
+
                 // only add time slots that start in the future (current not included)
                 if (slotDateTime > now)
                 {

@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
+
 [Authorize(Roles = "Mentor")]
 [Route("api/schedules")]
 [ApiController]
@@ -23,11 +24,12 @@ public class ScheduleController : ControllerBase
         var result = await _scheduleService.GetScheduleSettingsAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
-    
+
     [HttpPost("{mentorId}/settings")]
     public async Task<IActionResult> UpdateScheduleSettings(Guid mentorId, [FromBody] SaveScheduleSettingsRequest request)
     {
-        if (mentorId != Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)))
+        var userIdString = User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdString) || mentorId != Guid.Parse(userIdString))
         {
             return Forbid("You are not allow to update this mentor's schedule settings.");
         }
