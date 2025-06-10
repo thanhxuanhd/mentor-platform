@@ -150,18 +150,19 @@ public class CoursesController(
 
     [HttpPost("{courseId:guid}/resources")]
     [Authorize(Policy = RequiredRole.Mentor)]
-    public async Task<IActionResult> CreateCourseResource(Guid courseId, [FromBody] CourseResourceCreateRequest request)
+    public async Task<IActionResult> CreateCourseResource(Guid courseId, [FromForm] CourseResourceRequest request)
     {
-        var serviceResult = await courseResourceService.CreateAsync(courseId, request);
+        var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var serviceResult = await courseResourceService.CreateAsync(mentorId, courseId, request, Request);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
     [HttpPut("{courseId:guid}/resources/{courseResourceId:guid}")]
     [Authorize(Policy = RequiredRole.Mentor)]
-    public async Task<IActionResult> UpdateCourseResource(Guid courseId, Guid courseResourceId,
-        [FromBody] CourseResourceUpdateRequest request)
+    public async Task<IActionResult> UpdateCourseResource(Guid courseResourceId, [FromForm] CourseResourceRequest request)
     {
-        var serviceResult = await courseResourceService.UpdateAsync(courseResourceId, request);
+        var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var serviceResult = await courseResourceService.UpdateAsync(mentorId, courseResourceId, request, Request);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 
@@ -169,7 +170,8 @@ public class CoursesController(
     [Authorize(Policy = RequiredRole.Mentor)]
     public async Task<IActionResult> DeleteCourseResource(Guid courseId, Guid courseResourceId)
     {
-        var serviceResult = await courseResourceService.DeleteAsync(courseResourceId);
+        var mentorId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var serviceResult = await courseResourceService.DeleteAsync(mentorId, courseResourceId);
         return StatusCode((int)serviceResult.StatusCode, serviceResult);
     }
 }

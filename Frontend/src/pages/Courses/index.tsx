@@ -15,14 +15,14 @@ import { CoursePopoverTarget } from "./coursePopoverTarget.tsx";
 import { CourseTable } from "./components/CourseTable.tsx";
 import { CourseForm } from "./components/CourseForm.tsx";
 
-import { CourseResource } from "./components/CourseResource.tsx";
+import { CourseResourceDialog } from "./components/CourseResourceDialog.tsx";
 import { courseService } from "../../services/course";
 import { categoryService } from "../../services/category";
 import { mentorService } from "../../services/mentor";
 import { CourseDetail } from "./components/CourseDetail.tsx";
 import { SearchBar } from "./components/SearchBar.tsx";
 import { App, Modal } from "antd";
-import { useAuth } from "../../hooks/useAuth.ts";
+import { useAuth } from "../../hooks";
 import { applicationRole } from "../../constants/role.ts";
 
 const Page: React.FC = () => {
@@ -54,32 +54,40 @@ const Page: React.FC = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    const refreshData = async () => {
+      try {
+        const courseResponse = await courseService.list({
+          pageIndex,
+          pageSize,
+          keyword,
+          difficulty,
+          categoryId,
+          mentorId,
+        });
+
+        setCourses(courseResponse.items);
+        setTotalCount(courseResponse.totalPages);
+        console.log("Course list refreshed after create/update");
+      } catch (error) {
+        console.error("Error refreshing courses:", error);
+      } finally {
+        setIsRefreshing(false);
+      }
+    };
+
     if (refreshTrigger > 0) {
       setIsRefreshing(true);
-      const refreshData = async () => {
-        try {
-          const courseResponse = await courseService.list({
-            pageIndex,
-            pageSize,
-            keyword,
-            difficulty,
-            categoryId,
-            mentorId,
-          });
-
-          setCourses(courseResponse.items);
-          setTotalCount(courseResponse.totalPages);
-          console.log("Course list refreshed after create/update");
-        } catch (error) {
-          console.error("Error refreshing courses:", error);
-        } finally {
-          setIsRefreshing(false);
-        }
-      };
-
       refreshData();
     }
-  }, [refreshTrigger]);
+  }, [
+    categoryId,
+    difficulty,
+    keyword,
+    mentorId,
+    pageIndex,
+    pageSize,
+    refreshTrigger,
+  ]);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -103,10 +111,10 @@ const Page: React.FC = () => {
         );
 
         const categoryResponse = await categoryService.list({
-          pageSize: 100
+          pageSize: 10,
         });
         const mentorResponse = await mentorService.list({
-          pageSize: 100
+          pageSize: 10,
         });
 
         setTotalCount(courseResponse.totalPages);
@@ -151,6 +159,44 @@ const Page: React.FC = () => {
             content:
               "There was an error deleting the course. Please try again.",
           });
+        }
+      },
+    });
+  };
+
+  const handlePublishCourse = async (course: Course) => {
+    modal.confirm({
+      title: "Are you sure you want to publish this course?",
+      content: `Course: ${course.title}`,
+      okText: "Yes",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.publishCourse(course.id);
+          message.success("Course published successfully!");
+          setRefreshTrigger((prev) => prev + 1);
+        } catch (error) {
+          console.error("Error publishing course:", error);
+          message.error("Failed to publish course. Please try again.");
+        }
+      },
+    });
+  };
+
+  const handleArchiveCourse = async (course: Course) => {
+    modal.confirm({
+      title: "Are you sure you want to archive this course?",
+      content: `Course: ${course.title}`,
+      okText: "Yes",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await courseService.archiveCourse(course.id);
+          message.success("Course archived successfully!");
+          setRefreshTrigger((prev) => prev + 1);
+        } catch (error) {
+          console.error("Error archiving course:", error);
+          message.error("Failed to archive course. Please try again.");
         }
       },
     });
@@ -223,6 +269,8 @@ const Page: React.FC = () => {
                   setPopoverTarget(CoursePopoverTarget.detail);
                 }}
                 onDelete={handleDeleteCourse}
+                onPublish={handlePublishCourse}
+                onArchive={handleArchiveCourse}
                 onEdit={async (course) => {
                   const resource = await courseService.get(course.id);
                   setItem(resource);
@@ -268,9 +316,8 @@ const Page: React.FC = () => {
                   setPopoverTarget(targetAction);
                 }}
               />
-              <CourseResource
+              <CourseResourceDialog
                 course={item}
-                onDownload={(material) => window.alert(material.resourceUrl)}
                 active={popoverTarget === CoursePopoverTarget.resource}
                 onClose={(targetAction) => {
                   if (targetAction === "refresh") {
