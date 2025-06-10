@@ -28,6 +28,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasDefaultValue("")
             .HasMaxLength(100);
 
+        builder.Property(u => u.Timezone)
+            .IsRequired()
+            .HasDefaultValue("Asia/Bangkok")
+            .HasMaxLength(100);
+
         builder.Property(u => u.Bio)
             .HasMaxLength(300);
 
