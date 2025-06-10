@@ -104,15 +104,4 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
 
         bookingSession.Status = SessionStatus.Approved;
     }
-
-    public void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId)
-    {
-        Debug.Assert(_context.Entry(bookingSession.TimeSlot).Reference(t => t.Sessions).IsLoaded);
-        if (bookingSession.Status is not SessionStatus.Pending)
-        {
-            throw new Exception("Cannot cancel this booking session at this time.");
-        }
-
-        bookingSession.Status = SessionStatus.Cancelled;
-    }
 }

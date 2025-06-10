@@ -129,14 +129,14 @@ public class SessionBookingService(
         User learner,
         SessionType sessionType)
     {   
-        if (timeSlot.Sessions.Any(b => b.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
+        if (timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
             return Result.Failure<SessionSlotStatusResponse>(
                 $"Selected slot in {timeSlot.StartTime} - {timeSlot.EndTime} by {timeSlot.Schedules.Mentor.FullName} is rejected.",
-                HttpStatusCode.BadRequest);
+                HttpStatusCode.Conflict);
         }
 
-        if (timeSlot.Sessions.Any(b => b.LearnerId == learner.Id && b.Status == SessionStatus.Pending))
+        if (timeSlot.Sessions.Any(s => s.LearnerId == learner.Id && s.Status == SessionStatus.Pending))
         {
             return Result.Failure<SessionSlotStatusResponse>("You have already booked this slot.",
                 HttpStatusCode.Conflict);
@@ -177,19 +177,11 @@ public class SessionBookingService(
         sessionBookingRepository.MentorAcceptBookingSession(bookingSession, learner.Id);
         await sessionBookingRepository.SaveChangesAsync();
 
-        var mailSent =
-            await emailService.SendEmailAsync(learner.Email,
-                EmailConstants.SUBJECT_MEETING_BOOKING_CONFIRMATION,
-                EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName,
-                    new DateTime(timeSlot.Date, timeSlot.StartTime),
-                    timeSlot.Schedules.Mentor.FullName));
-
-        if (!mailSent)
-        {
-            return Result.Failure<SessionSlotStatusResponse>(
-                "Failed to send email",
-                HttpStatusCode.InternalServerError);
-        }
+        await emailService.SendEmailAsync(learner.Email,
+            EmailConstants.SUBJECT_MEETING_BOOKING_CONFIRMATION,
+            EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName,
+                new DateTime(timeSlot.Date, timeSlot.StartTime),
+                timeSlot.Schedules.Mentor.FullName));
 
         return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
@@ -217,27 +209,17 @@ public class SessionBookingService(
     }
 
     private async Task<Result<SessionSlotStatusResponse>> CancelBookingInternalAsync(Sessions bookingSession,
-        User cancellingLearner, bool sendMail = false)
+        User cancellingLearner)
     {
         sessionBookingRepository.CancelBookingSession(bookingSession, cancellingLearner.Id);
         await sessionBookingRepository.SaveChangesAsync();
 
-        if (sendMail)
-        {
-            var mailSent =
-                await emailService.SendEmailAsync(cancellingLearner.Email,
-                    EmailConstants.SUBJECT_MEETING_BOOKING_CANCELLED,
-                    EmailConstants.BodyMeetingBookingConfirmationEmail(cancellingLearner.FullName,
-                        new DateTime(bookingSession.TimeSlot.Date, bookingSession.TimeSlot.EndTime),
-                        bookingSession.TimeSlot.Schedules.Mentor.FullName));
+        await emailService.SendEmailAsync(cancellingLearner.Email,
+            EmailConstants.SUBJECT_MEETING_BOOKING_CANCELLED,
+            EmailConstants.BodyMeetingBookingCancelledEmail(cancellingLearner.FullName,
+                new DateTime(bookingSession.TimeSlot.Date, bookingSession.TimeSlot.EndTime),
+                bookingSession.TimeSlot.Schedules.Mentor.FullName));
 
-            if (!mailSent)
-            {
-                return Result.Failure<SessionSlotStatusResponse>(
-                    "Failed to send email",
-                    HttpStatusCode.InternalServerError);
-            }
-        }
 
         return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
