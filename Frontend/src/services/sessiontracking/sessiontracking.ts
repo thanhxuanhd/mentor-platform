@@ -1,83 +1,90 @@
-import { axiosClient } from "../apiClient"
-import type { SessionBookingRequest } from "../../types/SessionBookingTypes"
+import { axiosClient } from "../apiClient";
+import type { SessionBookingRequest } from "../../types/SessionBookingTypes";
 
 export interface TimeSlot {
-  id: string
-  startTime: string
-  endTime: string
-  date: string
-  mentorId: string
-  mentorName: string
-  isBooked: boolean
+  id: string;
+  startTime: string;
+  endTime: string;
+  date: string;
+  mentorId: string;
+  mentorName: string;
+  isBooked: boolean;
 }
 
 export interface AvailableTimeslotsResponse {
   value: {
-    items: TimeSlot[]
-  }
+    items: TimeSlot[];
+  };
 }
 
 export const sessionBookingService = {
   getSessionBookings: async (): Promise<SessionBookingRequest[]> => {
-    return await axiosClient
-      .get(`SessionBooking/request/get`)
-      .then((response) => {
-        return response.data.value || response.data
-      })
-      .catch((error) => {
-        console.error("Error fetching session bookings:", error)
-        throw error
-      })
-  },
-
-  getSessionDetails: async (sessionId: string): Promise<SessionBookingRequest> => {
-    return await axiosClient
-      .get(`SessionBooking/request/get/${sessionId}`)
-      .then((response) => {
-        return response.data.value || response.data
-      })
-      .catch((error) => {
-        console.error("Error fetching session details:", error)
-        throw error
-      })
-  },
-
-  getAvailableTimeslots: async (mentorId: string): Promise<TimeSlot[]> => {
-    return await axiosClient
-      .get(`SessionBooking/available-timeslots/${mentorId}`)
-      .then((response) => {
-        const data = response.data.value || response.data
-        return data.items || data || []
-      })
-      .catch((error) => {
-        console.error("Error fetching available timeslots:", error)
-        throw error
-      })
-  },
-
-  getAvailableTimeslotsByDate: async (mentorId: string, date?: string): Promise<TimeSlot[]> => {
-    const formattedDate = date?.split("T")[0]
-    const url = formattedDate
-      ? `SessionBooking/available-mentors/timeslots/get/${mentorId}?date=${formattedDate}`
-      : `SessionBooking/available-mentors/timeslots/get/${mentorId}`
-
     try {
-      const response = await axiosClient.get(url)
-      let data = response.data.value || response.data
-      data = data.items || data
-
-      if (!Array.isArray(data)) return []
-
-      return data.map((slot) => ({
-        ...slot,
-        date: typeof slot.date === "string" ? slot.date.split("T")[0] : slot.date,
-      }))
+      const response = await axiosClient.get(`SessionBooking/request/get`);
+      return response.data.value || response.data;
     } catch (error) {
-      console.error("Error fetching available timeslots by date:", error)
-      throw error
+      console.error("Error fetching session bookings:", error);
+      throw error;
     }
   },
 
+  getSessionDetails: async (sessionId: string): Promise<SessionBookingRequest> => {
+    try {
+      const response = await axiosClient.get(`SessionBooking/request/get/${sessionId}`);
+      return response.data.value || response.data;
+    } catch (error) {
+      console.error("Error fetching session details:", error);
+      throw error;
+    }
+  },
+
+  getAvailableTimeslots: async (mentorId: string): Promise<TimeSlot[]> => {
+    try {
+      const response = await axiosClient.get(`SessionBooking/available-timeslots/${mentorId}`);
+      const data = response.data.value || response.data;
+      return data.items || data || [];
+    } catch (error) {
+      console.error("Error fetching available timeslots:", error);
+      throw error;
+    }
+  },
+
+  getAvailableTimeslotsByDate: async (mentorId: string, date?: string): Promise<TimeSlot[]> => {
+    const formattedDate = date?.split("T")[0];
+    const url = formattedDate
+      ? `SessionBooking/available-mentors/timeslots/get/${mentorId}?date=${formattedDate}`
+      : `SessionBooking/available-mentors/timeslots/get/${mentorId}`;
+
+    try {
+      const response = await axiosClient.get(url);
+      let data = response.data.value || response.data;
+      console.log(data)
+      if (!data) {
+        console.warn("No data returned from API");
+        return [];
+      }
+
+      data = data.items || data;
+
+      if (!Array.isArray(data)) {
+        console.warn("Data is not an array:", data);
+        return [];
+      }
+
+      return data.map((slot: any) => ({
+        id: slot.id || "",
+        startTime: slot.startTime || "00:00",
+        endTime: slot.endTime || "00:00",
+        date: typeof slot.date === "string" ? slot.date.split("T")[0] : formattedDate || "",
+        mentorId: slot.mentorId || mentorId,
+        mentorName: slot.mentorName || "",
+        isBooked: slot.isBooked || false,
+      }));
+    } catch (error) {
+      console.error("Error fetching available timeslots by date:", error);
+      throw error;
+    }
+  },
 
   updateSessionStatus: async (id: string, status: string): Promise<void> => {
     const statusMap: { [key: string]: number } = {
@@ -86,24 +93,22 @@ export const sessionBookingService = {
       Completed: 2,
       Canceled: 3,
       Rescheduled: 4,
-    }
+    };
 
-    const numericStatus = statusMap[status]
+    const numericStatus = statusMap[status];
     if (numericStatus === undefined) {
-      throw new Error(`Invalid status: ${status}`)
+      throw new Error(`Invalid status: ${status}`);
     }
 
-    return await axiosClient
-      .put(`SessionBooking/${id}`, {
+    try {
+      const response = await axiosClient.put(`SessionBooking/${id}`, {
         status: numericStatus,
-      })
-      .then((response) => {
-        return response.data.value
-      })
-      .catch((error) => {
-        console.error("Error updating session status:", error)
-        throw error
-      })
+      });
+      return response.data.value;
+    } catch (error) {
+      console.error("Error updating session status:", error);
+      throw error;
+    }
   },
 
   updateSessionBooking: async (
@@ -116,45 +121,41 @@ export const sessionBookingService = {
       Completed: 2,
       Canceled: 3,
       Rescheduled: 4,
-    }
+    };
 
-    const requestData: Partial<SessionBookingRequest> = { ...updateData }
+    const requestData: Partial<SessionBookingRequest> = { ...updateData };
 
     if (typeof updateData.status === "string") {
-      const numericStatus = statusMap[updateData.status]
+      const numericStatus = statusMap[updateData.status];
       if (numericStatus !== undefined) {
-        requestData.status = numericStatus
+        requestData.status = numericStatus;
       } else {
-        throw new Error(`Invalid status: ${updateData.status}`)
+        throw new Error(`Invalid status: ${updateData.status}`);
       }
     }
 
-    return await axiosClient
-      .put(`SessionBooking/${id}`, requestData)
-      .then((response) => {
-        return response.data.value
-      })
-      .catch((error) => {
-        console.error("Error updating session booking:", error)
-        throw error
-      })
+    try {
+      const response = await axiosClient.put(`SessionBooking/${id}`, requestData);
+      return response.data.value;
+    } catch (error) {
+      console.error("Error updating session booking:", error);
+      throw error;
+    }
   },
 
   rescheduleSession: async (
     id: string,
     rescheduleData: {
-      timeslotId: string
-      reason: string
+      timeslotId: string;
+      reason: string;
     },
   ): Promise<void> => {
-    return await axiosClient
-      .put(`SessionBooking/update/${id}`, rescheduleData)
-      .then((response) => {
-        return response.data.value
-      })
-      .catch((error) => {
-        console.error("Error rescheduling session:", error)
-        throw error
-      })
+    try {
+      const response = await axiosClient.put(`SessionBooking/update/${id}`, rescheduleData);
+      return response.data.value;
+    } catch (error) {
+      console.error("Error rescheduling session:", error);
+      throw error;
+    }
   },
-}
+};

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useContext, useMemo } from "react";
 import {
   Table,
   Button,
@@ -31,6 +31,7 @@ import dayjs from "dayjs";
 import { sessionBookingService, type TimeSlot } from "../../../services/sessiontracking/sessiontracking";
 import type { SessionBookingRequest } from "../../../types/SessionBookingTypes";
 import { getStatusString } from "../../../types/SessionBookingTypes";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 const { TextArea } = Input;
 const { TabPane } = Tabs;
@@ -47,10 +48,10 @@ interface Session {
   communicationMethod: "VideoCall" | "AudioCall" | "Chat";
   studentEmail?: string;
   timeSlotId?: string;
+  mentorId?: string;
   learnerId?: string;
   type?: number;
   lastStatusUpdate?: string;
-  mentorId?: string;
 }
 
 const CustomNotification = ({
@@ -66,8 +67,8 @@ const CustomNotification = ({
 }) => (visible ? (
   <div className="fixed top-4 right-4 z-50 max-w-sm w-full">
     <div className={`
-      ${type === "success" ? "bg-white border-l-4 border-green-500" : 
-        type === "error" ? "bg-white border-l-4 border-red-500" : 
+      ${type === "success" ? "bg-white border-l-4 border-green-500" :
+        type === "error" ? "bg-white border-l-4 border-red-500" :
         "bg-white border-l-4 border-blue-500"} shadow-lg p-4 rounded-lg
       transform transition-all duration-300 ease-in-out animate-in slide-in-from-top-2 fade-in
     `}>
@@ -79,7 +80,7 @@ const CustomNotification = ({
         </div>
         <div className="flex-1 min-w-0">
           <p className={`text-sm font-medium ${
-            type === "success" ? "text-green-800" : 
+            type === "success" ? "text-green-800" :
             type === "error" ? "text-red-800" : "text-blue-800"
           } leading-5`}>{message}</p>
         </div>
@@ -98,7 +99,200 @@ const CustomNotification = ({
   </div>
 ) : null);
 
+// Moved RescheduleModal outside to prevent re-renders
+interface RescheduleModalProps {
+  visible: boolean;
+  onCancel: () => void;
+  onSubmit: (sessionId: string, newTimeslotId: string, reason: string) => Promise<void>;
+  selectedSession: Session | null;
+  availableTimeslots: TimeSlot[];
+  loadingTimeslots: boolean;
+  loadAvailableTimeslots: (mentorId: string, date: string) => Promise<void>;
+  showNotification: (type: "success" | "error" | "info", message: string) => void;
+  user: { id: string } | null;
+}
+
+const RescheduleModal: React.FC<RescheduleModalProps> = ({
+  visible,
+  onCancel,
+  onSubmit,
+  selectedSession,
+  availableTimeslots,
+  loadingTimeslots,
+  loadAvailableTimeslots,
+  showNotification,
+  user,
+}) => {
+  const [newDate, setNewDate] = useState<dayjs.Dayjs | null>(null);
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | undefined>(undefined);
+  const [reason, setReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  // Use useEffect to initialize state only when modal becomes visible
+  useEffect(() => {
+    if (visible && selectedSession) {
+      const sessionDate = dayjs(selectedSession.date);
+      setNewDate(sessionDate);
+      setSelectedTimeSlotId(selectedSession.timeSlotId || undefined); // Ensure it's string or undefined
+      setReason("");
+
+      // Automatically load timeslots for the initial date when modal opens
+      if (user?.id) {
+        loadAvailableTimeslots(user.id, sessionDate.format("YYYY-MM-DD"));
+      }
+    } else if (!visible) { // Reset state when modal is closed
+      setNewDate(null);
+      setSelectedTimeSlotId(undefined);
+      setReason("");
+    }
+  }, [visible, selectedSession, user?.id, loadAvailableTimeslots]);
+
+  const handleSubmit = async () => {
+    if (submitting || !newDate || !selectedTimeSlotId || !selectedSession) {
+      showNotification("error", "Please select a valid date and time slot.");
+      return;
+    }
+
+    const selectedSlot = availableTimeslots.find(slot => slot.id === selectedTimeSlotId);
+    if (!selectedSlot) {
+      showNotification("error", "Invalid time slot selected.");
+      return;
+    }
+
+    const selectedDateTime = dayjs(`${newDate.format("YYYY-MM-DD")}T${selectedSlot.startTime}`);
+    if (selectedDateTime.isBefore(dayjs())) {
+      showNotification("error", "Selected time slot is in the past. Please choose a future time.");
+      return;
+    }
+
+    if (reason.length > 100) {
+      showNotification("error", "Reason is too long. Please shorten it.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await onSubmit(selectedSession.id, selectedTimeSlotId, reason);
+    } catch (error) {
+      showNotification("error", "Failed to reschedule session.");
+      console.error("Error in handleSubmit:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (!submitting) {
+      onCancel();
+    }
+  };
+
+  const handleDateChange = async (date: dayjs.Dayjs | null) => {
+    setNewDate(date);
+    setSelectedTimeSlotId(undefined); // Clear selected timeslot when date changes
+    
+    if (date && user?.id) {
+      const dateStr = date.format("YYYY-MM-DD");
+      await loadAvailableTimeslots(user.id, dateStr);
+    } else {
+      // Clear available timeslots if no date is selected or user is not available
+      if (availableTimeslots.length > 0) { // Only clear if there are existing slots
+        showNotification("info", "Date changed. Please select a new time slot.");
+      }
+    }
+  };
+
+  const isTimeSlotDisabled = submitting || loadingTimeslots || !newDate || availableTimeslots.length === 0;
+
+  return (
+    <Modal
+      title="Reschedule Session"
+      open={visible}
+      onCancel={handleCancel}
+      onOk={handleSubmit}
+      confirmLoading={submitting}
+      maskClosable={!submitting}
+      closable={!submitting}
+      okButtonProps={{
+        disabled: submitting || !selectedTimeSlotId || !newDate,
+      }}
+      cancelButtonProps={{ disabled: submitting }}
+    >
+      <Space direction="vertical" style={{ width: "100%" }}>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Date</label>
+          <DatePicker
+            value={newDate}
+            onChange={handleDateChange}
+            style={{ width: "100%" }}
+            disabledDate={d => d.isBefore(dayjs(), "day")}
+            disabled={submitting}
+          />
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>
+            Time Slot 
+            {availableTimeslots.length > 0 && 
+              <span style={{ color: "#52c41a", marginLeft: "8px" }}>
+                ({availableTimeslots.length} available)
+              </span>
+            }
+          </label>
+          <Select
+            style={{ width: "100%" }}
+            value={selectedTimeSlotId}
+            onChange={setSelectedTimeSlotId}
+            placeholder={
+              loadingTimeslots 
+                ? "Loading time slots..." 
+                : !newDate 
+                  ? "Please select a date first"
+                  : availableTimeslots.length === 0 
+                    ? "No available time slots for this date"
+                    : "Select time slot"
+            }
+            disabled={isTimeSlotDisabled}
+            showSearch
+            allowClear
+            loading={loadingTimeslots}
+            notFoundContent={
+              !newDate
+                ? "Please select a date first"
+                : loadingTimeslots
+                  ? "Loading..."
+                  : "No available time slots for this date"
+            }
+            filterOption={(input, option) =>
+              (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+            }
+          >
+            {availableTimeslots.map(slot => (
+              <Option key={slot.id} value={slot.id}>
+                {`${slot.startTime} - ${slot.endTime}`}
+              </Option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Reason for rescheduling</label>
+          <TextArea
+            rows={3}
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            maxLength={100}
+            placeholder="Reason for rescheduling"
+            showCount
+            disabled={submitting}
+          />
+        </div>
+      </Space>
+    </Modal>
+  );
+};
+
+
 const ScheduleSession = () => {
+  const { user } = useContext(AuthContext);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
@@ -130,12 +324,12 @@ const ScheduleSession = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const showNotification = (type: "success" | "error" | "info", message: string) => {
+  const showNotification = useCallback((type: "success" | "error" | "info", message: string) => {
     setNotification({ visible: true, type, message });
     setTimeout(() => setNotification(prev => ({ ...prev, visible: false })), 4000);
-  };
+  }, []);
 
-  const hideNotification = () => setNotification(prev => ({ ...prev, visible: false }));
+  const hideNotification = useCallback(() => setNotification(prev => ({ ...prev, visible: false })), []);
 
   const convertApiResponseToSession = (apiData: SessionBookingRequest): Session => ({
     id: apiData.id,
@@ -176,7 +370,7 @@ const ScheduleSession = () => {
           })
         );
 
-        setSessions(prev => prev.map(session => 
+        setSessions(prev => prev.map(session =>
           updatedSessions.find(u => u.id === session.id) || session
         ));
 
@@ -189,17 +383,13 @@ const ScheduleSession = () => {
     } finally {
       processingOvertimeRef.current = false;
     }
-  }, [sessions, currentTime]);
+  }, [sessions, currentTime, showNotification]);
 
   useEffect(() => {
     if (sessions.length > 0) handleOvertimeSessions();
-  }, [currentTime, handleOvertimeSessions]);
+  }, [currentTime, handleOvertimeSessions, sessions.length]);
 
-  useEffect(() => {
-    loadSessions();
-  }, []);
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       setLoading(true);
       const response = await sessionBookingService.getSessionBookings();
@@ -213,19 +403,29 @@ const ScheduleSession = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showNotification]);
 
-  const loadAvailableTimeslots = async (mentorId: string, date?: string) => {
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  const loadAvailableTimeslots = useCallback(async (mentorId: string, date: string) => {
     try {
       setLoadingTimeslots(true);
       const timeslots = await sessionBookingService.getAvailableTimeslotsByDate(mentorId, date);
       const enrichedTimeslots = timeslots.map(slot => ({
         ...slot,
-        startTime: slot.startTime || (selectedSession?.startTime || "N/A"),
-        endTime: slot.endTime || (selectedSession?.endTime || "N/A"),
+        startTime: slot.startTime || "00:00",
+        endTime: slot.endTime || "00:00",
+        date: slot.date || date, // Ensure date is present
       }));
-      setAvailableTimeslots(enrichedTimeslots);
-      console.log("Enriched available timeslots:", enrichedTimeslots);
+      setAvailableTimeslots(enrichedTimeslots); 
+      
+      if (enrichedTimeslots.length === 0) {
+        showNotification("info", "No available time slots for the selected date.");
+      } else {
+        showNotification("success", `Found ${enrichedTimeslots.length} available time slots.`);
+      }
     } catch (error) {
       console.error("Error loading available timeslots:", error);
       showNotification("error", "Failed to load available time slots");
@@ -233,7 +433,7 @@ const ScheduleSession = () => {
     } finally {
       setLoadingTimeslots(false);
     }
-  };
+  }, [showNotification]);
 
   const getSessionSessions = (statusFilter: Session["status"][]) =>
     sessions.filter(session => {
@@ -242,10 +442,11 @@ const ScheduleSession = () => {
       return statusFilter.includes(session.status) || (isOvertime && session.lastStatusUpdate && dayjs(session.lastStatusUpdate).isAfter(sessionDateTime));
     });
 
-  const upcomingSessions = getSessionSessions(["Pending", "Approved", "Rescheduled"]).filter(
+  const upcomingSessions = useMemo(() => getSessionSessions(["Pending", "Approved", "Rescheduled"]).filter(
     session => !dayjs(`${session.date} ${session.startTime}`).isBefore(currentTime)
-  );
-  const pastSessions = getSessionSessions(["Completed", "Canceled"]);
+  ), [sessions, currentTime]);
+
+  const pastSessions = useMemo(() => getSessionSessions(["Completed", "Canceled"]), [sessions]);
 
   const handleStatusChange = async (sessionId: string, newStatus: Session["status"]) => {
     try {
@@ -256,8 +457,10 @@ const ScheduleSession = () => {
       }
 
       setProcessingSessionIds(prev => ({ ...prev, [sessionId]: true }));
-      if (newStatus === "Approved") {
-        setProcessingTimeSlots(prev => ({ ...prev, [`${session.date}_${session.startTime}_${session.endTime}`]: true }));
+      // This logic needs careful consideration. If approving a session means no other can use that slot,
+      // then `timeSlotId` would be a more precise key.
+      if (newStatus === "Approved" && session.timeSlotId) {
+        setProcessingTimeSlots(prev => ({ ...prev, [session.timeSlotId!]: true }));
       }
 
       await sessionBookingService.updateSessionStatus(sessionId, newStatus);
@@ -278,12 +481,14 @@ const ScheduleSession = () => {
       const session = sessions.find(s => s.id === sessionId);
       if (session) {
         setProcessingSessionIds(prev => ({ ...prev, [sessionId]: false }));
-        setProcessingTimeSlots(prev => ({ ...prev, [`${session.date}_${session.startTime}_${session.endTime}`]: false }));
+        if (session.timeSlotId) {
+          setProcessingTimeSlots(prev => ({ ...prev, [session.timeSlotId!]: false }));
+        }
       }
     }
   };
 
-  const handleReschedule = async (sessionId: string, newTimeslotId: string, reason: string) => {
+  const handleRescheduleSubmit = async (sessionId: string, newTimeslotId: string, reason: string) => {
     const session = sessions.find(s => s.id === sessionId);
     if (!session) {
       showNotification("error", "Session not found");
@@ -295,28 +500,34 @@ const ScheduleSession = () => {
       setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, status: "Rescheduled" as const, lastStatusUpdate: dayjs().toISOString() } : s));
       showNotification("success", session.studentEmail ? `Session rescheduled successfully. Email notification sent to ${session.studentEmail}` : "Session rescheduled successfully");
       setIsModalVisible(false);
+      await loadSessions();
     } catch (error) {
       showNotification("error", "Failed to reschedule session");
       console.error("Error rescheduling session:", error);
+      throw error; // Re-throw to allow the modal's internal submission handler to catch it
     }
   };
 
   const openRescheduleModal = async (session: Session) => {
     try {
+      // Fetch session details again to ensure we have the latest timeSlotId and mentorId
+      // This is crucial if the session object in state is stale
       const sessionDetails = await sessionBookingService.getSessionDetails(session.id);
-      const sessionWithDetails = {
+      const sessionWithDetails: Session = {
         ...session,
         timeSlotId: sessionDetails.timeSlotId,
         startTime: sessionDetails.startTime,
         endTime: sessionDetails.endTime,
-        mentorId: sessionDetails.mentorId || session.mentorId,
+        mentorId: sessionDetails.mentorId || session.mentorId, // Ensure mentorId is picked up
       };
       setSelectedSession(sessionWithDetails);
       setIsModalVisible(true);
-      if (sessionWithDetails.mentorId) await loadAvailableTimeslots(sessionWithDetails.mentorId, sessionWithDetails.date);
+
+      // Timeslots will be loaded by the RescheduleModal's useEffect when it becomes visible
     } catch (error) {
-      showNotification("error", "Failed to load session details");
-      console.error("Error loading session details:", error);
+      showNotification("error", "Failed to load session details for rescheduling. Please try again.");
+      console.error("Error loading session details for reschedule:", error);
+      // Fallback: if details fail, still open modal with partial info if possible
       setSelectedSession(session);
       setIsModalVisible(true);
     }
@@ -327,8 +538,7 @@ const ScheduleSession = () => {
     key: "actions",
     render: (_, record) => {
       const isProcessing = processingSessionIds[record.id] || false;
-      const timeSlotKey = `${record.date}_${record.startTime}_${record.endTime}`;
-      const isTimeSlotProcessing = processingTimeSlots[timeSlotKey] || false;
+      const isTimeSlotProcessing = record.timeSlotId ? processingTimeSlots[record.timeSlotId] || false : false;
 
       return (
         <Space>
@@ -339,6 +549,7 @@ const ScheduleSession = () => {
                 size="small"
                 onClick={() => handleStatusChange(record.id, "Approved")}
                 loading={isProcessing}
+                // Disable if current session is processing OR if the time slot it uses is being processed by another action
                 disabled={isProcessing || (isTimeSlotProcessing && !processingSessionIds[record.id])}
               >
                 Accept
@@ -433,178 +644,14 @@ const ScheduleSession = () => {
   const upcomingColumns = [...getBaseColumns(), getActionsColumn()];
   const pastColumns = [...getBaseColumns()];
 
-  const RescheduleModal = () => {
-    const [newDate, setNewDate] = useState<dayjs.Dayjs | null>(null);
-    const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>("");
-    const [reason, setReason] = useState("");
-    const [submitting, setSubmitting] = useState(false);
-    const submitRef = useRef(false);
-
-    useEffect(() => {
-      if (selectedSession && isModalVisible) {
-        if (!newDate) setNewDate(dayjs(selectedSession.date));
-        setSelectedTimeSlot(selectedSession.timeSlotId || ""); 
-        setSelectedTimeSlot(`${selectedSession.startTime} - ${selectedSession.endTime}`);
-        setReason("");
-        setSubmitting(false);
-        submitRef.current = false;
-
-        if (selectedSession.mentorId) {
-          loadAvailableTimeslots(selectedSession.mentorId, selectedSession.date).then(() => {
-            if (selectedSession.timeSlotId && !availableTimeslots.some(slot => slot.id === selectedSession.timeSlotId)) {
-              const currentTimeSlot: TimeSlot = {
-                id: selectedSession.timeSlotId,
-                startTime: selectedSession.startTime || "",
-                endTime: selectedSession.endTime || "",
-                date: selectedSession.date,
-                mentorId: selectedSession.mentorId,
-                mentorName: "", 
-                isBooked: true,
-              };
-              setAvailableTimeslots(prev => {
-                if (!prev.some(slot => slot.id === currentTimeSlot.id)) {
-                  return [...prev, currentTimeSlot];
-                }
-                return prev;
-              });
-              console.log("Added current timeslot:", currentTimeSlot);
-            }
-          });
-        }
-      }
-    }, [selectedSession, isModalVisible]); 
-
-    const getAvailableTimeslotsForDate = (date: dayjs.Dayjs | null) =>
-      date ? availableTimeslots.filter(slot => dayjs(slot.date).format("YYYY-MM-DD") === date.format("YYYY-MM-DD")) : [];
-
-    const availableTimeslotsForDate = getAvailableTimeslotsForDate(newDate);
-
-    const handleSubmit = async () => {
-      if (submitting || submitRef.current || !newDate || !selectedTimeSlot || !selectedSession) {
-        showNotification("error", "Please fill in all fields");
-        return;
-      }
-
-      const selectedSlot = availableTimeslots.find(slot => slot.id === selectedTimeSlot);
-      if (!selectedSlot) {
-        showNotification("error", "Invalid time slot selected");
-        return;
-      }
-
-      if (newDate.isSame(dayjs(), "day") && dayjs(selectedSlot.startTime, "HH:mm:ss").isBefore(dayjs())) {
-        showNotification("error", "Start time must be later than current time");
-        return;
-      }
-
-      if (reason.length > 100) {
-        showNotification("error", "Reason is too long. Please shorten it.");
-        return;
-      }
-
-      setSubmitting(true);
-      submitRef.current = true;
-      try {
-        await handleReschedule(selectedSession.id, selectedTimeSlot, reason);
-      } catch (error) {
-        showNotification("error", "Failed to reschedule session");
-        console.error("Error in handleSubmit:", error);
-      } finally {
-        setSubmitting(false);
-        submitRef.current = false;
-      }
-    };
-
-    const handleCancel = () => {
-      if (!submitting && !submitRef.current) {
-        setIsModalVisible(false);
-        setSubmitting(false);
-        submitRef.current = false;
-        setAvailableTimeslots([]);
-        setNewDate(null); 
-        setSelectedTimeSlot(""); 
-        setReason("");
-      }
-    };
-    const handleDateChange = async (date: dayjs.Dayjs | null) => {
-      setNewDate(date);
-      setSelectedTimeSlot("");
-      if (date && selectedSession?.mentorId) {
-        await loadAvailableTimeslots(selectedSession.mentorId, date.format("YYYY-MM-DD"));
-      }
-    };
-
-    return (
-      <Modal
-        title="Reschedule Session"
-        open={isModalVisible}
-        onCancel={handleCancel}
-        onOk={handleSubmit}
-        confirmLoading={submitting}
-        maskClosable={!submitting && !submitRef.current}
-        closable={!submitting && !submitRef.current}
-        destroyOnClose
-        okButtonProps={{ disabled: submitting || submitRef.current || !selectedTimeSlot || !newDate || availableTimeslotsForDate.length === 0 }}
-        cancelButtonProps={{ disabled: submitting || submitRef.current }}
-      >
-        <Space direction="vertical" style={{ width: "100%" }}>
-          <div>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Date</label>
-            <DatePicker
-              value={newDate}
-              onChange={handleDateChange}
-              style={{ width: "100%" }}
-              disabledDate={d => d.isBefore(dayjs(), "day")}
-              disabled={submitting || submitRef.current}
-            />
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Time Slot</label>
-            <Select
-              style={{ width: "100%" }}
-              value={selectedTimeSlot}
-              onChange={setSelectedTimeSlot}
-              placeholder={loadingTimeslots ? "Loading time slots..." : "Select time slot"}
-              disabled={submitting || submitRef.current || loadingTimeslots || !newDate}
-              showSearch
-              allowClear
-              loading={loadingTimeslots}
-              notFoundContent={!newDate ? "Please select a date first" : "No data"}
-              filterOption={(input, option) =>
-                (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
-              }
-            >
-              {availableTimeslotsForDate.map(slot => (
-                <Option key={slot.id} value={slot.id}>
-                  {slot.startTime && slot.endTime ? `${slot.startTime} - ${slot.endTime}` : `${slot.id} (Invalid time)`}
-                </Option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Reason for rescheduling</label>
-            <TextArea
-              rows={3}
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-              maxLength={100}
-              placeholder="Reason for rescheduling"
-              showCount
-              disabled={submitting || submitRef.current}
-            />
-          </div>
-        </Space>
-      </Modal>
-    );
-  };
-
-  const sessionStats = {
+  const sessionStats = useMemo(() => ({
     pending: sessions.filter(s => s.status === "Pending").length,
     approved: sessions.filter(s => s.status === "Approved").length,
     completed: sessions.filter(s => s.status === "Completed").length,
     cancelled: sessions.filter(s => s.status === "Canceled").length,
     rescheduled: sessions.filter(s => s.status === "Rescheduled").length,
     total: sessions.length,
-  };
+  }), [sessions]);
 
   return (
     <div style={{ padding: "24px", minHeight: "100vh" }}>
@@ -663,7 +710,17 @@ const ScheduleSession = () => {
           </TabPane>
         </Tabs>
       </Card>
-      <RescheduleModal />
+      <RescheduleModal
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleRescheduleSubmit}
+        selectedSession={selectedSession}
+        availableTimeslots={availableTimeslots}
+        loadingTimeslots={loadingTimeslots}
+        loadAvailableTimeslots={loadAvailableTimeslots}
+        showNotification={showNotification}
+        user={user}
+      />
     </div>
   );
 };
