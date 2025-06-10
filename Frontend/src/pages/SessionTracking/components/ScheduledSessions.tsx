@@ -44,7 +44,7 @@ interface Session {
   date: string;
   startTime: string;
   endTime: string;
-  status: "Pending" | "Approved" | "Completed" | "Canceled" | "Rescheduled";
+  status: "Pending" | "Approved" | "Completed" | "Cancelled" | "Rescheduled";
   communicationMethod: "VideoCall" | "AudioCall" | "Chat";
   studentEmail?: string;
   timeSlotId?: string;
@@ -303,12 +303,12 @@ const ScheduleSession = () => {
   const processingOvertimeRef = useRef(false);
 
   const statusStyles = {
-    colors: { Pending: "orange", Approved: "blue", Completed: "green", Canceled: "red", Rescheduled: "purple" },
+    colors: { Pending: "orange", Approved: "blue", Completed: "green", Cancelled: "red", Rescheduled: "purple" },
     icons: {
       Pending: <ExclamationCircleOutlined />,
       Approved: <CheckCircleOutlined />,
       Completed: <CheckCircleOutlined />,
-      Canceled: <CloseCircleOutlined />,
+      Cancelled: <CloseCircleOutlined />,
       Rescheduled: <ClockCircleOutlined />,
     },
   };
@@ -358,7 +358,7 @@ const ScheduleSession = () => {
           overtimeSessions.map(async session => {
             try {
               await sessionBookingService.updateSessionStatus(session.id, "Canceled");
-              return { ...session, status: "Canceled" as const, lastStatusUpdate: now.toISOString() };
+              return { ...session, status: "Cancelled" as const, lastStatusUpdate: now.toISOString() };
             } catch (error) {
               console.error(`Failed to cancel overtime session ${session.id}:`, error);
               return session;
@@ -370,8 +370,8 @@ const ScheduleSession = () => {
           updatedSessions.find(u => u.id === session.id) || session
         ));
 
-        if (updatedSessions.some(s => s.status === "Canceled")) {
-          showNotification("info", `${updatedSessions.filter(s => s.status === "Canceled").length} overtime sessions have been cancelled and moved to Past Sessions`);
+        if (updatedSessions.some(s => s.status === "Cancelled")) {
+          showNotification("info", `${updatedSessions.filter(s => s.status === "Cancelled").length} overtime sessions have been cancelled and moved to Past Sessions`);
         }
       }
     } catch (error) {
@@ -442,7 +442,7 @@ const ScheduleSession = () => {
     session => !dayjs(`${session.date} ${session.startTime}`).isBefore(currentTime)
   ), [sessions, currentTime]);
 
-  const pastSessions = useMemo(() => getSessionSessions(["Completed", "Canceled"]), [sessions]);
+  const pastSessions = useMemo(() => getSessionSessions(["Completed", "Cancelled"]), [sessions]);
 
   const handleStatusChange = async (sessionId: string, newStatus: Session["status"]) => {
     try {
@@ -580,7 +580,7 @@ const ScheduleSession = () => {
             <Button
               danger
               size="small"
-              onClick={() => handleStatusChange(record.id, "Canceled")}
+              onClick={() => handleStatusChange(record.id, "Cancelled")}
               loading={isProcessing}
               disabled={isProcessing || (isTimeSlotProcessing && !processingSessionIds[record.id])}
             >
@@ -639,7 +639,7 @@ const ScheduleSession = () => {
     pending: sessions.filter(s => s.status === "Pending").length,
     approved: sessions.filter(s => s.status === "Approved").length,
     completed: sessions.filter(s => s.status === "Completed").length,
-    cancelled: sessions.filter(s => s.status === "Canceled").length,
+    cancelled: sessions.filter(s => s.status === "Cancelled").length,
     rescheduled: sessions.filter(s => s.status === "Rescheduled").length,
     total: sessions.length,
   }), [sessions]);

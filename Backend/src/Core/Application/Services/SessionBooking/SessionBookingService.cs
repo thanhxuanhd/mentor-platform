@@ -314,7 +314,7 @@ public class SessionBookingService(
 
             foreach (var conflict in conflictingSessions)
             {
-                conflict.Status = SessionStatus.Canceled;
+                conflict.Status = SessionStatus.Cancelled;
 
                 var conflictUser = await userRepository.GetByIdAsync(conflict.LearnerId);
                 if (conflictUser?.IsReceiveNotification == true)
@@ -327,7 +327,7 @@ public class SessionBookingService(
                 sessionBookingRepository.Update(conflict);
             }
         }
-        else if (request.Status == SessionStatus.Canceled)
+        else if (request.Status == SessionStatus.Cancelled)
         {
             subject = EmailConstants.SUBJECT_SESSION_CANCELLED;
             body = EmailConstants.BodySessionAcceptedEmail(id);

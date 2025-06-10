@@ -9,7 +9,6 @@ import {
   FolderOpenOutlined,
   HddOutlined,
   TeamOutlined,
-  TeamOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
