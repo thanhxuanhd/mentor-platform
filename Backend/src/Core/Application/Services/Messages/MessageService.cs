@@ -5,7 +5,6 @@ using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.Messages;
 
