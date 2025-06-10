@@ -25,7 +25,7 @@ const SignUpForm: React.FC = () => {
     email: string;
     password: string;
     confirmPassword: string;
-    agreeToTerms: boolean;
+    terms: boolean;
   }) => {
     const trimmedEmail = values.email.trim();
 
@@ -178,7 +178,7 @@ const SignUpForm: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="agreeToTerms"
+            name="terms"
             valuePropName="checked"
             rules={[
               {
