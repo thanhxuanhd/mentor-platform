@@ -3,7 +3,6 @@
 import { useEffect, useState, useContext } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button, Tag, Spin } from "antd"
-import { ShareAltOutlined } from "@ant-design/icons/lib/icons"
 
 import { userService } from "../../../services/user/userService"
 import { getListCategories } from "../../../services/category/categoryServices"
@@ -92,10 +91,6 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
     }
   }, [propUserId, user, isAuthenticated, token, navigate, availabilities, expertises, teachingApproaches, categories])
 
-  const handleShareProfile = () => {
-    console.log("Sharing profile...")
-  }
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -141,15 +136,15 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">Your Profile</h1>
           <div className="flex gap-2">
-            <Button
-              type="primary"
-              size="large"
-              icon={<ShareAltOutlined />}
-              onClick={handleShareProfile}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              Share Profile
-            </Button>
+            {/*<Button*/}
+            {/*  type="primary"*/}
+            {/*  size="large"*/}
+            {/*  icon={<ShareAltOutlined />}*/}
+            {/*  onClick={handleShareProfile}*/}
+            {/*  className="bg-blue-500 hover:bg-blue-600"*/}
+            {/*>*/}
+            {/*  Share Profile*/}
+            {/*</Button>*/}
             <Button
               type="primary"
               size="large"
@@ -283,16 +278,16 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
         </div>
 
         <div className="pt-4 border-t border-gray-700">
-          <Button
-            type="link"
-            className="text-orange-500 flex items-center gap-1 pl-0"
-            onClick={() => console.log("View additional settings")}
-          >
-            View Additional Profile Settings
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.59Z" fill="currentColor" />
-            </svg>
-          </Button>
+          {/*<Button*/}
+          {/*  type="link"*/}
+          {/*  className="text-orange-500 flex items-center gap-1 pl-0"*/}
+          {/*  onClick={() => console.log("View additional settings")}*/}
+          {/*>*/}
+          {/*  View Additional Profile Settings*/}
+          {/*<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
+          {/*  <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.59Z" fill="currentColor" />*/}
+          {/*  </svg>*/}
+          {/*</Button>*/}
         </div>
       <div className="pt-4 border-gray-700">
         <Button type="primary" size="large" onClick={() => navigate("/")} className="bg-orange-500 hover:bg-orange-600">
