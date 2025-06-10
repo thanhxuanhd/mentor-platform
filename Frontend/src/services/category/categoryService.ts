@@ -23,6 +23,12 @@ export const categoryService = {
     return response.data.value;
   },
 
+  getActive: async () => {
+    const response = await axiosClient.get(`Categories/active-categories`);
+    console.log(response.data);
+    return response.data.value;
+  },
+
   /**
    * Get a category by ID
    */

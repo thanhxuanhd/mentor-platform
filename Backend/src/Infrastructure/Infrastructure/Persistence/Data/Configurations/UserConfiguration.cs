@@ -84,13 +84,13 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasMany(u => u.Schedules)
-            .WithOne(s => s.Mentor) 
-            .HasForeignKey(s => s.MentorId) 
+            .WithOne(s => s.Mentor)
+            .HasForeignKey(s => s.MentorId)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasMany(u => u.Sessions)
-            .WithOne(b => b.Learner) 
-            .HasForeignKey(b => b.LearnerId) 
+            .WithOne(b => b.Learner)
+            .HasForeignKey(b => b.LearnerId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

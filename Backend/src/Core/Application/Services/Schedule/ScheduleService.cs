@@ -141,7 +141,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
         StringBuilder stringBuilder = new();
-        
+
         foreach (var timeSlot in request.AvailableTimeSlots)
         {
             DateOnly date = timeSlot.Key;
@@ -202,7 +202,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     public Dictionary<DateOnly, List<TimeSlotResponse>> GetAllDefaultTimeSlots(Schedules scheduleSettings)
     {
         Dictionary<DateOnly, List<TimeSlotResponse>> allTimeSlots = new();
-        
+
         // Get current date and time
         DateTime now = DateTime.Now;
 
@@ -222,7 +222,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             while (slotDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
             {
                 var sessionEndDateTime = slotDateTime.AddMinutes(scheduleSettings.SessionDuration);
-                
+
                 // only add time slots that start in the future (current not included)
                 if (slotDateTime > now)
                 {

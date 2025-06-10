@@ -6,4 +6,7 @@ public interface IMentorAvailabilityTimeSlotRepository : IBaseRepository<MentorA
 {
     List<MentorAvailableTimeSlot> DeletePendingAndCancelledTimeSlots(Guid scheduleSettingsId);
     List<MentorAvailableTimeSlot> GetConfirmedTimeSlots(Guid scheduleSettingsId);
+    Task<MentorAvailableTimeSlot?> GetByIdAsync(Guid id);
+    IQueryable<MentorAvailableTimeSlot> GetAvailableTimeSlot();
+    IQueryable<MentorAvailableTimeSlot> GetAvailableMentorForBooking();
 }

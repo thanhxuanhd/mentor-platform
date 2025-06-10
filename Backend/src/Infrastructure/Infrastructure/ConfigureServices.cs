@@ -60,6 +60,7 @@ public static class ConfigureServices
         provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<ISessionsRepository, SessionsRepository>();
         services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
 
         services.AddDbContext<ApplicationDbContext>(options =>
