@@ -26,6 +26,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Schedules> Schedules { get; set; }
     public DbSet<MentorAvailableTimeSlot> MentorAvailableTimeSlots { get; set; }
     public DbSet<Sessions> Sessions { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

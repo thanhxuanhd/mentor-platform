@@ -1,0 +1,10 @@
+﻿using Contract.Repositories;
+using Domain.Entities;
+using Infrastructure.Persistence.Data;
+using Infrastructure.Repositories.Base;
+
+namespace Infrastructure.Repositories;
+
+public class ConversationParticipantRepository(ApplicationDbContext context) : BaseRepository<ConversationParticipant, Guid>(context), IConversationParticipantRepository
+{
+}

@@ -22,6 +22,8 @@ public static class ConfigureServices
                 options.JsonSerializerOptions.WriteIndented = true;
             });
 
+        services.AddSignalR();
+
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
 
