@@ -4,6 +4,8 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  ScheduleOutlined,
+  FolderOpenOutlined,
   HddOutlined,
   ScheduleOutlined,
 } from "@ant-design/icons";
@@ -63,6 +65,18 @@ export const menuItems: MenuItemProps[] = [
     isMentorApprovedRequired: true,
   },
   {
+    key: "resources",
+    icon: <FolderOpenOutlined />,
+    label: "Resources",
+    link: "resources",
+    role: [
+      applicationRole.LEARNER,
+      applicationRole.ADMIN,
+      applicationRole.MENTOR,
+    ],
+    isMentorApprovedRequired: true,
+  },
+  {
     key: "profile",
     icon: <ProfileOutlined />,
     label: "Profile",
@@ -89,5 +103,5 @@ export const menuItems: MenuItemProps[] = [
     label: "Availability",
     link: "availability",
     role: [applicationRole.MENTOR],
-  }
+  },
 ];

@@ -33,6 +33,6 @@ public class User : BaseEntity<Guid>
     public virtual ICollection<UserExpertise> UserExpertises { get; set; } = [];
     public virtual Role Role { get; set; } = null!;
     public virtual ICollection<Course>? Courses { get; set; }
-    public virtual ICollection<Schedules>? Schedules { get; set; } 
+    public virtual ICollection<Schedules>? Schedules { get; set; }
     public virtual ICollection<Sessions>? Sessions { get; set; }
 }

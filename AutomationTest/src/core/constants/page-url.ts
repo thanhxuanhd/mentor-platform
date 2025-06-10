@@ -5,8 +5,10 @@ export const PAGE_ENDPOINT_URL = {
   RESET_PASSWORD: "/reset-password",
   SIGN_UP: "/signup",
   VIEW_PROFILE: "/profile",
-  COURSE_MANAGEMENT: "/courses",
+  COURSE_MANAGEMENT: '/courses',
+  AVAILABILITY: '/availability',
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
+  RESOURCE: "/resources",
   DASHBOARD: "/dashboard",
 };

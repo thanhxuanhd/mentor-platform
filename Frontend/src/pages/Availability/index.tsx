@@ -1,10 +1,7 @@
-"use client"
-
 import React, { useState, useEffect, useContext } from "react";
 import { Button, Card, message, Spin, App } from "antd";
 import { SaveOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
-import { v4 as uuidv4 } from 'uuid';
 import weekday from 'dayjs/plugin/weekday';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -21,7 +18,7 @@ import { TimeBlocks } from "./components/TimeBlocks";
 import type { DayAvailability, TimeBlock, WeekDay } from "./types";
 import { availabilityService } from "../../services/availability/availabilityService";
 import { AuthContext } from "../../contexts/AuthContext";
-import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat, generateTimeSlotsForWeek } from "./utils";
+import { convertApiScheduleToAvailability, convertAvailabilityToApiFormat, generateTimeSlotsForWeek, generateTimeSlotsForDay } from "./utils";
 
 // Configure dayjs plugins
 dayjs.extend(weekday);
@@ -32,7 +29,7 @@ dayjs.extend(isSameOrAfter);
 export default function AvailabilityManager() {
   const { user } = useContext(AuthContext);
   const { notification } = App.useApp();
-  
+
   // Settings state - these will be loaded from backend
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
@@ -58,28 +55,28 @@ export default function AvailabilityManager() {
   // Load initial data from API
   const loadScheduleSettings = async (weekStart?: Dayjs) => {
     if (!user?.id) return;
-    
+
     try {
       setIsLoading(true);
       const weekStartDate = (weekStart || currentWeekStart).format('YYYY-MM-DD');
       const weekEndDate = (weekStart || currentWeekStart).add(6, 'days').format('YYYY-MM-DD');
-      
+
       const settings = await availabilityService.getScheduleSettings(user.id, {
         weekStartDate,
         weekEndDate
       });
-      
+
       // Update settings state
       setStartTime(settings.startTime);
       setEndTime(settings.endTime);
       setSessionDuration(settings.sessionDuration);
       setBufferTime(settings.bufferTime);
       setIsLocked(settings.isLocked);
-      
+
       // Convert and set availability data
       const availabilityData = convertApiScheduleToAvailability(settings);
       setAvailability(availabilityData);
-      
+
     } catch (error) {
       console.error('Failed to load schedule settings:', error);
       message.error('Failed to load availability settings');
@@ -110,17 +107,17 @@ export default function AvailabilityManager() {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     return availability[dateKey] || [];
   }, [selectedDate, availability]);
-  
+
   // Current time slots based on selected date
   const [currentSlots, setCurrentSlots] = useState<TimeBlock[]>([]);
-    // Update current slots when selected date or availability changes
+  // Update current slots when selected date or availability changes
   useEffect(() => {
     setCurrentSlots(getCurrentDateSlots());
   }, [getCurrentDateSlots]);  // Toggle availability for a specific time slot
   const toggleSlotAvailability = (slotId: string) => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const targetSlot = currentSlots.find(slot => slot.id === slotId);
-    
+
     // Prevent modification of past slots and booked slots only
     if (!targetSlot || targetSlot.booked || targetSlot.isPast) {
       if (targetSlot?.isPast) {
@@ -128,7 +125,7 @@ export default function AvailabilityManager() {
       }
       return;
     }
-    
+
     const updatedSlots = currentSlots.map(slot =>
       slot.id === slotId
         ? { ...slot, available: !slot.available }
@@ -155,34 +152,34 @@ export default function AvailabilityManager() {
     // If current selected date is not in the new week, move it to the same day of week in new week
     const currentDayOfWeek = selectedDate.day(); // 0 = Sunday, 1 = Monday, etc.
     let newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
-    
+
     // Check if the new selected date has time slots
     const newSelectedDateKey = newSelectedDate.format("YYYY-MM-DD");
     const newSelectedDateSlots = availability[newSelectedDateKey] || [];
-    
+
     // If the new date doesn't have time slots, find the first day in the week that does, but not for the last day of the week
     if (newSelectedDateSlots.length === 0 && currentDayOfWeek !== 6) {
       let foundDayInCurrentWeek = false;
-      
+
       for (let i = 0; i < 7; i++) {
         // Only check days within the current week (don't go to next week)
         const candidateDate = newWeekStart.add(i, "day");
         const candidateDateKey = candidateDate.format("YYYY-MM-DD");
         const candidateSlots = availability[candidateDateKey] || [];
-        
+
         if (candidateSlots.length > 0) {
           newSelectedDate = candidateDate;
           foundDayInCurrentWeek = true;
           break;
         }
       }
-      
+
       // If no day in the current week has slots, just stay on the original day
       if (!foundDayInCurrentWeek) {
         newSelectedDate = newWeekStart.add(currentDayOfWeek, "day");
       }
     }
-    
+
     setSelectedDate(newSelectedDate);
   };
 
@@ -199,7 +196,7 @@ export default function AvailabilityManager() {
       const day = currentWeekStart.add(i, "day");
       const daySlots = availability[day.format("YYYY-MM-DD")] || [];
       const hasTimeSlots = daySlots.length > 0;
-      
+
       days.push({
         day: day.format("dddd"),
         shortDay: day.format("ddd"),
@@ -246,26 +243,23 @@ export default function AvailabilityManager() {
     const sourceSlots = getCurrentDateSlots();
     const weekDays = getWeekDays();
     const updates: DayAvailability = {};
-    
-    // Create source template - both booked and non-booked slots
-    // We'll use this to get the time slot patterns without actually copying booked status
-    const sourceTimeSlotTemplates = sourceSlots.map(slot => ({
-      startTime: slot.startTime,
-      endTime: slot.endTime,
-      available: slot.available,
-      time: slot.time,
-      // We don't copy isPast or booked - these will be determined for each target day
-    }));
+
+    // Create an availability pattern from the actual source slots
+    const availabilityPattern = new Map<string, boolean>();
+    sourceSlots.forEach(slot => {
+      const key = `${slot.startTime}-${slot.endTime}`;
+      availabilityPattern.set(key, slot.available);
+    });
 
     weekDays.forEach(day => {
       const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
       const dayDate = dayjs(day.fullDate);
-      
+
       // Skip the source day itself
       if (dateKey === selectedDate.format("YYYY-MM-DD")) {
         return;
       }
-      
+
       // Skip days in the past
       if (dayDate.isBefore(dayjs(), 'day')) {
         return;
@@ -273,7 +267,7 @@ export default function AvailabilityManager() {
 
       // Get existing slots for this day
       const existingSlots = availability[dateKey] || [];
-      
+
       // Create a map for quick lookup of existing slots by time
       const existingSlotsMap = new Map();
       existingSlots.forEach(slot => {
@@ -281,46 +275,39 @@ export default function AvailabilityManager() {
         existingSlotsMap.set(key, slot);
       });
 
-      // Create new slots based on source availability pattern
-      const newSlots: TimeBlock[] = [];
-      
-      sourceTimeSlotTemplates.forEach(template => {
-        const key = `${template.startTime}-${template.endTime}`;
+      // Generate complete slots for this target day and apply the availability pattern
+      const targetCompleteSlots = generateTimeSlotsForDay(
+        dateKey,
+        startTime,
+        endTime,
+        sessionDuration,
+        bufferTime,
+        existingSlots.filter(slot => slot.booked) // Preserve existing booked slots
+      );
+
+      // Apply the availability pattern from the source day
+      const newSlots: TimeBlock[] = targetCompleteSlots.map(slot => {
+        const key = `${slot.startTime}-${slot.endTime}`;
         const existingSlot = existingSlotsMap.get(key);
-        
-        // Calculate if this slot would be in the past for this day
-        const slotDateTime = dayjs(`${dateKey} ${template.startTime}`);
-        const isPast = slotDateTime.isSameOrBefore(dayjs());
-        
-        // If slot would be in the past, skip it entirely
-        if (isPast) {
-          return;
-        }
-        
+
+        // Get availability pattern from source (default to false if not in pattern)
+        const shouldBeAvailable = availabilityPattern.get(key) || false;
+
         if (existingSlot) {
-          // If this slot already exists (booked or not), preserve its booked status
-          // but update its availability according to the source template
-          newSlots.push({
+          // If this slot already exists, preserve its booked status but apply the availability pattern
+          return {
             ...existingSlot,
-            // Only copy available status, don't change booked status
-            available: existingSlot.booked ? existingSlot.available : template.available
-          });
+            // Only copy available status if the slot is not booked
+            available: existingSlot.booked ? existingSlot.available : shouldBeAvailable
+          };
         } else {
-          // Create a new slot with copied availability pattern
-          newSlots.push({
-            id: uuidv4(),
-            time: template.time,
-            startTime: template.startTime,
-            endTime: template.endTime,
-            available: template.available,
-            booked: false,
-            isPast: false // This should always be false since we skip past slots above
-          });
+          // For new slots, apply the availability pattern
+          return {
+            ...slot,
+            available: shouldBeAvailable
+          };
         }
       });
-
-      // Sort slots by start time
-      newSlots.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
       updates[dateKey] = newSlots;
     });
@@ -341,7 +328,7 @@ export default function AvailabilityManager() {
     try {
       const weekStartDate = currentWeekStart.format('YYYY-MM-DD');
       const weekEndDate = currentWeekStart.add(6, 'days').format('YYYY-MM-DD');
-      
+
       const saveRequest = convertAvailabilityToApiFormat(availability, {
         weekStartDate,
         weekEndDate,
@@ -349,8 +336,8 @@ export default function AvailabilityManager() {
         endTime,
         sessionDuration,
         bufferTime
-      });      
-      
+      });
+
       const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
 
       if (response.success) {
@@ -363,7 +350,7 @@ export default function AvailabilityManager() {
       } else {
         setSaveError(true);
         message.error('Failed to save availability settings');
-      }    
+      }
     } catch (error) {
       setSaveError(true);
       setNotify({
@@ -384,13 +371,13 @@ export default function AvailabilityManager() {
   }) => {
     try {
       const weekStartDate = currentWeekStart.format('YYYY-MM-DD');
-      
+
       // Use override values if provided, otherwise use current state
       const effectiveStartTime = overrides?.startTime ?? startTime;
       const effectiveEndTime = overrides?.endTime ?? endTime;
       const effectiveSessionDuration = overrides?.sessionDuration ?? sessionDuration;
       const effectiveBufferTime = overrides?.bufferTime ?? bufferTime;
-      
+
       // Use functional update to get the latest availability state
       setAvailability(currentAvailability => {
         // Generate fresh time slots on the frontend with current settings
@@ -402,12 +389,12 @@ export default function AvailabilityManager() {
           effectiveBufferTime,
           currentAvailability // Use the current availability from the state updater
         );
-        
+
         return freshAvailability;
       });
-      
+
       message.info('Time slots updated. Please reselect your available slots.');
-      
+
     } catch (error) {
       console.error('Failed to regenerate time slots:', error);
       message.error('Failed to update time slots');
@@ -442,14 +429,14 @@ export default function AvailabilityManager() {
   const previewData = weekDays.map(day => {
     const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
     const daySlots = availability[dateKey] || [];
-    
+
     // Only show future slots (not past slots)
     const futureSlots = daySlots.filter(slot => !slot.isPast);
-    
+
     // Separate available and booked slots for different styling
     const availableSlots = futureSlots.filter(slot => slot.available && !slot.booked);
     const bookedSlots = futureSlots.filter(slot => slot.booked);
-    
+
     return {
       day: day.shortDay,
       date: day.date,
@@ -463,7 +450,7 @@ export default function AvailabilityManager() {
     <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>        
+        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>
         <Button
           type="primary"
           icon={<SaveOutlined />}
@@ -489,135 +476,134 @@ export default function AvailabilityManager() {
         </div>
       ) : (
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Sidebar */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Sidebar */}
+          <div className="lg:col-span-3 space-y-6">
 
-          {/* Calendar Navigation */}
-          <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">
-              <WeekNavigation
-                currentWeekStart={currentWeekStart}
-                onWeekChange={navigateWeek}
-                onTodayClick={goToCurrentWeek}
-              />
-            </div>
-          </Card>
+            {/* Calendar Navigation */}
+            <Card className="bg-slate-700 border-slate-600">
+              <div className="text-white">
+                <WeekNavigation
+                  currentWeekStart={currentWeekStart}
+                  onWeekChange={navigateWeek}
+                  onTodayClick={goToCurrentWeek}
+                />
+              </div>
+            </Card>
 
-          {/* Schedule Settings */}
-          <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">
-              <ScheduleSettings
-                startTime={startTime}
-                endTime={endTime}
-                sessionDuration={sessionDuration}
-                bufferTime={bufferTime}
-                onStartTimeChange={updateStartTime}
-                onEndTimeChange={updateEndTime}
-                onSessionDurationChange={updateSessionDuration}
-                onBufferTimeChange={updateBufferTime}
-                hasBookedSessions={hasBookedSessions}
+            {/* Schedule Settings */}
+            <Card className="bg-slate-700 border-slate-600">
+              <div className="text-white">
+                <ScheduleSettings
+                  startTime={startTime}
+                  endTime={endTime}
+                  sessionDuration={sessionDuration}
+                  bufferTime={bufferTime}
+                  onStartTimeChange={updateStartTime}
+                  onEndTimeChange={updateEndTime}
+                  onSessionDurationChange={updateSessionDuration}
+                  onBufferTimeChange={updateBufferTime}
+                  hasBookedSessions={hasBookedSessions}
 
-              />
-            </div>
-          </Card>          
-          {/* Bulk Actions */}
-          <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">              
-              <BulkActions
-                selectedDate={selectedDate}
-                onSelectAll={selectAllSlots}
-                onClearAll={clearAllSlots}
-                onCopyToWeek={copyScheduleToAllDays}
-              />
-            </div>
-          </Card>
-        </div>
+                />
+              </div>
+            </Card>
+            {/* Bulk Actions */}
+            <Card className="bg-slate-700 border-slate-600">
+              <div className="text-white">
+                <BulkActions
+                  selectedDate={selectedDate}
+                  onSelectAll={selectAllSlots}
+                  onClearAll={clearAllSlots}
+                  onCopyToWeek={copyScheduleToAllDays}
+                />
+              </div>
+            </Card>
+          </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-9 space-y-6">
-          {/* Week Calendar */}
-          <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">
-              <WeekCalendar
-                weekDays={weekDays}
-                onDaySelect={setSelectedDate}
-              />
-            </div>
-          </Card>
+          {/* Main Content */}
+          <div className="lg:col-span-9 space-y-6">
+            {/* Week Calendar */}
+            <Card className="bg-slate-700 border-slate-600">
+              <div className="text-white">
+                <WeekCalendar
+                  weekDays={weekDays}
+                  onDaySelect={setSelectedDate}
+                />
+              </div>
+            </Card>
 
-          {/* Time Blocks */}
-          <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">              
-              <Spin spinning={isSaving}>                  
-                <TimeBlocks
-                selectedDate={selectedDate}
-                timeBlocks={currentSlots}
-                onToggleBlock={toggleSlotAvailability}
-              />
-            </Spin>
-            </div>
-          </Card>
+            {/* Time Blocks */}
+            <Card className="bg-slate-700 border-slate-600">
+              <div className="text-white">
+                <Spin spinning={isSaving}>
+                  <TimeBlocks
+                    selectedDate={selectedDate}
+                    timeBlocks={currentSlots}
+                    onToggleBlock={toggleSlotAvailability}
+                  />
+                </Spin>
+              </div>
+            </Card>
 
-          {/* Availability Preview */}
-          <Card className="bg-slate-700 border-slate-600">
-            <div className="text-white">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium mb-2">Availability Preview</h3>
-                <p className="text-slate-400 text-sm mb-4">
-                  This is how your availability will appear to learners:
-                </p>                
-                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
-                  {previewData.map((day, index) => (
-                    <div key={index} className="bg-slate-600 rounded-lg p-3">
-                      <div className="text-center mb-2">
-                        <div className="font-medium text-sm">{day.day}</div>
-                        <div className="text-xs text-slate-400">{day.date}</div>
-                      </div>
-                      {/* TODO: Clarify with team */}
-                      <div className="space-y-1 max-h-48 overflow-y-auto">
-                        {day.allVisibleSlots.length > 0 ? (
-                          day.allVisibleSlots.map((slot, slotIndex) => (
-                            <div
-                              key={slotIndex}
-                              className={`text-white text-xs px-2 py-1 rounded text-center truncate ${
-                                slot.booked 
-                                  ? 'bg-slate-500' 
+            {/* Availability Preview */}
+            <Card className="bg-slate-700 border-slate-600">
+              <div className="text-white">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-medium mb-2">Availability Preview</h3>
+                  <p className="text-slate-400 text-sm mb-4">
+                    This is how your availability will appear to learners:
+                  </p>
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 mb-4">
+                    {previewData.map((day, index) => (
+                      <div key={index} className="bg-slate-600 rounded-lg p-3">
+                        <div className="text-center mb-2">
+                          <div className="font-medium text-sm">{day.day}</div>
+                          <div className="text-xs text-slate-400">{day.date}</div>
+                        </div>
+                        {/* TODO: Clarify with team */}
+                        <div className="space-y-1 max-h-48 overflow-y-auto">
+                          {day.allVisibleSlots.length > 0 ? (
+                            day.allVisibleSlots.map((slot, slotIndex) => (
+                              <div
+                                key={slotIndex}
+                                className={`text-white text-xs px-2 py-1 rounded text-center truncate ${slot.booked
+                                  ? 'bg-slate-500'
                                   : 'bg-orange-500'
-                              }`}
-                              title={`${slot.time}${slot.booked ? ' (Booked)' : ' (Available)'}`}
-                            >
-                              {slot.time}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-xs text-slate-500 text-center">No availability</div>
-                        )}
+                                  }`}
+                                title={`${slot.time}${slot.booked ? ' (Booked)' : ' (Available)'}`}
+                              >
+                                {slot.time}
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-xs text-slate-500 text-center">No availability</div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
 
-                <div className="flex flex-wrap items-center justify-between text-sm text-slate-400">
-                  <span className="mb-2 md:mb-0">
-                    Working hours: {startTime} - {endTime} • Session: {sessionDuration} min • Buffer: {bufferTime} min
-                  </span>
-                  <div className="flex flex-wrap gap-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                      <span>Available</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-slate-500 rounded"></div>
-                      <span>Booked</span>
+                  <div className="flex flex-wrap items-center justify-between text-sm text-slate-400">
+                    <span className="mb-2 md:mb-0">
+                      Working hours: {startTime} - {endTime} • Session: {sessionDuration} min • Buffer: {bufferTime} min
+                    </span>
+                    <div className="flex flex-wrap gap-4">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-orange-500 rounded"></div>
+                        <span>Available</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-slate-500 rounded"></div>
+                        <span>Booked</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>          
-          </Card>
+            </Card>
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

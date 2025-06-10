@@ -35,9 +35,6 @@ public class UpdateScheduleSettingsRequestValidator : AbstractValidator<SaveSche
                 .WithMessage("The difference between WeekEndDate and WeekStartDate must be 6 days.");
         });
 
-        RuleFor(x => x.StartTime)
-            .NotEmpty().WithMessage("StartTime is required.");
-
         RuleFor(x => x.EndTime)
             .NotEmpty().WithMessage("EndTime is required.")
             .GreaterThan(x => x.StartTime).WithMessage("EndTime must be greater than StartTime.");
