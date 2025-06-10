@@ -21,7 +21,7 @@ export class LoginPage extends BasePage {
     this.LBL_FAILEDMESSAGE_LOCATOR = page.getByText(
       "Email or password is not correct"
     );
-    this.BTN_LOGOUT_LOCATOR = page.getByText("Logout");
+    this.BTN_LOGOUT_LOCATOR = page.locator('//button[span[text()="Logout"]]');
   }
 
   async navigateToHomePage(url = "") {
