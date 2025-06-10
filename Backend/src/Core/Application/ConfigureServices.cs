@@ -6,7 +6,6 @@ using Application.Services.Courses;
 using Application.Services.Expertises;
 using Application.Services.Schedule;
 using Application.Services.MentorApplications;
-using Application.Services.Schedule;
 using Application.Services.SessionBooking;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;

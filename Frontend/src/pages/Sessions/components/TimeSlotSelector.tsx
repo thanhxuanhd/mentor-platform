@@ -18,7 +18,9 @@ export default function TimeSlotSelector({
     <div className="mt-8">
       <h3 className="text-lg font-medium mb-4 text-center">Select a time slot</h3>
       {loading ? (
-        <Spin tip="Loading time slots..." />
+        <div className="flex justify-center items-center col-span-5">
+          <Spin tip="Loading time slots..." />
+        </div>
       ) : (
         <div className="grid grid-cols-5 gap-3">
           {timeSlots.length > 0 ? (
