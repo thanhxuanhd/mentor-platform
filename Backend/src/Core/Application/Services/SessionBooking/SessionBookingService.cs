@@ -66,15 +66,18 @@ public class SessionBookingService(
         Guid learnerId,
         AvailableTimeSlotByDateListRequest request)
     {
-        var currentDateTime = DateTime.Now; 
+        var currentDateTime = DateTime.Now;
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
-       
+
         var availableTimeSlot =
             await mentorAvailableTimeSlotRepository.ToListAsync(
                 mentorAvailableTimeSlots
                     .Where(mats => mats.Schedules.MentorId == mentorId)
                     .Where(mats => mats.Date == request.Date)
-                    .Where(mats => mats.StartTime >= TimeOnly.FromDateTime(currentDateTime))
+                    .Where(mats => mats.Date > DateOnly.FromDateTime(currentDateTime) ||
+                                (mats.Date == DateOnly.FromDateTime(currentDateTime) &&
+                                 mats.StartTime > TimeOnly.FromDateTime(currentDateTime)))
+
                     .Select(mats => SessionBookingExtensions.CreateTimeSlotByMentorAndDateListResponse(mats, learnerId)));
 
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
@@ -128,7 +131,7 @@ public class SessionBookingService(
         MentorAvailableTimeSlot timeSlot,
         User learner,
         SessionType sessionType)
-    {   
+    {
         if (timeSlot.Sessions.Any(s => s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
             return Result.Failure<SessionSlotStatusResponse>(
