@@ -1,6 +1,7 @@
 using Application.Services.CourseResources;
 using Application.Services.Courses;
 using Contract.Dtos.CourseResources.Requests;
+using Contract.Dtos.CourseResources.Responses;
 using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
 using Contract.Shared;
@@ -28,7 +29,7 @@ public class CourseControllerTest
 
         _user = new ClaimsPrincipal(new ClaimsIdentity([
             new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Role, nameof(UserRole.Admin))
+           new Claim(ClaimTypes.Role, nameof(UserRole.Admin))
         ], "TestAuthentication"));
 
         _controller = new CoursesController(_courseServiceMock.Object, _courseResourceServiceMock.Object,
@@ -49,18 +50,6 @@ public class CourseControllerTest
 
     private static void AssertObjectResult<TValue>(IActionResult actionResult, HttpStatusCode expectedStatusCode,
         Result<TValue> expectedServiceResult)
-    {
-        Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
-        var objectResult = (ObjectResult)actionResult;
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(objectResult.StatusCode, Is.EqualTo((int)expectedStatusCode));
-            Assert.That(objectResult.Value, Is.EqualTo(expectedServiceResult));
-        }
-    }
-
-    private static void AssertObjectResult(IActionResult actionResult, HttpStatusCode expectedStatusCode,
-        Result expectedServiceResult)
     {
         Assert.That(actionResult, Is.InstanceOf<ObjectResult>());
         var objectResult = (ObjectResult)actionResult;
@@ -183,16 +172,17 @@ public class CourseControllerTest
             Tags = ["FetchedTag"]
         };
         var items = new List<CourseResourceResponse>
-        {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Title = "Resource 1",
-                Description = "Description of Resource 1",
-                ResourceType = FileType.Video,
-                ResourceUrl = "http://example.com/item1"
-            }
-        };
+       {
+           new()
+           {
+               Id = Guid.NewGuid(),
+               Title = "Resource 1",
+               Description = "Description of Resource 1",
+               ResourceType = FileType.Video,
+               ResourceUrl = "http://example.com/item1",
+               CourseTitle = ""
+           }
+       };
         var courseServiceResult = Result.Success(courseSummary, HttpStatusCode.OK);
         var courseResourceServiceResult = Result.Success(items, HttpStatusCode.OK);
 
@@ -243,7 +233,8 @@ public class CourseControllerTest
             Title = "Test Resource",
             Description = "Description of Test Resource",
             ResourceType = FileType.Pdf,
-            ResourceUrl = "http://example.com/testitem"
+            ResourceUrl = "http://example.com/testitem",
+            CourseTitle = ""
         };
         var serviceResult = Result.Success(item, HttpStatusCode.OK);
         _courseResourceServiceMock.Setup(s => s.GetByIdAsync(itemId)).ReturnsAsync(serviceResult);
@@ -257,88 +248,6 @@ public class CourseControllerTest
         // Assert
         AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
         _courseResourceServiceMock.Verify(s => s.GetByIdAsync(itemId), Times.Once);
-    }
-
-    [Test]
-    public async Task CreateCourseResource_WhenRequestValid_ReturnsCreatedResult()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var request = new CourseResourceCreateRequest
-        {
-            Title = "New Resource",
-            Description = "New Resource Description",
-            ResourceType = FileType.Video,
-            ResourceUrl = "http://example.com/new"
-        };
-
-        var createdResource = new CourseResourceResponse
-        {
-            Id = Guid.NewGuid(),
-            Title = request.Title,
-            Description = request.Description,
-            ResourceType = request.ResourceType,
-            ResourceUrl = request.ResourceUrl
-        };
-        var serviceResult = Result.Success(createdResource, HttpStatusCode.Created);
-        _courseResourceServiceMock.Setup(s => s.CreateAsync(courseId, request)).ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _controller.CreateCourseResource(courseId, request);
-
-        // Assert
-        AssertObjectResult(result, HttpStatusCode.Created, serviceResult);
-        _courseResourceServiceMock.Verify(s => s.CreateAsync(courseId, request), Times.Once);
-    }
-
-    [Test]
-    public async Task UpdateCourseResource_WhenRequestValid_ReturnsOkResult()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var itemId = Guid.NewGuid();
-        var request = new CourseResourceUpdateRequest
-        {
-            Title = "Updated Resource",
-            Description = "Updated Resource Description",
-            ResourceType = FileType.Pdf,
-            ResourceUrl = "http://example.com/updated"
-        };
-
-        var updatedResource = new CourseResourceResponse
-        {
-            Id = itemId,
-            Title = request.Title,
-            Description = request.Description,
-            ResourceType = request.ResourceType,
-            ResourceUrl = request.ResourceUrl
-        };
-        var serviceResult = Result.Success(updatedResource, HttpStatusCode.OK);
-        _courseResourceServiceMock.Setup(s => s.UpdateAsync(itemId, request)).ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _controller.UpdateCourseResource(courseId, itemId, request);
-
-        // Assert
-        AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
-        _courseResourceServiceMock.Verify(s => s.UpdateAsync(itemId, request), Times.Once);
-    }
-
-    [Test]
-    public async Task DeleteCourseResource_WhenResourceExists_ReturnsOk()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var itemId = Guid.NewGuid();
-        var serviceResult = Result.Success(true, HttpStatusCode.OK);
-        _courseResourceServiceMock.Setup(s => s.DeleteAsync(itemId)).ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _controller.DeleteCourseResource(courseId, itemId);
-
-        // Assert
-        AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
-        _courseResourceServiceMock.Verify(s => s.DeleteAsync(itemId), Times.Once);
     }
 
     [Test]
@@ -577,4 +486,402 @@ public class CourseControllerTest
         AssertObjectResult(result, HttpStatusCode.OK, serviceResult);
         _courseServiceMock.Verify(s => s.PublishCourseAsync(courseId), Times.Once);
     }
+
+    [Test]
+    public async Task CreateCourseResource_Success_ReturnsCreated()
+    {
+        // Arrange  
+        var courseId = Guid.NewGuid();
+        var request = new CourseResourceRequest
+        {
+            CourseId = courseId,
+            Title = "Test Resource",
+            Description = "Description of Test Resource",
+            Resource = new FormFile(Stream.Null, 0, 0, "Resource", "test.pdf")
+        };
+        var expectedResult = Result.Success(new CourseResourceResponse
+        {
+            Id = Guid.NewGuid(),
+            Title = request.Title,
+            Description = request.Description,
+            ResourceType = FileType.Video,
+            ResourceUrl = "http://example.com/resource",
+            CourseTitle = "Test Course" // Fix: Set the required 'CourseTitle' property
+        }, HttpStatusCode.Created);
+
+        _courseResourceServiceMock
+            .Setup(s => s.CreateAsync(
+                It.IsAny<Guid>(),
+                It.Is<Guid>(id => id == courseId),
+                It.Is<CourseResourceRequest>(r => r == request),
+                It.IsAny<HttpRequest>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act  
+        var result = await _controller.CreateCourseResource(courseId, request) as ObjectResult;
+
+        // Assert  
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.Created));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public void CreateCourseResource_MissingUserIdClaim_ThrowsException()
+    {
+        // Arrange
+        var userWithoutId = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+        new Claim(ClaimTypes.Role, nameof(UserRole.Mentor))
+    }, "TestAuthentication"));
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext { User = userWithoutId }
+        };
+
+        var courseId = Guid.NewGuid();
+        var request = new CourseResourceRequest
+        {
+            CourseId = courseId,
+            Title = "Test Resource",
+            Description = "Description",
+            Resource = new FormFile(Stream.Null, 0, 0, "Resource", "test.pdf")
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<NullReferenceException>(async () =>
+            await _controller.CreateCourseResource(courseId, request));
+
+        Assert.That(ex!.Message, Does.Contain("Object reference"));
+    }
+
+    [Test]
+    public async Task CreateCourseResource_Failed_ReturnsBadRequest()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var request = new CourseResourceRequest
+        {
+            CourseId = courseId,
+            Title = "Invalid Resource",
+            Description = "Invalid",
+            Resource = new FormFile(Stream.Null, 0, 0, "Resource", "invalid.txt")
+        };
+
+        var expectedResult = Result.Failure<CourseResourceResponse>(
+            "Validation failed", HttpStatusCode.BadRequest);
+
+        _courseResourceServiceMock
+            .Setup(s => s.CreateAsync(
+                It.IsAny<Guid>(),
+                It.Is<Guid>(id => id == courseId),
+                It.Is<CourseResourceRequest>(r => r == request),
+                It.IsAny<HttpRequest>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.CreateCourseResource(courseId, request) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public async Task CreateCourseResource_EmptyFile_ReturnsBadRequest()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var request = new CourseResourceRequest
+        {
+            CourseId = courseId,
+            Title = "Empty File",
+            Description = "Missing file",
+            Resource = null
+        };
+
+        var expectedResult = Result.Failure<CourseResourceResponse>(
+            "File is required", HttpStatusCode.BadRequest);
+
+        _courseResourceServiceMock
+            .Setup(s => s.CreateAsync(
+                It.IsAny<Guid>(),
+                courseId,
+                request,
+                It.IsAny<HttpRequest>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.CreateCourseResource(courseId, request) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public async Task UpdateCourseResource_Success_ReturnsOk()
+    {
+        // Arrange
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var courseResourceId = Guid.NewGuid();
+
+        var request = new CourseResourceRequest
+        {
+            CourseId = Guid.NewGuid(),
+            Title = "Updated Resource",
+            Description = "Updated Description",
+            Resource = new FormFile(Stream.Null, 0, 0, "file", "file.pdf")
+        };
+
+        var expectedResponse = Result.Success(new CourseResourceResponse
+        {
+            Id = courseResourceId,
+            Title = request.Title,
+            Description = request.Description,
+            ResourceType = FileType.Pdf,
+            ResourceUrl = "http://example.com/resource",
+            CourseTitle = "Course XYZ"
+        }, HttpStatusCode.OK);
+
+        _courseResourceServiceMock
+            .Setup(x => x.UpdateAsync(
+                It.Is<Guid>(id => id == mentorId),
+                It.Is<Guid>(id => id == courseResourceId),
+                It.Is<CourseResourceRequest>(r => r == request),
+                It.IsAny<HttpRequest>()))
+            .ReturnsAsync(expectedResponse);
+
+        // Act
+        var result = await _controller.UpdateCourseResource(courseResourceId, request) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(result.Value, Is.EqualTo(expectedResponse));
+        });
+    }
+
+    [Test]
+    public void UpdateCourseResource_MissingUserIdClaim_ThrowsException()
+    {
+        // Arrange
+        var courseResourceId = Guid.NewGuid();
+        var request = new CourseResourceRequest
+        {
+            CourseId = Guid.NewGuid(),
+            Title = "Title",
+            Description = "Desc",
+            Resource = new FormFile(Stream.Null, 0, 0, "file", "file.pdf")
+        };
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(
+                    new[] { new Claim(ClaimTypes.Role, nameof(UserRole.Mentor)) }, "Test"))
+            }
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<NullReferenceException>(async () =>
+            await _controller.UpdateCourseResource(courseResourceId, request));
+
+        Assert.That(ex!.Message, Does.Contain("Object reference"));
+    }
+
+    [Test]
+    public async Task UpdateCourseResource_NotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var courseResourceId = Guid.NewGuid();
+
+        var request = new CourseResourceRequest
+        {
+            CourseId = Guid.NewGuid(),
+            Title = "Nonexistent Resource",
+            Description = "Not found",
+            Resource = new FormFile(Stream.Null, 0, 0, "file", "file.pdf")
+        };
+
+        var expectedResult = Result.Failure<CourseResourceResponse>(
+            "Resource not found", HttpStatusCode.NotFound);
+
+        _courseResourceServiceMock
+            .Setup(x => x.UpdateAsync(
+                mentorId,
+                courseResourceId,
+                request,
+                It.IsAny<HttpRequest>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.UpdateCourseResource(courseResourceId, request) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public async Task UpdateCourseResource_InvalidFile_ReturnsBadRequest()
+    {
+        // Arrange
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var courseResourceId = Guid.NewGuid();
+
+        var request = new CourseResourceRequest
+        {
+            CourseId = Guid.NewGuid(),
+            Title = "Bad file",
+            Description = "Invalid",
+            Resource = new FormFile(Stream.Null, 0, 0, "file", "bad.exe")
+        };
+
+        var expectedResult = Result.Failure<CourseResourceResponse>(
+            "Unsupported file type", HttpStatusCode.BadRequest);
+
+        _courseResourceServiceMock
+            .Setup(x => x.UpdateAsync(
+                mentorId,
+                courseResourceId,
+                request,
+                It.IsAny<HttpRequest>()))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.UpdateCourseResource(courseResourceId, request) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public async Task DeleteCourseResource_Success_ReturnsOk()
+    {
+        // Arrange
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var courseResourceId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+
+        var expectedResult = Result.Success(true, HttpStatusCode.OK);
+
+        _courseResourceServiceMock
+            .Setup(x => x.DeleteAsync(mentorId, courseResourceId))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.DeleteCourseResource(courseId, courseResourceId) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public async Task DeleteCourseResource_ResourceNotFound_ReturnsNotFound()
+    {
+        // Arrange
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var courseResourceId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+
+        var expectedResult = Result.Failure<bool>("Resource not found", HttpStatusCode.NotFound);
+
+        _courseResourceServiceMock
+            .Setup(x => x.DeleteAsync(mentorId, courseResourceId))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.DeleteCourseResource(courseId, courseResourceId) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
+    [Test]
+    public void DeleteCourseResource_MissingNameIdentifier_ThrowsException()
+    {
+        // Arrange
+        var courseId = Guid.NewGuid();
+        var courseResourceId = Guid.NewGuid();
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                new Claim(ClaimTypes.Role, nameof(UserRole.Mentor))
+            }, "Test"))
+            }
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<NullReferenceException>(() =>
+            _controller.DeleteCourseResource(courseId, courseResourceId));
+
+        Assert.That(ex!.Message, Does.Contain("Object reference"));
+    }
+
+    [Test]
+    public async Task DeleteCourseResource_ServerError_ReturnsInternalServerError()
+    {
+        // Arrange
+        var mentorId = Guid.Parse(_user.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+        var courseResourceId = Guid.NewGuid();
+        var courseId = Guid.NewGuid();
+
+        var expectedResult = Result.Failure<bool>("Unexpected error", HttpStatusCode.InternalServerError);
+
+        _courseResourceServiceMock
+            .Setup(x => x.DeleteAsync(mentorId, courseResourceId))
+            .ReturnsAsync(expectedResult);
+
+        // Act
+        var result = await _controller.DeleteCourseResource(courseId, courseResourceId) as ObjectResult;
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result!.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+            Assert.That(result.Value, Is.EqualTo(expectedResult));
+        });
+    }
+
 }
