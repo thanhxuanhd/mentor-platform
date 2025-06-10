@@ -19,6 +19,8 @@
 
   <ItemGroup>
     <Folder Include="Dtos\Authentication\Responses\" />
+    <Folder Include="Dtos\Scheduling\Requests\" />
+    <Folder Include="Dtos\Scheduling\Responses\" />
   </ItemGroup>
 
 </Project>

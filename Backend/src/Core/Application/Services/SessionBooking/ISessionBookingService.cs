@@ -1,4 +1,4 @@
-﻿using Contract.Dtos.Categories.Requests;
+using Contract.Dtos.Categories.Requests;
 using Contract.Dtos.Schedule.Responses;
 using Contract.Dtos.SessionBooking.Requests;
 using Contract.Dtos.SessionBooking.Response;

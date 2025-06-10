@@ -81,7 +81,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             throw new Exception("Cannot cancel this booking session.");
         }
 
-        bookingSession.Status = SessionStatus.Canceled;
+        bookingSession.Status = SessionStatus.Cancelled;
     }
 
     public void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId)
@@ -105,24 +105,12 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
         bookingSession.Status = SessionStatus.Approved;
     }
 
-    public void MentorCancelBookingSession(Sessions bookingSession, Guid learnerId)
-    {
-        Debug.Assert(_context.Entry(bookingSession.TimeSlot).Reference(t => t.Sessions).IsLoaded);
-        if (bookingSession.Status is not SessionStatus.Pending)
-        {
-            throw new Exception("Cannot cancel this booking session at this time.");
-        }
-
-        bookingSession.Status = SessionStatus.Canceled;
-    }
     public async Task<List<Sessions>> GetAllBookingAsync()
     {
         return await _context.Sessions
             .Include(s => s.Learner)
             .Include(s => s.TimeSlot)
-            //.Where(s => s.Status == SessionStatus.Pending)
             .Where(s => s.Id != Guid.Empty)
             .ToListAsync();
     }
-
 }

@@ -1,5 +1,3 @@
-﻿using Domain.Enums;
-
 namespace Contract.Dtos.SessionBooking.Response;
 
 public record AvailableTimeSlotResponse
