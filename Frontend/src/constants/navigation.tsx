@@ -4,8 +4,8 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
-  HddOutlined,
   ScheduleOutlined,
+  HddOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";

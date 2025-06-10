@@ -11,19 +11,19 @@ interface TimeBlocksProps {
 
 export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBlocksProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" id="time-blocks">
       <h3 className="text-lg font-medium mb-4">
         Set your availability for {selectedDate.format("dddd, MMMM D")}
       </h3>
-      
+
       {timeBlocks.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {timeBlocks.map((block) => (           
-            <Tooltip 
-              key={block.id} 
+          {timeBlocks.map((block) => (
+            <Tooltip
+              key={block.id}
               title={
-                block.booked 
-                  ? "This slot is already booked" 
+                block.booked
+                  ? "This slot is already booked"
                   : block.isPast
                     ? "This time slot is in the past and cannot be modified"
                     : null
@@ -41,8 +41,8 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBloc
                 onClick={() => !block.booked && !block.isPast && onToggleBlock(block.id)}
                 className={`
                   p-4 rounded-lg text-center transition-colors relative
-                  ${block.booked 
-                    ? 'bg-slate-500 cursor-not-allowed text-slate-300' 
+                  ${block.booked
+                    ? 'bg-slate-500 cursor-not-allowed text-slate-300'
                     : block.isPast
                       ? 'bg-slate-700 cursor-not-allowed text-slate-400'
                       : block.available
@@ -53,14 +53,14 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBloc
               >
                 <div className="text-sm font-medium">{block.time}</div>
                 <div className="text-xs mt-1">
-                  {block.booked 
-                    ? 'Booked' 
-                    : block.isPast 
-                      ? 'Past' 
+                  {block.booked
+                    ? 'Booked'
+                    : block.isPast
+                      ? 'Past'
                       : (block.available ? 'Available' : 'Unavailable')
                   }
                 </div>
-                  {(block.booked || block.isPast) && (
+                {(block.booked || block.isPast) && (
                   <div className="absolute top-2 right-2">
                     <LockOutlined />
                   </div>

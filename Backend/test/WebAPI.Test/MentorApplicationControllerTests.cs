@@ -3,6 +3,7 @@ using Contract.Dtos.MentorApplications.Requests;
 using Contract.Dtos.MentorApplications.Responses;
 using Contract.Dtos.Users.Requests;
 using Contract.Shared;
+using Domain.Enums;
 using MentorPlatformAPI.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,7 @@ using Moq;
 using System.Net;
 using System.Security.Claims;
 
-namespace MentorPlatformAPI.Tests.Controllers
+namespace WebAPI.Test
 {
     public class MentorApplicationControllerTests
     {
@@ -138,6 +139,189 @@ namespace MentorPlatformAPI.Tests.Controllers
             var objectResult = (ObjectResult)actionResult;
             Assert.That(objectResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
             Assert.That(objectResult.Value, Is.EqualTo(result));
+        }
+        [Test]
+        public async Task GetMentorApplicationByMentorId_ReturnsOkResult_WithListOfApplications()
+        {
+            // Arrange
+            var mentorId = Guid.NewGuid();
+            var responseList = new List<FilterMentorApplicationResponse>
+            {
+                new FilterMentorApplicationResponse { MentorApplicationId = Guid.NewGuid(), MentorName = "Mentor 1" }
+            };
+            var expectedResult = Result.Success(responseList, HttpStatusCode.OK);
+
+            _mentorApplicationServiceMock
+                .Setup(s => s.GetListMentorApplicationByMentorIdAsync(mentorId))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var actionResult = await _controller.GetMentorApplicationByMentorId(mentorId) as ObjectResult;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(actionResult, Is.Not.Null);
+                Assert.That(actionResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+                Assert.That(actionResult.Value, Is.EqualTo(expectedResult));
+            });
+            _mentorApplicationServiceMock.Verify(s => s.GetListMentorApplicationByMentorIdAsync(mentorId), Times.Once);
+        }
+
+        [Test]
+        public async Task RequestApplicationInfo_ValidRequest_ReturnsStatusCodeFromService()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var adminIdClaimValue = _controller.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Assert.That(adminIdClaimValue, Is.Not.Null, "NameIdentifier claim must be set in Setup.");
+            var adminId = Guid.Parse(adminIdClaimValue!);
+
+            var request = new RequestApplicationInfoRequest { Note = "Please provide more details." };
+            var serviceResponse = new RequestApplicationInfoResponse { Message = "Info requested" };
+            var expectedResult = Result.Success(serviceResponse, HttpStatusCode.OK);
+
+            _mentorApplicationServiceMock
+                .Setup(s => s.RequestApplicationInfoAsync(adminId, applicationId, request))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var actionResult = await _controller.RequestApplicationInfo(applicationId, request) as ObjectResult;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(actionResult, Is.Not.Null);
+                Assert.That(actionResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+                Assert.That(actionResult.Value, Is.EqualTo(expectedResult));
+            });
+            _mentorApplicationServiceMock.Verify(s => s.RequestApplicationInfoAsync(adminId, applicationId, request), Times.Once);
+        }
+
+        [Test]
+        public async Task UpdateApplicationStatus_ValidRequest_ReturnsStatusCodeFromService()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var adminIdClaimValue = _controller.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Assert.That(adminIdClaimValue, Is.Not.Null, "NameIdentifier claim must be set in Setup.");
+            var adminId = Guid.Parse(adminIdClaimValue!);
+
+            var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
+            var serviceResponse = new UpdateApplicationStatusResponse { Message = "Status updated" };
+            var expectedResult = Result.Success(serviceResponse, HttpStatusCode.OK);
+
+            _mentorApplicationServiceMock
+                .Setup(s => s.UpdateApplicationStatusAsync(adminId, applicationId, request))
+                .ReturnsAsync(expectedResult);
+
+            // Act
+            var actionResult = await _controller.UpdateApplicationStatus(applicationId, request) as ObjectResult;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(actionResult, Is.Not.Null);
+                Assert.That(actionResult.StatusCode, Is.EqualTo((int)HttpStatusCode.OK));
+                Assert.That(actionResult.Value, Is.EqualTo(expectedResult));
+            });
+            _mentorApplicationServiceMock.Verify(s => s.UpdateApplicationStatusAsync(adminId, applicationId, request), Times.Once);
+        }
+
+        [Test]
+        public async Task EditMentorApplication_ValidRequest_ReturnsOkResult()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var request = new UpdateMentorApplicationRequest
+            {
+                WorkExperience = "Updated Work Experience",
+                Education = "Updated Education",
+                Certifications = "Updated Certifications",
+                Statement = "Updated Statement",
+                Documents = new FormFileCollection()
+            };
+
+            var expectedStatusCode = HttpStatusCode.OK;
+            var serviceResult = Result.Success(true, expectedStatusCode);
+
+            _mentorApplicationServiceMock
+                .Setup(s => s.EditMentorApplicationAsync(applicationId, request, It.IsAny<HttpRequest>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var actionResult = await _controller.EditMentorApplication(applicationId, request) as ObjectResult;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(actionResult, Is.Not.Null);
+                Assert.That(actionResult.StatusCode, Is.EqualTo((int)expectedStatusCode));
+                Assert.That(actionResult.Value, Is.EqualTo(serviceResult));
+            });
+            _mentorApplicationServiceMock.Verify(s => s.EditMentorApplicationAsync(applicationId, request, _httpContext.Request), Times.Once);
+        }
+
+        [Test]
+        public async Task EditMentorApplication_ApplicationNotFound_ReturnsNotFoundResult()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var request = new UpdateMentorApplicationRequest
+            {
+                WorkExperience = "Updated Work Experience",
+                Education = "Updated Education",
+                Certifications = "Updated Certifications",
+                Statement = "Updated Statement",
+                Documents = new FormFileCollection()
+            };
+
+            var expectedStatusCode = HttpStatusCode.NotFound;
+            var errorMessage = "Mentor application not found.";
+            var serviceResult = Result.Failure<bool>(errorMessage, expectedStatusCode);
+
+            _mentorApplicationServiceMock
+                .Setup(s => s.EditMentorApplicationAsync(applicationId, request, It.IsAny<HttpRequest>()))
+                .ReturnsAsync(serviceResult);
+
+            // Act
+            var actionResult = await _controller.EditMentorApplication(applicationId, request) as ObjectResult;
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.That(actionResult, Is.Not.Null);
+                Assert.That(actionResult.StatusCode, Is.EqualTo((int)expectedStatusCode));
+                Assert.That(actionResult.Value, Is.EqualTo(serviceResult));
+            });
+            _mentorApplicationServiceMock.Verify(s => s.EditMentorApplicationAsync(applicationId, request, _httpContext.Request), Times.Once);
+        }
+
+        [Test]
+        public async Task EditMentorApplication_ServiceReturnsConflict_ReturnsConflictResult()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var request = new UpdateMentorApplicationRequest
+            {
+                WorkExperience = "Updated Work Experience",
+                Education = "Updated Education",
+                Certifications = "Updated Certifications",
+                Statement = "Updated Statement",
+                Documents = new FormFileCollection()
+            };
+            var expectedStatusCode = HttpStatusCode.Conflict;
+            var serviceResult = Result.Failure<bool>("Cannot update application in this state.", expectedStatusCode);
+            _mentorApplicationServiceMock.Setup(s => s.EditMentorApplicationAsync(applicationId, request, It.IsAny<HttpRequest>())).ReturnsAsync(serviceResult);
+
+            // Act
+            var actionResult = await _controller.EditMentorApplication(applicationId, request) as ObjectResult;
+
+            // Assert
+            Assert.That(actionResult, Is.Not.Null);
+            Assert.That(actionResult.StatusCode, Is.EqualTo((int)expectedStatusCode));
+            Assert.That(actionResult.Value, Is.EqualTo(serviceResult));
+            _mentorApplicationServiceMock.Verify(s => s.EditMentorApplicationAsync(applicationId, request, _httpContext.Request), Times.Once);
         }
     }
 }

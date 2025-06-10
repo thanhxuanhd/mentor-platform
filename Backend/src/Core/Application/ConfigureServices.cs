@@ -4,6 +4,7 @@ using Application.Services.Categories;
 using Application.Services.CourseResources;
 using Application.Services.Courses;
 using Application.Services.Expertises;
+using Application.Services.Schedule;
 using Application.Services.MentorApplications;
 using Application.Services.Schedule;
 using Application.Services.SessionBooking;
