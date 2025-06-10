@@ -110,15 +110,13 @@ const Page: React.FC = () => {
           courseResponse,
         );
 
-        const categoryResponse = await categoryService.list({
-          pageSize: 10,
-        });
+        const categoryResponse = await categoryService.getActive();
         const mentorResponse = await mentorService.list({
           pageSize: 10,
         });
 
         setTotalCount(courseResponse.totalPages);
-        setCategories(categoryResponse.items);
+        setCategories(categoryResponse);
         setMentors(mentorResponse.items);
         setCourses(courseResponse.items);
       } catch (error) {

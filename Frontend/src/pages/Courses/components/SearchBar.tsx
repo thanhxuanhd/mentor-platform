@@ -53,11 +53,13 @@ export const SearchBar: FC<SearchBarProps> = ({
     const fetchCategories = async (searchKeyword: string) => {
       setLoadingCategories(true);
       try {
-        const response = await categoryService.list({
-          keyword: searchKeyword,
-          status: undefined,
-        });
-        setFilteredCategories(response.items);
+        const response = await categoryService.getActive()
+        const filteredCategories = searchKeyword
+          ? response.filter((category: { name: string }) =>
+            category.name.toLowerCase().includes(searchKeyword.toLowerCase()),
+          )
+          : response;
+        setFilteredCategories(filteredCategories);
       } catch (error) {
         console.error("Error fetching categories:", error);
         setFilteredCategories([]);
