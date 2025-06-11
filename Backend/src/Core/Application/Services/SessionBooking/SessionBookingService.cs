@@ -397,11 +397,13 @@ public class SessionBookingService(
         }
 
         session.Status = SessionStatus.Rescheduled;
+        session.TimeSlotId = request.TimeSlotId;
+        session.TimeSlot = newTimeSlot;
 
         if (session.Learner.IsReceiveNotification)
         {
             string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
-            var localDateTime = GetLocalDateTimes(session.TimeSlot, session.Learner.Timezone);
+            var localDateTime = GetLocalDateTimes(newTimeSlot, session.Learner.Timezone); 
             string body = EmailConstants.BodySessionRescheduledEmail(
                 id,
                 localDateTime.Date,
@@ -418,6 +420,7 @@ public class SessionBookingService(
 
         return Result.Success(true, HttpStatusCode.OK);
     }
+
 
     public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateOnly date)
     {
