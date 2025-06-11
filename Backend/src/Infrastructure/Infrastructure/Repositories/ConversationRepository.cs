@@ -13,6 +13,7 @@ public class ConversationRepository(ApplicationDbContext context) : BaseReposito
         return GetAll()
             .Include(conv => conv.Participants)
             .ThenInclude(p => p.User)
+            .ThenInclude(u => u.Role)
             .Include(p => p.Messages)
             .ThenInclude(s => s.Sender);
     }

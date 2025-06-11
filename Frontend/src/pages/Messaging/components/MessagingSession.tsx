@@ -1,46 +1,83 @@
 import type React from "react";
-import { useState, useRef, useEffect } from "react";
-import { Avatar, Input, Button, App } from "antd";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Avatar, Input, Button, App, Spin } from "antd";
 import { SendOutlined } from "@ant-design/icons";
-import type { GetDetailConversationResponse, GetMessageResponse } from "../../../types/ChatType";
+import InfiniteScroll from "react-infinite-scroll-component";
+import type {
+  AddMessageRequest,
+  GetDetailConversationResponse,
+  GetMessageResponse,
+} from "../../../types/ChatType";
 import { useAuth } from "../../../hooks";
 import type { NotificationProps } from "../../../types/Notification";
 import DefaultAvatar from "../../../assets/images/default-account.svg";
-
-const { TextArea } = Input;
+import connection from "../../../services/signalR";
+import { Bubble, Sender } from "@ant-design/x";
+import { chatService } from "../../../services/chat/chatService";
 
 interface MessagingSessionProps {
   conversationDetails: GetDetailConversationResponse | null;
   contactId: string | null;
   contactName: string | null;
   contactPhotoUrl: string | null;
-  onSendMessage: (message: string) => void;
 }
 
 export default function MessagingSession({
-  conversationDetails,
+  conversationDetails: initialConversationDetails,
   contactId,
   contactName,
   contactPhotoUrl,
-  onSendMessage,
 }: MessagingSessionProps) {
   const { user } = useAuth();
   const { notification } = App.useApp();
+  const [conversationDetails, setConversationDetails] =
+    useState<GetDetailConversationResponse | null>(initialConversationDetails);
   const [newMessage, setNewMessage] = useState("");
+  const [pageIndex, setPageIndex] = useState(1);
   const [notify, setNotify] = useState<NotificationProps | null>(null);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollableDivRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const fetchMoreMessages = useCallback(async () => {
+    try {
+      const response = await chatService.getById(
+        conversationDetails?.conversationId || "",
+        pageIndex,
+      );
+      setConversationDetails((prev) => {
+        if (!prev || !prev.messages) return prev;
+        return {
+          ...prev,
+          messages: {
+            ...prev.messages,
+            items: [...prev.messages.items, ...response.messages.items],
+          },
+        };
+      });
+      setPageIndex((prev) => prev + 1);
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Failed to fetch conversations",
+        description:
+          error?.response?.data?.error || "Error fetching conversations.",
+      });
+    }
+  }, [conversationDetails?.conversationId, pageIndex]);
+
+  useEffect(() => {
+    setConversationDetails(initialConversationDetails);
+  }, [initialConversationDetails]);
+
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
-      block: "nearest",
     });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [conversationDetails?.messages.items]);
+  }, [conversationDetails?.messages.items, scrollToBottom]);
 
   useEffect(() => {
     if (notify) {
@@ -56,15 +93,70 @@ export default function MessagingSession({
     }
   }, [notify, notification]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (newMessage.trim() && contactId) {
-        onSendMessage(newMessage);
-        setNewMessage("");
-      }
+  useEffect(() => {
+    connection.on(
+      "ReceiveMessage",
+      (
+        senderId: string,
+        content: string,
+        messageId: string,
+        senderName: string,
+        senderProfilePhotoUrl: string | null,
+        sentAt: string,
+        conversationId: string,
+      ) => {
+        const newMessage: GetMessageResponse = {
+          senderId,
+          content,
+          messageId,
+          senderName,
+          senderProfilePhotoUrl,
+          sentAt,
+        };
+
+        if (conversationId === conversationDetails?.conversationId) {
+          setConversationDetails((prev) => {
+            if (!prev || !prev.messages) return prev;
+
+            console.log(conversationDetails?.messages.items);
+
+            return {
+              ...prev,
+              messages: {
+                ...prev.messages,
+                items: [newMessage, ...prev.messages.items],
+              },
+            };
+          });
+        }
+      },
+    );
+
+    return () => {
+      connection.off("ReceiveMessage");
+    };
+  }, [conversationDetails]);
+
+  const handleSendMessage = useCallback((contentString: string) => {
+    if (
+      contentString.trim() &&
+      (conversationDetails?.conversationId || contactId)
+    ) {
+      const request: AddMessageRequest = {
+        conversationId: conversationDetails?.conversationId ?? null,
+        recipientId: contactId ?? null,
+        content: contentString,
+      };
+      connection.invoke("SendMessage", request).catch((err) => {
+        console.error("Send message error:", err);
+        setNotify({
+          type: "error",
+          message: "Failed to send message",
+          description: "An error occurred while sending the message.",
+        });
+      });
     }
-  };
+  }, []);
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -72,82 +164,98 @@ export default function MessagingSession({
   };
 
   return (
-    <div className="bg-slate-600/50 backdrop-blur-sm rounded-xl border border-slate-500/30 shadow-xl h-[600px] flex flex-col">
+    <div className="bg-slate-600/50 backdrop-blur-sm rounded-xl border border-slate-500/30 shadow-xl h-[600px] flex flex-col p-4">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-slate-500/30">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative">
             <Avatar src={contactPhotoUrl || DefaultAvatar} size={40} />
           </div>
           <div>
-            <h3 className="text-white font-semibold">{contactName || "Select a conversation"}</h3>
+            <h3 className="text-white font-semibold">
+              {conversationDetails
+                ? conversationDetails.conversationName
+                : contactName || "Select a conversation"}
+            </h3>
           </div>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {conversationDetails?.messages.items.map((message: GetMessageResponse) => {
-          const isCurrentUser = message.senderId === user?.id;
-          return (
-            <div
-              key={message.messageId}
-              className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
-            >
-              <div
-                className={`flex gap-2 max-w-[70%] ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
-              >
-                {!isCurrentUser && (
-                  <Avatar src={message.senderProfilePhotoUrl || DefaultAvatar} size={32} />
-                )}
-                <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"}`}>
-                  <p className="text-sm">{message.content}</p>
-                  <div
-                    className={`flex items-center gap-1 mt-1 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
-                  >
-                    <span className="text-xs text-slate-400">{formatTime(message.sentAt)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        <div ref={messagesEndRef} />
+      <div
+        id="scrollableDiv"
+        ref={scrollableDivRef}
+        className="flex-1 flex-col-reverse overflow-auto p-2 mt-4 bg-slate-700 rounded-lg shadow-inner mb-4"
+      >
+        <InfiniteScroll
+          dataLength={conversationDetails?.messages.items.length ?? 0}
+          next={fetchMoreMessages}
+          hasMore={true} // Set to true if you implement pagination
+          inverse={true}
+          loader={<Spin />}
+          scrollableTarget="scrollableDiv"
+        >
+          {conversationDetails?.messages.items
+            .slice()
+            .reverse()
+            .map((message: GetMessageResponse) => {
+              const isCurrentUser = message.senderId === user?.id;
+              return (
+                <Bubble
+                  key={message.messageId}
+                  placement={isCurrentUser ? "end" : "start"}
+                  avatar={
+                    <Avatar
+                      src={message.senderProfilePhotoUrl || DefaultAvatar}
+                      size={32}
+                    />
+                  }
+                  header={
+                    isCurrentUser ? "You" : message.senderName || "Unknown"
+                  }
+                  content={
+                    <p className="text-sm break-words">{message.content}</p>
+                  }
+                  footer={
+                    <span className="text-xs text-slate-400">
+                      {formatTime(message.sentAt)}
+                    </span>
+                  }
+                  styles={{
+                    content: {
+                      backgroundColor: isCurrentUser ? "orange" : "darkgray",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      textWrap: "wrap",
+                      maxWidth: "70%",
+                    },
+                    footer: { margin: 0 },
+                  }}
+                ></Bubble>
+              );
+            })}
+        </InfiniteScroll>
       </div>
-
-      {/* Input */}
-      <div className="p-4 border-t border-slate-500/30">
-        <div className="flex items-end gap-2">
-          <div className="flex-1">
-            <TextArea
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
-              autoSize={{ minRows: 1, maxRows: 4 }}
-              className="bg-slate-500/30 border-slate-400/50 text-white placeholder:text-slate-400 resize-none"
-              style={{
-                backgroundColor: "rgba(71, 85, 105, 0.3)",
-                borderColor: "rgba(148, 163, 184, 0.5)",
-                color: "white",
-              }}
-            />
-          </div>
-
-          <Button
-            type="primary"
-            icon={<SendOutlined />}
-            onClick={() => {
-              if (newMessage.trim() && contactId) {
-                onSendMessage(newMessage);
-                setNewMessage("");
-              }
-            }}
-            disabled={!newMessage.trim() || !contactId}
-            className="bg-blue-500 hover:bg-blue-600 border-blue-500"
-          />
-        </div>
-      </div>
+      <div ref={messagesEndRef} />
+      <Sender
+        value={newMessage}
+        onChange={(v) => {
+          setNewMessage(v);
+        }}
+        onSubmit={() => {
+          if (newMessage.trim() && (conversationDetails || contactId)) {
+            handleSendMessage(newMessage);
+            setNewMessage("");
+          }
+        }}
+        onCancel={() => {
+          setNewMessage("");
+        }}
+        autoSize={{ minRows: 2, maxRows: 6 }}
+        placeholder="Type your message here..."
+        style={{
+          backgroundColor: "rgba(255, 255, 255, 0.1)",
+        }}
+      />
     </div>
   );
 }

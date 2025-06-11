@@ -1,10 +1,11 @@
-﻿using System.Net;
-using Contract.Dtos.Messages.Requests;
+﻿using Contract.Dtos.Messages.Requests;
 using Contract.Dtos.Messages.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 namespace Application.Services.Messages;
 
@@ -71,7 +72,7 @@ public class MessageService(
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();
 
-        conversation = await conversationRepository.GetByIdAsync(targetConversation);
+        conversation = await conversationRepository.GetAllInclude().FirstOrDefaultAsync(c => c.Id == targetConversation);
         message = await messageRepository.GetByIdAsync(message.Id, m => m.Sender);
 
         var response = new GetMinimalConversationResponse
@@ -86,7 +87,14 @@ public class MessageService(
                 SenderId = message.SenderId,
                 SenderName = message.Sender.FullName,
                 SenderProfilePhotoUrl = message.Sender.ProfilePhotoUrl,
-            }
+            },
+            Participants = conversation.Participants.Select(p => new ConversationParticipantResponse
+            {
+                Id = p.UserId,
+                FullName = p.User.FullName,
+                ProfilePhotoUrl = p.User.ProfilePhotoUrl,
+                Role = p.User.Role.Name.ToString()
+            }).ToList()
         };
 
         return Result.Success(response, HttpStatusCode.OK);
@@ -177,16 +185,17 @@ public class MessageService(
                     .Select(c => c.Id)
                     .FirstOrDefault(),
                 HasConversation = conversationRepository.GetAllInclude()
-                    .Any(c =>c.Participants.Any(p => p.UserId == userId) &&
+                    .Any(c => c.Participants.Any(p => p.UserId == userId) &&
                               c.Participants.Any(p => p.UserId == u.Id))
             })
             .OrderByDescending(x => x.HasConversation)
             .ThenBy(x => x.User.FullName)
+            .Skip(5 * (request.PageIndex - 1))
             .Take(5);
 
         // Query groups (up to 3)
         var groupsQuery = conversationRepository.GetAllInclude()
-            .Where(c => c.Participants.Count > 2 && 
+            .Where(c => c.Participants.Count > 2 &&
                         c.Participants.Any(p => p.UserId == userId) &&
                         (string.IsNullOrEmpty(keyword) || c.Name!.Contains(keyword)))
             .Select(c => new
@@ -195,6 +204,7 @@ public class MessageService(
                 HasConversation = true
             })
             .OrderBy(c => c.Conversation.Name)
+            .Skip(3 * (request.PageIndex - 1))
             .Take(3);
 
         // Combine queries

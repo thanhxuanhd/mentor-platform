@@ -1,12 +1,11 @@
 import * as signalR from "@microsoft/signalr";
 
-const hubConnection = new signalR.HubConnectionBuilder()
+const connection = new signalR.HubConnectionBuilder()
   .withUrl(`https://localhost:5000/message-hub`, {
-    accessTokenFactory: () => {
-      return localStorage.getItem("token") || "";
-    },
+    accessTokenFactory: () => localStorage.getItem("token") || "",
   })
+  .configureLogging(signalR.LogLevel.Information)
   .withAutomaticReconnect()
   .build();
 
-export default hubConnection;
+export default connection;
