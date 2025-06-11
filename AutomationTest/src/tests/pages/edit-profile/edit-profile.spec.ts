@@ -26,9 +26,15 @@ test.describe("@Edit profile test", () => {
 
   for (const [label, data] of Object.entries(userData)) {
     test(`${label} - Edit profile`, async ({ page }) => {
-      await test.step("Input details data and submit", async () => {
+      await test.step("Go to Profile Page", async () => {
         await editUserProfile.navigateToViewProfilePage();
+      });
+
+      await test.step("Click on Edit button", async () => {
         await editUserProfile.clickOnEditProfileButton();
+      });
+
+      await test.step("Input details data in all fields", async () => {
         await editUserProfile.fillInFullnameField(data.fullname);
         await editUserProfile.fillInPhoneField(data.phoneNumber);
         await editUserProfile.fillInBioField(data.bio!);
@@ -43,10 +49,13 @@ test.describe("@Edit profile test", () => {
           data.communication_method!
         );
         await editUserProfile.fillObjectiveField(data.objective!);
+      });
+
+      await test.step("Click on Save change button", async () => {
         await editUserProfile.clickOnSaveChangeButton();
       });
 
-      await test.step("Verify system behavior", async () => {
+      await test.step("Verify user edit profile successfully", async () => {
         await editUserProfile.expectMessage(data.expectedMessage);
       });
     });
