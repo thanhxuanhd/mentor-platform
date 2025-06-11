@@ -847,44 +847,6 @@ const ScheduleSession = () => {
     },
   ]
 
-  const refreshSessionData = useCallback(
-    async (sessionId: string) => {
-      try {
-        const sessionDetails = await sessionBookingService.getSessionDetails(sessionId)
-
-        if (sessionDetails.date && sessionDetails.startTime && sessionDetails.endTime) {
-          const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
-            sessionDetails.date,
-            sessionDetails.startTime,
-            sessionDetails.endTime,
-            userTimezone,
-          )
-
-          setSessions((prev) =>
-            prev.map((s) =>
-              s.id === sessionId
-                ? {
-                  ...s,
-                  date: localDate,
-                  startTime: localStartTime,
-                  endTime: localEndTime,
-                  utcDate: sessionDetails.date,
-                  utcStartTime: sessionDetails.startTime,
-                  utcEndTime: sessionDetails.endTime,
-                  timeSlotId: sessionDetails.timeSlotId,
-                }
-                : s,
-            ),
-          )
-        }
-      } catch (error) {
-        console.error("Error refreshing session data:", error)
-        showNotification("error", "Failed to refresh session data")
-      }
-    },
-    [userTimezone, showNotification],
-  )
-
   const upcomingColumns = [...getBaseColumns(), getActionsColumn()]
   const pastColumns = [...getBaseColumns()]
 
