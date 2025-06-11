@@ -4,7 +4,7 @@ export interface LearnerUpcomingSessionResponse {
   sessionId: string;
   mentorName: string;
   mentorProfilePictureUrl?: string;
-  scheduledDate: Date;
+  scheduledDate: string;
   timeRange: string;
   type: string;
   status: string

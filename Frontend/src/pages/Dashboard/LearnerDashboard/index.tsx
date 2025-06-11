@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Card, Avatar, List, App } from "antd"
-import {
-  CalendarOutlined
-} from "@ant-design/icons"
+import { CalendarOutlined } from "@ant-design/icons"
 import {
   learnerDashboardService,
   type GetLearnerDashboardResponse,
@@ -16,17 +14,22 @@ import DefaultAvatar from "../../../assets/images/default-account.svg"
 import { Modal, Button } from "antd"
 import QuickActions from "./components/QuickActions"
 import { getSessionTypeIcon, getSessionTypeText, parseTimeRange } from "./utils/LearnerDashboardUtils"
+import { convertUTCDateTimeToLocal } from "../../../utils/timezoneUtils"
 
 interface UpcomingSession {
   id: string
   mentorName: string
   mentorAvatar: string
-  date: string
-  time: string
+  date: string // Local date
+  time: string // Local time
   duration: string
   sessionType: "Virtual" | "OneOnOne" | "Onsite"
   topic: string
   sessionStatus: "Approved" | "Rescheduled"
+  // Store original UTC values
+  originalDate: string
+  originalStartTime: string
+  originalEndTime: string
 }
 
 export default function LearnerDashboard() {
@@ -36,7 +39,14 @@ export default function LearnerDashboard() {
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false)
   const [selectedSession, setSelectedSession] = useState<UpcomingSession | null>(null)
   const [notify, setNotify] = useState<NotificationProps | null>(null)
+  const [userTimezone, setUserTimezone] = useState<string>("")
   const { notification } = App.useApp()
+
+  useEffect(() => {
+    // Get user's timezone
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    setUserTimezone(timezone)
+  }, [])
 
   useEffect(() => {
     if (notify) {
@@ -53,28 +63,53 @@ export default function LearnerDashboard() {
   }, [notify, notification])
 
   useEffect(() => {
-    fetchSessions()
-  }, [])
+    if (userTimezone) {
+      fetchSessions()
+    }
+  }, [userTimezone])
 
   const fetchSessions = async () => {
+    if (!userTimezone) return
+
     try {
       setLoading(true)
       const response: GetLearnerDashboardResponse = await learnerDashboardService.getLearnerDashboard()
 
-      const upcomingSessions: UpcomingSession[] = response.upcomingSessions.map((session: LearnerUpcomingSessionResponse) => {
-        const { time, duration } = parseTimeRange(session.timeRange)
-        return {
-          id: session.sessionId,
-          mentorName: session.mentorName,
-          mentorAvatar: session.mentorProfilePictureUrl || DefaultAvatar,
-          date: dayjs(session.scheduledDate).format("MMM D, YYYY"),
-          time,
-          duration,
-          sessionType: session.type as "Virtual" | "OneOnOne" | "Onsite",
-          topic: "Mentoring Session",
-          sessionStatus: session.status as "Approved" | "Rescheduled",
-        }
-      }) || []
+      const upcomingSessions: UpcomingSession[] =
+        response.upcomingSessions?.map((session: LearnerUpcomingSessionResponse) => {
+          // Parse the original UTC time range
+          const { time: utcTime, duration } = parseTimeRange(session.timeRange)
+
+          // Extract start and end times from the UTC time range
+          const [utcStartTime, utcEndTime] = utcTime.split(" - ")
+
+          // Convert UTC date and time to local
+          const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
+            session.scheduledDate,
+            utcStartTime,
+            utcEndTime,
+            userTimezone,
+          )
+
+          // Format local time range
+          const localTimeRange = `${localStartTime} - ${localEndTime}`
+
+          return {
+            id: session.sessionId,
+            mentorName: session.mentorName,
+            mentorAvatar: session.mentorProfilePictureUrl || DefaultAvatar,
+            date: dayjs(localDate).format("MMM D, YYYY"),
+            time: localTimeRange,
+            duration,
+            sessionType: session.type as "Virtual" | "OneOnOne" | "Onsite",
+            topic: "Mentoring Session",
+            sessionStatus: session.status as "Approved" | "Rescheduled",
+            // Store original UTC values
+            originalDate: session.scheduledDate,
+            originalStartTime: utcStartTime,
+            originalEndTime: utcEndTime,
+          }
+        }) || []
 
       setSessions(upcomingSessions)
     } catch (err) {
@@ -143,6 +178,9 @@ export default function LearnerDashboard() {
           <div>
             <h1 className="text-2xl font-semibold">Learner Dashboard</h1>
             <p className="text-slate-300 text-sm">Track your learning journey and connect with mentors</p>
+            {userTimezone && (
+              <p className="text-slate-400 text-xs mt-1">All times shown in your timezone: {userTimezone}</p>
+            )}
           </div>
         </div>
       </div>
@@ -255,6 +293,16 @@ export default function LearnerDashboard() {
         className="[&_.ant-modal-content]:bg-slate-800 [&_.ant-modal-content]:border [&_.ant-modal-content]:border-slate-700"
       >
         <p className="text-slate-300">Your mentor has rescheduled the session. Do you agree to reschedule?</p>
+        {selectedSession && (
+          <div className="mt-4 p-3 bg-slate-700 rounded-lg">
+            <p className="text-slate-300 text-sm">
+              <strong>Session Details:</strong>
+            </p>
+            <p className="text-slate-400 text-sm">📅 {selectedSession.date}</p>
+            <p className="text-slate-400 text-sm">🕐 {selectedSession.time}</p>
+            <p className="text-slate-400 text-sm">⏱️ {selectedSession.duration}</p>
+          </div>
+        )}
       </Modal>
     </div>
   )
