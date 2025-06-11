@@ -1,4 +1,7 @@
-﻿namespace Domain.Constants
+﻿using Domain.Entities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace Domain.Constants
 {
     public static class EmailConstants
     {
@@ -132,7 +135,7 @@
 
         public const string SUBJECT_SESSION_ACCEPTED = "Booked Session Successfully";
 
-        public static string BodySessionAcceptedEmail(Guid requestId) => $@"
+        public static string BodySessionAcceptedEmail(string mentorName, DateOnly date, TimeOnly startTime, TimeOnly endTime) => $@"
 <!DOCTYPE html>
 <html lang=""en"">
 <head>
@@ -177,7 +180,9 @@
         <h1>📌 Booked Session Successfully</h1>
         <p><strong>Sender:</strong> MentorConnect Project</p>
         <p>Your booked sessions has been approved by the mentor.</p>
-        <p>Please check in the system for details. Your session Request ID is: <strong>{requestId}</strong></p>
+        <p>Please check in the system for more information.</p>
+        <p>Mentor name: <strong>{mentorName}</strong></p>
+        <p>Time: <strong>{date:DD/MM/YYYY}: {startTime} - {endTime}</strong></p>
         <p>We’re excited to support your learning journey!</p>
         <div class=""footer"">
             <p>This is an automated message. Please do not reply.</p>
@@ -189,7 +194,7 @@
 
         public const string SUBJECT_SESSION_CANCELLED = "Booked Session Failed";
 
-        public static string BodySessionCancelledEmail(Guid requestId) => $@"
+        public static string BodySessionCancelledEmail(string mentorName, DateOnly date, TimeOnly startTime, TimeOnly endTime) => $@"
 <!DOCTYPE html>
 <html lang=""en"">
 <head>
@@ -234,7 +239,9 @@
         <h1>⚠️ Booked Session Failed</h1>
         <p><strong>Sender:</strong> MentorConnect Project</p>
         <p>Your booked sessions has been rejected by the mentor.</p>
-        <p>Please check in the system for more information. Your session Request ID is: <strong>{requestId}</strong></p>
+        <p>Please check in the system for more information.</p>
+        <p>Mentor name: <strong>{mentorName}</strong></p>
+        <p>Time: <strong>{date:DD/MM/YYYY}: {startTime} - {endTime}</strong></p>
         <p>Feel free to book a new session or contact support for assistance.</p>
         <div class=""footer"">
             <p>This is an automated message. Please do not reply.</p>

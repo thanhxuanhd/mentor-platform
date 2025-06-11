@@ -21,6 +21,7 @@ public class MailReminderService : BackgroundService
     {
         _mailSettings = mailSettings.Value;
         _scopeFactory = scopeFactory;
+        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,33 +36,38 @@ public class MailReminderService : BackgroundService
                 await SendRemindersAsync(sessionBookingRepository, userRepository);
             }
 
-            await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromMinutes(10), stoppingToken);
         }
     }
 
     private async Task SendRemindersAsync(ISessionsRepository sessionBookingRepository, IUserRepository userRepository)
     {
         var now = DateTime.UtcNow;
-        var targetTime = now.AddMinutes(30);
-        var sessions = await sessionBookingRepository.GetAllBookingAsync();
+        var query = sessionBookingRepository.GetAllBookingAsync();
+        var sessions = await sessionBookingRepository.ToListAsync(query);
 
         foreach (var session in sessions)
         {
             if (session.Status != SessionStatus.Approved)
                 continue;
 
-            var sessionDateTime = session.TimeSlot.Date.ToDateTime(session.TimeSlot.StartTime);
-            var timeUntilSession = sessionDateTime - targetTime;
+            var sessionDateTimeUtc = session.TimeSlot.Date.ToDateTime(session.TimeSlot.StartTime);
+            var timeUntilSession = sessionDateTimeUtc - now;
 
-            if (timeUntilSession.TotalMinutes >= 0 && timeUntilSession.TotalMinutes <= 1)
+            if (timeUntilSession.TotalMinutes >= 25 && timeUntilSession.TotalMinutes <= 35)
             {
                 var user = await userRepository.GetByIdAsync(session.LearnerId);
                 if (user == null || string.IsNullOrEmpty(user.Email)) continue;
 
+                var userTimeZone = TimeZoneInfo.FindSystemTimeZoneById(user.Timezone);
+                var localStartTime = TimeZoneInfo.ConvertTimeFromUtc(sessionDateTimeUtc, userTimeZone);
+                var localDate = localStartTime.ToString("dd/MM/yyyy");
+                var localTime = localStartTime.ToString("HH:mm");
+
                 await SendEmailAsync(
                     user.Email,
-                    "⏰ Reminder: Your session is in 30 minutes",
-                    $"Hi {user.FullName}, your session is at {sessionDateTime:HH:mm} today. Please be ready!"
+                    "Reminder: Your session is in approximately 30 minutes",
+                    $"Hi {user.FullName}, your session is at {localTime} on {localDate}. Please be ready!"
                 );
             }
         }

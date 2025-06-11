@@ -3,7 +3,6 @@ using Domain.Entities;
 using Domain.Enums;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection.Metadata;
 
 namespace Infrastructure.Persistence.Data;
 

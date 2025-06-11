@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace Contract.Dtos.SessionBooking.Response;
+﻿namespace Contract.Dtos.SessionBooking.Response;
 
 public class LearnerSessionBookingResponse
 {

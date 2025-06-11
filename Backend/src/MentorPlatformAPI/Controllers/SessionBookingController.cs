@@ -115,9 +115,9 @@ public class SessionBookingController(
     }
 
     [HttpPut("update/{id}")]
-    public async Task<IActionResult> UpdateRecheduleSession(Guid id, [FromBody] SessionUpdateRecheduleRequest request)
+    public async Task<IActionResult> UpdateRecheduleSession(Guid id, [FromBody] SessionUpdateRescheduleRequest request)
     {
-        var result = await sessionBookingService.UpdateRecheduleSessionAsync(id, request);
+        var result = await sessionBookingService.UpdateRescheduleSessionAsync(id, request);
         return StatusCode((int)result.StatusCode, result);
     }
 

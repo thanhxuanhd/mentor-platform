@@ -36,6 +36,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
     {
         return await _context.Sessions
             .AsSplitQuery()
+            .Include(s => s.Learner)
             .Include(s => s.TimeSlot)
             .ThenInclude(mats => mats.Schedules)
             .ThenInclude(s => s.Mentor)
@@ -105,26 +106,22 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
         bookingSession.Status = SessionStatus.Approved;
     }
 
-    public async Task<List<Sessions>> GetAllBookingAsync()
+    public IQueryable<Sessions> GetAllBookingAsync()
     {
-        return await _context.Sessions
+        return _context.Sessions
             .Include(s => s.Learner)
             .Include(s => s.TimeSlot)
                 .ThenInclude(ts => ts.Schedules)
-                    .ThenInclude(sch => sch.Mentor)
-            .ToListAsync();
+                    .ThenInclude(sch => sch.Mentor);
     }
 
-    public async Task<List<Sessions>> GetByTimeSlotAsync(Guid mentorId, DateOnly date, TimeOnly startTime, TimeOnly endTime)
+    public async Task<List<Sessions>> GetByTimeSlotAsync(Guid timeslotId)
     {
         return await _context.Sessions
             .Include(s => s.TimeSlot)
             .ThenInclude(ts => ts.Schedules)
-            .Where(s =>
-                s.TimeSlot.Schedules.MentorId == mentorId &&
-                s.TimeSlot.Date == date &&
-                s.TimeSlot.StartTime == startTime &&
-                s.TimeSlot.EndTime == endTime)
+            .ThenInclude(sc => sc.Mentor)
+            .Where(s => s.Id.Equals(timeslotId))
             .ToListAsync();
     }
 

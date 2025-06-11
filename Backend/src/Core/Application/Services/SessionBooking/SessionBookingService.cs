@@ -229,16 +229,13 @@ public class SessionBookingService(
 
     public async Task<Result<List<LearnerSessionBookingResponse>>> GetAllBooking(Guid mentorId)
     {
-        var sessionList = await sessionBookingRepository.GetAllBookingAsync();
+        var sessionList = sessionBookingRepository.GetAllBookingAsync();
 
         var filteredSessions = sessionList
             .Where(s => s.TimeSlot.Schedules != null &&
                         s.TimeSlot.Schedules.MentorId == mentorId)
             .OrderByDescending(s => s.TimeSlot.Date)
             .ThenByDescending(s => s.TimeSlot.StartTime)
-            .ToList();
-
-        var resultList = filteredSessions
             .Select(s => new LearnerSessionBookingResponse
             {
                 Id = s.Id,
@@ -250,8 +247,9 @@ public class SessionBookingService(
                 EndTime = s.TimeSlot.EndTime,
                 FullNameLearner = s.Learner.FullName,
                 PreferredCommunicationMethod = s.Learner.PreferredCommunicationMethod.ToString()
-            })
-            .ToList();
+            });
+
+        var resultList = await sessionBookingRepository.ToListAsync(filteredSessions);
 
         return Result.Success(resultList, HttpStatusCode.OK);
     }
@@ -291,18 +289,26 @@ public class SessionBookingService(
         session.Status = request.Status;
         string subject = string.Empty;
         string body = string.Empty;
+        sessionBookingRepository.Update(session);
+        await sessionBookingRepository.SaveChangesAsync();
+
+        var localDateTime = GetLocalDateTimes(session.TimeSlot, session.Learner.Timezone);
 
         if (request.Status == SessionStatus.Approved)
         {
-            var sameTimeSessions = await sessionBookingRepository.GetByTimeSlotAsync(
-                session.TimeSlot.Schedules.MentorId,
-                session.TimeSlot.Date,
-                session.TimeSlot.StartTime,
-                session.TimeSlot.EndTime
-            );
+            var sameTimeSessions = await sessionBookingRepository.GetByTimeSlotAsync(session.TimeSlotId);
+
+            subject = EmailConstants.SUBJECT_SESSION_ACCEPTED;
+            body = EmailConstants.BodySessionAcceptedEmail(
+                        session.TimeSlot.Schedules.Mentor.FullName,
+                        localDateTime.Date,
+                        localDateTime.StartTime,
+                        localDateTime.EndTime
+                        );
+            await emailService.SendEmailAsync(session.Learner.Email, subject, body);
 
             var existingApproved = sameTimeSessions
-                .FirstOrDefault(s => s.Id != session.Id && s.Status == SessionStatus.Approved);
+                .FirstOrDefault(s => s.Id != session.Id && s.Status is SessionStatus.Approved or SessionStatus.Rescheduled);
 
             if (existingApproved != null)
             {
@@ -320,47 +326,51 @@ public class SessionBookingService(
             {
                 conflict.Status = SessionStatus.Cancelled;
 
-                var conflictUser = await userRepository.GetByIdAsync(conflict.LearnerId);
-                if (conflictUser?.IsReceiveNotification == true)
+                if (conflict.Learner?.IsReceiveNotification == true)
                 {
                     var cancelSubject = EmailConstants.SUBJECT_SESSION_CANCELLED;
-                    var cancelBody = EmailConstants.BodySessionCancelledEmail(conflict.Id);
-                    await emailService.SendEmailAsync(conflictUser.Email, cancelSubject, cancelBody);
+                    localDateTime = GetLocalDateTimes(conflict.TimeSlot, conflict.Learner.Timezone);
+                    var cancelBody = EmailConstants.BodySessionCancelledEmail(
+                        conflict.TimeSlot.Schedules.Mentor.FullName,
+                        localDateTime.Date,
+                        localDateTime.StartTime,
+                        localDateTime.EndTime
+                        );
+                    await emailService.SendEmailAsync(conflict.Learner!.Email, cancelSubject, cancelBody);
                 }
 
                 sessionBookingRepository.Update(conflict);
             }
+            await sessionBookingRepository.SaveChangesAsync();
         }
+
         else if (request.Status == SessionStatus.Cancelled)
         {
             subject = EmailConstants.SUBJECT_SESSION_CANCELLED;
-            body = EmailConstants.BodySessionCancelledEmail(id);
+            body = EmailConstants.BodySessionCancelledEmail(
+                        session.TimeSlot.Schedules.Mentor.FullName,
+                        localDateTime.Date,
+                        localDateTime.StartTime,
+                        localDateTime.EndTime
+                        );
         }
 
         if (!string.IsNullOrEmpty(subject) && !string.IsNullOrEmpty(body))
         {
             var user = await userRepository.GetByIdAsync(session.LearnerId);
-            if (user == null)
-                return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
 
-            if (user.IsReceiveNotification)
+            if (user!.IsReceiveNotification)
             {
                 var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
-                if (!emailResult)
-                    return Result.Failure<bool>("Failed to send email.", HttpStatusCode.InternalServerError);
             }
         }
-
-        sessionBookingRepository.Update(session);
-        await sessionBookingRepository.SaveChangesAsync();
 
         return Result.Success(true, HttpStatusCode.OK);
     }
 
-    public async Task<Result<bool>> UpdateRecheduleSessionAsync(Guid id, SessionUpdateRecheduleRequest request)
+    public async Task<Result<bool>> UpdateRescheduleSessionAsync(Guid id, SessionUpdateRescheduleRequest request)
     {
-        var session = (await sessionBookingRepository.GetAllBookingAsync())
-            .FirstOrDefault(s => s.Id == id);
+        var session = await sessionBookingRepository.GetByIdAsync(id);
 
         if (session == null)
         {
@@ -373,44 +383,34 @@ public class SessionBookingService(
             return Result.Failure<bool>("Selected TimeSlot does not exist.", HttpStatusCode.BadRequest);
         }
 
-        if (newTimeSlot.Sessions.Any(b =>
-            b.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
+        if (newTimeSlot.Sessions!.Any(s =>
+            s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled))
         {
             return Result.Failure<bool>(
                 $"Selected slot in {newTimeSlot.StartTime} - {newTimeSlot.EndTime} by {newTimeSlot.Schedules.Mentor.FullName} is not available.",
                 HttpStatusCode.Conflict);
         }
 
-        if (newTimeSlot.Sessions.Any(b => b.LearnerId == session.LearnerId && b.Status == SessionStatus.Pending))
+        if (newTimeSlot.Sessions!.Any(s => s.LearnerId == session.LearnerId && s.Status == SessionStatus.Pending))
         {
             return Result.Failure<bool>("You already have a booking for this time slot.", HttpStatusCode.Conflict);
         }
 
-        session.TimeSlot = newTimeSlot;
         session.Status = SessionStatus.Rescheduled;
 
-        var user = await userRepository.GetByIdAsync(session.LearnerId);
-        if (user == null)
-        {
-            return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
-        }
-
-        if (user.IsReceiveNotification)
+        if (session.Learner.IsReceiveNotification)
         {
             string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
+            var localDateTime = GetLocalDateTimes(session.TimeSlot, session.Learner.Timezone);
             string body = EmailConstants.BodySessionRescheduledEmail(
                 id,
-                newTimeSlot.Date,
-                newTimeSlot.StartTime,
-                newTimeSlot.EndTime,
+                localDateTime.Date,
+                localDateTime.StartTime,
+                localDateTime.EndTime,
                 request.Reason
             );
 
-            var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
-            if (!emailResult)
-            {
-                return Result.Failure<bool>("Failed to send reschedule email.", HttpStatusCode.InternalServerError);
-            }
+            var emailResult = await emailService.SendEmailAsync(session.Learner.Email, subject, body);
         }
 
         sessionBookingRepository.Update(session);
@@ -430,5 +430,17 @@ public class SessionBookingService(
         var availableTimeSlots = await mentorAvailableTimeSlotRepository.ToListAsync(query);
 
         return Result.Success(availableTimeSlots, HttpStatusCode.OK);
+    }
+
+    private (DateOnly Date, TimeOnly StartTime, TimeOnly EndTime) GetLocalDateTimes(MentorAvailableTimeSlot timeSlot, string userTimeZone)
+    {
+        var startDateTime = new DateTime(date: timeSlot.Date, time: timeSlot.StartTime);
+        var endDateTime = new DateTime(date: timeSlot.Date, time: timeSlot.EndTime);
+        var targetTimeZone = TimeZoneInfo.FindSystemTimeZoneById(userTimeZone);
+
+        var localStartDateTime = TimeZoneInfo.ConvertTimeFromUtc(startDateTime, targetTimeZone);
+        var localEndDateTime = TimeZoneInfo.ConvertTimeFromUtc(endDateTime, targetTimeZone);
+
+        return (DateOnly.FromDateTime(localStartDateTime), TimeOnly.FromDateTime(localStartDateTime), TimeOnly.FromDateTime(localEndDateTime));
     }
 }
