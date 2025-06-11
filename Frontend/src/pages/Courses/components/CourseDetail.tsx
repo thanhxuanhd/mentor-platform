@@ -1,6 +1,7 @@
 import type { CourseDetailProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
 import { Modal } from "antd";
+import {formatDate} from "../../../utils/DateFormat.ts";
 
 export const CourseDetail: FC<CourseDetailProps> = ({
   course,
@@ -36,7 +37,7 @@ export const CourseDetail: FC<CourseDetailProps> = ({
         </div>
         <div>
           <p className="text-sm text-gray-400 mb-1">Due Date</p>
-          <p>{course.dueDate}</p>
+          <p>{formatDate(course.dueDate)}</p>
         </div>
         <div>
           <p className="text-sm text-gray-400 mb-1">Difficulty</p>
