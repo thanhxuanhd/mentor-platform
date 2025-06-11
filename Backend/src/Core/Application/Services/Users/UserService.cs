@@ -477,7 +477,7 @@ public class UserService(
     {
         var users = userRepository.GetAll();
 
-        users = users.Where(user => user.Role.Name.ToString().Equals("Mentor"));
+        users = users.Where(user => user.RoleId == (int)UserRole.Mentor);
 
         var usersResponse = users.Select(u => new GetUserResponse()
         {
