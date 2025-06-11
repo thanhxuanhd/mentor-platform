@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Infrastructure.Repositories;
 
-public class SessionsRepository(ApplicationDbContext context, TimeProvider timeProvider)
+public class SessionsRepository(ApplicationDbContext context)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
     private static bool HasOverlappingSessionTime(Sessions existingSession, Sessions newSession)

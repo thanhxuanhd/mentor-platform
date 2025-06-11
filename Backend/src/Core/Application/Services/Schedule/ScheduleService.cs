@@ -135,8 +135,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             {
                 var subject = EmailConstants.SUBJECT_MENTOR_UPDATED_SCHEDULE;
                 var body = EmailConstants.BodyMentorUpdatedScheduleEmail(learnerInfo.Value, mentor.FullName);
-                Console.WriteLine(learnerInfo.Key);
-                var test = await emailService.SendEmailAsync(learnerInfo.Key, subject, body);
+                await emailService.SendEmailAsync(learnerInfo.Key, subject, body);
             }
         }
 
