@@ -56,7 +56,7 @@ const UserPreference: React.FC<UserProfileProps> = ({
           )
         : response;
       setTags(
-        filteredCategories.map((category: { name: any; id: any }) => ({
+        filteredCategories.map((category: { name: string; id: string }) => ({
           label: category.name,
           value: category.id,
         })),

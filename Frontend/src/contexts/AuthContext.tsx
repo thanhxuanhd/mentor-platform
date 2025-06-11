@@ -15,6 +15,7 @@ interface User {
   fullName: string;
   email: string;
   role: string;
+  timezone: string;
 }
 
 export interface AuthContextProps {
@@ -52,6 +53,7 @@ interface Token {
   email: string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
+  timezone: string;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
@@ -105,6 +107,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       role: decodedToken[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
       ],
+      timezone: decodedToken.timezone,
     };
 
     setUser(currentUser);

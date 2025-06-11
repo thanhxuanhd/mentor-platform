@@ -66,11 +66,8 @@ export default function CourseResourcesPage() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      const response = await categoryService.list({
-        pageIndex: 1,
-        pageSize: 10,
-      });
-      setCategories(response.items);
+      const response = await categoryService.getActive()
+      setCategories(response);
     } catch {
       setNotify({
         type: "error",

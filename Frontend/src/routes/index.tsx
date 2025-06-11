@@ -21,6 +21,7 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import AvailabilityManager from "../pages/Availability";
 import CourseResourcesPage from "../pages/CourseResources";
+import SessionBooking from "../pages/Sessions";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -88,6 +89,17 @@ const AppRoutes = () => {
         <Route path="users" element={<UsersPage />} />
       </Route>
 
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.LEARNER]}
+          >
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="sessions" element={<SessionBooking />} />
+      </Route>
       <Route
         element={
           <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
