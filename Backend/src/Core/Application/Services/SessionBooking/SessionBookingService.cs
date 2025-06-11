@@ -284,27 +284,27 @@ public class SessionBookingService(
 
     public async Task<Result<bool>> UpdateStatusSessionAsync(Guid id, SessionBookingRequest request)
     {
-        var sessionList = await sessionBookingRepository.GetAllBookingAsync();
-        var session = sessionList.FirstOrDefault(s => s.Id == id);
-
+        var session = await sessionBookingRepository.GetByIdAsync(id);
         if (session == null)
         {
             return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
         }
 
         session.Status = (SessionStatus)request.Status;
+
         string subject = string.Empty;
         string body = string.Empty;
 
         if (request.Status == SessionStatus.Approved)
         {
-            var existingApproved = sessionList.FirstOrDefault(s =>
-                s.Id != session.Id &&
-                s.Status == SessionStatus.Approved &&
-                s.TimeSlot.Date == session.TimeSlot.Date &&
-                s.TimeSlot.StartTime == session.TimeSlot.StartTime &&
-                s.TimeSlot.EndTime == session.TimeSlot.EndTime
+            var sameTimeSessions = await sessionBookingRepository.GetByTimeSlotAsync(
+                session.TimeSlot.Date,
+                session.TimeSlot.StartTime,
+                session.TimeSlot.EndTime
             );
+
+            var existingApproved = sameTimeSessions
+                .FirstOrDefault(s => s.Id != session.Id && s.Status == SessionStatus.Approved);
 
             if (existingApproved != null)
             {
@@ -314,13 +314,9 @@ public class SessionBookingService(
                 );
             }
 
-            var conflictingSessions = sessionList.Where(s =>
-                s.Id != session.Id &&
-                s.Status == SessionStatus.Pending &&
-                s.TimeSlot.Date == session.TimeSlot.Date &&
-                s.TimeSlot.StartTime == session.TimeSlot.StartTime &&
-                s.TimeSlot.EndTime == session.TimeSlot.EndTime
-            ).ToList();
+            var conflictingSessions = sameTimeSessions
+                .Where(s => s.Id != session.Id && s.Status == SessionStatus.Pending)
+                .ToList();
 
             foreach (var conflict in conflictingSessions)
             {
@@ -366,7 +362,6 @@ public class SessionBookingService(
 
         return Result.Success(true, HttpStatusCode.OK);
     }
-
 
     public async Task<Result<bool>> UpdateRecheduleSessionAsync(Guid id, SessionUpdateRecheduleRequest request)
     {

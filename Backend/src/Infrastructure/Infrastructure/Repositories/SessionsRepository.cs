@@ -115,4 +115,15 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             .ToListAsync();
     }
 
+    public async Task<List<Sessions>> GetByTimeSlotAsync(DateOnly date, TimeOnly startTime, TimeOnly endTime)
+    {
+        return await _context.Sessions
+            .Include(s => s.TimeSlot)
+            .Where(s => s.TimeSlot.Date == date &&
+                        s.TimeSlot.StartTime == startTime &&
+                        s.TimeSlot.EndTime == endTime)
+            .ToListAsync();
+    }
+
+
 }
