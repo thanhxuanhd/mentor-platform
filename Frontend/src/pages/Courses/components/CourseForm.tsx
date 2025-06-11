@@ -39,12 +39,27 @@ export const CourseForm: FC<CourseFormProps> = ({
       // Lọc danh mục phía client dựa trên categoryKeyword
       const filteredCategories = categoryKeyword
         ? response.filter((category: { name: string }) =>
-          category.name.toLowerCase().includes(categoryKeyword.trim().toLowerCase())
-        )
+            category.name
+              .toLowerCase()
+              .includes(categoryKeyword.trim().toLowerCase()),
+          )
         : response;
-      setMyCategories(filteredCategories);
+
+      const assignedCategory = {
+        name: form.getFieldValue("categoryName"),
+        id: form.getFieldValue("categoryId"),
+      };
+
+      setMyCategories(
+        assignedCategory.id &&
+          !filteredCategories.some(
+            (c: Category) => c.id === assignedCategory.id,
+          )
+          ? [...filteredCategories, assignedCategory]
+          : [...filteredCategories],
+      );
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
   };
   useEffect(() => {
