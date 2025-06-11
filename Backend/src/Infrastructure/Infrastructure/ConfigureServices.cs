@@ -50,9 +50,6 @@ public static class ConfigureServices
         services.AddScoped<IExpertiseRepository, ExpertiseRepository>();
         services.AddScoped<IAvailabilityRepository, AvailabilityRepository>();
         services.AddScoped<ITeachingApproachRepository, TeachingApproachRepository>();
-        services.AddScoped<IScheduleRepository, ScheduleRepository>();
-        services.AddScoped<ISessionsRepository, SessionsRepository>();
-        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
         services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
 
@@ -62,7 +59,9 @@ public static class ConfigureServices
         provider.GetRequiredService<IWebHostEnvironment>(),
         provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
-
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<ISessionsRepository, SessionsRepository>();
+        services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
