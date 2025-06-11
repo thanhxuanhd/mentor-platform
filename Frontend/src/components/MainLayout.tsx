@@ -61,10 +61,6 @@ const MainLayout = () => {
         </div>
 
         <div className="flex justify-evenly border-t border-gray-700 py-4">
-          {/*<Tooltip title="Settings">*/}
-          {/*  <Button icon={<SettingFilled />} />*/}
-          {/*</Tooltip>*/}
-
           <Button
             title="Logout"
             icon={<LogoutOutlined />}
