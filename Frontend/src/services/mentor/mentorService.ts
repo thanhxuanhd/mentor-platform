@@ -7,7 +7,6 @@ interface MentorListParams {
   pageSize?: number;
 }
 
-
 interface MentorListResponse {
   items: Mentor[];
   pageSize: number;
@@ -38,6 +37,12 @@ export const mentorService = {
       totalPages: data.totalPages,
       totalCount: data.totalCount,
     };
+  },
+
+  listAll: async (): Promise<Mentor[]> => {
+    const response = await axiosClient.get(`Users/mentors`);
+
+    return response.data.value;
   },
 };
 

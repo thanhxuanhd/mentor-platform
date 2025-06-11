@@ -111,13 +111,11 @@ const Page: React.FC = () => {
         );
 
         const categoryResponse = await categoryService.getActive();
-        const mentorResponse = await mentorService.list({
-          pageSize: 10,
-        });
+        const mentorResponse = await mentorService.listAll();
 
         setTotalCount(courseResponse.totalPages);
         setCategories(categoryResponse);
-        setMentors(mentorResponse.items);
+        setMentors(mentorResponse);
         setCourses(courseResponse.items);
       } catch (error) {
         console.error("Error fetching data:", error);
