@@ -2,37 +2,20 @@
 
 import type React from "react";
 import { useState } from "react";
+import { Form, Input, Button } from "antd";
 import { userService } from "../../../services/user/userService";
 import { HiExclamationCircle } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 
 const ForgotPasswordForm: React.FC = () => {
-  const [email, setEmail] = useState("");
+  const [form] = Form.useForm();
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldError, setFieldError] = useState<{ email?: string }>({});
   const navigate = useNavigate();
 
-  const validateEmail = (email: string) => /\S+@\S+\.\S+/.test(email);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const trimmedEmail = email.trim();
-    const errors: { email?: string } = {};
-
-    if (!trimmedEmail) {
-      errors.email = "Please enter your email";
-    } else if (!validateEmail(trimmedEmail)) {
-      errors.email = "Email must be in a correct format";
-    }
-
-    setFieldError(errors);
-    if (Object.keys(errors).length > 0) {
-      setIsLoading(false);
-      return;
-    }
+  const handleSubmit = async (values: { email: string }) => {
+    const trimmedEmail = values.email.trim();
 
     setIsLoading(true);
     setError("");
@@ -55,9 +38,7 @@ const ForgotPasswordForm: React.FC = () => {
     <div className="w-full max-w-md mx-auto mt-10 bg-gray-800 p-6 rounded shadow">
       <h2 className="text-2xl font-bold text-center text-white">
         Forgot Password
-      </h2>
-
-      {error && (
+      </h2>      {error && (
         <div
           className="mt-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded flex items-center justify-center"
           role="alert"
@@ -72,41 +53,58 @@ const ForgotPasswordForm: React.FC = () => {
           Password reset successful. Please check your email.
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6" noValidate>
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-white"
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={`mt-1 w-full px-3 py-2 border rounded bg-gray-700 text-white ${
-                fieldError.email ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="you@example.com"
-            />
-            {fieldError.email && (
-              <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>
-            )}
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full text-white font-semibold py-2 rounded ${
-              isLoading
-                ? "bg-orange-400 cursor-not-allowed"
-                : "bg-orange-600 hover:bg-orange-700"
-            }`}
+        <Form
+          form={form}
+          onFinish={handleSubmit}
+          layout="vertical"
+          requiredMark={true}
+          className="space-y-6 mt-6"
+        >
+          <Form.Item
+            name="email"
+            label={<span className="text-sm font-medium text-white">Email</span>}
+            rules={[
+              {
+                required: true,
+                message: "Please enter your email",
+              },
+              {
+                type: "email",
+                message: "Email must be in a correct format",
+              },
+            ]}
           >
-            {isLoading ? "Sending..." : "Send New Password"}
-          </button>
-        </form>
+            <Input
+              placeholder="you@example.com"
+              className="mt-1 w-full px-3 py-2 border rounded bg-gray-700 text-white"
+              style={{
+                backgroundColor: "#374151",
+                borderColor: "#6B7280",
+                color: "white",
+              }}
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isLoading}
+              className={`w-full text-white font-semibold py-2 rounded ${
+                isLoading
+                  ? "bg-orange-400 cursor-not-allowed"
+                  : "bg-orange-600 hover:bg-orange-700"
+              }`}
+              style={{
+                backgroundColor: isLoading ? "#FB923C" : "#EA580C",
+                borderColor: isLoading ? "#FB923C" : "#EA580C",
+                height: "40px",
+              }}
+            >
+              {isLoading ? "Sending..." : "Send New Password"}
+            </Button>
+          </Form.Item>
+        </Form>
       )}
 
       <div className="text-center mt-4">

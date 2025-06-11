@@ -238,9 +238,7 @@ export const SearchBar: FC<SearchBarProps> = ({
             }
           />
         </div>
-      )}
-
-      <div>
+      )}      <div>
         <label htmlFor="status" className="block text-sm font-medium mb-1">
           Status
         </label>
@@ -250,12 +248,13 @@ export const SearchBar: FC<SearchBarProps> = ({
           onChange={handleStatusChange}
           placeholder="Select Status"
           allowClear
-          className={commonInputClassName}
-          options={Object.entries(states).map(([key, stateValue]) => ({
-            key: key,
-            value: stateValue,
-            label: stateValue,
-          }))}
+          className={commonInputClassName}          options={Object.entries(states)
+            .map(([key, stateValue]) => ({
+              key: key,
+              value: stateValue,
+              label: stateValue,
+              disabled: user?.role === applicationRole.LEARNER && stateValue.toLowerCase().includes('draft'),
+            }))}
         />
       </div>
     </div>
