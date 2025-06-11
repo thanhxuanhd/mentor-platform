@@ -18,16 +18,20 @@ export interface AvailableTimeslotsResponse {
 }
 
 export const sessionBookingService = {
-  getSessionBookings: async (): Promise<SessionBookingRequest[]> => {
+  getSessionBookings: async (mentorId?: string): Promise<SessionBookingRequest[]> => {
     try {
-      const response = await axiosClient.get(`SessionBooking/request/get`);
+      const url = mentorId
+        ? `SessionBooking/request/get?mentorId=${mentorId}`
+        : `SessionBooking/request/get`;
+
+      const response = await axiosClient.get(url);
       return response.data.value || response.data;
     } catch (error) {
       console.error("Error fetching session bookings:", error);
       throw error;
     }
   },
-
+  
   getSessionDetails: async (sessionId: string): Promise<SessionBookingRequest> => {
     try {
       const response = await axiosClient.get(`SessionBooking/request/get/${sessionId}`);
@@ -91,7 +95,7 @@ export const sessionBookingService = {
       Pending: 0,
       Approved: 1,
       Completed: 2,
-      Canceled: 3,
+      Cancelled: 3,
       Rescheduled: 4,
     };
 
@@ -119,7 +123,7 @@ export const sessionBookingService = {
       Pending: 0,
       Approved: 1,
       Completed: 2,
-      Canceled: 3,
+      Cancelled: 3,
       Rescheduled: 4,
     };
 

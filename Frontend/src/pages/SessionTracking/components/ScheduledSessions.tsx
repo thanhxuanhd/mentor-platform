@@ -388,7 +388,7 @@ const ScheduleSession = () => {
   const loadSessions = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await sessionBookingService.getSessionBookings();
+      const response = await sessionBookingService.getSessionBookings(user?.id);
       if (!response || !Array.isArray(response)) throw new Error("Invalid response format");
       const convertedSessions = response.map(convertApiResponseToSession);
       setSessions(convertedSessions);

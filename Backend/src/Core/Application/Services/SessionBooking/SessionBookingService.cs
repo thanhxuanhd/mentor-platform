@@ -227,29 +227,35 @@ public class SessionBookingService(
         return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
 
-    public async Task<Result<List<LearnerSessionBookingResponse>>> GetAllBooking()
+    public async Task<Result<List<LearnerSessionBookingResponse>>> GetAllBooking(Guid mentorId)
     {
         var sessionList = await sessionBookingRepository.GetAllBookingAsync();
 
-        var resultList = sessionList
-        .OrderByDescending(s => s.TimeSlot.Date)
-        .ThenByDescending(s => s.TimeSlot.StartTime)
-        .Select(s => new LearnerSessionBookingResponse
-        {
-            Id = s.Id,
-            TimeSlotId = s.TimeSlotId,
-            LearnerId = s.LearnerId,
-            Status = s.Status.ToString(),
-            Date = s.TimeSlot.Date,
-            StartTime = s.TimeSlot.StartTime,
-            EndTime = s.TimeSlot.EndTime,
-            FullNameLearner = s.Learner.FullName,
-            PreferredCommunicationMethod = s.Learner.PreferredCommunicationMethod.ToString()
-        })
-        .ToList();
+        var filteredSessions = sessionList
+            .Where(s => s.TimeSlot.Schedules != null &&
+                        s.TimeSlot.Schedules.MentorId == mentorId)
+            .OrderByDescending(s => s.TimeSlot.Date)
+            .ThenByDescending(s => s.TimeSlot.StartTime)
+            .ToList();
+
+        var resultList = filteredSessions
+            .Select(s => new LearnerSessionBookingResponse
+            {
+                Id = s.Id,
+                TimeSlotId = s.TimeSlotId,
+                LearnerId = s.LearnerId,
+                Status = s.Status.ToString(),
+                Date = s.TimeSlot.Date,
+                StartTime = s.TimeSlot.StartTime,
+                EndTime = s.TimeSlot.EndTime,
+                FullNameLearner = s.Learner.FullName,
+                PreferredCommunicationMethod = s.Learner.PreferredCommunicationMethod.ToString()
+            })
+            .ToList();
 
         return Result.Success(resultList, HttpStatusCode.OK);
     }
+
 
     public async Task<Result<LearnerSessionBookingResponse>> GetSessionsBookingByIdAsync(Guid id)
     {
@@ -261,12 +267,16 @@ public class SessionBookingService(
 
         var result = new LearnerSessionBookingResponse
         {
+            Id = session.Id,
             TimeSlotId = session.TimeSlotId,
             LearnerId = session.LearnerId,
             Status = session.Status.ToString(),
+            Type = (int)session.Type,
             Date = session.TimeSlot.Date,
             StartTime = session.TimeSlot.StartTime,
-            EndTime = session.TimeSlot.EndTime
+            EndTime = session.TimeSlot.EndTime,
+            FullNameLearner = session.Learner?.FullName,
+            PreferredCommunicationMethod = session.Learner?.PreferredCommunicationMethod.ToString()
         };
 
         return Result.Success(result, HttpStatusCode.OK);

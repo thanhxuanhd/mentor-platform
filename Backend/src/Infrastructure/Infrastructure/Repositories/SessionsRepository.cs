@@ -110,7 +110,9 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
         return await _context.Sessions
             .Include(s => s.Learner)
             .Include(s => s.TimeSlot)
-            .Where(s => s.Id != Guid.Empty)
+                .ThenInclude(ts => ts.Schedules)
+                    .ThenInclude(sch => sch.Mentor)
             .ToListAsync();
     }
+
 }

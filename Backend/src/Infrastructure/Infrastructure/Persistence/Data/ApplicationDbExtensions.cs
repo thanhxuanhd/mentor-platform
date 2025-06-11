@@ -469,7 +469,6 @@ public static class ApplicationDbExtensions
                     EndTime = new TimeOnly(15, 0),
                 });
 
-                // Chủ nhật
                 var sundayDate = today.AddDays((week * 7) + 7);
                 charlieTimeSlots.Add(new MentorAvailableTimeSlot
                 {
@@ -483,8 +482,6 @@ public static class ApplicationDbExtensions
 
             dbContext.MentorAvailableTimeSlots.AddRange(charlieTimeSlots);
             dbContext.SaveChanges();
-
-            Console.WriteLine($"Created {charlieTimeSlots.Count} time slots for Charlie Chaplin (Mentor ID: 01047F62-6E87-442B-B1E8-2A54C9E17D7C)");
         }
 
         if (!dbContext.MentorAvailableTimeSlots.Any())
@@ -515,67 +512,65 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
 
             var createdSlots = dbContext.MentorAvailableTimeSlots.Count();
-            Console.WriteLine($"Created {createdSlots} time slots");
         }
         if (!dbContext.Sessions.Any())
         {
             dbContext.Sessions.RemoveRange(dbContext.Sessions);
             dbContext.SaveChanges();
 
-            var learnerIds = new List<Guid>
+            var mentorIds = new List<Guid>
+            {
+                Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"), 
+                Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8"), 
+                Guid.Parse("01047F62-6E87-442B-B1E8-2A54C9E17D7C"), 
+                Guid.Parse("547a020b-86e9-4713-a17d-ded22a84bda1"),
+            };
+
+                    var learnerIds = new List<Guid>
             {
                 Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C"),
                 Guid.Parse("C10C1A72-6B7D-4F60-84E9-3F63353A81A1"),
                 Guid.Parse("D21D2B83-7C8E-4071-95F0-4C74464B92B2")
             };
 
-            var allTimeSlots = dbContext.MentorAvailableTimeSlots.ToList();
-
-            if (!allTimeSlots.Any())
-            {
-                var schedule = dbContext.Schedules.FirstOrDefault();
-                var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-                for (int i = 0; i < 20; i++)
-                {
-                    var slot = new MentorAvailableTimeSlot
-                    {
-                        Id = Guid.NewGuid(),
-                        ScheduleId = schedule.Id,
-                        Date = today.AddDays(i + 1),
-                        StartTime = new TimeOnly(9 + i, 0),
-                        EndTime = new TimeOnly(10 + i, 0)
-                    };
-                    dbContext.MentorAvailableTimeSlots.Add(slot);
-                    allTimeSlots.Add(slot);
-                }
-                dbContext.SaveChanges();
-            }
-
             var sessionsToAdd = new List<Sessions>();
             var random = new Random();
 
-            for (int i = 0; i < 20; i++)
+            foreach (var mentorId in mentorIds)
             {
-                var timeSlot = allTimeSlots[i % allTimeSlots.Count];
-                var learner = learnerIds[i % 3];
+                var schedules = dbContext.Schedules
+                    .Where(s => s.MentorId == mentorId)
+                    .Select(s => s.Id)
+                    .ToList();
 
-                sessionsToAdd.Add(new Sessions
+                if (!schedules.Any()) continue;
+
+                var availableTimeSlots = dbContext.MentorAvailableTimeSlots
+                    .Where(ts => schedules.Contains(ts.ScheduleId))
+                    .OrderBy(ts => ts.Date)
+                    .ThenBy(ts => ts.StartTime)
+                    .Take(10)
+                    .ToList();
+
+                foreach (var timeSlot in availableTimeSlots)
                 {
-                    Id = Guid.NewGuid(),
-                    LearnerId = learner,
-                    TimeSlotId = timeSlot.Id,
-                    Status = SessionStatus.Pending,
-                    Type = SessionType.Onsite,
-                    BookedOn = DateTime.UtcNow.AddMinutes(-random.Next(1, 1440))
-                });
+                    var learnerId = learnerIds[random.Next(learnerIds.Count)];
+                    sessionsToAdd.Add(new Sessions
+                    {
+                        Id = Guid.NewGuid(),
+                        LearnerId = learnerId,
+                        TimeSlotId = timeSlot.Id,
+                        Status = SessionStatus.Pending,
+                        Type = SessionType.Onsite,
+                        BookedOn = DateTime.UtcNow.AddMinutes(-random.Next(60, 720))
+                    });
+                }
             }
 
             dbContext.Sessions.AddRange(sessionsToAdd);
             dbContext.SaveChanges();
 
-            Console.WriteLine($"Force created exactly {sessionsToAdd.Count} sessions");
-            Console.WriteLine($"Total sessions in database: {dbContext.Sessions.Count()}");
         }
+
     }
 }

@@ -94,9 +94,9 @@ public class SessionBookingController(
 
     [HttpGet("request/get")]
     //[Authorize(Policy = RequiredRole.Mentor)]
-    public async Task<IActionResult> GetAllBooking()
+    public async Task<IActionResult> GetAllBookingbyMentor(Guid mentorId)
     {
-        var result = await sessionBookingService.GetAllBooking();
+        var result = await sessionBookingService.GetAllBooking(mentorId);
         return StatusCode((int)result.StatusCode, result);
     }
 
