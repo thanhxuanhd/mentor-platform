@@ -1,5 +1,5 @@
-import { Button, Layout, Menu, Tooltip } from "antd";
-import { SettingFilled, LogoutOutlined } from "@ant-design/icons";
+import { Button, Layout, Menu } from "antd";
+import { LogoutOutlined } from "@ant-design/icons";
 
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks";
@@ -61,10 +61,6 @@ const MainLayout = () => {
         </div>
 
         <div className="flex justify-evenly border-t border-gray-700 py-4">
-          <Tooltip title="Settings">
-            <Button icon={<SettingFilled />} />
-          </Tooltip>
-
           <Button
             title="Logout"
             icon={<LogoutOutlined />}
