@@ -21,6 +21,7 @@ export interface BookedSession {
   originalDate: string
   originalStartTime: string
   originalEndTime: string
+  sortableDateTime?: string
 }
 
 export interface TimeSlot {

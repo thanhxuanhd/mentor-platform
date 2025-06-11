@@ -231,7 +231,6 @@ export default function SessionBooking() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Book a mentorship session</h1>
           <p className="text-gray-400">Select date, time, and session type</p>
-          {userTimezone && <p className="text-sm text-gray-500 mt-1">Times shown in your timezone: {userTimezone}</p>}
         </div>
 
         <MentorProfile

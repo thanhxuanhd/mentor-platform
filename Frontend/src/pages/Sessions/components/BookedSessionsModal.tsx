@@ -1,5 +1,3 @@
-"use client"
-
 import { App, Avatar, Button, List, Modal, Popconfirm, Tag } from "antd"
 import {
   CalendarOutlined,
@@ -98,7 +96,15 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
           originalEndTime: item.endTime, // Store original UTC time
         }
       })
-      setSessions(mappedSessions)
+
+      // Sort sessions by date and time (ascending - earliest first)
+      const sortedSessions = mappedSessions.sort((a, b) => {
+        const dateTimeA = dayjs(`${a.date} ${a.startTime}`)
+        const dateTimeB = dayjs(`${b.date} ${b.startTime}`)
+        return dateTimeA.isAfter(dateTimeB) ? 1 : -1
+      })
+
+      setSessions(sortedSessions)
     } catch (error) {
       console.error("Failed to fetch sessions:", error)
       setSessions([])
@@ -192,9 +198,6 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
       title={
         <div>
           <span className="text-white">My Booked Sessions</span>
-          {userTimezone && (
-            <div className="text-xs text-gray-400 mt-1">All times shown in your local timezone: {userTimezone}</div>
-          )}
         </div>
       }
       open={open}
