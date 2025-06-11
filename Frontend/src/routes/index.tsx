@@ -21,6 +21,7 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import AvailabilityManager from "../pages/Availability";
 import CourseResourcesPage from "../pages/CourseResources";
+import SessionBooking from "../pages/Sessions";
 import LearnerDashboard from "../pages/Dashboard/LearnerDashboard";
 
 const AppRoutes = () => {
@@ -96,6 +97,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="learner-dashboard" element={<LearnerDashboard />} />
+        <Route path="sessions" element={<SessionBooking />} />
       </Route>
       <Route
         element={

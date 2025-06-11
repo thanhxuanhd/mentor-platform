@@ -87,7 +87,7 @@ public class ScheduleServiceTests
                     Date = weekStartDate.AddDays((int)DayOfWeek.Monday - (int)weekStartDate.DayOfWeek + (weekStartDate.DayOfWeek > DayOfWeek.Monday ? 7 : 0)),
                     StartTime = new TimeOnly(10,0),
                     EndTime = new TimeOnly(11,0),
-                    Sessions = new List<Sessions> { new Sessions { Status = SessionStatus.Approved } } // Booked
+                    Sessions = new List<Sessions> { new Sessions { Status = SessionStatus.Approved, BookedOn = DateTime.Now } } // Booked
                 }
             } : new List<MentorAvailableTimeSlot>()
         };
@@ -387,7 +387,7 @@ public class ScheduleServiceTests
                     Date = futureDate,
                     StartTime = new TimeOnly(10, 0),
                     EndTime = new TimeOnly(11, 0),
-                    Sessions = new List<Sessions> { new Sessions { Status = SessionStatus.Approved } } // Simulates booked
+                    Sessions = new List<Sessions> { new Sessions { Status = SessionStatus.Approved, BookedOn = DateTime.Now } } // Simulates booked
                 },
                 new MentorAvailableTimeSlot // A slot for today, should be filtered out if its start time is in the past
                 {

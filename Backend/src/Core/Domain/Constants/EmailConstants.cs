@@ -78,9 +78,30 @@
             MentorPlatform Team";
         }
 
-        public static string BodyMeetingBookingCancelledEmail()
+        public const string SUBJECT_MEETING_BOOKING_CANCELLED = "Your Meeting Session has been Cancelled";
+
+        public static string BodyMeetingBookingCancelledEmail(
+            string recipientName,
+            DateTime meetingDateTime,
+            string mentorName)
         {
-            return string.Empty;
+            var meetingYearMonthDay = meetingDateTime.ToString("MM-dd-yyyy HH:mm");
+
+            return $"""
+                    Hi {recipientName},
+                    </br>
+                    This email is to inform you that the following meeting session has been cancelled:
+                    </br>
+                    When: {meetingYearMonthDay}
+                    Organized by: {mentorName}
+                    </br>
+                    If you have any questions or would like to schedule another session, please contact the organizer.
+                    </br>
+                    Thank you for your understanding.
+                    </br>
+                    Best regards,
+                    Support Team
+                    """;
         }
 
         public const string SUBJECT_MEETING_BOOKING_CONFIRMATION = "Your Meeting Session is Confirmed";

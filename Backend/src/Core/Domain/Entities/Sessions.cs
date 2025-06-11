@@ -9,6 +9,8 @@ public class Sessions : BaseEntity<Guid>
     public Guid LearnerId { get; set; }
     public SessionStatus Status { get; set; }
     public SessionType Type { get; set; }
-    public virtual MentorAvailableTimeSlot TimeSlot { get; set; } = null!;
-    public virtual User Learner { get; set; } = null!;
+    public DateTime BookedOn { get; set; }
+    public DateTime ProcessedOn { get; set; }
+    public User Learner { get; set; } = null!;
+    public MentorAvailableTimeSlot TimeSlot { get; set; } = null!;
 }

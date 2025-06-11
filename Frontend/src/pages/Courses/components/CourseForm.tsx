@@ -15,10 +15,10 @@ import { PlusOutlined } from "@ant-design/icons";
 import { CourseDifficultyEnumMember } from "../initial-values.tsx";
 import dayjs from "dayjs";
 import { courseService } from "../../../services/course";
-import { categoryService } from "../../../services/category";
 import { useAuth } from "../../../hooks";
 import type { CourseFormProps } from "../../../types/pages/courses/types.ts";
 import { isAxiosError } from "axios";
+import { getActiveCategories } from "../../../services/category/categoryServices.tsx";
 
 export const CourseForm: FC<CourseFormProps> = ({
   formData,
@@ -35,24 +35,16 @@ export const CourseForm: FC<CourseFormProps> = ({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const fetchCategories = async () => {
     try {
-      const response = await categoryService.list({
-        pageIndex: 1,
-        pageSize: 10,
-        keyword: categoryKeyword.trim(),
-        status: true,
-      });
-
-      const assignedCategory = { name: form.getFieldValue("categoryName"), id: form.getFieldValue("categoryId") };
-
-      setMyCategories(
-        assignedCategory.id &&
-          !response.items.some((c: Category) => c.id === assignedCategory.id)
-          ? [...response.items, assignedCategory]
-          : [...response.items],
-      );
-
+      const response = await getActiveCategories();
+      // Lọc danh mục phía client dựa trên categoryKeyword
+      const filteredCategories = categoryKeyword
+        ? response.filter((category: { name: string }) =>
+          category.name.toLowerCase().includes(categoryKeyword.trim().toLowerCase())
+        )
+        : response;
+      setMyCategories(filteredCategories);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      console.error('Error fetching categories:', error);
     }
   };
   useEffect(() => {
@@ -338,7 +330,7 @@ export const CourseForm: FC<CourseFormProps> = ({
               style={{ width: "100%" }}
               placeholder="Select due date"
               format="YYYY-MM-DD"
-              minDate={dayjs()}
+              minDate={dayjs().add(1, "day")}
               inputReadOnly={true}
             />
           </Form.Item>

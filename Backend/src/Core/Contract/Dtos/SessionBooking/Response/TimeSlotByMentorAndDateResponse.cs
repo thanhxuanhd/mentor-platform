@@ -1,6 +1,8 @@
+﻿using Domain.Enums;
+
 namespace Contract.Dtos.SessionBooking.Response;
 
-public record AvailableTimeSlotResponse
+public record TimeSlotByMentorAndDateResponse
 {
     public required Guid Id { get; init; }
     public required TimeOnly StartTime { get; init; }
@@ -9,4 +11,5 @@ public record AvailableTimeSlotResponse
     public required Guid MentorId { get; init; }
     public required string MentorName { get; init; }
     public required bool IsBooked { get; init; }
+    public required SessionStatus? LearnerCurrentBookingStatus { get; init; }
 }
