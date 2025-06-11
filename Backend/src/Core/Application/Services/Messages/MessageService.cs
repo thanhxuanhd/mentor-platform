@@ -27,7 +27,6 @@ public class MessageService(
             newConversation = new Conversation
             {
                 CreatedAt = DateTime.UtcNow,
-                Name = user.FullName
             };
             await conversationRepository.AddAsync(newConversation);
             await conversationRepository.SaveChangesAsync();
@@ -38,12 +37,14 @@ public class MessageService(
                 {
                     ConversationId = newConversation.Id,
                     UserId = senderId,
+                    JoinedAt = DateTime.UtcNow,
                     IsAdmin = true
                 },
                 new ConversationParticipant
                 {
                     ConversationId = newConversation.Id,
                     UserId = request.RecipientId.Value,
+                    JoinedAt = DateTime.UtcNow,
                     IsAdmin = true
                 },
             };
@@ -94,7 +95,7 @@ public class MessageService(
     public async Task<Result<PaginatedList<GetMinimalConversationResponse>>> GetListConversationsByUserId(Guid userId, int pageIndex)
     {
         var conversationsQuery = conversationRepository.GetAllInclude()
-            .Where(conv => conv.Participants.Any(p => p.UserId == userId))
+            .Where(conv => ((Conversation)conv).Participants.Any(p => p.UserId == userId))
             .Select(conv => new GetMinimalConversationResponse
             {
                 ConversationId = conv.Id,
@@ -127,7 +128,7 @@ public class MessageService(
 
     public async Task<Result<GetDetailConversationResponse>> GetConversationMessageHistory(Guid userId, Guid conversationId, int pageIndex)
     {
-        var conversation = await conversationRepository.GetByIdAsync(conversationId, conv => conv.Participants.Any(p => p.UserId == userId));
+        var conversation = await conversationRepository.GetByIdAsync(conversationId, conv => conv.Participants);
         if (conversation == null)
         {
             return Result.Failure<GetDetailConversationResponse>("Conversation not found", HttpStatusCode.BadRequest);
@@ -151,7 +152,7 @@ public class MessageService(
         var result = new GetDetailConversationResponse
         {
             ConversationId = conversation.Id,
-            ConversationName = conversation.Name,
+            ConversationName = conversation.Name ?? "",
             Messages = paginatedMessages,
         };
 
@@ -185,8 +186,9 @@ public class MessageService(
 
         // Query groups (up to 3)
         var groupsQuery = conversationRepository.GetAllInclude()
-            .Where(c => c.Participants.Any(p => p.UserId == userId) &&
-                       (string.IsNullOrEmpty(keyword) || c.Name.Contains(keyword)))
+            .Where(c => c.Participants.Count > 2 && 
+                        c.Participants.Any(p => p.UserId == userId) &&
+                        (string.IsNullOrEmpty(keyword) || c.Name!.Contains(keyword)))
             .Select(c => new
             {
                 Conversation = c,

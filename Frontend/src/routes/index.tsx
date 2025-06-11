@@ -19,9 +19,8 @@ import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
-import AvailabilityManager from "../pages/Availability";
-import MessagingLayout from "../pages/Messaging/MessagingLayout";
 import MessagingSession from "../pages/Messaging/components/MessagingSession";
+import MessagingLayout from "../pages/Messaging/MessagingLayout";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -58,7 +57,6 @@ const AppRoutes = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="availability" element={<AvailabilityManager />} />
       </Route>
 
       <Route
@@ -74,9 +72,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="messages" element={<MessagingLayout />}>
-          <Route path=":converId" element={<MessagingSession />} />
-        </Route>
+        <Route path="messages" element={<MessagingLayout />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
       </Route>

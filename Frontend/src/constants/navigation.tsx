@@ -101,5 +101,6 @@ export const menuItems: MenuItemProps[] = [
     label: "Availability",
     link: "availability",
     role: [applicationRole.MENTOR],
+    isMentorApprovedRequired: true,
   },
 ];

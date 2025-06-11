@@ -37,7 +37,7 @@ public class MessageHub(IMessageService messageService, ILogger<MessageHub> logg
         if (lastMessage != null)
         {
             logger.LogInformation("Broadcasting ReceiveMessage for ConversationId: {ConversationId}", response.ConversationId);
-            await Clients.Group(response.ConversationId.ToString() ?? "default-group").SendAsync(
+            await Clients.Group(response.ConversationId.ToString()).SendAsync(
                 "ReceiveMessage",
                 lastMessage.SenderId.ToString(),
                 lastMessage.Content,
@@ -45,7 +45,7 @@ public class MessageHub(IMessageService messageService, ILogger<MessageHub> logg
                 lastMessage.SenderName,
                 lastMessage.SenderProfilePhotoUrl,
                 lastMessage.SentAt,
-                response.ConversationId.ToString() ?? "default-group"
+                response.ConversationId.ToString()
             );
         }
     }

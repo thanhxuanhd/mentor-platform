@@ -1,49 +1,35 @@
 import type React from "react";
-
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Avatar, Input, Button, App } from "antd";
 import { SendOutlined } from "@ant-design/icons";
-import { useLocation, useParams } from "react-router-dom";
-import type {
-  AddMessageRequest,
-  GetMessageResponse,
-} from "../../../types/ChatType";
+import type { GetDetailConversationResponse, GetMessageResponse } from "../../../types/ChatType";
 import { useAuth } from "../../../hooks";
 import type { NotificationProps } from "../../../types/Notification";
-import type { HubConnection } from "@microsoft/signalr";
-import hubConnection from "../../../services/signalR";
+import DefaultAvatar from "../../../assets/images/default-account.svg";
 
 const { TextArea } = Input;
 
-export default function MessagingSession() {
+interface MessagingSessionProps {
+  conversationDetails: GetDetailConversationResponse | null;
+  contactId: string | null;
+  contactName: string | null;
+  contactPhotoUrl: string | null;
+  onSendMessage: (message: string) => void;
+}
+
+export default function MessagingSession({
+  conversationDetails,
+  contactId,
+  contactName,
+  contactPhotoUrl,
+  onSendMessage,
+}: MessagingSessionProps) {
   const { user } = useAuth();
-  const { converId } = useParams();
-  const location = useLocation();
   const { notification } = App.useApp();
-  const { contactId, contactName, contactPhotoUrl } = location.state;
-  const [pageIndex, setPageIndex] = useState(1);
-  const [messages, setMessages] = useState<GetMessageResponse[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [notify, setNotify] = useState<NotificationProps | null>(null);
-  const [connection, setConnection] = useState<HubConnection | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const request: AddMessageRequest = {
-        conversationId: converId ?? null,
-        recipientId: contactId,
-        content: newMessage,
-      };
-
-      setNewMessage("");
-
-      if (connection) {
-        return connection.invoke("SendMessage", request);
-      }
-    }
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -53,47 +39,8 @@ export default function MessagingSession() {
   };
 
   useEffect(() => {
-    setConnection(hubConnection);
-  }, []);
-
-  useEffect(() => {
     scrollToBottom();
-  }, [messages]);
-
-  useEffect(() => {
-    if (connection) {
-      connection
-        .start()
-        .then(() => {
-          connection.on(
-            "ReceiveMessage",
-            (
-              senderId: string,
-              content: string,
-              messageId: string,
-              senderName: string,
-              senderProfilePhotoUrl: string | null,
-              conversationId: string,
-              sentAt: string,
-            ) => {
-              setMessages((prev) => [
-                ...prev,
-                {
-                  senderId,
-                  senderName,
-                  content,
-                  messageId,
-                  senderProfilePhotoUrl,
-                  conversationId,
-                  sentAt,
-                },
-              ]);
-            },
-          );
-        })
-        .catch((err) => console.error("Connection error:", err));
-    }
-  }, [connection]);
+  }, [conversationDetails?.messages.items]);
 
   useEffect(() => {
     if (notify) {
@@ -112,7 +59,10 @@ export default function MessagingSession() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      if (newMessage.trim() && contactId) {
+        onSendMessage(newMessage);
+        setNewMessage("");
+      }
     }
   };
 
@@ -127,17 +77,17 @@ export default function MessagingSession() {
       <div className="flex items-center justify-between p-4 border-b border-slate-500/30">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Avatar src={contactPhotoUrl} size={40} />
+            <Avatar src={contactPhotoUrl || DefaultAvatar} size={40} />
           </div>
           <div>
-            <h3 className="text-white font-semibold">{contactName}</h3>
+            <h3 className="text-white font-semibold">{contactName || "Select a conversation"}</h3>
           </div>
         </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => {
+        {conversationDetails?.messages.items.map((message: GetMessageResponse) => {
           const isCurrentUser = message.senderId === user?.id;
           return (
             <div
@@ -148,18 +98,14 @@ export default function MessagingSession() {
                 className={`flex gap-2 max-w-[70%] ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
               >
                 {!isCurrentUser && (
-                  <Avatar src={message.senderProfilePhotoUrl} size={32} />
+                  <Avatar src={message.senderProfilePhotoUrl || DefaultAvatar} size={32} />
                 )}
-                <div
-                  className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"}`}
-                >
+                <div className={`flex flex-col ${isCurrentUser ? "items-end" : "items-start"}`}>
                   <p className="text-sm">{message.content}</p>
                   <div
                     className={`flex items-center gap-1 mt-1 ${isCurrentUser ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    <span className="text-xs text-slate-400">
-                      {formatTime(message.sentAt)}
-                    </span>
+                    <span className="text-xs text-slate-400">{formatTime(message.sentAt)}</span>
                   </div>
                 </div>
               </div>
@@ -191,8 +137,13 @@ export default function MessagingSession() {
           <Button
             type="primary"
             icon={<SendOutlined />}
-            onClick={handleSendMessage}
-            disabled={!newMessage.trim()}
+            onClick={() => {
+              if (newMessage.trim() && contactId) {
+                onSendMessage(newMessage);
+                setNewMessage("");
+              }
+            }}
+            disabled={!newMessage.trim() || !contactId}
             className="bg-blue-500 hover:bg-blue-600 border-blue-500"
           />
         </div>

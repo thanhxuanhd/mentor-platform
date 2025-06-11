@@ -4,7 +4,7 @@ namespace Domain.Entities;
 
 public class Conversation : BaseEntity<Guid>
 {
-    public string Name { get; set; } = null!;
+    public string? Name { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 
     public virtual ICollection<ConversationParticipant> Participants { get; set; } = null!;
