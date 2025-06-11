@@ -14,11 +14,11 @@ public interface ISessionBookingService
 
     Task<Result<PaginatedList<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId,
         AvailableTimeSlotListRequest request);
-    
+
     Task<Result<List<TimeSlotByMentorAndDateResponse>>> GetAllTimeSlotByMentorAndDateAsync(Guid mentorId,
         Guid learnerId,
         AvailableTimeSlotByDateListRequest request);
-    
+
     Task<Result<List<SessionSlotStatusResponse>>> GetAllBookingRequestByTimeSlot(Guid timeSlotId);
     Task<Result<List<GetAllRequestByLearnerResponse>>> GetAllBookingRequestByLearnerId(Guid learnerId);
 

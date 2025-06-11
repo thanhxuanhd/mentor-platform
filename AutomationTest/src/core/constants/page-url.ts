@@ -9,7 +9,8 @@ export const PAGE_ENDPOINT_URL = {
   AVAILABILITY: '/availability',
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
+  RESOURCE: "/resources",
+  DASHBOARD: "/dashboard",
   SESSION_BOOKING:'sessions',
   SESSION_TRACKING: 'sessions-tracking',
-  RESOURCE:"/resources",
 };

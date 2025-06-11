@@ -12,4 +12,5 @@ public interface ISessionsRepository : IBaseRepository<Sessions, Guid>
     void MentorAcceptBookingSession(Sessions bookingSession, Guid learnerId);
     IQueryable<Sessions> GetAllBookingAsync();
     Task<List<Sessions>> GetByTimeSlotAsync(Guid timeslotId);
+    Task<IEnumerable<Sessions>> GetLearnerUpcomingSessionsAsync(Guid userId);
 }

@@ -11,5 +11,3 @@ public class MentorAvailableTimeSlot : BaseEntity<Guid>
     public virtual ICollection<Sessions>? Sessions { get; set; } = [];
     public virtual Schedules Schedules { get; set; } = null!;
 }
-
-

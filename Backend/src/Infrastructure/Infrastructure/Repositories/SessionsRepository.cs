@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Infrastructure.Repositories;
 
-public class SessionsRepository(ApplicationDbContext context, TimeProvider timeProvider)
+public class SessionsRepository(ApplicationDbContext context)
     : BaseRepository<Sessions, Guid>(context), ISessionsRepository
 {
     private static bool HasOverlappingSessionTime(Sessions existingSession, Sessions newSession)
@@ -67,7 +67,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             LearnerId = learnerId,
             TimeSlot = timeSlot,
             Type = sessionType,
-            BookedOn = timeProvider.GetLocalNow().DateTime,
+            BookedOn = DateTime.UtcNow,
         };
 
         timeSlot.Sessions.Add(bookingSession);
@@ -125,4 +125,25 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Sessions>> GetLearnerUpcomingSessionsAsync(Guid userId)
+    {
+        var learnerSessions = _context.Sessions
+            .Include(s => s.TimeSlot)
+                .ThenInclude(mats => mats.Schedules)
+                    .ThenInclude(s => s.Mentor)
+            .Where(s => s.LearnerId == userId);
+
+        var approvedSessions = learnerSessions
+            .Where(s => s.Status == SessionStatus.Approved || s.Status == SessionStatus.Rescheduled);
+
+        var now = DateTime.Now;
+
+        var upcomingSessions = await approvedSessions
+            .Where(s => s.TimeSlot.Date >= DateOnly.FromDateTime(now) ||
+                        (s.TimeSlot.Date == DateOnly.FromDateTime(now) && s.TimeSlot.StartTime > TimeOnly.FromDateTime(now)))
+            .OrderBy(s => s.TimeSlot.Date).ThenBy(s => s.TimeSlot.StartTime)
+            .ToListAsync();
+
+        return upcomingSessions;
+    }
 }

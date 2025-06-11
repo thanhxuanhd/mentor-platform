@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
-import DashboardPage from "../pages/Dashboard";
+import DashboardPage from "../pages/Dashboard/LearnerDashboard";
 import UsersPage from "../pages/Users";
 import CategoriesPage from "../pages/Categories";
 import CoursesPage from "../pages/Courses";
@@ -23,6 +23,7 @@ import ScheduleSession from "../pages/SessionTracking/components/ScheduledSessio
 import AvailabilityManager from "../pages/Availability";
 import CourseResourcesPage from "../pages/CourseResources";
 import SessionBooking from "../pages/Sessions";
+import LearnerDashboard from "../pages/Dashboard/LearnerDashboard";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -89,16 +90,14 @@ const AppRoutes = () => {
       >
         <Route path="users" element={<UsersPage />} />
       </Route>
-
       <Route
         element={
-          <ProtectedRoute
-            requiredRole={[applicationRole.LEARNER]}
-          >
+          <ProtectedRoute requiredRole={[applicationRole.LEARNER]}>
             <MainLayout />
           </ProtectedRoute>
         }
       >
+        <Route path="learner-dashboard" element={<LearnerDashboard />} />
         <Route path="sessions" element={<SessionBooking />} />
       </Route>
       <Route
