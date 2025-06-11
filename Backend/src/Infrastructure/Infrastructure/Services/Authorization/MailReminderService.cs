@@ -6,15 +6,18 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Net.Mail;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 public class MailReminderService : BackgroundService
 {
     private readonly MailSettings _mailSettings;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly ILogger<MailReminderService> _logger;
 
     public MailReminderService(
         IOptions<MailSettings> mailSettings,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        ILogger<MailReminderService> logger)
     {
         _mailSettings = mailSettings.Value;
         _scopeFactory = scopeFactory;
@@ -87,7 +90,7 @@ public class MailReminderService : BackgroundService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Email sending failed: {ex.Message}");
+            _logger.LogError(ex, "Email sending failed to {ToEmail}", toEmail);
         }
     }
 }

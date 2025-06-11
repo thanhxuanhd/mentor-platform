@@ -286,18 +286,16 @@ public class SessionBookingService(
     {
         var session = await sessionBookingRepository.GetByIdAsync(id);
         if (session == null)
-        {
             return Result.Failure<bool>($"Session with id {id} not found.", HttpStatusCode.NotFound);
-        }
 
-        session.Status = (SessionStatus)request.Status;
-
+        session.Status = request.Status;
         string subject = string.Empty;
         string body = string.Empty;
 
         if (request.Status == SessionStatus.Approved)
         {
             var sameTimeSessions = await sessionBookingRepository.GetByTimeSlotAsync(
+                session.TimeSlot.Schedules.MentorId,
                 session.TimeSlot.Date,
                 session.TimeSlot.StartTime,
                 session.TimeSlot.EndTime
@@ -336,24 +334,20 @@ public class SessionBookingService(
         else if (request.Status == SessionStatus.Cancelled)
         {
             subject = EmailConstants.SUBJECT_SESSION_CANCELLED;
-            body = EmailConstants.BodySessionAcceptedEmail(id);
+            body = EmailConstants.BodySessionCancelledEmail(id);
         }
 
         if (!string.IsNullOrEmpty(subject) && !string.IsNullOrEmpty(body))
         {
             var user = await userRepository.GetByIdAsync(session.LearnerId);
             if (user == null)
-            {
                 return Result.Failure<bool>($"User with id {session.LearnerId} not found.", HttpStatusCode.NotFound);
-            }
 
             if (user.IsReceiveNotification)
             {
                 var emailResult = await emailService.SendEmailAsync(user.Email, subject, body);
                 if (!emailResult)
-                {
                     return Result.Failure<bool>("Failed to send email.", HttpStatusCode.InternalServerError);
-                }
             }
         }
 
