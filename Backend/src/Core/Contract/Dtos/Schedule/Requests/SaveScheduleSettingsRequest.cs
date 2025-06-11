@@ -1,4 +1,5 @@
 ﻿using Contract.Dtos.Schedule.Extensions;
+using Contract.Repositories;
 using FluentValidation;
 
 namespace Contract.Dtos.Schedule.Requests;
@@ -46,54 +47,6 @@ public class UpdateScheduleSettingsRequestValidator : AbstractValidator<SaveSche
             .InclusiveBetween(0, 60).WithMessage("BufferTime must be greater than or equal to 0 minutes.");
 
         RuleFor(x => x.AvailableTimeSlots)
-            .NotNull().WithMessage("AvailableTimeSlots cannot be null.")
-            .Custom((availableTimeSlots, context) =>
-            {
-                var request = (SaveScheduleSettingsRequest)context.InstanceToValidate;
-
-                foreach (var kvp in availableTimeSlots)
-                {
-                    var date = kvp.Key;
-                    var slotsForDate = kvp.Value;
-
-                    // 1. Validate Date Key
-                    if (date < request.WeekStartDate || date > request.WeekEndDate)
-                    {
-                        context.AddFailure(new FluentValidation.Results.ValidationFailure($"{context.PropertyPath}[{date}]", $"The date {date} is outside the specified week range ({request.WeekStartDate} to {request.WeekEndDate})."));
-                    }
-
-                    if (!slotsForDate.Any())
-                    {
-                        continue; // Empty list for a date is acceptable
-                    }
-
-                    var sortedSlots = slotsForDate.Where(s => s != null).OrderBy(s => s.StartTime).ToList();
-
-                    for (int i = 0; i < sortedSlots.Count; i++)
-                    {
-                        var currentSlot = sortedSlots[i];
-
-                        if (currentSlot.StartTime >= currentSlot.EndTime)
-                        {
-                            context.AddFailure(new FluentValidation.Results.ValidationFailure($"{context.PropertyPath}[{date}][{i}]", $"For date {date}, slot EndTime ({currentSlot.EndTime:HH:mm}) must be after StartTime ({currentSlot.StartTime:HH:mm})."));
-                        }
-
-                        if ((currentSlot.EndTime - currentSlot.StartTime).TotalMinutes != request.SessionDuration)
-                        {
-                            context.AddFailure(new FluentValidation.Results.ValidationFailure($"{context.PropertyPath}[{date}][{i}]", $"For date {date}, slot {currentSlot.StartTime:HH:mm}-{currentSlot.EndTime:HH:mm} duration must be {request.SessionDuration} minutes."));
-                        }
-
-                        if (currentSlot.StartTime < request.StartTime || currentSlot.EndTime > request.EndTime)
-                        {
-                            context.AddFailure(new FluentValidation.Results.ValidationFailure($"{context.PropertyPath}[{date}][{i}]", $"For date {date}, slot {currentSlot.StartTime:HH:mm}-{currentSlot.EndTime:HH:mm} must be within the daily schedule bounds ({request.StartTime:HH:mm} - {request.EndTime:HH:mm})."));
-                        }
-
-                        if (i < sortedSlots.Count - 1 && currentSlot.EndTime > sortedSlots[i + 1].StartTime)
-                        {
-                            context.AddFailure(new FluentValidation.Results.ValidationFailure($"{context.PropertyPath}[{date}]", $"Time slots on {date} overlap: specifically {currentSlot.StartTime:HH:mm}-{currentSlot.EndTime:HH:mm} and {sortedSlots[i + 1].StartTime:HH:mm}-{sortedSlots[i + 1].EndTime:HH:mm}."));
-                        }
-                    }
-                }
-            });
+            .NotNull().WithMessage("AvailableTimeSlots cannot be null.");
     }
 }

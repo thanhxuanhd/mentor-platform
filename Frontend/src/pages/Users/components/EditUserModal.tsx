@@ -50,7 +50,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
         form={form}
         layout="vertical"
         name="edit_user_form"
-        requiredMark={false}
+        requiredMark={true}
       >
         <Form.Item
           name="fullName"

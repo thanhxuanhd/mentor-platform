@@ -39,12 +39,27 @@ export const CourseForm: FC<CourseFormProps> = ({
       // Lọc danh mục phía client dựa trên categoryKeyword
       const filteredCategories = categoryKeyword
         ? response.filter((category: { name: string }) =>
-          category.name.toLowerCase().includes(categoryKeyword.trim().toLowerCase())
-        )
+            category.name
+              .toLowerCase()
+              .includes(categoryKeyword.trim().toLowerCase()),
+          )
         : response;
-      setMyCategories(filteredCategories);
+
+      const assignedCategory = {
+        name: form.getFieldValue("categoryName"),
+        id: form.getFieldValue("categoryId"),
+      };
+
+      setMyCategories(
+        assignedCategory.id &&
+          !filteredCategories.some(
+            (c: Category) => c.id === assignedCategory.id,
+          )
+          ? [...filteredCategories, assignedCategory]
+          : [...filteredCategories],
+      );
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
   };
   useEffect(() => {
@@ -309,7 +324,18 @@ export const CourseForm: FC<CourseFormProps> = ({
           <Form.Item
             name="difficulty"
             label="Difficulty"
-            rules={[{ required: true, message: "Please select a difficulty!" }]}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Please select a difficulty!"),
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <Select>
               {Object.entries(CourseDifficultyEnumMember).map(
@@ -324,7 +350,18 @@ export const CourseForm: FC<CourseFormProps> = ({
           <Form.Item
             name="dueDate"
             label="Due Date"
-            rules={[{ required: true, message: "Please select a due date!" }]}
+            rules={[
+              {
+                validator: (_, value) => {
+                  if (!value) {
+                    return Promise.reject(
+                      new Error("Please select a due date!"),
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
           >
             <DatePicker
               style={{ width: "100%" }}

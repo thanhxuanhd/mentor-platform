@@ -66,7 +66,7 @@ public class SessionBookingService(
         Guid learnerId,
         AvailableTimeSlotByDateListRequest request)
     {
-        var currentDateTime = DateTime.Now;
+        var currentDateTime = DateTime.UtcNow;
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
 
         var availableTimeSlot =
