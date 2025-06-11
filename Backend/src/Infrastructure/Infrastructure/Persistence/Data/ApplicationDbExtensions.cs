@@ -282,8 +282,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(17, 00),
-                    SessionDuration = 60, 
-                    BufferTime = 15,    
+                    SessionDuration = 60,
+                    BufferTime = 15,
                 },
                 new Schedules
                 {
@@ -292,8 +292,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartHour = new TimeOnly(10, 00),
                     EndHour = new TimeOnly(18, 00),
-                    SessionDuration = 45, 
-                    BufferTime = 10,    
+                    SessionDuration = 45,
+                    BufferTime = 10,
                 },
                 new Schedules
                 {
@@ -302,8 +302,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
                     StartHour = new TimeOnly(13, 00),
                     EndHour = new TimeOnly(21, 00),
-                    SessionDuration = 30, 
-                    BufferTime = 5,     
+                    SessionDuration = 30,
+                    BufferTime = 5,
                 },
                 new Schedules
                 {
@@ -312,8 +312,8 @@ public static class ApplicationDbExtensions
                     WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(12, 00),
-                    SessionDuration = 60, 
-                    BufferTime = 0,     
+                    SessionDuration = 60,
+                    BufferTime = 0,
                 }
             );
 

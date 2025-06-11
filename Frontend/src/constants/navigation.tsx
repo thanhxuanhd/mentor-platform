@@ -7,6 +7,7 @@ import {
   ScheduleOutlined,
   FolderOpenOutlined,
   HddOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
@@ -46,7 +47,7 @@ export const menuItems: MenuItemProps[] = [
     link: "categories",
     role: [
       applicationRole.ADMIN,
-      applicationRole.LEARNER,
+
       applicationRole.MENTOR,
     ],
     isMentorApprovedRequired: true,
@@ -103,4 +104,11 @@ export const menuItems: MenuItemProps[] = [
     link: "availability",
     role: [applicationRole.MENTOR],
   },
+  {
+    key: "sessions",
+    icon: <TeamOutlined />,
+    label: "Sessions",
+    link: "sessions",
+    role: [applicationRole.LEARNER],
+  }
 ];

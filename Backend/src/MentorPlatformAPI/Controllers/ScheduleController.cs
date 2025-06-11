@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
+
 [Authorize(Roles = "Mentor")]
 [Route("api/schedules")]
 [ApiController]
@@ -23,7 +24,7 @@ public class ScheduleController : ControllerBase
         var result = await _scheduleService.GetScheduleSettingsAsync(mentorId, request);
         return StatusCode((int)result.StatusCode, result);
     }
-    
+
     [HttpPost("{mentorId}/settings")]
     public async Task<IActionResult> UpdateScheduleSettings(Guid mentorId, [FromBody] SaveScheduleSettingsRequest request)
     {

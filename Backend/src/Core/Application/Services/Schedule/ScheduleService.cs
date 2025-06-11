@@ -141,7 +141,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
         StringBuilder stringBuilder = new();
-        
+
         foreach (var timeSlot in request.AvailableTimeSlots)
         {
             DateOnly date = timeSlot.Key;

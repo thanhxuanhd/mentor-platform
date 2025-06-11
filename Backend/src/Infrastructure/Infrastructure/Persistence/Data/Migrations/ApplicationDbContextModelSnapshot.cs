@@ -271,9 +271,6 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Property<Guid>("ScheduleId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("SessionId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
@@ -342,8 +339,14 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("BookedOn")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("LearnerId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ProcessedOn")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -351,6 +354,10 @@ namespace Infrastructure.Persistence.Data.Migrations
 
                     b.Property<Guid>("TimeSlotId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -720,6 +727,47 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("TimeSlot");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.HasOne("Domain.Entities.Schedules", "Schedules")
+                        .WithMany("AvailableTimeSlots")
+                        .HasForeignKey("ScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Schedules");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Schedules", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Mentor")
+                        .WithMany("Schedules")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mentor");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Sessions", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Learner")
+                        .WithMany("Sessions")
+                        .HasForeignKey("LearnerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.MentorAvailableTimeSlot", "TimeSlot")
+                        .WithMany("Sessions")
+                        .HasForeignKey("TimeSlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Learner");
+
+                    b.Navigation("TimeSlot");
+                });
+
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.HasOne("Domain.Entities.Role", "Role")
@@ -841,9 +889,19 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("Sessions");
                 });
 
+            modelBuilder.Entity("Domain.Entities.MentorAvailableTimeSlot", b =>
+                {
+                    b.Navigation("Sessions");
+                });
+
             modelBuilder.Entity("Domain.Entities.Role", b =>
                 {
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Schedules", b =>
+                {
+                    b.Navigation("AvailableTimeSlots");
                 });
 
             modelBuilder.Entity("Domain.Entities.Schedules", b =>
@@ -866,6 +924,10 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.Navigation("MentorApplications");
 
                     b.Navigation("ReviewedMentorApplications");
+
+                    b.Navigation("Schedules");
+
+                    b.Navigation("Sessions");
 
                     b.Navigation("Schedules");
 

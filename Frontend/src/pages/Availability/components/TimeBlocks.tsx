@@ -15,7 +15,7 @@ export function TimeBlocks({ selectedDate, timeBlocks, onToggleBlock }: TimeBloc
       <h3 className="text-lg font-medium mb-4">
         Set your availability for {selectedDate.format("dddd, MMMM D")}
       </h3>
-      
+
       {timeBlocks.length > 0 ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {timeBlocks.map((block) => (

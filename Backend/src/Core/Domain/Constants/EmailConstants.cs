@@ -77,5 +77,57 @@
             Thank you,<br>
             MentorPlatform Team";
         }
+
+        public const string SUBJECT_MEETING_BOOKING_CANCELLED = "Your Meeting Session has been Cancelled";
+
+        public static string BodyMeetingBookingCancelledEmail(
+            string recipientName,
+            DateTime meetingDateTime,
+            string mentorName)
+        {
+            var meetingYearMonthDay = meetingDateTime.ToString("MM-dd-yyyy HH:mm");
+
+            return $"""
+                    Hi {recipientName},
+                    </br>
+                    This email is to inform you that the following meeting session has been cancelled:
+                    </br>
+                    When: {meetingYearMonthDay}
+                    Organized by: {mentorName}
+                    </br>
+                    If you have any questions or would like to schedule another session, please contact the organizer.
+                    </br>
+                    Thank you for your understanding.
+                    </br>
+                    Best regards,
+                    Support Team
+                    """;
+        }
+
+        public const string SUBJECT_MEETING_BOOKING_CONFIRMATION = "Your Meeting Session is Confirmed";
+
+        public static string BodyMeetingBookingConfirmationEmail(
+            string recipientName,
+            DateTime meetingDateTime,
+            string mentorName)
+        {
+            var meetingYearMonthDay = meetingDateTime.ToString("MM-dd-yyyy HH:mm");
+
+            return $"""
+                    Hi {recipientName},
+                    </br>
+                    This email confirms your booking for the following meeting session:
+                    </br>
+                    When: {meetingYearMonthDay}
+                    Organized by: {mentorName}
+                    </br>
+                    We look forward to your participation.
+                    </br>
+                    If you need to make any changes or have questions, please reply to this email or contact the organizer.
+                    </br>
+                    Thank you,
+                    Support Team
+                    """;
+        }
     }
 }
