@@ -311,9 +311,7 @@ public static class ApplicationDbExtensions
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(17, 00),
                     SessionDuration = 60,
-                    BufferTime = 15,
-                    SessionDuration = 60,
-                    BufferTime = 15,
+                    BufferTime = 15
                 },
                 new Schedules
                 {
@@ -323,9 +321,7 @@ public static class ApplicationDbExtensions
                     StartHour = new TimeOnly(13, 00),
                     EndHour = new TimeOnly(21, 00),
                     SessionDuration = 30,
-                    BufferTime = 5,
-                    SessionDuration = 30,
-                    BufferTime = 5,
+                    BufferTime = 5
                 },
                 new Schedules
                 {
@@ -335,9 +331,7 @@ public static class ApplicationDbExtensions
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(12, 00),
                     SessionDuration = 60,
-                    BufferTime = 0,
-                    SessionDuration = 60,
-                    BufferTime = 0,
+                    BufferTime = 0
                 }
             );
 
