@@ -61,7 +61,7 @@ public class MessageService(
 
         var message = new Message
         {
-            ConversationId = request.ConversationId!.Value,
+            ConversationId = conversation.Id,
             SenderId = senderId,
             Content = request.Content,
             SentAt = DateTime.UtcNow
@@ -70,13 +70,16 @@ public class MessageService(
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();
 
+        conversation = await conversationRepository.GetByIdAsync(targetConversation);
+        message = await messageRepository.GetByIdAsync(message.Id, m => m.Sender);
+
         var response = new GetMinimalConversationResponse
         {
-            ConversationId = conversation.Id,
+            ConversationId = conversation!.Id,
             ConversationName = conversation.Name,
             LastMessage = new GetMessageResponse
             {
-                Content = message.Content,
+                Content = message!.Content,
                 SentAt = message.SentAt,
                 MessageId = message.Id,
                 SenderId = message.SenderId,

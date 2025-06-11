@@ -4,6 +4,7 @@ using FluentValidation;
 using MentorPlatformAPI.ExceptionHandler;
 using MentorPlatformAPI.Extensions;
 using MentorPlatformAPI.Filter;
+using MentorPlatformAPI.Hubs;
 
 namespace MentorPlatformAPI;
 
@@ -22,7 +23,10 @@ public static class ConfigureServices
                 options.JsonSerializerOptions.WriteIndented = true;
             });
 
-        services.AddSignalR();
+        services.AddSignalR().AddHubOptions<MessageHub>(options =>
+        {
+            options.EnableDetailedErrors = true;
+        });
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();
