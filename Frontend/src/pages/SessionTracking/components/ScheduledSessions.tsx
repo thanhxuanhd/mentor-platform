@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 
 import { useState, useEffect, useCallback, useRef, useContext, useMemo } from "react"
@@ -144,13 +146,29 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
   const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | undefined>(undefined)
   const [reason, setReason] = useState("")
   const [submitting, setSubmitting] = useState(false)
+  const [currentSessionInfo, setCurrentSessionInfo] = useState<{
+    date: string
+    startTime: string
+    endTime: string
+  } | null>(null)
 
   useEffect(() => {
     if (visible && selectedSession) {
       const sessionDate = dayjs(selectedSession.date)
       setNewDate(sessionDate)
 
-      setSelectedTimeSlotId(undefined)
+      setCurrentSessionInfo({
+        date: selectedSession.date,
+        startTime: selectedSession.startTime,
+        endTime: selectedSession.endTime,
+      })
+
+      if (["Pending", "Approved"].includes(selectedSession.status)) {
+        setSelectedTimeSlotId(selectedSession.timeSlotId)
+      } else {
+        setSelectedTimeSlotId(undefined)
+      }
+
       setReason("")
 
       if (user?.id) {
@@ -161,6 +179,7 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
       setNewDate(null)
       setSelectedTimeSlotId(undefined)
       setReason("")
+      setCurrentSessionInfo(null)
     }
   }, [visible, selectedSession, user?.id, loadAvailableTimeslots])
 
@@ -244,6 +263,26 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
     })
   }, [availableTimeslots, newDate, userTimezone])
 
+  const isSelectedTimeslotValid = useMemo(() => {
+    if (!selectedTimeSlotId || !localTimeslots.length) return false
+    return localTimeslots.some((slot) => slot.id === selectedTimeSlotId)
+  }, [selectedTimeSlotId, localTimeslots])
+
+  const selectedTimeslotDisplay = useMemo(() => {
+    if (!selectedTimeSlotId) return undefined
+
+    const selectedSlot = localTimeslots.find((slot) => slot.id === selectedTimeSlotId)
+    if (selectedSlot) {
+      return `${selectedSlot.startTime} - ${selectedSlot.endTime}`
+    }
+
+    if (currentSessionInfo && selectedSession?.timeSlotId === selectedTimeSlotId) {
+      return `${currentSessionInfo.startTime} - ${currentSessionInfo.endTime} (Current)`
+    }
+
+    return undefined
+  }, [selectedTimeSlotId, localTimeslots, currentSessionInfo, selectedSession])
+
   return (
     <Modal
       title="Reschedule Session"
@@ -254,10 +293,11 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
       maskClosable={!submitting}
       closable={!submitting}
       okButtonProps={{
-        disabled: submitting || !selectedTimeSlotId || !newDate,
+        disabled: submitting || !selectedTimeSlotId || !newDate || !isSelectedTimeslotValid,
       }}
       cancelButtonProps={{ disabled: submitting }}
     >
+
       <Space direction="vertical" style={{ width: "100%" }}>
         <div>
           <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Date</label>
@@ -304,17 +344,35 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
               (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
             }
             onDropdownVisibleChange={(open) => {
-              if (open && selectedTimeSlotId && !localTimeslots.find((slot) => slot.id === selectedTimeSlotId)) {
-                setSelectedTimeSlotId(undefined)
+              if (open && selectedTimeSlotId && !isSelectedTimeslotValid) {
+                if (
+                  !(
+                    selectedSession?.timeSlotId === selectedTimeSlotId &&
+                    ["Pending", "Approved"].includes(selectedSession.status)
+                  )
+                ) {
+                  setSelectedTimeSlotId(undefined)
+                }
               }
+            }}
+            labelRender={(value) => {
+              return <span>{selectedTimeslotDisplay || String(value.label || value)}</span>
             }}
           >
             {localTimeslots.map((slot) => (
               <Option key={slot.id} value={slot.id}>
                 {`${slot.startTime} - ${slot.endTime}`}
+                {selectedSession?.timeSlotId === slot.id &&
+                  ["Pending", "Approved"].includes(selectedSession.status) &&
+                  " (Current)"}
               </Option>
             ))}
           </Select>
+          {selectedTimeSlotId && !isSelectedTimeslotValid && (
+            <div style={{ color: "#ff4d4f", fontSize: "12px", marginTop: "4px" }}>
+              <ExclamationCircleOutlined /> This time slot is no longer available. Please select another one.
+            </div>
+          )}
         </div>
         <div>
           <label style={{ display: "block", marginBottom: "8px", fontWeight: 500 }}>Reason for rescheduling</label>
@@ -507,6 +565,7 @@ const ScheduleSession = () => {
 
   const getSessionSessions = (statusFilter: Session["status"][]) =>
     sessions.filter((session) => {
+      // Use UTC time for comparison
       const sessionDateTime = dayjs.utc(`${session.utcDate} ${session.utcStartTime}`)
       const isOvertime = sessionDateTime.isBefore(currentTime.utc())
       return (
