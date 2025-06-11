@@ -19,12 +19,9 @@ export function CalendarComponent({
   const today = dayjs();
   const nextMonth = today.add(1, "month");
 
-  // Get the start of the month
   const startOfMonth = currentMonth.startOf("month");
   const endOfMonth = currentMonth.endOf("month");
-
-  // Adjust startOfWeek to Monday
-  const startOfWeek = startOfMonth.day(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const startOfWeek = startOfMonth.day();
   const startDate = startOfMonth.subtract(startOfWeek === 0 ? 6 : startOfWeek - 1, "day");
   const endDate = endOfMonth.endOf("week");
 
@@ -39,14 +36,12 @@ export function CalendarComponent({
   const weekDays = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
   const handlePreviousMonth = () => {
-    // Chỉ cho phép quay lại nếu không phải là tháng hiện tại
     if (!currentMonth.isSame(today, "month")) {
       onMonthChange(currentMonth.subtract(1, "month"));
     }
   };
 
   const handleNextMonth = () => {
-    // Chỉ cho phép tiến tới nếu không phải là tháng tiếp theo
     if (!currentMonth.isSame(nextMonth, "month")) {
       onMonthChange(currentMonth.add(1, "month"));
     }
@@ -60,7 +55,7 @@ export function CalendarComponent({
           icon={<LeftOutlined />}
           className="text-white hover:text-orange-400"
           onClick={handlePreviousMonth}
-          disabled={currentMonth.isSame(today, "month")} // Vô hiệu hóa nút Previous khi ở tháng hiện tại
+          disabled={currentMonth.isSame(today, "month")}
         />
         <h3 className="text-white text-lg font-medium">{currentMonth.format("MMMM YYYY")}</h3>
         <Button
@@ -68,7 +63,7 @@ export function CalendarComponent({
           icon={<RightOutlined />}
           className="text-white hover:text-orange-400"
           onClick={handleNextMonth}
-          disabled={currentMonth.isSame(nextMonth, "month")} // Vô hiệu hóa nút Next khi ở tháng tiếp theo
+          disabled={currentMonth.isSame(nextMonth, "month")}
         />
       </div>
 

@@ -9,5 +9,6 @@ export const PAGE_ENDPOINT_URL = {
   AVAILABILITY: '/availability',
   STATUS_TRACKING: "/my-applications",
   APPLICATIONS: "/applications",
-  RESOURCE:"/resources",
+  RESOURCE: "/resources",
+  DASHBOARD: "/dashboard",
 };

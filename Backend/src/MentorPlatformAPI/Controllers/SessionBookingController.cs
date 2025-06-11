@@ -37,7 +37,7 @@ public class SessionBookingController(
         var result = await sessionBookingService.GetAllAvailableMentorForBookingAsync();
         return StatusCode((int)result.StatusCode, result);
     }
-    
+
     [HttpGet("available-mentors/timeslots/{mentorId:guid}")]
     [Authorize(Policy = RequiredRole.Learner)]
     public async Task<IActionResult> GetAllTimeSlotByMentorAndDate(Guid mentorId,
@@ -55,7 +55,7 @@ public class SessionBookingController(
         var result = await sessionBookingService.GetAllBookingRequestByTimeSlot(timeSlotId);
         return StatusCode((int)result.StatusCode, result);
     }
-    
+
     [HttpGet("timeslots/requests/me")]
     [Authorize(Policy = RequiredRole.Learner)]
     public async Task<IActionResult> GetAllBookingRequestByLearner()

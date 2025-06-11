@@ -545,8 +545,8 @@ export default function AvailabilityManager() {
                               <div
                                 key={slotIndex}
                                 className={`text-white text-xs px-2 py-1 rounded text-center truncate ${slot.booked
-                                    ? 'bg-slate-500'
-                                    : 'bg-orange-500'
+                                  ? 'bg-slate-500'
+                                  : 'bg-orange-500'
                                   }`}
                                 title={`${slot.time}${slot.booked ? ' (Booked)' : ' (Available)'}`}
                               >

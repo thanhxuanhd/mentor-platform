@@ -310,17 +310,25 @@ public static class ApplicationDbExtensions
             dbContext.SaveChanges();
         }
 
+        var scheduleId = Guid.NewGuid();
+
         if (!dbContext.Schedules.Any())
         {
             var mentor1Id = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE");
             var mentor2Id = Guid.Parse("B5095B17-D0FE-47CC-95B8-FD7E560926F8");
+            // current week
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
 
             dbContext.Schedules.AddRange(
                 new Schedules
                 {
+                    Id = scheduleId,
                     MentorId = mentor1Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    WeekStartDate = startOfWeek,
+                    WeekEndDate = endOfWeek,
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(17, 00),
                     SessionDuration = 60,
@@ -329,12 +337,12 @@ public static class ApplicationDbExtensions
                 new Schedules
                 {
                     MentorId = mentor1Id,
-                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 6, 1)),
-                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 6, 7)),
-                    StartHour = new TimeOnly(10, 00),
-                    EndHour = new TimeOnly(18, 00),
-                    SessionDuration = 45,
-                    BufferTime = 10,
+                    WeekStartDate = DateOnly.FromDateTime(new DateTime(2025, 5, 25)),
+                    WeekEndDate = DateOnly.FromDateTime(new DateTime(2025, 5, 31)),
+                    StartHour = new TimeOnly(09, 00),
+                    EndHour = new TimeOnly(17, 00),
+                    SessionDuration = 60,
+                    BufferTime = 15
                 },
                 new Schedules
                 {
@@ -344,7 +352,7 @@ public static class ApplicationDbExtensions
                     StartHour = new TimeOnly(13, 00),
                     EndHour = new TimeOnly(21, 00),
                     SessionDuration = 30,
-                    BufferTime = 5,
+                    BufferTime = 5
                 },
                 new Schedules
                 {
@@ -354,27 +362,156 @@ public static class ApplicationDbExtensions
                     StartHour = new TimeOnly(09, 00),
                     EndHour = new TimeOnly(12, 00),
                     SessionDuration = 60,
-                    BufferTime = 0,
+                    BufferTime = 0
                 }
             );
 
             dbContext.SaveChanges();
         }
 
+        var slotId1 = Guid.NewGuid();
+        var slotId2 = Guid.NewGuid();
+        var slotId3 = Guid.NewGuid();
+        var slotId4 = Guid.NewGuid();
+        if (!dbContext.MentorAvailableTimeSlots.Any())
+        {
+            var today = DateOnly.FromDateTime(DateTime.UtcNow);
+            var startOfWeek = today.AddDays(-(int)today.DayOfWeek);
+            var endOfWeek = startOfWeek.AddDays(6);
+
+            dbContext.MentorAvailableTimeSlots.AddRange(
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId1,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(9, 0),
+                    EndTime = new TimeOnly(10, 0),
+
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId2,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(10, 15),
+                    EndTime = new TimeOnly(11, 15),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId3,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(13, 0),
+                    EndTime = new TimeOnly(14, 0),
+                },
+                new MentorAvailableTimeSlot
+                {
+                    Id = slotId4,
+                    ScheduleId = scheduleId,
+                    Date = endOfWeek,
+                    StartTime = new TimeOnly(15, 30),
+                    EndTime = new TimeOnly(16, 30),
+                }
+            );
+            dbContext.SaveChanges();
+        }
+
+        if (!dbContext.Sessions.Any())
+        {
+            var learnerId1 = Guid.Parse("F09BDC14-081D-4C73-90A7-4CDB38BF176C");
+            var learnerId2 = Guid.Parse("aa8777db-dfed-4a68-a3a3-e1374fb38572");
+            var sessionId1 = Guid.NewGuid();
+            var sessionId2 = Guid.NewGuid();
+            var sessionId3 = Guid.NewGuid();
+            var sessionId4 = Guid.NewGuid();
+            var sessionId5 = Guid.NewGuid();
+            var sessionId6 = Guid.NewGuid();
+            var sessionId7 = Guid.NewGuid();
+            var sessionId8 = Guid.NewGuid();
+
+            dbContext.Sessions.AddRange(
+                new Sessions
+                {
+                    Id = sessionId1,
+                    TimeSlotId = slotId1,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Rescheduled,
+                },
+                new Sessions
+                {
+                    Id = sessionId2,
+                    TimeSlotId = slotId2,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId3,
+                    TimeSlotId = slotId3,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Rescheduled,
+                },
+                new Sessions
+                {
+                    Id = sessionId4,
+                    TimeSlotId = slotId4,
+                    LearnerId = learnerId1,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId5,
+                    TimeSlotId = slotId1,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Approved,
+                },
+                new Sessions
+                {
+                    Id = sessionId6,
+                    TimeSlotId = slotId2,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Pending,
+                },
+                new Sessions
+                {
+                    Id = sessionId7,
+                    TimeSlotId = slotId3,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                },
+                new Sessions
+                {
+                    Id = sessionId8,
+                    TimeSlotId = slotId4,
+                    LearnerId = learnerId2,
+                    Type = SessionType.OneOnOne,
+                    Status = SessionStatus.Completed,
+                }
+            );
+        }
+
         if (!dbContext.MentorApplications.Any())
         {
             dbContext.MentorApplications.AddRange(new MentorApplication
-                {
-                    Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
-                    MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
-                    Status = ApplicationStatus.Submitted,
-                    SubmittedAt = DateTime.UtcNow,
-                    ReviewedAt = null,
-                    Education = "Bachelor's in Computer Science",
-                    Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
-                    Statement = null,
-                    Note = null
-                },
+            {
+                Id = Guid.Parse("003919e7-16ca-471b-af9c-02ca5f31dbb6"),
+                MentorId = Guid.Parse("BC7CB279-B292-4CA3-A994-9EE579770DBE"),
+                Status = ApplicationStatus.Submitted,
+                SubmittedAt = DateTime.UtcNow,
+                ReviewedAt = null,
+                Education = "Bachelor's in Computer Science",
+                Certifications = "Certified Scrum Master, AWS Certified Solutions Architect",
+                Statement = null,
+                Note = null
+            },
                 new MentorApplication
                 {
                     Id = Guid.Parse("7ad56b17-cb7d-4ca8-9058-8a05def6229f"),

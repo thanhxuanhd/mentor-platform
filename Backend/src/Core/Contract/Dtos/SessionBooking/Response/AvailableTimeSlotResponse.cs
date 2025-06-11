@@ -1,4 +1,4 @@
-﻿namespace Contract.Dtos.SessionBooking.Response;
+namespace Contract.Dtos.SessionBooking.Response;
 
 public record AvailableTimeSlotResponse
 {

@@ -17,6 +17,7 @@ import { cancelBooking, getBookingRequestsByLearner } from "../../../services/se
 import { formatSessionType } from "./SessionTypeSelector"
 import type { NotificationProps } from "../../../types/Notification"
 import type { BookedSession } from "../../../types/SessionsType"
+import { convertUTCDateTimeToLocal } from "../../../utils/timezoneUtils"
 
 interface SessionSlotStatusResponse {
   sessionId: string
@@ -34,14 +35,21 @@ interface BookedSessionsModalProps {
   open: boolean
   onCancel: () => void
   sessions: BookedSession[]
-  onCancelSession: (sessionId: string) => void;
+  onCancelSession: (sessionId: string) => void
 }
 
 export default function BookedSessionsModal({ open, onCancel, onCancelSession }: BookedSessionsModalProps) {
-  const [sessions, setSessions] = useState<BookedSession[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [notify, setNotify] = useState<NotificationProps | null>(null);
-  const { notification } = App.useApp();
+  const [sessions, setSessions] = useState<BookedSession[]>([])
+  const [loading, setLoading] = useState(false)
+  const [notify, setNotify] = useState<NotificationProps | null>(null)
+  const { notification } = App.useApp()
+  const [userTimezone, setUserTimezone] = useState<string>("")
+
+  useEffect(() => {
+    // Get user's timezone
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    setUserTimezone(timezone)
+  }, [])
 
   useEffect(() => {
     if (notify) {
@@ -49,33 +57,56 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
         message: notify.message,
         description: notify.description,
         placement: "topRight",
-      });
-      setNotify(null);
+      })
+      setNotify(null)
     }
-  }, [notify, notification]);
+  }, [notify, notification])
 
   const fetchSessions = async () => {
+    if (!userTimezone) return
+
     setLoading(true)
     try {
       const response = await getBookingRequestsByLearner()
       console.log("Fetched Booked Sessions:", response)
-      const mappedSessions: BookedSession[] = response.map((item: SessionSlotStatusResponse) => ({
-        id: item.sessionId,
-        mentor: {
+      const mappedSessions: BookedSession[] = response.map((item: SessionSlotStatusResponse) => {
+        // Convert UTC date and time to local date and time
+        const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
+          item.day,
+          item.startTime,
+          item.endTime,
+          userTimezone,
+        )
+
+        return {
           id: item.sessionId,
-          name: item.mentorName,
-          expertise: item.expertise || [],
-          avatar: item.mentorAvatarUrl,
-        },
-        date: dayjs(item.day).format('YYYY-MM-DD'),
-        type: item.sessionType,
-        status: item.bookingStatus,
-        startTime: item.startTime,
-        endTime: item.endTime,
-      }))
-      setSessions(mappedSessions)
+          mentor: {
+            id: item.sessionId,
+            name: item.mentorName,
+            expertise: item.expertise || [],
+            avatar: item.mentorAvatarUrl,
+          },
+          date: localDate, // This is now the local date
+          type: item.sessionType,
+          status: item.bookingStatus,
+          startTime: localStartTime, // This is now the local time
+          endTime: localEndTime, // This is now the local time
+          originalDate: item.day, // Store original UTC date
+          originalStartTime: item.startTime, // Store original UTC time
+          originalEndTime: item.endTime, // Store original UTC time
+        }
+      })
+
+      // Sort sessions by date and time (ascending - earliest first)
+      const sortedSessions = mappedSessions.sort((a, b) => {
+        const dateTimeA = dayjs(`${a.date} ${a.startTime}`)
+        const dateTimeB = dayjs(`${b.date} ${b.startTime}`)
+        return dateTimeA.isAfter(dateTimeB) ? 1 : -1
+      })
+
+      setSessions(sortedSessions)
     } catch (error) {
-      console.error('Failed to fetch sessions:', error)
+      console.error("Failed to fetch sessions:", error)
       setSessions([])
     } finally {
       setLoading(false)
@@ -83,10 +114,10 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
   }
 
   useEffect(() => {
-    if (open) {
+    if (open && userTimezone) {
       fetchSessions()
     }
-  }, [open])
+  }, [open, userTimezone])
 
   const handleCancelSession = async (sessionId: string) => {
     try {
@@ -96,22 +127,22 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
           type: "success",
           message: "Cancel Session Successful",
           description: "Session cancelled successfully.",
-        });
-        await fetchSessions();
+        })
+        await fetchSessions()
         onCancelSession(sessionId)
       } else {
         setNotify({
           type: "info",
           message: "Message",
           description: "Messaging functionality not implemented yet.",
-        });
+        })
       }
     } catch (error: any) {
       setNotify({
         type: "error",
         message: "Cancel Session Failed",
         description: error.response?.data?.error || "An error occurred while cancelling the session. Please try again.",
-      });
+      })
     }
   }
 
@@ -164,15 +195,19 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
 
   return (
     <Modal
-      title={<span className="text-white">My Booked Sessions</span>}
+      title={
+        <div>
+          <span className="text-white">My Booked Sessions</span>
+        </div>
+      }
       open={open}
       onCancel={onCancel}
       footer={null}
-      width={900}
+      width={950}
       className="booked-sessions-modal"
       styles={{
-        content: { backgroundColor: '#334155' },
-        header: { backgroundColor: '#334155', borderBottom: '1px solid #475569' },
+        content: { backgroundColor: "#334155" },
+        header: { backgroundColor: "#334155", borderBottom: "1px solid #475569" },
       }}
     >
       <div className="max-h-96 overflow-y-auto">
@@ -196,17 +231,14 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
                       <Avatar size={50} src={session.mentor.avatar} />
                       <div className="ml-3">
                         <h4 className="text-white font-medium">{session.mentor.name}</h4>
-                        <p className="text-gray-400 text-sm">{session.mentor.expertise.join(', ')}</p>
+                        <p className="text-gray-400 text-sm">{session.mentor.expertise.join(", ")}</p>
                         <div className="flex items-center space-x-2 mt-1">
                           <span className="text-white text-sm">
-                            {dayjs(session.date).format('MMM DD, YYYY')} at {(session.startTime).slice(0, 5)} - {(session.endTime).slice(0, 5)}
+                            {dayjs(session.date).format("MMM DD, YYYY")} at {session.startTime.slice(0, 5)} -{" "}
+                            {session.endTime.slice(0, 5)}
                           </span>
                           <div className="flex items-center space-x-1 text-gray-400">
-                            <Tag
-                              icon={getSessionTypeIcon(session.type)}
-                            >
-                              {formatSessionType(session.type)}
-                            </Tag>
+                            <Tag icon={getSessionTypeIcon(session.type)}>{formatSessionType(session.type)}</Tag>
                           </div>
                         </div>
                       </div>
@@ -219,7 +251,7 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
                       >
                         {session.status}
                       </Tag>
-                      {session.status === 'Pending' && (
+                      {session.status === "Pending" && (
                         <Popconfirm
                           title="Cancel Session"
                           description="Are you sure you want to cancel this session?"
@@ -246,5 +278,5 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
         )}
       </div>
     </Modal>
-  );
+  )
 }
