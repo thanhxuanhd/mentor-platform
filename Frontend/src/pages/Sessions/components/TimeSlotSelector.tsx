@@ -1,19 +1,14 @@
-import { Button, Spin } from "antd";
-import type { TimeSlot } from "../../../types/SessionsType";
+import { Button, Spin } from "antd"
+import type { TimeSlot } from "../../../types/SessionsType"
 
 interface TimeSlotSelectorProps {
-  timeSlots: TimeSlot[];
-  selectedTime: string;
-  onTimeSelect: (time: string, id: string) => void;
-  loading: boolean;
+  timeSlots: TimeSlot[]
+  selectedTime: string
+  onTimeSelect: (time: string, id: string) => void
+  loading: boolean
 }
 
-export default function TimeSlotSelector({
-  timeSlots,
-  selectedTime,
-  onTimeSelect,
-  loading,
-}: TimeSlotSelectorProps) {
+export default function TimeSlotSelector({ timeSlots, selectedTime, onTimeSelect, loading }: TimeSlotSelectorProps) {
   return (
     <div className="mt-8">
       <h3 className="text-lg font-medium mb-4 text-center">Select a time slot</h3>
@@ -25,9 +20,8 @@ export default function TimeSlotSelector({
         <div className="grid grid-cols-5 gap-3">
           {timeSlots.length > 0 ? (
             timeSlots.map((slot) => {
-              const timeDisplay = `${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}`;
-              const isDisabled = slot.status === "Pending";
-              console.log(`Slot ${slot.id}: Status=${slot.status}, Disabled=${isDisabled}`);
+              const timeDisplay = `${slot.startTime.slice(0, 5)} - ${slot.endTime.slice(0, 5)}`
+              const isDisabled = slot.status === "Pending"
               return (
                 <Button
                   key={slot.id}
@@ -41,7 +35,7 @@ export default function TimeSlotSelector({
                 >
                   {timeDisplay}
                 </Button>
-              );
+              )
             })
           ) : (
             <div className="flex justify-center items-center col-span-5">
@@ -51,5 +45,5 @@ export default function TimeSlotSelector({
         </div>
       )}
     </div>
-  );
+  )
 }

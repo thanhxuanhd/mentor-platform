@@ -66,7 +66,7 @@ public class SessionsRepository(ApplicationDbContext context, TimeProvider timeP
             LearnerId = learnerId,
             TimeSlot = timeSlot,
             Type = sessionType,
-            BookedOn = timeProvider.GetLocalNow().DateTime,
+            BookedOn = DateTime.UtcNow,
         };
 
         timeSlot.Sessions.Add(bookingSession);
