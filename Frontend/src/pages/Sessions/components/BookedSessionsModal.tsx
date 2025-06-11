@@ -187,13 +187,6 @@ export default function BookedSessionsModal({ open, onCancel, onCancelSession }:
     }
   }
 
-  const getFilteredSessions = () => {
-    if (statusFilter === "All") {
-      return sessions
-    }
-    return sessions.filter((session) => session.status === statusFilter)
-  }
-
   return (
     <Modal
       title={
