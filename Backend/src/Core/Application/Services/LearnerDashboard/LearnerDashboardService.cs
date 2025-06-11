@@ -26,7 +26,7 @@ public class LearnerDashboardService(IUserRepository userRepository, ISessionsRe
 			upcomingSession.Add(new LearnerUpcomingSessionResponse
 			{
 				SessionId = session.Id,
-				MentorName = session.TimeSlot.Schedules?.Mentor?.FullName ?? "Unknown Mentor",
+				MentorName = session.TimeSlot.Schedules?.Mentor?.FullName!,
 				MentorProfilePictureUrl = session.TimeSlot.Schedules?.Mentor?.ProfilePhotoUrl,
 				ScheduledDate = session.TimeSlot.Date,
 				TimeRange = $"{session.TimeSlot.StartTime:HH:mm} - {session.TimeSlot.EndTime:HH:mm}",

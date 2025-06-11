@@ -200,6 +200,5 @@ export const convertLocalDateTimeToUTC = (
   }
 }
 
-// Keep the old function names for backward compatibility but use the new logic
 export const convertUTCTimeSlotToLocal = convertUTCDateTimeToLocal
 export const convertLocalTimeSlotToUTC = convertLocalDateTimeToUTC
