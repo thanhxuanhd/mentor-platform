@@ -120,4 +120,13 @@ public class UsersController(IUserService userService) : ControllerBase
 
         return StatusCode((int)result.StatusCode, result);
     }
+    
+    [Authorize]
+    [HttpGet]
+    [Route("mentors")]
+    public async Task<IActionResult> GetAllMentor()
+    {
+        var result = await userService.GetAllMentorAsync();
+        return StatusCode((int)result.StatusCode, result);
+    }
 }
