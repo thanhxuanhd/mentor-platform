@@ -4,6 +4,7 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  SettingOutlined,
   ScheduleOutlined,
   FolderOpenOutlined,
   HddOutlined,
@@ -110,5 +111,12 @@ export const menuItems: MenuItemProps[] = [
     label: "Sessions",
     link: "sessions",
     role: [applicationRole.LEARNER],
-  }
+  },
+  {
+    key: "Sessions Tracking",
+    icon: <SettingOutlined />,
+    label: "Sessions Tracking",
+    link: "sessions-tracking",
+    role: [applicationRole.MENTOR],
+  },
 ];

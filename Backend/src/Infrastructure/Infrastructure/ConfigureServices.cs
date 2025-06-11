@@ -65,7 +65,6 @@ public static class ConfigureServices
         services.AddScoped<IScheduleRepository, ScheduleRepository>();
         services.AddScoped<ISessionsRepository, SessionsRepository>();
         services.AddScoped<IMentorAvailabilityTimeSlotRepository, MentorAvailabilityTimeSlotRepository>();
-
         services.AddDbContext<ApplicationDbContext>(options =>
         {
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));

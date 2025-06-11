@@ -37,7 +37,9 @@ builder.Services
     .AddApplicationServices()
     .AddPresentationServices()
     .AddInfrastructureServices(configuration);
+//.AddQuartzJobs();
 
+builder.Services.AddHostedService<MailReminderService>();
 #endregion
 
 var app = builder.Build();

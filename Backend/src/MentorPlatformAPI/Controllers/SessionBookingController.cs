@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class SessionBookingController(
@@ -15,7 +15,7 @@ public class SessionBookingController(
     : ControllerBase
 {
     [HttpGet("available-timeslots")]
-    [Authorize(Policy = RequiredRole.Admin)]
+    //[Authorize(Policy = RequiredRole.Admin)]
     public async Task<IActionResult> GetAllAvailableTimeSlot([FromQuery] AvailableTimeSlotListRequest request)
     {
         var result = await sessionBookingService.GetAllAvailableTimeSlotAsync(request);
@@ -89,6 +89,43 @@ public class SessionBookingController(
         // TODO: resource owner authorization + learner that made the booking request
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
         var result = await sessionBookingService.CancelBookingAsync(bookingId, userId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("request/get")]
+    //[Authorize(Policy = RequiredRole.Mentor)]
+    public async Task<IActionResult> GetAllBookingbyMentor(Guid mentorId)
+    {
+        var result = await sessionBookingService.GetAllBooking(mentorId);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("request/get/{id}")]
+    public async Task<IActionResult> GetSessionsBookingById(Guid id)
+    {
+        var result = await sessionBookingService.GetSessionsBookingByIdAsync(id);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateStatusSession(Guid id, [FromBody] SessionBookingRequest request)
+    {
+        var result = await sessionBookingService.UpdateStatusSessionAsync(id, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpPut("update/{id}")]
+    public async Task<IActionResult> UpdateRecheduleSession(Guid id, [FromBody] SessionUpdateRescheduleRequest request)
+    {
+        var result = await sessionBookingService.UpdateRescheduleSessionAsync(id, request);
+        return StatusCode((int)result.StatusCode, result);
+    }
+
+    [HttpGet("available-mentors/timeslots/get/{mentorId}")]
+    //[Authorize(Policy = RequiredRole.Learner)]
+    public async Task<IActionResult> GetAllTimeSlotByMentor(Guid mentorId, DateOnly date)
+        {
+        var result = await sessionBookingService.GetAllTimeSlotByMentorAsync(mentorId, date);
         return StatusCode((int)result.StatusCode, result);
     }
 }

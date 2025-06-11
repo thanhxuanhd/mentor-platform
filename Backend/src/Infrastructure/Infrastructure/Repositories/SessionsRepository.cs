@@ -36,6 +36,7 @@ public class SessionsRepository(ApplicationDbContext context)
     {
         return await _context.Sessions
             .AsSplitQuery()
+            .Include(s => s.Learner)
             .Include(s => s.TimeSlot)
             .ThenInclude(mats => mats.Schedules)
             .ThenInclude(s => s.Mentor)
@@ -103,6 +104,25 @@ public class SessionsRepository(ApplicationDbContext context)
         }
 
         bookingSession.Status = SessionStatus.Approved;
+    }
+
+    public IQueryable<Sessions> GetAllBookingAsync()
+    {
+        return _context.Sessions
+            .Include(s => s.Learner)
+            .Include(s => s.TimeSlot)
+                .ThenInclude(ts => ts.Schedules)
+                    .ThenInclude(sch => sch.Mentor);
+    }
+
+    public async Task<List<Sessions>> GetByTimeSlotAsync(Guid timeslotId)
+    {
+        return await _context.Sessions
+            .Include(s => s.TimeSlot)
+            .ThenInclude(ts => ts.Schedules)
+            .ThenInclude(sc => sc.Mentor)
+            .Where(s => s.Id.Equals(timeslotId))
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Sessions>> GetLearnerUpcomingSessionsAsync(Guid userId)

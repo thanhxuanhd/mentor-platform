@@ -1,4 +1,4 @@
-﻿using Contract.Dtos.SessionBooking.Requests;
+using Contract.Dtos.SessionBooking.Requests;
 using Contract.Dtos.SessionBooking.Response;
 using Contract.Shared;
 
@@ -27,4 +27,10 @@ public interface ISessionBookingService
 
     Task<Result<SessionSlotStatusResponse>> AcceptBookingAsync(Guid bookingSessionId, Guid acceptingLearnerId);
     Task<Result<SessionSlotStatusResponse>> CancelBookingAsync(Guid bookingSessionId, Guid cancellingLearnerId);
+
+    Task<Result<List<LearnerSessionBookingResponse>>> GetAllBooking(Guid MentorId);
+    Task<Result<LearnerSessionBookingResponse>> GetSessionsBookingByIdAsync(Guid id);
+    Task<Result<bool>> UpdateStatusSessionAsync(Guid id, SessionBookingRequest request);
+    Task<Result<bool>> UpdateRescheduleSessionAsync(Guid id, SessionUpdateRescheduleRequest request);
+    Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateOnly date);
 }
