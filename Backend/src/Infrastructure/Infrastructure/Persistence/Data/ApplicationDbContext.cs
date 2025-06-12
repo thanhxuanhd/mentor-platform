@@ -1,7 +1,6 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using Microsoft.Identity.Client;
 
 namespace Infrastructure.Persistence.Data;
 

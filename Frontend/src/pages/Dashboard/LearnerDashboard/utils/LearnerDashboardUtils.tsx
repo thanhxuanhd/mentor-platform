@@ -32,16 +32,16 @@ export const parseTimeRange = (timeRange: string): { time: string; duration: str
   const [startTime, endTime] = cleanTimeRange.split("-")
 
   if (!startTime || !endTime) {
-    return { time: timeRange, duration: "1 hour" }
+    return { time: timeRange, duration: "60 minutes" }
   }
 
   // Calculate duration
   const start = new Date(`2000-01-01T${startTime}:00`)
   const end = new Date(`2000-01-01T${endTime}:00`)
   const diffMs = end.getTime() - start.getTime()
-  const diffHours = diffMs / (1000 * 60 * 60)
+  const diffMinutes = diffMs / (1000 * 60)
 
-  const duration = diffHours === 1 ? "1 hour" : `${diffHours} hours`
+  const duration = diffMinutes === 1 ? "1 minute" : `${diffMinutes} minutes`
   const time = `${startTime} - ${endTime}`
 
   return { time, duration }
