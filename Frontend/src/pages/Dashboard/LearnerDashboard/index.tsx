@@ -6,7 +6,6 @@ import {
   type GetLearnerDashboardResponse,
   type LearnerUpcomingSessionResponse,
 } from "../../../services/learnerDashboard/learnerDashboardService"
-import dayjs from "dayjs"
 import type { NotificationProps } from "../../../types/Notification"
 import DefaultAvatar from "../../../assets/images/default-account.svg"
 import { Modal, Button } from "antd"

@@ -104,6 +104,7 @@ export const menuItems: MenuItemProps[] = [
     label: "Availability",
     link: "availability",
     role: [applicationRole.MENTOR],
+    isMentorApprovedRequired: true,
   },
   {
     key: "sessions",
@@ -113,7 +114,7 @@ export const menuItems: MenuItemProps[] = [
     role: [applicationRole.LEARNER],
   },
   {
-    key: "Sessions Tracking",
+    key: "sessions-tracking",
     icon: <SettingOutlined />,
     label: "Sessions Tracking",
     link: "sessions-tracking",

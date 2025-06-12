@@ -24,21 +24,24 @@ test.describe('@Resource Edit resource tests', () => {
     });
 
     const course: { [label: string]: CreateAndEditResource } = {
-        '@SmokeTest Valid Resource': resourceData.update_valid_resource,
+        '@SmokeTest @Regression Valid Resource': resourceData.update_valid_resource,
         'Oversize file': (resourceData.update_oversize_file),
         'Empty Resource Title': (resourceData.update_empty_title),
         'Overlength Title': (resourceData.update_overlength_title),
         'Overlength Description': (resourceData.update_overlength_description),
-        '@Boundary Empty Resource File': (resourceData.update_empty_resource)
+        '@Boundary @Regression Empty Resource File': (resourceData.update_empty_resource)
     };
 
     for (const [label, data] of Object.entries(course)) {
-        test(`${label} - Edit a Resource`, async ({ }) => {
+        test(`${label} - Edit a Resource`, async ({ }, testInfo) => {
             await test.step('Input recourse details and submit', async () => {
                 await resourcePage.inputTitle(data.title);
                 await resourcePage.inputDescription(data.description);
                 const resolvedPaths = resolvePaths(data.fileName);
                 await resourcePage.uploadResource(resolvedPaths);
+                if (testInfo.title.includes("Empty")) {
+                    await resourcePage.clickDeleteFile();
+                }
                 await resourcePage.clickUpdateButton();
             });
             await test.step('Verify system behavior', async () => {

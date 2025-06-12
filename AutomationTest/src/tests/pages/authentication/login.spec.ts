@@ -28,7 +28,7 @@ test.describe('@Login Login tests', () => {
         });
     });
 
-    test('@SmokeTest @Login Login failed with invalid User', async ({ }) => {
+    test('@Login Login failed with invalid User', async ({ }) => {
         await test.step('Input invalid password', async () => {
             await loginPage.inputEmail(testUser.email);
             await loginPage.inputPassword("InvalidPassword@123");

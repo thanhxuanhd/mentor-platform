@@ -109,26 +109,38 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
   }, [notify, notification]);
 
   const handleSubmit = async (values: MentorApplicationType) => {
-    console.log("Submitted values:", values);
     const formData = new FormData();
     formData.append("education", values.education || "");
     formData.append("workExperience", values.workExperience || "");
     formData.append("certifications", values.certifications || "");
     formData.append("statement", values.statement || "");
 
-    if (values.documents && Array.isArray(values.documents)) {
-      values.documents.forEach((fileObj: any) => {
-        if (fileObj.originFileObj) {
-          formData.append("documents", fileObj.originFileObj);
-        }
-      });
+    if (Array.isArray(values.documents)) {
+      await Promise.all(
+        values.documents.map(async (fileObj: any) => {
+          if (fileObj.originFileObj) {
+            formData.append("documents", fileObj.originFileObj as RcFile);
+          } else if (fileObj.url) {
+            try {
+              const res = await fetch(fileObj.url);
+              const blob = await res.blob();
+              const reconstructed = new File([blob], fileObj.name, {
+                type: blob.type,
+              });
+              formData.append("documents", reconstructed);
+            } catch (err) {
+              console.error("Failed to re-fetch old file", fileObj, err);
+            }
+          }
+        })
+      );
     }
 
     try {
       if (isEditMode && application?.mentorApplicationId) {
         await mentorApplicationService.editMentorApplication(
           application.mentorApplicationId,
-          formData,
+          formData
         );
         setNotify({
           type: "success",
@@ -158,6 +170,7 @@ const MentorApplicationForm: React.FC<MentorApplicationFormProps> = ({
       });
     }
   };
+
 
   const beforeUpload = (file: RcFile) => {
     if (uploadedFileNames.includes(file.name)) {

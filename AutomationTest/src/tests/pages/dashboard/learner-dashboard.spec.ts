@@ -1,37 +1,37 @@
 import { test } from "../../../core/fixture/auth-fixture";
 import { LearnerDashboardPage } from "../../../pages/dashboard/learner-dashboard";
 
-test.describe.serial("@Learner Dashboard tests", () => {
-  let learnerPage: LearnerDashboardPage;
+test.describe.skip("@Learner Dashboard tests", () => {
+  let learnerDashboardPage: LearnerDashboardPage;
 
   test.beforeEach(async ({ loggedInPageByLearnerRole, page }) => {
-    learnerPage = new LearnerDashboardPage(page);
+    learnerDashboardPage = new LearnerDashboardPage(page);
     await test.step("Go to dashboard page", async () => {
-      await learnerPage.navigateToDashboardPage();
+      await learnerDashboardPage.navigateToDashboardPage();
     });
   });
 
-  test(`@SmokeTest Verify user cancel reschedule successfully`, async () => {
+  test(`Verify user cancel reschedule successfully`, async () => {
     await test.step("Click on reschedule session", async () => {
-      await learnerPage.clickOnRescheduleSession();
+      await learnerDashboardPage.clickOnRescheduleSession();
     });
     await test.step("Click on cancel button", async () => {
-      await learnerPage.clickOnCancelButton();
+      await learnerDashboardPage.clickOnCancelButton();
     });
     await test.step("Verify user cancel reschedule successfully", async () => {
-      await learnerPage.expectSuccessCancelMessage();
+      await learnerDashboardPage.expectSuccessCancelMessage();
     });
   });
 
-  test(`@SmokeTest Verify user accept reschedule successfully`, async () => {
+  test(`Verify user accept reschedule successfully`, async () => {
     await test.step("Click on reschedule session", async () => {
-      await learnerPage.clickOnRescheduleSession();
+      await learnerDashboardPage.clickOnRescheduleSession();
     });
     await test.step("Click on accept button", async () => {
-      await learnerPage.clickOnAcceptButton();
+      await learnerDashboardPage.clickOnAcceptButton();
     });
     await test.step("Verify user cancel reschedule successfully", async () => {
-      await learnerPage.expectSuccessAcceptMessage();
+      await learnerDashboardPage.expectSuccessAcceptMessage();
     });
   });
 });

@@ -76,10 +76,12 @@ export class EditUserProfile extends BasePage {
   }
 
   async fillInFullnameField(fullname: string) {
+    await this.TXT_FULL_NAME.click();
     await this.fill(this.TXT_FULL_NAME, fullname);
   }
 
   async fillInPhoneField(phone: string) {
+    await this.TXT_FULL_NAME.click();
     await this.fill(this.TXT_PHONE_NUMBER, phone);
   }
 
