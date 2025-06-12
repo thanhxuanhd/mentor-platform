@@ -52,7 +52,7 @@ export const convertUTCTimeSlotsToLocal = (
 
       const localStartDateTime = utcStartDateTime.tz(userTimezone);
       const localEndDateTime = utcEndDateTime.tz(userTimezone);
-      const localDate = localStartDateTime.format("DD/MM/YYYY");
+      const localDate = localStartDateTime.format("YYYY-MM-DD");
 
       if (localStartDateTime.isAfter(dayjs().tz(userTimezone))) {
         if (!localSlots[localDate]) {
@@ -137,7 +137,7 @@ export const convertLocalTimeSlotsToUTC = (
         const utcStartDateTime = localStartDateTime.utc();
         const utcEndDateTime = localEndDateTime.utc();
 
-        utcDate = utcStartDateTime.format("DD/MM/YYYY");
+        utcDate = utcStartDateTime.format("YYYY-MM-DD");
         utcStartTime = utcStartDateTime.format("HH:mm");
         utcEndTime = utcEndDateTime.format("HH:mm");
       }
@@ -177,7 +177,7 @@ export const convertUTCDateTimeToLocal = (
   const localEndDateTime = utcEndDateTime.tz(userTimezone);
 
   return {
-    localDate: localStartDateTime.format("DD/MM/YYYY"),
+    localDate: localStartDateTime.format("YYYY-MM-DD"),
     localStartTime: localStartDateTime.format("HH:mm"),
     localEndTime: localEndDateTime.format("HH:mm"),
   };
@@ -206,9 +206,32 @@ export const convertLocalDateTimeToUTC = (
   const utcEndDateTime = localEndDateTime.utc();
 
   return {
-    utcDate: utcStartDateTime.format("DD/MM/YYYY"),
+    utcDate: utcStartDateTime.format("YYYY-MM-DD"),
     utcStartTime: utcStartDateTime.format("HH:mm"),
     utcEndTime: utcEndDateTime.format("HH:mm"),
+  };
+};
+
+export const convertUTCDateTimeToLocalFormat = (
+  utcDate: string,
+  utcStartTime: string,
+  utcEndTime: string,
+  userTimezone: string,
+): {
+  localDate: string;
+  localStartTime: string;
+  localEndTime: string;
+} => {
+  const utcStartDateTime = dayjs.utc(`${utcDate} ${utcStartTime}`);
+  const utcEndDateTime = dayjs.utc(`${utcDate} ${utcEndTime}`);
+
+  const localStartDateTime = utcStartDateTime.tz(userTimezone);
+  const localEndDateTime = utcEndDateTime.tz(userTimezone);
+
+  return {
+    localDate: localStartDateTime.format("DD/MM/YYYY"),
+    localStartTime: localStartDateTime.format("HH:mm"),
+    localEndTime: localEndDateTime.format("HH:mm"),
   };
 };
 

@@ -14,7 +14,7 @@ import DefaultAvatar from "../../../assets/images/default-account.svg"
 import { Modal, Button } from "antd"
 import QuickActions from "./components/QuickActions"
 import { getSessionTypeIcon, getSessionTypeText, parseTimeRange } from "./utils/LearnerDashboardUtils"
-import { convertUTCDateTimeToLocal } from "../../../utils/timezoneUtils"
+import { convertUTCDateTimeToLocalFormat } from "../../../utils/timezoneUtils"
 
 interface UpcomingSession {
   id: string
@@ -84,7 +84,7 @@ export default function LearnerDashboard() {
           const [utcStartTime, utcEndTime] = utcTime.split(" - ")
 
           // Convert UTC date and time to local
-          const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
+          const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocalFormat(
             session.scheduledDate,
             utcStartTime,
             utcEndTime,
@@ -98,7 +98,7 @@ export default function LearnerDashboard() {
             id: session.sessionId,
             mentorName: session.mentorName,
             mentorAvatar: session.mentorProfilePictureUrl || DefaultAvatar,
-            date: dayjs(localDate).format("MMM D, YYYY"),
+            date: localDate,
             time: localTimeRange,
             duration,
             sessionType: session.type as "Virtual" | "OneOnOne" | "Onsite",

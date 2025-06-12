@@ -12,7 +12,7 @@ import MentorDashboardStatistics from "./components/MentorDashboardStatistics"
 import { type SessionTypeValue } from "../../../types/enums/SessionType"
 import { getSessionTypeIcon, getSessionTypeText, parseTimeRange } from "./utils/MentorDashboardUtils"
 import type { NotificationProps } from "../../../types/Notification"
-import { convertUTCDateTimeToLocal } from "../../../utils/timezoneUtils"
+import { convertUTCDateTimeToLocalFormat } from "../../../utils/timezoneUtils"
 
 interface UpcomingSession {
   id: string
@@ -155,8 +155,8 @@ export default function MentorDashboard() {
                           {getSessionTypeIcon(session.sessionType)}
                           {getSessionTypeText(session.sessionType)}
                         </span>
-                        <span>📅 {convertUTCDateTimeToLocal(session.date, session.time, "", user?.timezone || "utc").localDate}</span>
-                        <span>🕐 {convertUTCDateTimeToLocal(session.date, session.time, "", user?.timezone || "utc").localStartTime}</span>
+                        <span>📅 {convertUTCDateTimeToLocalFormat(session.date, session.time, "", user?.timezone || "utc").localDate}</span>
+                        <span>🕐 {convertUTCDateTimeToLocalFormat(session.date, session.time, "", user?.timezone || "utc").localStartTime}</span>
                         <span>⏱️ {session.duration}</span>
                       </div>
                     </div>

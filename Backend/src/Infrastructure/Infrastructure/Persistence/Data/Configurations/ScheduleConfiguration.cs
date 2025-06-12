@@ -1,5 +1,4 @@
-﻿// filepath: Backend\src\Infrastructure\Infrastructure\Persistence\Data\Configurations\ScheduleConfiguration.cs
-using Domain.Entities;
+﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
