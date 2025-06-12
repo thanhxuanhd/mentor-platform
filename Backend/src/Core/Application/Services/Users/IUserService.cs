@@ -21,4 +21,5 @@ public interface IUserService
     Task<Result<string>> UploadDocumentAsync(Guid userId, HttpRequest request, IFormFile file);
     Task<Result<bool>> RemoveDocumentAsync(Guid userId, string documentUrl);
     Task<Result<List<GetUserResponse>>> GetAllMentorAsync();
+    Task<Result> CreateAdminAsync(CreateAdminRequest request);
 }
