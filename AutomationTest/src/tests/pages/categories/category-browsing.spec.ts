@@ -15,6 +15,7 @@ test.describe.serial("@Category Category browsing tests", () => {
   let categoryBrowsingPage: CategoryBrowsingPage;
   let categoryPage: CategoryPage;
   let loginPage: LoginPage;
+  let categoryId: string | null = null;
   const data = withTimestamp(categoryData.create_valid_category);
 
   test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
@@ -31,7 +32,7 @@ test.describe.serial("@Category Category browsing tests", () => {
     });
   });
 
-  test(`Verifying that category list are updated after editing category`, async () => {
+  test(`@SmokeTest @Regression Verifying that category list are updated after editing category`, async () => {
     const categoryUniqueName: CUCategory = withTimestamp(
       categoryData.update_valid_category
     );
@@ -61,7 +62,7 @@ test.describe.serial("@Category Category browsing tests", () => {
     });
   });
 
-  test(`Verifying that category list updated after deleting a category`, async () => {
+  test(`@SmokeTest @Regression Verifying that category list updated after deleting a category`, async () => {
     await test.step("Verify category is deleted", async () => {
       const beforeDeleteCategory =
         await categoryBrowsingPage.getAllCategoryValue();
@@ -83,5 +84,13 @@ test.describe.serial("@Category Category browsing tests", () => {
         await categoryBrowsingPage.getAllCategoryValue();
       expect(afterDeleteCategory.includes(beforeDeleteCategory[0])).toBeFalsy();
     });
+  });
+
+  test.afterEach("Clean up test data", async ({ request }, testInfo) => {
+    if (testInfo.title.includes("@SmokeTest")) {
+      categoryId = await getLatestCategory(request);
+      await deleteTestCategory(request, categoryId);
+      categoryId = null;
+    }
   });
 });

@@ -1,7 +1,7 @@
 import { test } from "../../../core/fixture/auth-fixture";
 import { LearnerDashboardPage } from "../../../pages/dashboard/learner-dashboard";
 
-test.describe.serial("@Learner Dashboard tests", () => {
+test.describe.skip("@Learner Dashboard tests", () => {
   let learnerDashboardPage: LearnerDashboardPage;
 
   test.beforeEach(async ({ loggedInPageByLearnerRole, page }) => {

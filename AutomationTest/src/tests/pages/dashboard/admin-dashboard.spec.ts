@@ -20,12 +20,11 @@ test.describe("@Admin Dashboard test", () => {
     });
 
     await test.step("Perform change user status to get report", async () => {
-      const statusList = await userRoleManagementPage.getAllUserStatus();
-      const status = statusList[0].toLowerCase();
+      const statusList = await userRoleManagementPage.getFirstUserStatus();
+      const status = statusList?.toLowerCase();
       if (status) {
         await userRoleManagementPage.clickOnActivateOrDeactivateUserBtn(
-          status,
-          0
+          status
         );
       }
     });
