@@ -675,6 +675,7 @@ public class UsersControllerTests
             Bio: "This is a test bio for the user.",
             ProfilePhotoUrl: "http://example.com/profile.jpg",
             PhoneNumber: "1234567890",
+            JoinedDate: DateOnly.FromDateTime(DateTime.Now), 
             Skills: "C#, ASP.NET Core",
             Experiences: "5 years in software development",
             PreferredCommunicationMethod: CommunicationMethod.AudioCall,

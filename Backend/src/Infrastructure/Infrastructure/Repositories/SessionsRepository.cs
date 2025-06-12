@@ -77,6 +77,7 @@ public class SessionsRepository(ApplicationDbContext context)
 
     public void CancelBookingSession(Sessions bookingSession, Guid learnerId)
     {
+        var timeSlot = bookingSession.TimeSlot;
         if (bookingSession.Status is not SessionStatus.Pending)
         {
             throw new Exception("Cannot cancel this booking session.");

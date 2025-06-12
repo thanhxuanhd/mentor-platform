@@ -1,6 +1,7 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Data;
+using Infrastructure.Services.Authorization;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
 
@@ -29,7 +30,8 @@ builder.Services.AddCors(options =>
             policy.WithOrigins(allowedOrigins)
                 .AllowAnyMethod()
                 .AllowAnyHeader()
-                .AllowCredentials();
+                .AllowCredentials()
+                .WithExposedHeaders("Content-Disposition");
         });
 });
 

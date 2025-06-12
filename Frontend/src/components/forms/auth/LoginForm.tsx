@@ -6,6 +6,7 @@ import {
   EyeOutlined,
   EyeInvisibleOutlined,
   CheckCircleOutlined,
+  LoadingOutlined,
 } from "@ant-design/icons";
 import type React from "react";
 import { useState, useEffect } from "react";
@@ -39,6 +40,7 @@ const LoginForm: React.FC = () => {
     email?: string;
     password?: string;
   }>({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setToken } = useAuth();
 
@@ -74,6 +76,7 @@ const LoginForm: React.FC = () => {
     e.preventDefault();
     setErrorMessage("");
     setFieldError({});
+    setLoading(true);
 
     let hasError = false;
     const cleanedEmail = email.trim();
@@ -94,7 +97,10 @@ const LoginForm: React.FC = () => {
       hasError = true;
     }
     setFieldError(errors);
-    if (hasError) return;
+    if (hasError) {
+      setLoading(false);
+      return;
+    }
 
     const loginData: LoginReq = { email: cleanedEmail, password };
     try {
@@ -119,9 +125,11 @@ const LoginForm: React.FC = () => {
           case userStatus.ACTIVE:
             setToken(res.token);
             navigate("/");
+            setLoading(false);
             break;
           case userStatus.PENDING:
             navigate("/profile-setup", { state: { ...res } });
+            setLoading(false);
             break;
         }
       }, 1000);
@@ -193,6 +201,7 @@ const LoginForm: React.FC = () => {
             placeholder="Enter your email"
             className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
             required
+            disabled={loading}
           />
           {fieldError.email && (
             <p className="text-red-500 text-sm mt-1">{fieldError.email}</p>
@@ -216,12 +225,14 @@ const LoginForm: React.FC = () => {
               className="mt-1 w-full px-3 py-2 border border-gray-300 rounded dark:bg-gray-700 dark:text-white"
               required
               onInput={(e) => e.currentTarget.setCustomValidity("")}
+              disabled={loading}
             />
             <button
               type="button"
               onClick={togglePasswordVisibility}
               aria-label={showPassword ? "Hide password" : "Show password"}
               className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-600 dark:text-gray-300"
+              disabled={loading}
             >
               {showPassword ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             </button>
@@ -238,6 +249,7 @@ const LoginForm: React.FC = () => {
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
               className="mr-2"
+              disabled={loading}
             />
             Remember me
           </label>
@@ -250,9 +262,17 @@ const LoginForm: React.FC = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded"
+          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded disabled:bg-orange-300 disabled:cursor-not-allowed flex items-center justify-center"
+          disabled={loading}
         >
-          Sign In
+          {loading ? (
+            <>
+              <LoadingOutlined className="mr-2" />
+              Signing In...
+            </>
+          ) : (
+            "Sign In"
+          )}
         </button>
         <div className="text-center">
           <p className="text-sm text-gray-300">or continue with</p>
@@ -261,6 +281,7 @@ const LoginForm: React.FC = () => {
               type="button"
               onClick={handleGoogleLogin}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-orange-500"
+              disabled={loading}
             >
               <GoogleOutlined />
               Google
@@ -269,6 +290,7 @@ const LoginForm: React.FC = () => {
               type="button"
               onClick={handleGithubLogin}
               className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded hover:bg-orange-500"
+              disabled={loading}
             >
               <GithubOutlined />
               GitHub

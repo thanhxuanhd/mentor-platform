@@ -863,104 +863,107 @@ const ScheduleSession = () => {
   )
 
   return (
-    <div style={{ padding: "24px", minHeight: "100vh" }}>
+    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       <CustomNotification
         visible={notification.visible}
         type={notification.type}
         message={notification.message}
         onClose={hideNotification}
       />
-      <Card>
-        <div style={{ marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "8px" }}>Mentor Sessions Tracking</h1>
-          <p style={{ color: "#666", marginBottom: "8px" }}>Manage your mentoring sessions and track your activities</p>
-          <p style={{ color: "#999", fontSize: "12px", marginBottom: "16px" }}>
-            All times are displayed in your local timezone: {userTimezone}
+
+      <div className="flex items-center gap-4 mb-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Mentor Sessions Tracking</h1>
+          <p className="text-slate-300 text-sm">
+            Manage your mentoring sessions and track your activities
           </p>
-          <Row gutter={16} style={{ marginBottom: "24px" }}>
-            {[
-              {
-                title: "Pending Sessions",
-                value: sessionStats.pending,
-                color: "#fa8c16",
-                icon: <ExclamationCircleOutlined />,
-              },
-              {
-                title: "Approved Sessions",
-                value: sessionStats.approved,
-                color: "#1890ff",
-                icon: <CheckCircleOutlined />,
-              },
-              {
-                title: "Completed Sessions",
-                value: sessionStats.completed,
-                color: "#52c41a",
-                icon: <CheckCircleOutlined />,
-              },
-              {
-                title: "Cancelled Sessions",
-                value: sessionStats.cancelled,
-                color: "#ff4d4f",
-                icon: <CloseCircleOutlined />,
-              },
-              {
-                title: "Rescheduled Sessions",
-                value: sessionStats.rescheduled,
-                color: "#8a2be2",
-                icon: <ClockCircleOutlined />,
-              },
-              { title: "Total Sessions", value: sessionStats.total, color: "white", icon: <CalendarOutlined /> },
-            ].map((stat, index) => (
-              <Col span={4} key={index}>
-                <Card>
-                  <Statistic
-                    title={stat.title}
-                    value={stat.value}
-                    valueStyle={{ color: stat.color }}
-                    prefix={stat.icon}
-                  />
-                </Card>
-              </Col>
-            ))}
-          </Row>
+          {userTimezone && (
+            <p className="text-slate-400 text-xs mt-1">All times shown in your timezone: {userTimezone}</p>
+          )}
         </div>
-        <Tabs activeKey={activeTab} onChange={setActiveTab}>
-          <TabPane
-            tab={
-              <Badge count={upcomingSessions.length} offset={[10, 0]}>
-                <span>Upcoming Sessions</span>
-              </Badge>
-            }
-            key="upcoming"
-          >
-            <Table
-              columns={upcomingColumns}
-              dataSource={upcomingSessions}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: 800 }}
-              loading={loading}
-            />
-          </TabPane>
-          <TabPane
-            tab={
-              <Badge count={pastSessions.length} offset={[10, 0]}>
-                <span>Past Sessions</span>
-              </Badge>
-            }
-            key="past"
-          >
-            <Table
-              columns={pastColumns}
-              dataSource={pastSessions}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: 800 }}
-              loading={loading}
-            />
-          </TabPane>
-        </Tabs>
-      </Card>
+      </div>
+      <Row gutter={16} style={{ marginBottom: "24px" }}>
+        {[
+          {
+            title: "Pending Sessions",
+            value: sessionStats.pending,
+            color: "#fa8c16",
+            icon: <ExclamationCircleOutlined />,
+          },
+          {
+            title: "Approved Sessions",
+            value: sessionStats.approved,
+            color: "#1890ff",
+            icon: <CheckCircleOutlined />,
+          },
+          {
+            title: "Completed Sessions",
+            value: sessionStats.completed,
+            color: "#52c41a",
+            icon: <CheckCircleOutlined />,
+          },
+          {
+            title: "Cancelled Sessions",
+            value: sessionStats.cancelled,
+            color: "#ff4d4f",
+            icon: <CloseCircleOutlined />,
+          },
+          {
+            title: "Rescheduled Sessions",
+            value: sessionStats.rescheduled,
+            color: "#8a2be2",
+            icon: <ClockCircleOutlined />,
+          },
+          { title: "Total Sessions", value: sessionStats.total, color: "white", icon: <CalendarOutlined /> },
+        ].map((stat, index) => (
+          <Col span={4} key={index}>
+            <Card>
+              <Statistic
+                title={stat.title}
+                value={stat.value}
+                valueStyle={{ color: stat.color }}
+                prefix={stat.icon}
+              />
+            </Card>
+          </Col>
+        ))}
+      </Row>
+      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <TabPane
+          tab={
+            <Badge count={upcomingSessions.length} offset={[10, 0]}>
+              <span>Upcoming Sessions</span>
+            </Badge>
+          }
+          key="upcoming"
+        >
+          <Table
+            columns={upcomingColumns}
+            dataSource={upcomingSessions}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 800 }}
+            loading={loading}
+          />
+        </TabPane>
+        <TabPane
+          tab={
+            <Badge count={pastSessions.length} offset={[10, 0]}>
+              <span>Past Sessions</span>
+            </Badge>
+          }
+          key="past"
+        >
+          <Table
+            columns={pastColumns}
+            dataSource={pastSessions}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            scroll={{ x: 800 }}
+            loading={loading}
+          />
+        </TabPane>
+      </Tabs>
       <RescheduleModal
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}

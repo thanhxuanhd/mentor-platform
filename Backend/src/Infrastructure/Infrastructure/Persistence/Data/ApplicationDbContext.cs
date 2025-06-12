@@ -1,7 +1,6 @@
 ﻿using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
-using Microsoft.Identity.Client;
 
 namespace Infrastructure.Persistence.Data;
 
@@ -26,6 +25,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Sessions> Sessions { get; set; }
     public DbSet<MentorApplication> MentorApplications { get; set; }
     public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }
+    public DbSet<ActivityLog> ActivityLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

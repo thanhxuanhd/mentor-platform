@@ -39,7 +39,7 @@ public class MentorAvailabilityTimeSlotRepository(ApplicationDbContext context) 
             .Include(mats => mats.Sessions)
             .Include(mats => mats.Schedules)
             .ThenInclude(s => s.Mentor)
-            .Where(mats => mats.Sessions.All(sessions =>
+            .Where(mats => mats.Sessions!.All(sessions =>
                 sessions.Status != SessionStatus.Approved && sessions.Status != SessionStatus.Completed));
 
         return query;

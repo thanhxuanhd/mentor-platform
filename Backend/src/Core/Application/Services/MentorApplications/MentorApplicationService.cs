@@ -161,7 +161,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             );
         }
 
-        application.ReviewedAt = DateTime.Now;
+        application.ReviewedAt = DateTime.UtcNow;
         application.AdminId = adminId;
         application.Status = ApplicationStatus.WaitingInfo;
         application.Note = request.Note;
@@ -213,7 +213,7 @@ public class MentorApplicationService(IUserRepository userRepository,
 
         application.Status = request.Status;
         application.Note = request.Note;
-        application.ReviewedAt = DateTime.Now;
+        application.ReviewedAt = DateTime.UtcNow;
         application.AdminId = adminId;
 
         mentorApplicationRepository.Update(application);
@@ -351,7 +351,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         var mentorApplication = new MentorApplication
         {
             MentorId = userId,
-            SubmittedAt = DateTime.Now,
+            SubmittedAt = DateTime.UtcNow,
         };
         submission.ToMentorApplication(mentorApplication);
 

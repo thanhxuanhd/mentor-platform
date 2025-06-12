@@ -17,5 +17,5 @@ public class UpcomingSessionResponse
     public string LearnerName { get; set; } = string.Empty;
     public DateOnly ScheduledDate { get; set; }
     public string TimeRange { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty; // Assuming Type is a string representation of SessionType
+    public string Type { get; set; } = string.Empty;
 }

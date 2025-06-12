@@ -29,6 +29,7 @@ GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/available-mentors/timesl
 Accept: application/json
 Authorization: Bearer {{auth_token}}
 
+
 ### Request Booking Session
 POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request
 Accept: application/json
@@ -39,6 +40,7 @@ Authorization: Bearer {{auth_token}}
     "timeSlotId": "{{availableTimeSlotId}}",
     "sessionType": "OnSite"
 }
+
 
 ### Request Booking Session that is unavailable
 POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request

@@ -1,6 +1,5 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import MainLayout from "../components/MainLayout";
-import DashboardPage from "../pages/Dashboard/LearnerDashboard";
 import UsersPage from "../pages/Users";
 import CategoriesPage from "../pages/Categories";
 import CoursesPage from "../pages/Courses";
@@ -21,9 +20,9 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import ScheduleSession from "../pages/SessionTracking/components/ScheduledSessions";
 import AvailabilityManager from "../pages/Availability";
+import DashboardSelector from "./DashboardSelector";
 import CourseResourcesPage from "../pages/CourseResources";
 import SessionBooking from "../pages/Sessions";
-import LearnerDashboard from "../pages/Dashboard/LearnerDashboard";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -55,12 +54,11 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<DashboardPage />} />
-        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="/" element={<DashboardSelector />} />
+        <Route path="dashboard" element={<DashboardSelector />} />
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="availability" element={<AvailabilityManager />} />
         <Route path="resources" element={<CourseResourcesPage />} />
       </Route>
 
@@ -97,7 +95,6 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        <Route path="learner-dashboard" element={<LearnerDashboard />} />
         <Route path="sessions" element={<SessionBooking />} />
       </Route>
       <Route
@@ -108,7 +105,6 @@ const AppRoutes = () => {
         }
       >
         <Route path="my-applications" element={<MentorStatusTrackingPage />} />
-        <Route path="sessions-tracking" element={<ScheduleSession />} />
         <Route
           path="mentor-application/edit"
           element={
@@ -118,13 +114,23 @@ const AppRoutes = () => {
             />
           }
         />
-        <Route path="sessions-tracking" element={<ScheduleSession />} />
         <Route path="mentor-application" element={<MentorApplicationForm />} />
-
-        <Route path="profile" element={<Profile />} />
-        <Route path="profile/edit" element={<EditProfile />} />
+      </Route>
+      <Route
+        element={
+          <ProtectedRoute
+            requiredRole={[applicationRole.MENTOR]}
+            checkMentorApplication={true}>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="sessions-tracking" element={<ScheduleSession />} />
+        <Route path="availability" element={<AvailabilityManager />} />
       </Route>
     </Routes>
+
+
   );
 };
 

@@ -199,134 +199,131 @@ const Page: React.FC = () => {
   };
 
   return (
-    <>
-      <div className="min-h-screen bg-gray-900 text-gray-200">
-        <div className="container mx-auto p-4">
-          <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-semibold">Course Management</h1>
-                {user?.role === applicationRole.MENTOR && (
-                  <button
-                    onClick={() => {
-                      setPopoverTarget(CoursePopoverTarget.add);
-                      setFormData(initialFormData);
-                    }}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
-                  >
-                    Add New Course
-                  </button>
-                )}
-              </div>
-
-              <SearchBar
-                states={states}
-                categories={categories}
-                difficulties={difficulties}
-                mentors={mentors}
-                onChange={(options) => {
-                  setKeyword(options.keyword);
-                  setDifficulty(options.difficulty);
-                  setCategoryId(options.categoryId);
-                  setMentorId(options.mentorId);
-                  setStatus(options.status);
-                }}
-              />
-              <CourseTable
-                courses={courses}
-                states={states}
-                tableProps={{
-                  loading: loading || isRefreshing,
-                  pagination: {
-                    showSizeChanger: true,
-                    onShowSizeChange: (current, pageSize) => {
-                      setPageIndex(current);
-                      setPageSize(pageSize);
-                    },
-                    pageSize: pageSize,
-                    total: totalCount,
-                    position: ["bottomRight"],
-                    showTotal: (total, range) =>
-                      `${range[0]}-${range[1]} of ${total} items`,
-                    onChange: (pageNumber, pageSize) => {
-                      setPageIndex(pageNumber);
-                      setPageSize(pageSize);
-                    },
-                  },
-                }}
-                onResourceView={async (course) => {
-                  const resource = await courseService.get(course.id);
-                  setItem(resource);
-                  setPopoverTarget(CoursePopoverTarget.resource);
-                }}
-                onView={async (course) => {
-                  const resource = await courseService.get(course.id);
-                  setItem(resource);
-                  setPopoverTarget(CoursePopoverTarget.detail);
-                }}
-                onDelete={handleDeleteCourse}
-                onPublish={handlePublishCourse}
-                onArchive={handleArchiveCourse}
-                onEdit={async (course) => {
-                  const resource = await courseService.get(course.id);
-                  setItem(resource);
-                  setFormData({
-                    id: course.id,
-                    categoryId: course.categoryId,
-                    categoryName: course.categoryName,
-                    description: course.description,
-                    difficulty: course.difficulty,
-                    dueDate: course.dueDate,
-                    status: course.status,
-                    tags: course.tags,
-                    title: course.title,
-                  });
-                  setPopoverTarget(CoursePopoverTarget.edit);
-                }}
-              />
-              <CourseForm
-                formData={formData}
-                categories={categories}
-                states={states}
-                active={
-                  popoverTarget === CoursePopoverTarget.add ||
-                  popoverTarget === CoursePopoverTarget.edit
-                }
-                onClose={(targetAction) => {
-                  if (targetAction === "refresh") {
-                    // Trigger a refresh of the course list
-                    setRefreshTrigger((prev) => prev + 1);
-                  }
-                  setPopoverTarget(targetAction);
-                }}
-              />
-              <CourseDetail
-                course={item}
-                states={states}
-                active={popoverTarget === CoursePopoverTarget.detail}
-                onClose={(targetAction) => {
-                  if (targetAction === "refresh") {
-                    // Trigger a refresh of the course list
-                    setRefreshTrigger((prev) => prev + 1);
-                  }
-                  setPopoverTarget(targetAction);
-                }}
-              />
-              <CourseResourceDialog
-                course={item}
-                active={popoverTarget === CoursePopoverTarget.resource}
-                onClose={(targetAction) => {
-                  if (targetAction === "refresh") {
-                    setRefreshTrigger((prev) => prev + 1);
-                  }
-                  setPopoverTarget(targetAction);
-                }}
-              />
-            </div>
-          </div>
+    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg container p-6">
+      <div className="flex justify-between items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold">Courses Management</h1>
+          <p className="text-slate-300 text-sm">
+            Manage your courses in the system
+          </p>
         </div>
+        {user?.role === applicationRole.MENTOR && (
+          <button
+            onClick={() => {
+              setPopoverTarget(CoursePopoverTarget.add);
+              setFormData(initialFormData);
+            }}
+            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md transition duration-200"
+          >
+            Add New Course
+          </button>
+        )}
       </div>
-    </>
+
+      <SearchBar
+        states={states}
+        categories={categories}
+        difficulties={difficulties}
+        mentors={mentors}
+        onChange={(options) => {
+          setKeyword(options.keyword);
+          setDifficulty(options.difficulty);
+          setCategoryId(options.categoryId);
+          setMentorId(options.mentorId);
+          setStatus(options.status);
+        }}
+      />
+      <CourseTable
+        courses={courses}
+        states={states}
+        tableProps={{
+          loading: loading || isRefreshing,
+          pagination: {
+            showSizeChanger: true,
+            onShowSizeChange: (current, pageSize) => {
+              setPageIndex(current);
+              setPageSize(pageSize);
+            },
+            pageSize: pageSize,
+            total: totalCount,
+            position: ["bottomRight"],
+            showTotal: (total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`,
+            onChange: (pageNumber, pageSize) => {
+              setPageIndex(pageNumber);
+              setPageSize(pageSize);
+            },
+          },
+        }}
+        onResourceView={async (course) => {
+          const resource = await courseService.get(course.id);
+          setItem(resource);
+          setPopoverTarget(CoursePopoverTarget.resource);
+        }}
+        onView={async (course) => {
+          const resource = await courseService.get(course.id);
+          setItem(resource);
+          setPopoverTarget(CoursePopoverTarget.detail);
+        }}
+        onDelete={handleDeleteCourse}
+        onPublish={handlePublishCourse}
+        onArchive={handleArchiveCourse}
+        onEdit={async (course) => {
+          const resource = await courseService.get(course.id);
+          setItem(resource);
+          setFormData({
+            id: course.id,
+            categoryId: course.categoryId,
+            categoryName: course.categoryName,
+            description: course.description,
+            difficulty: course.difficulty,
+            dueDate: course.dueDate,
+            status: course.status,
+            tags: course.tags,
+            title: course.title,
+          });
+          setPopoverTarget(CoursePopoverTarget.edit);
+        }}
+      />
+      <CourseForm
+        formData={formData}
+        categories={categories}
+        states={states}
+        active={
+          popoverTarget === CoursePopoverTarget.add ||
+          popoverTarget === CoursePopoverTarget.edit
+        }
+        onClose={(targetAction) => {
+          if (targetAction === "refresh") {
+            // Trigger a refresh of the course list
+            setRefreshTrigger((prev) => prev + 1);
+          }
+          setPopoverTarget(targetAction);
+        }}
+      />
+      <CourseDetail
+        course={item}
+        states={states}
+        active={popoverTarget === CoursePopoverTarget.detail}
+        onClose={(targetAction) => {
+          if (targetAction === "refresh") {
+            // Trigger a refresh of the course list
+            setRefreshTrigger((prev) => prev + 1);
+          }
+          setPopoverTarget(targetAction);
+        }}
+      />
+      <CourseResourceDialog
+        course={item}
+        active={popoverTarget === CoursePopoverTarget.resource}
+        onClose={(targetAction) => {
+          if (targetAction === "refresh") {
+            setRefreshTrigger((prev) => prev + 1);
+          }
+          setPopoverTarget(targetAction);
+        }}
+      />
+    </div>
   );
 };
 

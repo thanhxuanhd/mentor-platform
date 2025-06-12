@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MentorPlatformAPI.Controllers;
 
+[Authorize]
 //[Authorize]
 [Route("api/[controller]")]
 [ApiController]
@@ -31,6 +32,7 @@ public class SessionBookingController(
         return StatusCode((int)result.StatusCode, result);
     }
 
+    
     [HttpGet("available-mentors")]
     public async Task<IActionResult> GetAllAvailableMentorForBooking()
     {

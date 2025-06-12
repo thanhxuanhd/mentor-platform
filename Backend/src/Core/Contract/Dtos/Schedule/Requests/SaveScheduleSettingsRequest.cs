@@ -1,5 +1,4 @@
 ﻿using Contract.Dtos.Schedule.Extensions;
-using Contract.Repositories;
 using FluentValidation;
 
 namespace Contract.Dtos.Schedule.Requests;
