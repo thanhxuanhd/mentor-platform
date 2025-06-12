@@ -4,7 +4,7 @@ import { createAndVerifyResource } from '../../../core/utils/path-resolver';
 import { ResourcePage } from '../../../pages/resources/resource-management-page';
 import resourceData from '../../test-data/resource-mng-data.json'
 
-test.describe('@ResourceView Browsing resources tests', () => {
+test.describe(' Browsing resources tests', () => {
     let resourcePage: ResourcePage;
     let testCourse: any;
     let testCategory: any;

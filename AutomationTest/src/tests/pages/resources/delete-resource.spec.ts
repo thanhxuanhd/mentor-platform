@@ -4,7 +4,7 @@ import { createAndVerifyResource } from '../../../core/utils/path-resolver';
 import { ResourcePage } from '../../../pages/resources/resource-management-page';
 import resourceData from '../../test-data/resource-mng-data.json'
 
-test.describe('@Resource Delete Resource tests', () => {
+test.describe.serial('@Resource @Regression Delete Resource tests', () => {
     let resourcePage: ResourcePage;
     let testCourse: any;
     let testCategory: any;
