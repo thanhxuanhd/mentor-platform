@@ -24,7 +24,7 @@ test.describe.serial("@Category Category browsing tests", () => {
     loginPage = new LoginPage(page);
   });
 
-  test(`@SmokeTest @Regression Verifying that category list are updated after editing category`, async () => {
+  test(` @Regression Verifying that category list are updated after editing category`, async () => {
     const categoryUniqueName: CUCategory = withTimestamp(
       categoryData.update_valid_category
     );
@@ -44,7 +44,7 @@ test.describe.serial("@Category Category browsing tests", () => {
     });
   });
 
-  test(`@SmokeTest @Regression Verifying that category list updated after deleting a category`, async () => {
+  test(` @Regression Verifying that category list updated after deleting a category`, async () => {
     await test.step("Verify category is deleted", async () => {
       const beforeDeleteCategory =
         await categoryBrowsingPage.getAllCategoryValue();

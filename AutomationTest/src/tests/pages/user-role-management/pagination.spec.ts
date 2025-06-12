@@ -22,7 +22,7 @@ test.describe
   });
 
   //Pagination function
-  test("@SmokeTest @Regression Verify data changed among pages", async () => {
+  test(" @Regression Verify data changed among pages", async () => {
     await test.step("Verify default value of item per page is 5", async () => {
       const result = await userRoleManagementPage.getPaginationDefaultValue();
       expect(result).toEqual("5 / page");
