@@ -8,7 +8,7 @@ export default defineConfig({
   timeout: 60000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 3 : 2,
+  retries: process.env.CI ? 2 : 2,
   workers: process.env.CI ? 1 : 2,
   reporter: [
     ['html', { outputFolder: 'test-results/html-report' }],
@@ -18,7 +18,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.BASE_FE_URL,
     trace: 'retain-on-failure',
-    headless: true,
+    headless: false,
     testIdAttribute: '',
     screenshot: 'only-on-failure',
     video: 'on',

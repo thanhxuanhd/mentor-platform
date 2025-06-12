@@ -24,12 +24,12 @@ test.describe('@Resource Edit resource tests', () => {
     });
 
     const course: { [label: string]: CreateAndEditResource } = {
-        '@SmokeTest Valid Resource': resourceData.update_valid_resource,
+        '@SmokeTest @Regression Valid Resource': resourceData.update_valid_resource,
         'Oversize file': (resourceData.update_oversize_file),
         'Empty Resource Title': (resourceData.update_empty_title),
         'Overlength Title': (resourceData.update_overlength_title),
         'Overlength Description': (resourceData.update_overlength_description),
-        '@Boundary Empty Resource File': (resourceData.update_empty_resource)
+        '@Boundary @Regression Empty Resource File': (resourceData.update_empty_resource)
     };
 
     for (const [label, data] of Object.entries(course)) {
