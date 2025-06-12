@@ -14,4 +14,5 @@ export const PAGE_ENDPOINT_URL = {
   SESSION_BOOKING:'sessions',
   SESSION_TRACKING: 'sessions-tracking',
   USERS: "/users",
+  MENTOR_APPLICATION: '/mentor-application',
 };

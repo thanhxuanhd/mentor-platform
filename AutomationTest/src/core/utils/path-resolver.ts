@@ -33,4 +33,5 @@ export async function createAndVerifyResource(data: any, resourcePage: ResourceP
   const resolvedPaths = resolvePaths(data.fileName);
   await resourcePage.uploadResource(resolvedPaths);
   await resourcePage.clickCreateButton();
+  await resourcePage.expectMessage(data.expectedMessage);
 }
