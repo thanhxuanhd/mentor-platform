@@ -6,7 +6,6 @@ export default defineConfig({
   testDir: './src/tests',
   outputDir: 'test-results/tmp',
   timeout: 60000,
-  fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 2,
   workers: process.env.CI ? 1 : 2,
@@ -18,7 +17,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.BASE_FE_URL,
     trace: 'retain-on-failure',
-    headless: false,
+    headless: true,
     testIdAttribute: '',
     screenshot: 'only-on-failure',
     video: 'on',

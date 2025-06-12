@@ -2,8 +2,7 @@ name: CI Automation Test - Build and Run Test
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: main
 
 defaults:
   run:
@@ -12,12 +11,6 @@ defaults:
 jobs:
   playwright-tests:
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        shardIndex: [1, 2]
-        totalShards: [2]
 
     steps:
       - name: Checkout repository
@@ -28,14 +21,13 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Browsers and System Dependencies
-        run: npx playwright install --with-deps
+      - name: Install dependencies & Playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps
 
       - name: Run Playwright tests
-        run: npx playwright test --grep "@SmokeTest" --shard=${{ matrix.shardIndex }}/${{ matrix.totalShards }}
+        run: npx playwright test --grep "@SmokeTest"
         env:
           BASE_FE_URL: ${{ secrets.BASE_FE_URL }}
           BASE_BE_URL: ${{ secrets.BASE_BE_URL }}
@@ -50,12 +42,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: junit-report-${{ matrix.shardIndex }}
-          path: AutomationTest/test-results/junit-report.xml
+          name: test-results
+          path: AutomationTest/test-results/*.xml
 
       - name: Upload Playwright HTML Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: html-report-${{ matrix.shardIndex }}
-          path: AutomationTest/test-results/html-report
+          name: playwright-report
+          path: AutomationTest/playwright-report
