@@ -1,9 +1,8 @@
 ﻿using Application.Services.Messages;
+using Contract.Dtos.Messages.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Contract.Dtos.Messages.Requests;
-using Microsoft.AspNetCore.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -22,10 +21,10 @@ public class MessagesController(IMessageService messageService) : ControllerBase
     }
 
     [HttpGet("conversations/{conversationId}")]
-    public async Task<IActionResult> GetConversationByIdAsync(Guid conversationId, int pageIndex)
+    public async Task<IActionResult> GetConversationByIdAsync(Guid conversationId, int pageIndex, int skip)
     {
         var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
-        var result = await messageService.GetConversationMessageHistory(userId, conversationId, pageIndex);
+        var result = await messageService.GetConversationMessageHistory(userId, conversationId, pageIndex, skip);
 
         return StatusCode((int)result.StatusCode, result);
     }

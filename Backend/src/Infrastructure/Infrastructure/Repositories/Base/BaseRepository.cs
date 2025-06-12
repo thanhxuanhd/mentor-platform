@@ -21,13 +21,13 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
         var template = _context.Set<TEntity>().AsQueryable();
         if (includeExpressions is not null)
         {
-           template = template.Include(includeExpressions);
+            template = template.Include(includeExpressions);
         }
         var entity = await template.FirstOrDefaultAsync(e => e.Id.Equals(id));
 
         return entity;
     }
-    
+
     public virtual async Task AddAsync(TEntity entity)
     {
         await _context.Set<TEntity>().AddAsync(entity);
@@ -56,7 +56,19 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
 
         return new PaginatedList<TResponse>(paginatedResponse, count, pageIndex, pageSize);
     }
- 
+
+    public async Task<PaginatedList<TResponse>> ToPaginatedListSkipAsync<TResponse>(
+        IQueryable<TResponse> queryable,
+        int skip,
+        int pageSize = 5,
+        int pageIndex = 1)
+    {
+        var count = await queryable.CountAsync();
+        var paginatedResponse = await queryable.Skip(skip).Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        return new PaginatedList<TResponse>(paginatedResponse, count, pageIndex, pageSize);
+    }
+
     public virtual void Update(TEntity entity)
     {
         _context.Set<TEntity>().Update(entity);

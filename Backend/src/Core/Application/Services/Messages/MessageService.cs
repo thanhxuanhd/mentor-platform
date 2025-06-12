@@ -20,6 +20,12 @@ public class MessageService(
         var newConversation = new Conversation();
         if (request.ConversationId is null)
         {
+            var sender = await userRepository.GetByIdAsync(senderId);
+            if (sender == null)
+            {
+                return Result.Failure<GetMinimalConversationResponse>("Sender not found", HttpStatusCode.BadRequest);
+            }
+
             var user = await userRepository.GetByIdAsync(request.RecipientId!.Value);
             if (user == null)
             {
@@ -28,6 +34,7 @@ public class MessageService(
             newConversation = new Conversation
             {
                 CreatedAt = DateTime.UtcNow,
+                Name = $"{sender.FullName} & {user.FullName}",
             };
             await conversationRepository.AddAsync(newConversation);
             await conversationRepository.SaveChangesAsync();
@@ -100,7 +107,7 @@ public class MessageService(
         return Result.Success(response, HttpStatusCode.OK);
     }
 
-    public async Task<Result<PaginatedList<GetMinimalConversationResponse>>> GetListConversationsByUserId(Guid userId, int pageIndex)
+    public async Task<Result<List<GetMinimalConversationResponse>>> GetListConversationsByUserId(Guid userId, int pageIndex)
     {
         var conversationsQuery = conversationRepository.GetAllInclude()
             .Where(conv => ((Conversation)conv).Participants.Any(p => p.UserId == userId))
@@ -129,12 +136,12 @@ public class MessageService(
                     .FirstOrDefault() ?? null
             });
 
-        var paginatedConversations = await conversationRepository.ToPaginatedListAsync(conversationsQuery, 10, pageIndex);
+        var conversations = await conversationRepository.ToListAsync(conversationsQuery);
 
-        return Result.Success(paginatedConversations, HttpStatusCode.OK);
+        return Result.Success(conversations, HttpStatusCode.OK);
     }
 
-    public async Task<Result<GetDetailConversationResponse>> GetConversationMessageHistory(Guid userId, Guid conversationId, int pageIndex)
+    public async Task<Result<GetDetailConversationResponse>> GetConversationMessageHistory(Guid userId, Guid conversationId, int pageIndex, int skip)
     {
         var conversation = await conversationRepository.GetByIdAsync(conversationId, conv => conv.Participants);
         if (conversation == null)
@@ -155,7 +162,7 @@ public class MessageService(
                 SenderProfilePhotoUrl = m.Sender.ProfilePhotoUrl,
             });
 
-        var paginatedMessages = await messageRepository.ToPaginatedListAsync(messagesQuery, 10, pageIndex);
+        var paginatedMessages = await messageRepository.ToPaginatedListSkipAsync(messagesQuery, skip, 10, pageIndex);
 
         var result = new GetDetailConversationResponse
         {

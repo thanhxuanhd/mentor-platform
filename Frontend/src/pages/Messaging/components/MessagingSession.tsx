@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Avatar, Input, Button, App, Spin, FloatButton, Skeleton } from "antd";
-import { DownOutlined, SendOutlined } from "@ant-design/icons";
-import InfiniteScroll from "react-infinite-scroll-component";
+import { Avatar, App, FloatButton } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 import type {
   AddMessageRequest,
   GetDetailConversationResponse,
@@ -13,12 +12,14 @@ import DefaultAvatar from "../../../assets/images/default-account.svg";
 import connection from "../../../services/signalR";
 import { Bubble, Sender } from "@ant-design/x";
 import { chatService } from "../../../services/chat/chatService";
+import { formatDateTime } from "../../../utils/DateFormat";
 
 interface MessagingSessionProps {
   initialConversationDetails: GetDetailConversationResponse | null;
   contactId: string | null;
   contactName: string | null;
   contactPhotoUrl: string | null;
+  refreshConversations: () => void;
 }
 
 export default function MessagingSession({
@@ -26,6 +27,7 @@ export default function MessagingSession({
   contactId,
   contactName,
   contactPhotoUrl,
+  refreshConversations,
 }: MessagingSessionProps) {
   const { user } = useAuth();
   const { notification } = App.useApp();
@@ -33,16 +35,20 @@ export default function MessagingSession({
     useState<GetDetailConversationResponse | null>(null);
   const [newMessageInput, setNewMessageInput] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
+  const [messageSkip, setMessageSkip] = useState<number>(0);
   const [notify, setNotify] = useState<NotificationProps | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollableDivRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-
+  console.log("MessagingSession component rendered");
   const fetchMoreMessages = useCallback(async () => {
     try {
+      setPageIndex((prev) => prev + 1);
+
       const response = await chatService.getById(
         conversationDetails?.conversationId || "",
-        pageIndex,
+        pageIndex + 1,
+        messageSkip + 1,
       );
       setConversationDetails((prev) => {
         if (!prev || !prev.messages) return prev;
@@ -54,7 +60,6 @@ export default function MessagingSession({
           },
         };
       });
-      setPageIndex((prev) => prev + 1);
     } catch (error: any) {
       setNotify({
         type: "error",
@@ -63,10 +68,12 @@ export default function MessagingSession({
           error?.response?.data?.error || "Error fetching conversations.",
       });
     }
-  }, [conversationDetails?.conversationId, pageIndex]);
+  }, [conversationDetails?.conversationId, messageSkip, pageIndex]);
 
   useEffect(() => {
     setConversationDetails(initialConversationDetails);
+    setPageIndex(1);
+    setMessageSkip(0);
   }, [initialConversationDetails]);
 
   const scrollToBottom = useCallback(() => {
@@ -74,10 +81,6 @@ export default function MessagingSession({
       behavior: "smooth",
     });
   }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [conversationDetails?.messages.items, scrollToBottom]);
 
   useEffect(() => {
     if (notify) {
@@ -113,7 +116,9 @@ export default function MessagingSession({
           senderProfilePhotoUrl,
           sentAt,
         };
+        refreshConversations();
 
+        console.log(messageSkip + 1);
         if (!conversationDetails && contactId) {
           setConversationDetails({
             conversationId: conversationId,
@@ -202,11 +207,6 @@ export default function MessagingSession({
     [contactId, conversationDetails?.conversationId],
   );
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  };
-
   const handleInputMessageChange = useCallback((value: string): void => {
     setNewMessageInput(value);
   }, []);
@@ -232,58 +232,56 @@ export default function MessagingSession({
       <div
         id="scrollableDiv"
         ref={scrollableDivRef}
+        onScroll={() => {
+          const div = scrollableDivRef.current;
+          if (
+            div &&
+            div.scrollTop === 0 &&
+            pageIndex <= (conversationDetails?.messages?.totalPages ?? 0)
+          ) {
+            fetchMoreMessages();
+          }
+        }}
         className="flex-1 flex-col-reverse overflow-auto p-2 mt-4 bg-slate-700 rounded-lg shadow-inner mb-4"
       >
-        <InfiniteScroll
-          dataLength={conversationDetails?.messages.items.length ?? 0}
-          next={fetchMoreMessages}
-          hasMore={
-            pageIndex <= (conversationDetails?.messages?.totalPages ?? 0)
-          }
-          inverse={true}
-          loader={<Skeleton />}
-          scrollableTarget="scrollableDiv"
-        >
-          {conversationDetails?.messages.items
-            .slice()
-            .reverse()
-            .map((message: GetMessageResponse) => {
-              const isCurrentUser = message.senderId === user?.id;
-              return (
-                <Bubble
-                  key={message.messageId}
-                  placement={isCurrentUser ? "end" : "start"}
-                  avatar={
-                    <Avatar
-                      src={message.senderProfilePhotoUrl || DefaultAvatar}
-                      size={32}
-                    />
-                  }
-                  header={
-                    isCurrentUser ? "You" : message.senderName || "Unknown"
-                  }
-                  content={
-                    <p className="text-sm break-words">{message.content}</p>
-                  }
-                  footer={
-                    <span className="text-xs text-slate-400">
-                      {formatTime(message.sentAt)}
-                    </span>
-                  }
-                  styles={{
-                    content: {
-                      backgroundColor: isCurrentUser ? "orange" : "darkgray",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      textWrap: "wrap",
-                      maxWidth: "70%",
-                    },
-                    footer: { margin: 0 },
-                  }}
-                ></Bubble>
-              );
-            })}
-        </InfiniteScroll>
+        {conversationDetails?.messages.items
+          .slice()
+          .reverse()
+          .map((message: GetMessageResponse) => {
+            const isCurrentUser = message.senderId === user?.id;
+            return (
+              <Bubble
+                key={message.messageId}
+                placement={isCurrentUser ? "end" : "start"}
+                avatar={
+                  <Avatar
+                    src={message.senderProfilePhotoUrl || DefaultAvatar}
+                    size={32}
+                  />
+                }
+                header={isCurrentUser ? "You" : message.senderName || "Unknown"}
+                content={
+                  <p className="text-sm break-words">{message.content}</p>
+                }
+                footer={
+                  <span className="text-xs text-slate-400">
+                    {formatDateTime(message.sentAt)}
+                  </span>
+                }
+                styles={{
+                  content: {
+                    backgroundColor: isCurrentUser ? "orange" : "darkgray",
+                    padding: "10px",
+                    borderRadius: "8px",
+                    textWrap: "wrap",
+                    maxWidth: "70%",
+                  },
+                  footer: { margin: 0 },
+                }}
+              ></Bubble>
+            );
+          })}
+
         {showScrollButton && (
           <FloatButton
             icon={<DownOutlined />}
@@ -306,6 +304,7 @@ export default function MessagingSession({
           if (newMessageInput.trim() && (conversationDetails || contactId)) {
             handleSendMessage(newMessageInput);
             setNewMessageInput("");
+            setMessageSkip(messageSkip + 1);
           }
         }}
         onCancel={() => {

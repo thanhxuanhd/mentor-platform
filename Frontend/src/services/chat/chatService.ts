@@ -4,17 +4,12 @@ import type {
   GetFilterConversationResponse,
   GetMinimalConversationResponse,
 } from "../../types/ChatType";
-import type { PaginatedList } from "../../types/Pagination";
 import { axiosClient } from "../apiClient";
 
 export const chatService = {
-  getConversations: async (
-    pageIndex: number,
-  ): Promise<PaginatedList<GetMinimalConversationResponse>> => {
+  getConversations: async (): Promise<GetMinimalConversationResponse[]> => {
     return await axiosClient
-      .get(`/Messages/conversations`, {
-        params: { pageIndex },
-      })
+      .get(`/Messages/conversations`)
       .then((response) => {
         return response.data.value;
       })
@@ -26,10 +21,11 @@ export const chatService = {
   getById: async (
     conversationId: string,
     pageIndex: number,
+    skip: number,
   ): Promise<GetDetailConversationResponse> => {
     return await axiosClient
       .get(`/Messages/conversations/${conversationId}`, {
-        params: { pageIndex },
+        params: { pageIndex, skip },
       })
       .then((response) => {
         return response.data.value;
