@@ -1,6 +1,5 @@
 import { App, Button, Layout, Menu } from "antd";
-import { LogoutOutlined, BellOutlined } from "@ant-design/icons";
-
+import { LogoutOutlined } from "@ant-design/icons";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks";
 import { menuItems } from "../constants/navigation";
