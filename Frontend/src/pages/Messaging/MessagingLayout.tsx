@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { Avatar, App, Select } from "antd";
+import { Avatar, App, Select, List, Skeleton } from "antd";
 import DefaultAvatar from "../../assets/images/default-account.svg";
 import type {
   GetDetailConversationResponse,
   GetFilterConversationResponse,
+  GetMessageResponse,
   GetMinimalConversationResponse,
 } from "../../types/ChatType";
 import { chatService } from "../../services/chat/chatService";
 import type { NotificationProps } from "../../types/Notification";
 import connection from "../../services/signalR";
 import MessagingSession from "./components/MessagingSession";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export default function MessagingLayout() {
   // List user conversations
@@ -59,6 +61,7 @@ export default function MessagingLayout() {
   const fetchConversations = useCallback(async () => {
     try {
       const response = await chatService.getConversations(pageIndex);
+      setPageIndex((prev) => prev + 1);
       setConversations(response.items);
     } catch (error: any) {
       setNotify({
@@ -68,7 +71,7 @@ export default function MessagingLayout() {
           error?.response?.data?.error || "Error fetching conversations.",
       });
     }
-  }, [pageIndex]);
+  }, []);
 
   const fetchConversationDetails = useCallback(async () => {
     if (selectedConversationId) {
@@ -120,49 +123,63 @@ export default function MessagingLayout() {
         await connection.start().then(() => {
           console.log("SignalR Connected");
         });
-
-        connection.on(
-          "ReceiveMessage",
-          (
-            senderId,
-            content,
-            messageId,
-            senderName,
-            senderProfilePhotoUrl,
-            sentAt,
-            conversationId,
-          ) => {
-            if (conversationId === selectedConversationId) {
-              console.log("New message received");
-              setConversationDetails((prev) => {
-                if (!prev) return prev;
-                const newMessage = {
-                  senderId,
-                  senderName,
-                  content,
-                  messageId,
-                  senderProfilePhotoUrl,
-                  sentAt,
-                  conversationId,
-                };
-
-                return {
-                  ...prev,
-                  messages: {
-                    ...prev.messages,
-                    items: [...prev.messages.items, newMessage],
-                  },
-                };
-              });
-            }
-          },
-        );
       } catch (error) {
         console.error("SignalR Connection Error:", error);
       }
     };
 
     startConnection();
+
+    connection.on(
+      "ReceiveMessage",
+      (
+        senderId: string,
+        content: string,
+        messageId: string,
+        senderName: string,
+        senderProfilePhotoUrl: string | null,
+        sentAt: string,
+        conversationId: string,
+      ) => {
+        const newMessage: GetMessageResponse = {
+          senderId,
+          content,
+          messageId,
+          senderName,
+          senderProfilePhotoUrl,
+          sentAt,
+        };
+
+        if (!conversationDetails && selectedContact?.id) {
+          setConversationDetails({
+            conversationId: conversationId,
+            conversationName: selectedContact.name || "New Conversation",
+            messages: {
+              items: [newMessage],
+              totalCount: 1,
+              totalPages: 1,
+              pageIndex: 0,
+              pageSize: 0,
+            },
+          });
+          return;
+        }
+
+        if (conversationId === conversationDetails?.conversationId) {
+          setConversationDetails((prev) => {
+            if (!prev || !prev.messages) return prev;
+
+            return {
+              ...prev,
+              messages: {
+                ...prev.messages,
+                items: [newMessage, ...prev.messages.items],
+              },
+            };
+          });
+        }
+      },
+    );
 
     return () => {
       connection.off("ReceiveMessage");
@@ -197,6 +214,9 @@ export default function MessagingLayout() {
       | undefined,
   ) {
     if (option && !Array.isArray(option)) {
+      if (!option.conversationId) {
+        setConversationDetails(null);
+      }
       setSelectedConversationId(option.conversationId);
       setSelectedContact(option);
       setMessagePageIndex(1); // Reset message page index
@@ -243,48 +263,56 @@ export default function MessagingLayout() {
               fieldNames={{ label: "name", value: "id" }}
             />
           </div>
-          <div className="overflow-y-auto h-[calc(600px-80px)]">
-            {conversations.map((conversation) => (
-              <div
-                key={conversation.conversationId}
-                className={`p-4 border-b border-slate-500/20 cursor-pointer transition-colors hover:bg-slate-500/30 ${
-                  selectedConversationId === conversation.conversationId
-                    ? "bg-slate-500/40"
-                    : ""
-                }`}
-                onClick={() => {
-                  setSelectedConversationId(conversation.conversationId);
-                  // Optionally, set selectedContact based on conversation data if needed
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    {/* <Avatar src={} size={48} /> */}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="text-white font-medium truncate">
-                        {conversation.conversationName}
-                      </h4>
-                      <span className="text-slate-400 text-xs">
-                        {conversation.lastMessage.sentAt}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-slate-300 text-sm truncate flex-1">
-                        {conversation.lastMessage.content}
-                      </p>
+          <div
+            id="scrollableDiv"
+            className="overflow-y-auto h-[calc(600px-80px)]"
+          >
+            <InfiniteScroll
+              dataLength={conversations.length}
+              next={fetchConversations}
+              hasMore={false}
+              loader={<Skeleton paragraph={{ rows: 1 }} active />}
+              scrollableTarget="scrollableDiv"
+            >
+              {conversations.map((conversation) => (
+                <div
+                  key={conversation.conversationId}
+                  className={`p-4 border-b border-slate-500/20 cursor-pointer transition-colors hover:bg-slate-500/30 ${
+                    selectedConversationId === conversation.conversationId
+                      ? "bg-slate-500/40"
+                      : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedConversationId(conversation.conversationId);
+                  }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="relative"></div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="text-white font-medium truncate">
+                          {conversation.conversationName}
+                        </h4>
+                        <span className="text-slate-400 text-xs">
+                          {conversation.lastMessage.sentAt}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <p className="text-slate-300 text-sm truncate flex-1">
+                          {conversation.lastMessage.content}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </InfiniteScroll>
           </div>
         </div>
 
         <div className="flex-1 overflow-hidden bg-slate-600/50 backdrop-blur-sm rounded-xl border border-slate-500/30 shadow-xl">
           <MessagingSession
-            conversationDetails={conversationDetails}
+            initialConversationDetails={conversationDetails}
             contactId={selectedContact?.id ?? null}
             contactName={selectedContact?.name ?? null}
             contactPhotoUrl={selectedContact?.photoUrl ?? null}
