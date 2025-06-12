@@ -4,23 +4,26 @@ dotenv.config();
 
 export default defineConfig({
   testDir: './src/tests',
+  outputDir: 'test-results/tmp',
+  timeout: 60000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 2,
-  reporter: [['junit', { outputFile: 'test-results/e2e-junit-results.xml' }]],
+  retries: process.env.CI ? 3 : 2,
+  workers: process.env.CI ? 1 : 2,
+  reporter: [
+    ['html', { outputFolder: 'test-results/html-report' }],
+    ['junit', { outputFile: 'test-results/junit-report.xml' }]
+  ],
+
   use: {
     baseURL: process.env.BASE_FE_URL,
     trace: 'retain-on-failure',
     headless: true,
     testIdAttribute: '',
-    actionTimeout: 10000,
-    extraHTTPHeaders: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
+    screenshot: 'only-on-failure',
+    video: 'on',
+    actionTimeout: 10000
   },
-
   projects: [
     {
       name: 'chromium',

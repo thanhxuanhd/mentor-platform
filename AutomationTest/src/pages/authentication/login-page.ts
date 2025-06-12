@@ -7,8 +7,6 @@ export class LoginPage extends BasePage {
   private TXT_EMAIL_LOCATOR: Locator;
   private TXT_PASSWORD_LOCATOR: Locator;
   private BTN_SIGNIN_LOCATOR: Locator;
-  private LBL_SUCCESSMESSAGE_LOCATOR: Locator;
-  private LBL_FAILEDMESSAGE_LOCATOR: Locator;
   private BTN_LOGOUT_LOCATOR: Locator;
 
   constructor(page: Page) {
@@ -17,10 +15,6 @@ export class LoginPage extends BasePage {
     this.TXT_EMAIL_LOCATOR = page.getByPlaceholder("Enter your email");
     this.TXT_PASSWORD_LOCATOR = page.getByPlaceholder("Enter your password");
     this.BTN_SIGNIN_LOCATOR = page.getByRole("button", { name: "Sign In" });
-    this.LBL_SUCCESSMESSAGE_LOCATOR = page.getByText("Sign in successfully!");
-    this.LBL_FAILEDMESSAGE_LOCATOR = page.getByText(
-      "Email or password is not correct"
-    );
     this.BTN_LOGOUT_LOCATOR = page.locator('//button[span[text()="Logout"]]');
   }
 
@@ -49,7 +43,7 @@ export class LoginPage extends BasePage {
   }
 
   async expectSuccessLogin() {
-    await this.isVisible(this.LBL_SUCCESSMESSAGE_LOCATOR);
+    await this.expectMessage("Sign in successfully!");
   }
 
   async expectLogoutButton() {
@@ -57,6 +51,6 @@ export class LoginPage extends BasePage {
   }
 
   async expectFailedLogin() {
-    await this.isVisible(this.LBL_FAILEDMESSAGE_LOCATOR);
+    await this.expectMessage("Email or password is not correct");
   }
 }

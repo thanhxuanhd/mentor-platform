@@ -15,9 +15,10 @@ export class ResourcePage extends BasePage {
     private BTN_ADDRESOURCE_LOCATOR: Locator;
     private BTN_CREATE_LOCATOR: Locator;
 
-    // //update resource locator
+    // //update resource locatorz
     private BTN_EDITICON_LOCATOR: Locator;
     private BTN_UPDATEBUTTON_LOCATOR: Locator;
+    private BTN_DELETEFILE_LOCATOR: Locator;
 
     //delete resource locator
     private BTN_DELETEICON: Locator;
@@ -39,13 +40,14 @@ export class ResourcePage extends BasePage {
         this.TXT_TITLE_LOCATOR = page.locator("#course_resource_form_simple_title");
         this.TXT_DESCRIPTION_LOCATOR = page.locator("#course_resource_form_simple_description");
         this.BTN_UPLOADFILE_LOCATOR = page.locator('#course_resource_form_simple_resource');
-        this.BTN_EDITICON_LOCATOR = page.locator('button:has(svg[data-icon="edit"])').first();
+        this.BTN_EDITICON_LOCATOR = page.locator('.ant-modal button span[aria-label="edit"]');
         this.BTN_UPDATEBUTTON_LOCATOR = page.locator('//button[span[text()="Update"]]');
-        this.BTN_DELETEICON = page.locator('button:has(svg[data-icon="delete"])').first();
+        this.BTN_DELETEICON = page.locator('.ant-modal button span[aria-label="delete"]');
         this.BTN_CONFIRMDELETE_LOCATOR = page.locator('//button[span[text()="Yes"]]');
         this.LBL_SUCCESSDELETE_LOCATOR = page.getByText("The resource has been successfully deleted.");
         this.LST_RESOURCELIST_LOCATOR = page.locator('div.ant-card.resource-card');
         this.DRD_CATEGORY_LOCATOR = page.locator("#rc_select_0").first();
+        this.BTN_DELETEFILE_LOCATOR = page.getByTitle('Remove file').first();
     }
 
     async navigateToHomePage(url = "") {
@@ -92,6 +94,9 @@ export class ResourcePage extends BasePage {
         await this.click(this.BTN_UPDATEBUTTON_LOCATOR);
     }
 
+    async clickDeleteFile() {
+        await this.click(this.BTN_DELETEFILE_LOCATOR);
+    }
     async clickDeleteButton() {
         await this.click(this.BTN_DELETEICON);
     }

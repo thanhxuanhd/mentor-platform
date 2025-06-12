@@ -1,15 +1,7 @@
 import { expect } from "@playwright/test";
 import { test } from "../../../core/fixture/auth-fixture";
-import { withTimestampTitleAndFutureDate } from "../../../core/utils/generate-unique-data";
 import { CoursePage } from "../../../pages/courses/course-management-page";
 import { MentorDashboardPage } from "../../../pages/dashboard/mentor-dashboard-page";
-import courseData from "../../test-data/course-data.json";
-import { MentorApplicationReview } from "../../../pages/mentor-application/mentor-application-review-page";
-import statusTrackingData from "../../test-data/mentor-application-status-tracking-data.json";
-import { loginStep } from "../../../core/utils/login-helper";
-import { LoginUser } from "../../../models/user/user";
-import { LoginPage } from "../../../pages/authentication/login-page";
-import dotenv from "dotenv"
 import { createTestCategory, createTestCourse } from "../../../core/utils/api-helper";
 
 test.describe.serial("@Mentor Dashboard test", () => {

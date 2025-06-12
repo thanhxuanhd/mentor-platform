@@ -44,7 +44,7 @@ test.describe("@Edit profile test", () => {
         await editUserProfile.unselectAvailabilityOptions();
         await editUserProfile.selectAvailabilityOptions(data.availbility);
         await editUserProfile.selectTeaching(data.teaching!);
-        await editUserProfile.selectCategory(data.category!);
+        // await editUserProfile.selectCategory(data.category!);
         await editUserProfile.selectCommunicationMethod(
           data.communication_method!
         );

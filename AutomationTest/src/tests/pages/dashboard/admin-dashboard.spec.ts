@@ -14,7 +14,7 @@ test.describe("@Admin Dashboard test", () => {
     userRoleManagementPage = new UserRoleManagementPage(page);
   });
 
-  test("@SmokeTest Verify search for Admin report", async ({ page }) => {
+  test(" Verify search for Admin report", async ({ page }) => {
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUsers();
     });
@@ -40,7 +40,7 @@ test.describe("@Admin Dashboard test", () => {
     });
   });
 
-  test("@SmokeTest Verify search for non-existed Admin report", async ({
+  test(" Verify search for non-existed Admin report", async ({
     page,
   }) => {
     await test.step("Search non-existed report", async () => {

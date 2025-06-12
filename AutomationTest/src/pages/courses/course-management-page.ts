@@ -41,9 +41,9 @@ export class CoursePage extends BasePage {
         this.BTN_ADDTAG_LOCATOR = page.locator('//button[span[text()="Add"]]');
         this.TXT_DESCRIPTION_LOCATOR = page.getByPlaceholder('Enter course description');
         this.BTN_CREATECOURSE_LOCATOR = page.locator('//button[span[text()="Create Course"]]');
-        this.BTN_UPDATECOURSEICON_LOCATOR = page.locator('[aria-label="edit"]').first().locator('xpath=ancestor::button');
+        this.BTN_UPDATECOURSEICON_LOCATOR = page.locator('//button[.//span[@aria-label="edit"]]').first();
         this.BTN_SAVECHANGES_LOCATOR = page.locator('//button[span[text()="Save Changes"]]');
-        this.BTN_DELETECOURSEICON_LOCATOR = page.locator('[aria-label="delete"]').first().locator('xpath=ancestor::button');
+        this.BTN_DELETECOURSEICON_LOCATOR = page.getByRole('button', { name: 'delete' }).first();
         this.BTN_CONFIRMDELETE_LOCATOR = page.locator('//button[span[text()="Yes"]]');
         this.LBL_SUCCESSDELETE_LOCATOR = page.getByText("Delete successfully!");
     }
