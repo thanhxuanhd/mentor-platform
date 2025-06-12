@@ -21,13 +21,11 @@ public class CourseServiceTests
         _courseRepositoryMock = new Mock<ICourseRepository>();
         _tagRepositoryMock = new Mock<ITagRepository>();
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _courseResourceRepositoryMock = new Mock<ICourseResourceRepository>();
         _webHostEnvironmentMock = new Mock<IWebHostEnvironment>();
         _courseService = new CourseService(
             _courseRepositoryMock.Object,
             _tagRepositoryMock.Object,
             _categoryRepositoryMock.Object,
-            _courseResourceRepositoryMock.Object,
             _webHostEnvironmentMock.Object
         );
     }
@@ -35,7 +33,6 @@ public class CourseServiceTests
     private Mock<ICourseRepository> _courseRepositoryMock;
     private Mock<ITagRepository> _tagRepositoryMock;
     private Mock<ICategoryRepository> _categoryRepositoryMock;
-    private Mock<ICourseResourceRepository> _courseResourceRepositoryMock;
     private Mock<IWebHostEnvironment> _webHostEnvironmentMock;
     private CourseService _courseService;
 

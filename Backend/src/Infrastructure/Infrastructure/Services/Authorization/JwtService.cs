@@ -27,7 +27,7 @@ public sealed class JwtService(IOptions<JwtSetting> jwtSetting) : IJwtService
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Role, user.Role.Name.ToString()),
-                new Claim("Timezone", user.Timezone),
+                new Claim("timezone", user.Timezone),
             ]),
             Issuer = _jwtSetting.Issuer,
             Audience = _jwtSetting.Audience,

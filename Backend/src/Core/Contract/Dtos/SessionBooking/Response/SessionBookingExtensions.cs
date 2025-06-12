@@ -16,7 +16,7 @@ public static class SessionBookingExtensions
             StartTime = mats.StartTime,
             EndTime = mats.EndTime,
             Date = mats.Date,
-            IsBooked = mats.Sessions.Any(s =>
+            IsBooked = mats.Sessions!.Any(s =>
                 s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled)
         };
     }
@@ -32,9 +32,9 @@ public static class SessionBookingExtensions
             StartTime = mats.StartTime,
             EndTime = mats.EndTime,
             Date = mats.Date,
-            IsBooked = mats.Sessions.Any(s =>
+            IsBooked = mats.Sessions!.Any(s =>
                 s.Status is SessionStatus.Approved or SessionStatus.Completed or SessionStatus.Rescheduled),
-            LearnerCurrentBookingStatus = mats.Sessions.Where(s => s.LearnerId == learnerId)
+            LearnerCurrentBookingStatus = mats.Sessions!.Where(s => s.LearnerId == learnerId)
                 .OrderByDescending(s => s.BookedOn).FirstOrDefault()?.Status
         };
     }

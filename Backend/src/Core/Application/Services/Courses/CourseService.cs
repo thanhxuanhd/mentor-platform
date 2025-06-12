@@ -14,7 +14,6 @@ public class CourseService(
     ICourseRepository courseRepository,
     ITagRepository tagRepository,
     ICategoryRepository categoryRepository,
-    ICourseResourceRepository courseResourceRepository,
     IWebHostEnvironment env
     ) : ICourseService
 {

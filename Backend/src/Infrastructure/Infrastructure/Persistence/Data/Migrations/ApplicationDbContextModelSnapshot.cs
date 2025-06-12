@@ -22,6 +22,29 @@ namespace Infrastructure.Persistence.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Domain.Entities.ActivityLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ActivityLogs");
+                });
+
             modelBuilder.Entity("Domain.Entities.ApplicationDocument", b =>
                 {
                     b.Property<Guid>("Id")
@@ -609,6 +632,16 @@ namespace Infrastructure.Persistence.Data.Migrations
                     b.ToTable("UserTeachingApproaches");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ActivityLog", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany("ActivityLogs")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.ApplicationDocument", b =>
                 {
                     b.HasOne("Domain.Entities.MentorApplication", "MentorApplication")
@@ -745,6 +778,24 @@ namespace Infrastructure.Persistence.Data.Migrations
                         .HasForeignKey("MentorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Mentor");
+                });
+
+            modelBuilder.Entity("Domain.Entities.MentorApplication", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "Admin")
+                        .WithMany("ReviewedMentorApplications")
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Domain.Entities.User", "Mentor")
+                        .WithMany("MentorApplications")
+                        .HasForeignKey("MentorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
 
                     b.Navigation("Mentor");
                 });
@@ -921,6 +972,8 @@ namespace Infrastructure.Persistence.Data.Migrations
 
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
+                    b.Navigation("ActivityLogs");
+
                     b.Navigation("MentorApplications");
 
                     b.Navigation("ReviewedMentorApplications");

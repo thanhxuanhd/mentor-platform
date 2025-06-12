@@ -12,8 +12,17 @@ public class ScheduleRepository(ApplicationDbContext context) : BaseRepository<S
     {
         var context = _context.Schedules.AsQueryable();
         context = context.Include(s => s.AvailableTimeSlots)!
-            .ThenInclude(ats => ats.Sessions)
+            .ThenInclude(ats => ats.Sessions)!
                 .ThenInclude(s => s.Learner);
         return await context.FirstOrDefaultAsync(s => s.MentorId == mentorId && s.WeekStartDate == weekStartDate && s.WeekEndDate == weekEndDate);
+    }
+    public async Task<IEnumerable<Schedules>> GetAllSchedulesAsync(Guid mentorId)
+    {
+        return await _context.Schedules
+            .Include(s => s.AvailableTimeSlots)!
+            .ThenInclude(ats => ats.Sessions)!
+            .ThenInclude(s => s.Learner)
+            .Where(s => s.MentorId == mentorId)
+            .ToListAsync();
     }
 }

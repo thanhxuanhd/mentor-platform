@@ -42,7 +42,7 @@ namespace Application.Helpers
 
             var provider = new FileExtensionContentTypeProvider();
 
-            if (provider.TryGetContentType(fileExtension, out string mimeType))
+            if (provider.TryGetContentType(fileExtension, out var mimeType))
             {
                 return mimeType;
             }

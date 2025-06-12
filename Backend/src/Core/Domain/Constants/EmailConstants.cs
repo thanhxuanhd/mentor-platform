@@ -1,7 +1,4 @@
-﻿using Domain.Entities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Domain.Constants
+﻿namespace Domain.Constants
 {
     public static class EmailConstants
     {
@@ -182,7 +179,7 @@ namespace Domain.Constants
         <p>Your booked sessions has been approved by the mentor.</p>
         <p>Please check in the system for more information.</p>
         <p>Mentor name: <strong>{mentorName}</strong></p>
-        <p>Time: <strong>{date:DD/MM/YYYY}: {startTime} - {endTime}</strong></p>
+        <p>Time: <strong>{date:dd/MM/yyyy}: {startTime} - {endTime}</strong></p>
         <p>We’re excited to support your learning journey!</p>
         <div class=""footer"">
             <p>This is an automated message. Please do not reply.</p>
@@ -241,7 +238,7 @@ namespace Domain.Constants
         <p>Your booked sessions has been rejected by the mentor.</p>
         <p>Please check in the system for more information.</p>
         <p>Mentor name: <strong>{mentorName}</strong></p>
-        <p>Time: <strong>{date:DD/MM/YYYY}: {startTime} - {endTime}</strong></p>
+        <p>Time: <strong>{date:dd/MM/yyyy}: {startTime} - {endTime}</strong></p>
         <p>Feel free to book a new session or contact support for assistance.</p>
         <div class=""footer"">
             <p>This is an automated message. Please do not reply.</p>

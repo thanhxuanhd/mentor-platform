@@ -8,7 +8,6 @@ using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
 using Moq;
-using System.Net;
 
 namespace Application.Test;
 
@@ -112,7 +111,7 @@ public class CategoryServiceTest
                 Id = c.Id,
                 Name = c.Name,
                 Description = c.Description,
-                Courses = c.Courses.Count(),
+                Courses = c.Courses!.Count(),
                 Status = c.Status
             }).ToList(),
             filteredCategoriesQuery.Count(),

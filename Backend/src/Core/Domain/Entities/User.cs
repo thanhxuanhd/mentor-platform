@@ -36,4 +36,5 @@ public class User : BaseEntity<Guid>
     public virtual ICollection<Course>? Courses { get; set; }
     public virtual ICollection<Schedules>? Schedules { get; set; }
     public virtual ICollection<Sessions>? Sessions { get; set; }
+    public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = null!;
 }

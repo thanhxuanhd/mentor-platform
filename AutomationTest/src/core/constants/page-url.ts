@@ -13,4 +13,5 @@ export const PAGE_ENDPOINT_URL = {
   DASHBOARD: "/dashboard",
   SESSION_BOOKING:'sessions',
   SESSION_TRACKING: 'sessions-tracking',
+  USERS: "/users",
 };

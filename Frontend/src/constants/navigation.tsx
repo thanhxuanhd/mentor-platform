@@ -26,7 +26,7 @@ export const menuItems: MenuItemProps[] = [
     key: "dashboard",
     icon: <BarChartOutlined />,
     label: "Dashboard",
-    link: "dashboard",
+    link: "",
     role: [
       applicationRole.ADMIN,
       applicationRole.LEARNER,
@@ -48,8 +48,8 @@ export const menuItems: MenuItemProps[] = [
     link: "categories",
     role: [
       applicationRole.ADMIN,
-
       applicationRole.MENTOR,
+      applicationRole.LEARNER
     ],
     isMentorApprovedRequired: true,
   },
@@ -118,5 +118,6 @@ export const menuItems: MenuItemProps[] = [
     label: "Sessions Tracking",
     link: "sessions-tracking",
     role: [applicationRole.MENTOR],
+    isMentorApprovedRequired: true,
   },
 ];

@@ -735,10 +735,10 @@ namespace Application.Test
 
             _mockUserRepository
                 .Setup(r => r.GetByIdAsync(userId, null))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User)null!);
 
             // Act
-            var result = await _userService.UploadAvatarAsync(userId, null, mockFile.Object);
+            var result = await _userService.UploadAvatarAsync(userId, null!, mockFile.Object);
 
             // Assert
             Assert.Multiple(() =>

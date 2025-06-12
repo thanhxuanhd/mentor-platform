@@ -26,7 +26,7 @@ dayjs.extend(isSameOrAfter);
 export default function AvailabilityManager() {
   const { user } = useContext(AuthContext);
   const { notification } = App.useApp();
-  
+
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   const [sessionDuration, setSessionDuration] = useState(60);
@@ -57,7 +57,7 @@ export default function AvailabilityManager() {
         weekStartDate,
         weekEndDate
       });
-      
+
       setStartTime(settings.startTime);
       setEndTime(settings.endTime);
       setSessionDuration(settings.sessionDuration);
@@ -106,7 +106,7 @@ export default function AvailabilityManager() {
   const toggleSlotAvailability = (slotId: string) => {
     const dateKey = selectedDate.format("YYYY-MM-DD");
     const targetSlot = currentSlots.find(slot => slot.id === slotId);
-    
+
     // Prevent modification of booked slots only (past slots are already filtered out)
     if (!targetSlot || targetSlot.booked) {
       return;
@@ -310,7 +310,7 @@ export default function AvailabilityManager() {
     try {
       const weekStartDate = currentWeekStart.format('YYYY-MM-DD');
       const weekEndDate = currentWeekStart.add(6, 'days').format('YYYY-MM-DD');
-        const saveRequest = convertAvailabilityToApiFormat(availability, {
+      const saveRequest = convertAvailabilityToApiFormat(availability, {
         weekStartDate,
         weekEndDate,
         startTime,
@@ -318,7 +318,7 @@ export default function AvailabilityManager() {
         sessionDuration,
         bufferTime
       }, user.timezone);
-      
+
       const response = await availabilityService.saveScheduleSettings(user.id, saveRequest);
 
       if (response.success) {
@@ -410,10 +410,10 @@ export default function AvailabilityManager() {
   const previewData = weekDays.map(day => {
     const dateKey = dayjs(day.fullDate).format("YYYY-MM-DD");
     const daySlots = availability[dateKey] || [];
-      // Separate available and booked slots for different styling
+    // Separate available and booked slots for different styling
     const availableSlots = daySlots.filter(slot => slot.available && !slot.booked);
     const bookedSlots = daySlots.filter(slot => slot.booked);
-    
+
     return {
       day: day.shortDay,
       date: day.date,
@@ -424,10 +424,15 @@ export default function AvailabilityManager() {
     };
   });
   return (
-    <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
+    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
-        <h1 className="text-2xl font-semibold">Manage Your Availability</h1>
+        <div>
+          <h1 className="text-2xl font-semibold">Manage Your Availability</h1>
+          <p className="text-slate-300 text-sm">
+            Manage your weekly available slots
+          </p>
+        </div>
         <Button
           type="primary"
           icon={<SaveOutlined />}
@@ -453,9 +458,9 @@ export default function AvailabilityManager() {
         </div>
       ) : (
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Left Sidebar */}
-          <div className="lg:col-span-3 space-y-6">
+          <div className="flex flex-col lg:col-span-3 space-y-4 gap-4">
 
             {/* Calendar Navigation */}
             <Card className="bg-slate-700 border-slate-600">
@@ -499,7 +504,7 @@ export default function AvailabilityManager() {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-9 space-y-6">
+          <div className="flex flex-col lg:col-span-9 space-y-4 gap-4">
             {/* Week Calendar */}
             <Card className="bg-slate-700 border-slate-600">
               <div className="text-white">

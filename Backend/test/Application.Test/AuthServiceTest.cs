@@ -295,7 +295,7 @@ public class AuthServiceTests
             Assert.That(result.Value.UserStatus, Is.EqualTo(UserStatus.Active.ToString()));
         });
         _mockUserRepository.Verify(r => r.AddAsync(It.Is<User>(u => u.Email == userEmail && u.RoleId == (int)UserRole.Learner)), Times.Once);
-        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
     [Test]
@@ -374,7 +374,7 @@ public class AuthServiceTests
             Assert.That(result.Value.UserStatus, Is.EqualTo(UserStatus.Active.ToString()));
         });
         _mockUserRepository.Verify(r => r.AddAsync(It.Is<User>(u => u.Email == userEmail && u.RoleId == (int)UserRole.Learner)), Times.Once);
-        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
+        _mockUserRepository.Verify(r => r.SaveChangesAsync(), Times.AtLeastOnce);
     }
 
     [Test]

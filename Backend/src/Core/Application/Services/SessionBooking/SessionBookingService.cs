@@ -170,6 +170,13 @@ public class SessionBookingService(
                 HttpStatusCode.NotFound);
         }
 
+        if (bookingSession.TimeSlot.Schedules.Mentor.Status != UserStatus.Active)
+        {
+            return Result.Failure<SessionSlotStatusResponse>(
+                "Selected slot is unavailable.",
+                HttpStatusCode.BadRequest);
+        }
+
         return await AcceptBookingInternalAsync(bookingSession, user);
     }
 
@@ -180,6 +187,7 @@ public class SessionBookingService(
         sessionBookingRepository.MentorAcceptBookingSession(bookingSession, learner.Id);
         await sessionBookingRepository.SaveChangesAsync();
 
+        var mailSent =
         await emailService.SendEmailAsync(learner.Email,
             EmailConstants.SUBJECT_MEETING_BOOKING_CONFIRMATION,
             EmailConstants.BodyMeetingBookingConfirmationEmail(learner.FullName,
@@ -223,7 +231,6 @@ public class SessionBookingService(
                 new DateTime(bookingSession.TimeSlot.Date, bookingSession.TimeSlot.EndTime),
                 bookingSession.TimeSlot.Schedules.Mentor.FullName));
 
-
         return Result.Success(bookingSession.ToSessionSlotStatusResponse(), HttpStatusCode.OK);
     }
 
@@ -253,7 +260,6 @@ public class SessionBookingService(
 
         return Result.Success(resultList, HttpStatusCode.OK);
     }
-
 
     public async Task<Result<LearnerSessionBookingResponse>> GetSessionsBookingByIdAsync(Guid id)
     {
@@ -435,7 +441,7 @@ public class SessionBookingService(
         return Result.Success(availableTimeSlots, HttpStatusCode.OK);
     }
 
-    private (DateOnly Date, TimeOnly StartTime, TimeOnly EndTime) GetLocalDateTimes(MentorAvailableTimeSlot timeSlot, string userTimeZone)
+    private static (DateOnly Date, TimeOnly StartTime, TimeOnly EndTime) GetLocalDateTimes(MentorAvailableTimeSlot timeSlot, string userTimeZone)
     {
         var startDateTime = new DateTime(date: timeSlot.Date, time: timeSlot.StartTime);
         var endDateTime = new DateTime(date: timeSlot.Date, time: timeSlot.EndTime);
