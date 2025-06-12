@@ -8,11 +8,17 @@ import { CategoryBrowsingPage } from "../../../pages/categories/category-browsin
 import categorySearchTermData from "../../test-data/category-browsing-data.json";
 import categoryData from "../../test-data/category-data.json";
 import { LoginPage } from "../../../pages/authentication/login-page";
+import { createTestCategory, deleteTestCategory } from "../../../core/utils/api-helper";
 
 test.describe("@Category Category browsing tests", () => {
   let categoryBrowsingPage: CategoryBrowsingPage;
   let categoryPage: CategoryPage;
   let loginPage: LoginPage;
+  let testCategory: any;
+
+  test.beforeAll("Setup precondition", async ({ request }) => {
+    testCategory = await createTestCategory(request);
+  });
 
   test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
     categoryBrowsingPage = new CategoryBrowsingPage(page);
@@ -61,20 +67,6 @@ test.describe("@Category Category browsing tests", () => {
     await test.step("Update selected category", async () => {
       await categoryPage.clickUpdateButton();
     });
-    await test.step("Signup to Learner account", async () => {
-      await loginPage.clickOnLogoutButton();
-      await loginPage.inputEmail(
-        categorySearchTermData.learner_role_account.email
-      );
-      await loginPage.inputPassword(
-        categorySearchTermData.learner_role_account.password
-      );
-    });
-
-    await test.step("Click Signin button", async () => {
-      await loginPage.clickSignInButton();
-      await loginPage.expectLogoutButton();
-    });
     await test.step("Verify category is updated", async () => {
       await categoryPage.goToCategoryPage();
       await categoryPage.expectMessage(categoryUniqueName.name);
@@ -88,24 +80,13 @@ test.describe("@Category Category browsing tests", () => {
       await categoryPage.clickDeleteCategoryButton();
       await categoryPage.clickConfirmDeleteButton();
       await categoryPage.expectSucessDeleteMessage();
-      await test.step("Signup to Learner account", async () => {
-        await loginPage.clickOnLogoutButton();
-        await loginPage.inputEmail(
-          categorySearchTermData.learner_role_account.email
-        );
-        await loginPage.inputPassword(
-          categorySearchTermData.learner_role_account.password
-        );
-      });
-
-      await test.step("Click Signin button", async () => {
-        await loginPage.clickSignInButton();
-        await loginPage.expectLogoutButton();
-      });
       await categoryPage.goToCategoryPage();
       const afterDeleteCategory =
         await categoryBrowsingPage.getAllCategoryValue();
       expect(afterDeleteCategory.includes(beforeDeleteCategory[0])).toBeFalsy();
     });
   });
+  test.afterAll("Clean up precondition data", async ({ request }) => {
+    await deleteTestCategory(request, testCategory.id);
+  })
 });

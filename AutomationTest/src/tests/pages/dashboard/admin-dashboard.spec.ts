@@ -14,7 +14,7 @@ test.describe("@Admin Dashboard test", () => {
     userRoleManagementPage = new UserRoleManagementPage(page);
   });
 
-  test("@SmokeTest Verify search for Admin report", async ({ page }) => {
+  test("@SmokeTestView Verify search for Admin report", async ({ page }) => {
     await test.step("Navigate to User Role Management page", async () => {
       await userRoleManagementPage.navigateToUsers();
     });

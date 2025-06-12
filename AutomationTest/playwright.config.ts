@@ -20,8 +20,8 @@ export default defineConfig({
     trace: 'retain-on-failure',
     headless: true,
     testIdAttribute: '',
-    // screenshot: 'only-on-failure',
-    // video: 'on',
+    screenshot: 'only-on-failure',
+    video: 'on',
     actionTimeout: 10000
   },
   projects: [

@@ -48,7 +48,7 @@ test.describe("@UserRoleManagement All user role management pagination function"
     });
   });
 
-  test("@SmokeTest Verify user list changes when clicking Next and Previous page buttons", async () => {
+  test("@SmokeTestView Verify user list changes when clicking Next and Previous page buttons", async () => {
     const initialPageData = await userRoleManagementPage.getAllUserText();
     await userRoleManagementPage.clickOnNextButton();
 

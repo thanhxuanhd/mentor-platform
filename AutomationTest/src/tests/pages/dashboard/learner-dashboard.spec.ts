@@ -11,7 +11,7 @@ test.describe.serial("@Learner Dashboard tests", () => {
     });
   });
 
-  test(`@SmokeTest Verify user cancel reschedule successfully`, async () => {
+  test(`@SmokeTestView Verify user cancel reschedule successfully`, async () => {
     await test.step("Click on reschedule session", async () => {
       await learnerPage.clickOnRescheduleSession();
     });
@@ -23,7 +23,7 @@ test.describe.serial("@Learner Dashboard tests", () => {
     });
   });
 
-  test(`@SmokeTest Verify user accept reschedule successfully`, async () => {
+  test(`@SmokeTestView Verify user accept reschedule successfully`, async () => {
     await test.step("Click on reschedule session", async () => {
       await learnerPage.clickOnRescheduleSession();
     });

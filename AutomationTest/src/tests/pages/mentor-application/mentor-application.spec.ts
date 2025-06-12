@@ -27,7 +27,7 @@ test.describe
     });
   });
 
-  test("@SmokeTest verify Edit button is enable when Application status = Waiting Info + Admin requests info from Mentor", async ({
+  test("@SmokeTestView verify Edit button is enable when Application status = Waiting Info + Admin requests info from Mentor", async ({
     page,
   }) => {
     //Admin requests info from Mentor
