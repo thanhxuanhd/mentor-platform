@@ -195,30 +195,32 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   //Activate/Deactivate user
-  async clickOnActivateOrDeactivateUserBtn(status: string, index: number) {
+  async clickOnActivateOrDeactivateUserBtn(status: string) {
     const statusLower = status.toLowerCase();
     let buttonLocator;
 
     if (statusLower === "deactivated" || statusLower === "pending") {
-      buttonLocator = this.DGD_ROW_USER_LOC.nth(index)
-        .locator(this.BTN_ACTIVATED_LOC)
-        .first();
+      buttonLocator = this.DGD_ROW_USER_LOC.nth(0).locator(
+        this.BTN_ACTIVATED_LOC
+      );
     } else if (statusLower === "active") {
-      buttonLocator = this.DGD_ROW_USER_LOC.nth(index)
-        .locator(this.BTN_DEACTIVATED_LOC)
-        .first();
+      buttonLocator = this.DGD_ROW_USER_LOC.nth(0).locator(
+        this.BTN_DEACTIVATED_LOC
+      );
     }
 
     await buttonLocator.waitFor({ state: "visible" });
     await buttonLocator.click();
   }
 
-  async getAllUserStatus() {
+  async getFirstUserStatus() {
     await this.waitUntilVisible(this.BTN_SEARCH_LOC);
-    const allUserStatus = await this.DGD_ROW_USER_LOC.locator(
+    const firstUserStatus = await this.DGD_ROW_USER_LOC.locator(
       this.USER_STATUS_LOC
-    ).allInnerTexts();
-    return allUserStatus;
+    )
+      .first()
+      .textContent();
+    return firstUserStatus;
   }
 
   //Filter user
@@ -264,12 +266,14 @@ export class UserRoleManagementPage extends BasePage {
   }
 
   async getAllUserText() {
+    await this.page.waitForLoadState("networkidle");
     await this.waitUntilVisible(this.LBL_USER_EMAIL_LOC.first());
     const allUser = await this.LBL_USER_EMAIL_LOC.allTextContents();
     return allUser;
   }
 
   async getAllTableRowCount() {
+    await this.page.waitForLoadState("networkidle");
     const allRow = await this.DGD_ROW_USER_LOC.count();
     return allRow;
   }
@@ -317,10 +321,7 @@ export class UserRoleManagementPage extends BasePage {
   async getNotification() {
     await this.waitUntilVisible(this.LBL_NOTIFICATION_LOC);
     const notification = await this.LBL_NOTIFICATION_LOC.textContent();
-    await this.BTN_CLOSE_NOTIFICATION.click();
-    if (notification) {
-      return notification;
-    }
+    return notification;
   }
 
   async getEditErrorMessage() {

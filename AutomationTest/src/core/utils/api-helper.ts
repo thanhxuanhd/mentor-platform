@@ -5,8 +5,10 @@ import {
   generateRandomRole,
   generateUniqueEmail,
 } from "./generate-unique-data";
+import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import { resolvePaths } from "./path-resolver";
 
 const admin = {
   email: process.env.ADMIN_USER_NAME,
@@ -34,7 +36,7 @@ export async function getAuthToken(
   });
   const responseBody = await response.json();
   return responseBody.value.token;
-};
+}
 
 //category
 export async function createTestCategory(
@@ -42,7 +44,7 @@ export async function createTestCategory(
 ): Promise<any> {
   const requestBody = {
     name: endWithTimestamp("A new Cate"),
-    status: true
+    status: true,
   };
   const token = await getAuthToken(request, admin);
   const response = await request.post(API_ENDPOINTS.CATEGORY, {
@@ -165,11 +167,10 @@ export async function requestNewPasswordFromEmail(
 
 //Application
 export async function requestCreateNewApplication(request: APIRequestContext) {
-  const filePath = path.resolve(
-    __dirname,
-    "../../tests/test-data/mentor-application/img/valid_image.png"
-  );
-  const fileBuffer = fs.readFileSync(filePath);
+  const filePaths = resolvePaths([
+    "tests/test-data/mentor-application/img/user_avatar.png",
+  ]);
+  const fileBuffer = fs.readFileSync(filePaths[0]);
 
   const token = await getAuthToken(request, mentor);
   const response = await request.post(API_ENDPOINTS.MENTOR_SUBMISSION, {
@@ -192,16 +193,18 @@ export async function requestCreateNewApplication(request: APIRequestContext) {
   return response;
 }
 
-export async function createTestLoginUser(request: APIRequestContext): Promise<any> {
+export async function createTestLoginUser(
+  request: APIRequestContext
+): Promise<any> {
   const randomEmail = generateUniqueEmail();
   const testData = {
     password: "Testing@123",
     confirmPassword: "Testing@123",
     email: randomEmail,
-    roleId: 3
-  }
+    roleId: 3,
+  };
   await request.post(`${API_ENDPOINTS.CREATE_USER}`, {
-    data: testData
+    data: testData,
   });
   return await testData;
 }

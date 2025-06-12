@@ -19,7 +19,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
 
   //Validate Fullname and Email are mandatory
   validateEditField.forEach((validate, index) => {
-    test(`Validate Fullname and Email are mandatory ${index}`, async () => {
+    test(`@Regression Validate Fullname and Email are mandatory ${index}`, async () => {
       await test.step("Click edit user button", async () => {
         await userRoleManagementPage.clickOnEditUserBtn(0);
       });
@@ -34,7 +34,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   });
 
   //Validate Email and Fullname default value
-  test("Validate Email and Fullname default value", async () => {
+  test("@Regression Validate Email and Fullname default value", async () => {
     await test.step("Click edit user button", async () => {
       await userRoleManagementPage.clickOnEditUserBtn(0);
     });
@@ -47,7 +47,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
 
   //Edit function
   editUser.forEach((user, index) => {
-    test(`@SmokeTest Validate edit user successfully ${index}`, async () => {
+    test(`@SmokeTest @Regression Validate edit user successfully ${index}`, async () => {
       await test.step("Click edit user button", async () => {
         await userRoleManagementPage.clickOnEditUserBtn(index);
       });
@@ -84,7 +84,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
   //Check error message when enter user email is exists in edit user
   test("@Flaky Verify that error message is shown when user email already exists", async () => {
     await test.step("Click edit user button", async () => {
-      await userRoleManagementPage.clickOnEditUserBtn(1); //TODO: need to make index dynamic after API is able to create fullname
+      await userRoleManagementPage.clickOnEditUserBtn(1);
     });
     await test.step("Fill edit user form with existing email", async () => {
       await userRoleManagementPage.fillEditUserForm(
@@ -96,7 +96,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
       await userRoleManagementPage.clickOnSaveBtn();
     });
     await test.step("Click edit user button", async () => {
-      await userRoleManagementPage.clickOnEditUserBtn(2); //TODO: need to make index dynamic after API is able to create fullname
+      await userRoleManagementPage.clickOnEditUserBtn(2);
     });
     await test.step("Fill edit user form with existing email", async () => {
       await userRoleManagementPage.fillEditUserForm(

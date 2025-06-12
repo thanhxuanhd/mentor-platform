@@ -14,7 +14,7 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
     });
   });
 
-  test("@SmokeTest Verify detailed user information is displayed correctly", async () => {
+  test("@Regression Verify detailed user information is displayed correctly", async () => {
     const actualUserData = await userRoleManagementPage.viewOneUser();
 
     const userData: User = {

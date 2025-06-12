@@ -1,9 +1,7 @@
 import { Locator, Page } from "@playwright/test";
 import { BasePage } from "../base-page";
-import path from "path";
 
 export class UserProfileSetupPage extends BasePage {
-  private TXT_AVATAR: Locator;
   private TXT_FULL_NAME: Locator;
   private TXT_PHONE_NUMBER: Locator;
   private TXT_BIO: Locator;
@@ -20,7 +18,6 @@ export class UserProfileSetupPage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    this.TXT_AVATAR = page.locator("#user_profile_form_profilePhotoUrl");
     this.TXT_FULL_NAME = page.locator("#user_profile_form_fullName");
     this.TXT_PHONE_NUMBER = page.locator("#user_profile_form_phoneNumber");
     this.TXT_BIO = page.locator("#user_profile_form_bio");
@@ -49,14 +46,6 @@ export class UserProfileSetupPage extends BasePage {
     };
     this.TXT_OBJECTIVE = page.locator("#user_profile_form_goal");
     this.BTN_NEXT_STEP = page.getByRole("button", { name: "Next Step" });
-  }
-
-  async selectAvatarPhoto(imgURL: string) {
-    const filePath = path.resolve(
-      __dirname,
-      `../../tests/test-data/img/${imgURL}`
-    );
-    await this.TXT_AVATAR.setInputFiles(filePath);
   }
 
   async fillInFullnameField(fullname: string) {

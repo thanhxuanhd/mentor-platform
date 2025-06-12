@@ -4,7 +4,8 @@ import { requestCreateNewUser } from "../../../core/utils/api-helper";
 import { test } from "../../../core/fixture/auth-fixture";
 import userData from "../../test-data/user-role-management.json";
 
-test.describe("@UserRoleManagement All user role management pagination function", async () => {
+test.describe
+  .serial("@UserRoleManagement All user role management pagination function", async () => {
   let userRoleManagementPage: UserRoleManagementPage;
   const itemsPerPage = userData.items_per_page;
 
@@ -21,10 +22,10 @@ test.describe("@UserRoleManagement All user role management pagination function"
   });
 
   //Pagination function
-  test("@SmokeTest Verify data changed among pages", async () => {
+  test("@SmokeTest @Regression Verify data changed among pages", async () => {
     await test.step("Verify default value of item per page is 5", async () => {
       const result = await userRoleManagementPage.getPaginationDefaultValue();
-      expect(result).toEqual("5");
+      expect(result).toEqual("5 / page");
     });
 
     await test.step("Verify that the Previous button is disable when user is in the first page", async () => {
@@ -48,7 +49,7 @@ test.describe("@UserRoleManagement All user role management pagination function"
     });
   });
 
-  test("@SmokeTestView Verify user list changes when clicking Next and Previous page buttons", async () => {
+  test("Verify user list changes when clicking Next and Previous page buttons", async () => {
     const initialPageData = await userRoleManagementPage.getAllUserText();
     await userRoleManagementPage.clickOnNextButton();
 
