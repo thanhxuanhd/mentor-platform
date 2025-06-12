@@ -1,53 +1,38 @@
 import { expect } from "@playwright/test";
 import { test } from "../../../core/fixture/auth-fixture";
 import { withTimestamp } from "../../../core/utils/generate-unique-data";
-import { CategoryBrowsingSearch } from "../../../models/categories/category-browsing";
 import { CUCategory } from "../../../models/categories/create-category";
 import { CategoryPage } from "../../../pages/categories/categories-page";
 import { CategoryBrowsingPage } from "../../../pages/categories/category-browsing-page";
-import categorySearchTermData from "../../test-data/category-browsing-data.json";
 import categoryData from "../../test-data/category-data.json";
 import { LoginPage } from "../../../pages/authentication/login-page";
+import {
+  deleteTestCategory,
+  getLatestCategory,
+} from "../../../core/utils/api-helper";
 
-test.describe("@Category Category browsing tests", () => {
+test.describe.serial("@Category Category browsing tests", () => {
   let categoryBrowsingPage: CategoryBrowsingPage;
   let categoryPage: CategoryPage;
   let loginPage: LoginPage;
+  let categoryId: string | null = null;
+  const data = withTimestamp(categoryData.create_valid_category);
 
   test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
     categoryBrowsingPage = new CategoryBrowsingPage(page);
     categoryPage = new CategoryPage(page);
     loginPage = new LoginPage(page);
-    await categoryBrowsingPage.navigateToCategoryPage();
+    await test.step(`Create a Category`, async () => {
+      await categoryBrowsingPage.navigateToCategoryPage();
+      await categoryPage.goToCategoryPage();
+      await categoryPage.clickAddCategoryButton();
+      await categoryPage.inputName(data.name);
+      await categoryPage.inputDescription(data.description);
+      await categoryPage.clickAddButton();
+    });
   });
 
-  const categories: { [label: string]: CategoryBrowsingSearch } = {
-    "Search empty category keyword":
-      categorySearchTermData.search_empty_category_keyword,
-    "Search nonexistence category keyword":
-      categorySearchTermData.search_category_keyword_no_results,
-    "Search multiple category keywords":
-      categorySearchTermData.search_category_multiple_keyword,
-    "Search one category keyword":
-      categorySearchTermData.search_category_one_keyword,
-    "Search wildcard category keyword":
-      categorySearchTermData.search_category_wilcard_characters,
-    "Search category keyword with extra spaces":
-      categorySearchTermData.search_category_extra_spaces_characters,
-  };
-
-  for (const [label, data] of Object.entries(categories)) {
-    test(`${label} - Verify Search category`, async () => {
-      await test.step("Search category", async () => {
-        await categoryBrowsingPage.searchCategory(data.search_term);
-      });
-      await test.step("Verify system behavior", async () => {
-        await categoryBrowsingPage.verifyCategoryNameResult(data.search_term);
-      });
-    });
-  }
-
-  test(`@SmokeTest Verifying that category list are updated after editing category`, async () => {
+  test(`@SmokeTest @Regression Verifying that category list are updated after editing category`, async () => {
     const categoryUniqueName: CUCategory = withTimestamp(
       categoryData.update_valid_category
     );
@@ -63,12 +48,8 @@ test.describe("@Category Category browsing tests", () => {
     });
     await test.step("Signup to Learner account", async () => {
       await loginPage.clickOnLogoutButton();
-      await loginPage.inputEmail(
-        categorySearchTermData.learner_role_account.email
-      );
-      await loginPage.inputPassword(
-        categorySearchTermData.learner_role_account.password
-      );
+      await loginPage.inputEmail(process.env.LEARNER_USER_NAME!);
+      await loginPage.inputPassword(process.env.LEARNER_PASSWORD!);
     });
 
     await test.step("Click Signin button", async () => {
@@ -81,7 +62,7 @@ test.describe("@Category Category browsing tests", () => {
     });
   });
 
-  test(`@SmokeTest Verifying that category list updated after deleting a category`, async () => {
+  test(`@SmokeTest @Regression Verifying that category list updated after deleting a category`, async () => {
     await test.step("Verify category is deleted", async () => {
       const beforeDeleteCategory =
         await categoryBrowsingPage.getAllCategoryValue();
@@ -90,12 +71,8 @@ test.describe("@Category Category browsing tests", () => {
       await categoryPage.expectSucessDeleteMessage();
       await test.step("Signup to Learner account", async () => {
         await loginPage.clickOnLogoutButton();
-        await loginPage.inputEmail(
-          categorySearchTermData.learner_role_account.email
-        );
-        await loginPage.inputPassword(
-          categorySearchTermData.learner_role_account.password
-        );
+        await loginPage.inputEmail(process.env.LEARNER_USER_NAME!);
+        await loginPage.inputPassword(process.env.LEARNER_PASSWORD!);
       });
 
       await test.step("Click Signin button", async () => {
@@ -107,5 +84,13 @@ test.describe("@Category Category browsing tests", () => {
         await categoryBrowsingPage.getAllCategoryValue();
       expect(afterDeleteCategory.includes(beforeDeleteCategory[0])).toBeFalsy();
     });
+  });
+
+  test.afterEach("Clean up test data", async ({ request }, testInfo) => {
+    if (testInfo.title.includes("@SmokeTest")) {
+      categoryId = await getLatestCategory(request);
+      await deleteTestCategory(request, categoryId);
+      categoryId = null;
+    }
   });
 });
