@@ -18,7 +18,7 @@ export default defineConfig({
   use: {
     baseURL: process.env.BASE_FE_URL,
     trace: 'retain-on-failure',
-    headless: false,
+    headless: true,
     testIdAttribute: '',
     screenshot: 'only-on-failure',
     video: 'on',
