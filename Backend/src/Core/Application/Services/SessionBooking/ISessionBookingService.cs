@@ -24,5 +24,5 @@ public interface ISessionBookingService
     Task<Result<LearnerSessionBookingResponse>> GetSessionsBookingByIdAsync(Guid id);
     Task<Result<bool>> UpdateStatusSessionAsync(Guid id, SessionBookingRequest request);
     Task<Result<bool>> UpdateRescheduleSessionAsync(Guid id, SessionUpdateRescheduleRequest request);
-    Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateOnly date);
+    Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateTime date);
 }

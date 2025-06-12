@@ -15,6 +15,7 @@ import { getAvailableTimeSlots, requestBooking } from "../../services/session-bo
 import type { BookedSession, Mentor, TimeSlot } from "../../types/SessionsType"
 import { MentorSelectionModal } from "./components/MentorSelectionModal"
 import { convertUTCDateTimeToLocal } from "../../utils/timezoneUtils"
+import { getSystemStartDate } from "../../utils/CurrentDate"
 
 export default function SessionBooking() {
   const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
@@ -50,65 +51,29 @@ export default function SessionBooking() {
     const fetchTimeSlots = async () => {
       setTimeSlotsLoading(true)
       try {
-        // Convert selected local date to UTC to query the correct UTC date range
-        const localDateStart = selectedDate.startOf("day")
-        const localDateEnd = selectedDate.endOf("day")
-
-        // Convert to UTC to get the range of UTC dates we need to query
-        const utcDateStart = localDateStart.utc()
-        const utcDateEnd = localDateEnd.utc()
-
-        // We might need to query multiple UTC dates if the local date spans across UTC dates
-        const utcDatesToQuery = []
-        let currentUtcDate = utcDateStart.startOf("day")
-
-        while (currentUtcDate.isSameOrBefore(utcDateEnd, "day")) {
-          utcDatesToQuery.push(currentUtcDate.format("YYYY-MM-DD"))
-          currentUtcDate = currentUtcDate.add(1, "day")
-        }
-
-        // Fetch time slots for all relevant UTC dates
-        const allTimeSlots = []
-        for (const utcDate of utcDatesToQuery) {
-          try {
-            const response = await getAvailableTimeSlots(selectedMentor.id, {
-              date: utcDate,
-            })
-
-            // Add the UTC date to each slot for conversion
-            const slotsWithDate = response.map((slot) => ({
-              ...slot,
-              utcDate: utcDate,
-            }))
-
-            allTimeSlots.push(...slotsWithDate)
-          } catch (error) {
-            console.error(`Failed to fetch slots for ${utcDate}:`, error)
-          }
-        }
-
-        // Convert UTC time slots to local time and filter for the selected local date
-        const localTimeSlots = allTimeSlots
+        const response = await getAvailableTimeSlots(selectedMentor.id, {
+          date: getSystemStartDate(selectedDate.toDate()) ?? "",
+        })
+        console.log('time slot', response)
+        const localTimeSlots = response
           .map((slot) => {
             const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
-              slot.utcDate,
+              slot.date,
               slot.startTime,
               slot.endTime,
               userTimezone,
             )
-
             return {
               ...slot,
               localDate,
               startTime: localStartTime,
               endTime: localEndTime,
-              originalDate: slot.utcDate,
+              originalDate: slot.date,
               originalStartTime: slot.startTime,
               originalEndTime: slot.endTime,
             }
           })
           .filter((slot) => {
-            // Only show slots that fall on the selected local date
             return slot.localDate === selectedDate.format("YYYY-MM-DD")
           })
 

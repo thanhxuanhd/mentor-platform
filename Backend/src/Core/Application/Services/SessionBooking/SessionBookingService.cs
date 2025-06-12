@@ -4,6 +4,7 @@ using Contract.Dtos.SessionBooking.Response;
 using Contract.Repositories;
 using Contract.Services;
 using Contract.Shared;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using Domain.Constants;
 using Domain.Entities;
 using Domain.Enums;
@@ -66,18 +67,23 @@ public class SessionBookingService(
         Guid learnerId,
         AvailableTimeSlotByDateListRequest request)
     {
-        var currentDateTime = DateTime.UtcNow;
+        var utcNow = DateTime.UtcNow;
+        var utcNowDate = DateOnly.FromDateTime(utcNow);
+        var utcNowTime = TimeOnly.FromDateTime(utcNow);
+        var utcDateStart = DateOnly.FromDateTime(request.Date);
+        var utcDateEnd = DateOnly.FromDateTime(request.Date.AddDays(1));
+        var utcTime = TimeOnly.FromDateTime(request.Date);
+        
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
 
         var availableTimeSlot =
             await mentorAvailableTimeSlotRepository.ToListAsync(
                 mentorAvailableTimeSlots
                     .Where(mats => mats.Schedules.MentorId == mentorId)
-                    .Where(mats => mats.Date == request.Date)
-                    .Where(mats => mats.Date > DateOnly.FromDateTime(currentDateTime) ||
-                                (mats.Date == DateOnly.FromDateTime(currentDateTime) &&
-                                 mats.StartTime > TimeOnly.FromDateTime(currentDateTime)))
-
+                    .Where(mats =>
+                        (mats.Date == utcDateStart && mats.StartTime >= utcTime) ||
+                        (mats.Date == utcDateEnd && mats.EndTime <= utcTime))
+                    .Where(mats => mats.Date > utcNowDate || (mats.Date == utcNowDate && mats.StartTime >= utcNowTime))
                     .Select(mats => SessionBookingExtensions.CreateTimeSlotByMentorAndDateListResponse(mats, learnerId)));
 
         return Result.Success(availableTimeSlot, HttpStatusCode.OK);
@@ -410,8 +416,10 @@ public class SessionBookingService(
         {
             string subject = EmailConstants.SUBJECT_SESSION_RESCHEDULED;
             var localDateTime = GetLocalDateTimes(newTimeSlot, session.Learner.Timezone); 
+            var mentorName = newTimeSlot.Schedules.Mentor.FullName;
             string body = EmailConstants.BodySessionRescheduledEmail(
                 id,
+                mentorName,
                 localDateTime.Date,
                 localDateTime.StartTime,
                 localDateTime.EndTime,
@@ -428,15 +436,26 @@ public class SessionBookingService(
     }
 
 
-    public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateOnly date)
+    public async Task<Result<List<AvailableTimeSlotResponse>>> GetAllTimeSlotByMentorAsync(Guid mentorId, DateTime date)
     {
+        var utcNow = DateTime.UtcNow;
+        var utcNowDate = DateOnly.FromDateTime(utcNow);
+        var utcNowTime = TimeOnly.FromDateTime(utcNow);
+        var utcDateStart = DateOnly.FromDateTime(date);
+        var utcDateEnd = DateOnly.FromDateTime(date.AddDays(1));
+        var utcTime = TimeOnly.FromDateTime(date);
+
         var mentorAvailableTimeSlots = mentorAvailableTimeSlotRepository.GetAvailableTimeSlot();
 
-        var query = mentorAvailableTimeSlots
-                .Where(mats => mats.Schedules.MentorId == mentorId && mats.Date == date)
-                .Select(mats => mats.ToAvailableTimeSlotResponse());
-
-        var availableTimeSlots = await mentorAvailableTimeSlotRepository.ToListAsync(query);
+        var availableTimeSlots =
+            await mentorAvailableTimeSlotRepository.ToListAsync(
+                mentorAvailableTimeSlots
+                    .Where(mats => mats.Schedules.MentorId == mentorId)
+                    .Where(mats =>
+                        (mats.Date == utcDateStart && mats.StartTime >= utcTime) ||
+                        (mats.Date == utcDateEnd && mats.EndTime <= utcTime))
+                    .Where(mats => mats.Date > utcNowDate || (mats.Date == utcNowDate && mats.StartTime >= utcNowTime))
+                .Select(mats => mats.ToAvailableTimeSlotResponse()));
 
         return Result.Success(availableTimeSlots, HttpStatusCode.OK);
     }

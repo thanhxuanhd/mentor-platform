@@ -172,7 +172,7 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
       setReason("")
 
       if (user?.id) {
-        const utcDate = dayjs(selectedSession.date).utc().format("YYYY-MM-DD")
+        const utcDate = dayjs(selectedSession.date).utc().format("YYYY-MM-DD HH:mm:ss")
         loadAvailableTimeslots(user.id, utcDate)
       }
     } else if (!visible) {
@@ -230,7 +230,7 @@ const RescheduleModal: React.FC<RescheduleModalProps> = ({
     setSelectedTimeSlotId(undefined)
 
     if (date && user?.id) {
-      const utcDate = date.utc().format("YYYY-MM-DD")
+      const utcDate = date.format("YYYY-MM-DD HH:mm:ss")
       await loadAvailableTimeslots(user.id, utcDate)
     } else {
       if (availableTimeslots.length > 0) {
@@ -485,7 +485,7 @@ const ScheduleSession = () => {
         const updatedSessions = await Promise.all(
           overtimeSessions.map(async (session) => {
             try {
-              await sessionBookingService.updateSessionStatus(session.id, "Canceled")
+              await sessionBookingService.updateSessionStatus(session.id, "Cancelled")
               return { ...session, status: "Cancelled" as const, lastStatusUpdate: now.toISOString() }
             } catch (error) {
               console.error(`Failed to cancel overtime session ${session.id}:`, error)
@@ -521,7 +521,6 @@ const ScheduleSession = () => {
       if (!response || !Array.isArray(response)) throw new Error("Invalid response format")
       const convertedSessions = response.map(convertApiResponseToSession)
       setSessions(convertedSessions)
-      console.log("Sessions loaded:", convertedSessions.length)
     } catch (error) {
       showNotification("error", `Failed to load sessions: ${error}`)
       console.error("Error loading sessions:", error)

@@ -29,6 +29,7 @@ export interface TimeSlot {
   startTime: string // This will be the local time
   endTime: string // This will be the local time
   status?: SessionStatus
+  date: string
   // Store original UTC values
   originalDate?: string
   originalStartTime?: string
