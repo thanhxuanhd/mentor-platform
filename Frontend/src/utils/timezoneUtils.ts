@@ -2,7 +2,6 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
-// Configure dayjs plugins for timezone support
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -159,7 +158,6 @@ export const convertLocalTimeSlotsToUTC = (
   return utcSlots;
 };
 
-// Updated function to handle full datetime conversion
 export const convertUTCDateTimeToLocal = (
   utcDate: string,
   utcStartTime: string,
@@ -234,6 +232,3 @@ export const convertUTCDateTimeToLocalFormat = (
     localEndTime: localEndDateTime.format("HH:mm"),
   };
 };
-
-export const convertUTCTimeSlotToLocal = convertUTCDateTimeToLocal;
-export const convertLocalTimeSlotToUTC = convertLocalDateTimeToUTC;

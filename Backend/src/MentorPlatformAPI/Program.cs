@@ -1,7 +1,6 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Data;
-using Infrastructure.Services.Authorization;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
 
@@ -39,9 +38,7 @@ builder.Services
     .AddApplicationServices()
     .AddPresentationServices()
     .AddInfrastructureServices(configuration);
-//.AddQuartzJobs();
 
-builder.Services.AddHostedService<MailReminderService>();
 #endregion
 
 var app = builder.Build();

@@ -22,7 +22,6 @@ using Infrastructure.Services.Authorization.Policies;
 using Infrastructure.Services.Logging;
 using Infrastructure.Services.Logging.Strategies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 
 namespace Infrastructure;
 
@@ -64,12 +63,13 @@ public static class ConfigureServices
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 
-        services.AddHostedService(provider =>
-        new UserProfilePhotoCleanupService(
-        provider,
-        provider.GetRequiredService<IWebHostEnvironment>(),
-        provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
+        services.AddHostedService(provider => new UserProfilePhotoCleanupService(
+            provider, 
+            provider.GetRequiredService<IWebHostEnvironment>(), 
+            provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
+        services.AddHostedService<MailReminderService>();
+        services.AddHostedService<AutoCompletedSessionService>();
 
         services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
         {
