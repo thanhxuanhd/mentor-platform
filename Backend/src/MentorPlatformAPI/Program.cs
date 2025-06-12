@@ -1,6 +1,7 @@
 using Application;
 using Infrastructure;
 using Infrastructure.Persistence.Data;
+using Infrastructure.Services.Authorization;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
 
