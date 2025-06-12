@@ -12,10 +12,10 @@ public class GetMentorDashboardResponse
 
 public class UpcomingSessionResponse
 {
-    public string? LearnerProfilePhotoUrl { get; set; } = string.Empty; // Assuming this is needed for the learner's avatar
+    public string? LearnerProfilePhotoUrl { get; set; }
     public Guid SessionId { get; set; }
     public string LearnerName { get; set; } = string.Empty;
     public DateOnly ScheduledDate { get; set; }
     public string TimeRange { get; set; } = string.Empty;
-    public string Type { get; set; } = string.Empty; // Assuming Type is a string representation of SessionType
+    public string Type { get; set; } = string.Empty;
 }

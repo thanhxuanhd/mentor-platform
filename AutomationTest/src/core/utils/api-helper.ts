@@ -1,6 +1,7 @@
 import { APIRequestContext } from "@playwright/test";
 import { API_ENDPOINTS } from "../constants/api-endpoint-url";
 import {
+  endWithTimestamp,
   generateRandomRole,
   generateUniqueEmail,
 } from "./generate-unique-data";
@@ -33,16 +34,15 @@ export async function getAuthToken(
   });
   const responseBody = await response.json();
   return responseBody.value.token;
-}
+};
 
 //category
 export async function createTestCategory(
-  request: APIRequestContext,
-  category: any
-): Promise<string> {
+  request: APIRequestContext
+): Promise<any> {
   const requestBody = {
-    name: category.name,
-    description: category.description,
+    name: endWithTimestamp("A new Cate"),
+    status: true
   };
   const token = await getAuthToken(request, admin);
   const response = await request.post(API_ENDPOINTS.CATEGORY, {
@@ -52,7 +52,7 @@ export async function createTestCategory(
     data: requestBody,
   });
   const responseBody = await response.json();
-  return responseBody.value.id;
+  return responseBody.value;
 }
 
 export async function getLatestCategory(
@@ -86,15 +86,15 @@ export async function deleteTestCategory(
 //course
 export async function createTestCourse(
   request: APIRequestContext,
-  course: any
-): Promise<string> {
+  categoryId: any
+): Promise<any> {
   const requestBody = {
-    title: course.title,
-    description: course.description,
-    categoryId: await getLatestCategory(request),
-    difficulty: course.difficulty,
-    tags: course.tags,
-    dueDate: course.dueDate,
+    title: endWithTimestamp("A New Course"),
+    description: "Description",
+    categoryId: categoryId,
+    difficulty: "Beginner",
+    tags: [],
+    dueDate: "2025-06-25T10:28:04.881Z",
   };
   const token = await getAuthToken(request, mentor);
   const response = await request.post(API_ENDPOINTS.COURSE, {
@@ -104,7 +104,7 @@ export async function createTestCourse(
     data: requestBody,
   });
   const responseBody = await response.json();
-  return responseBody.value.id;
+  return responseBody.value;
 }
 
 export async function getLatestCourse(
@@ -190,4 +190,18 @@ export async function requestCreateNewApplication(request: APIRequestContext) {
   });
 
   return response;
+}
+
+export async function createTestLoginUser(request: APIRequestContext): Promise<any> {
+  const randomEmail = generateUniqueEmail();
+  const testData = {
+    password: "Testing@123",
+    confirmPassword: "Testing@123",
+    email: randomEmail,
+    roleId: 3
+  }
+  await request.post(`${API_ENDPOINTS.CREATE_USER}`, {
+    data: testData
+  });
+  return await testData;
 }

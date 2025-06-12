@@ -7,6 +7,7 @@ export interface UserContext {
   fullName: string;
   email: string;
   role: string;
+  timezone: string;
 }
 
 export interface GetUserResponse {

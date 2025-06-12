@@ -47,7 +47,11 @@ public class CategoryServiceTest
         var paginatedList = new PaginatedList<GetCategoryResponse>(
             categories.Select(c => new GetCategoryResponse
             {
-                Id = c.Id, Name = c.Name, Description = c.Description!, Courses = c.Courses!.Count, Status = c.Status
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description!,
+                Courses = c.Courses!.Count,
+                Status = c.Status
             }).ToList(),
             categories.Count(),
             pageIndex,
@@ -104,7 +108,11 @@ public class CategoryServiceTest
         var paginatedList = new PaginatedList<GetCategoryResponse>(
             filteredCategoriesQuery.Select(c => new GetCategoryResponse
             {
-                Id = c.Id, Name = c.Name, Description = c.Description!, Courses = c.Courses!.Count, Status = c.Status
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                Courses = c.Courses!.Count(),
+                Status = c.Status
             }).ToList(),
             filteredCategoriesQuery.Count(),
             pageIndex,
@@ -116,7 +124,7 @@ public class CategoryServiceTest
                     It.Is<IQueryable<GetCategoryResponse>>(q => q.Count() == filteredCategoriesQuery.Count()), pageSize,
                     pageIndex))
             .ReturnsAsync(paginatedList);
-        
+
         // Act
         var request = new FilterCategoryRequest
         {

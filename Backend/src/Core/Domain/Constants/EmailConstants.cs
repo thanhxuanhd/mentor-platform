@@ -78,9 +78,30 @@
             MentorPlatform Team";
         }
 
-        public static string BodyMeetingBookingCancelledEmail()
+        public const string SUBJECT_MEETING_BOOKING_CANCELLED = "Your Meeting Session has been Cancelled";
+
+        public static string BodyMeetingBookingCancelledEmail(
+            string recipientName,
+            DateTime meetingDateTime,
+            string mentorName)
         {
-            return string.Empty;
+            var meetingYearMonthDay = meetingDateTime.ToString("MM-dd-yyyy HH:mm");
+
+            return $"""
+                    Hi {recipientName},
+                    </br>
+                    This email is to inform you that the following meeting session has been cancelled:
+                    </br>
+                    When: {meetingYearMonthDay}
+                    Organized by: {mentorName}
+                    </br>
+                    If you have any questions or would like to schedule another session, please contact the organizer.
+                    </br>
+                    Thank you for your understanding.
+                    </br>
+                    Best regards,
+                    Support Team
+                    """;
         }
 
         public const string SUBJECT_MEETING_BOOKING_CONFIRMATION = "Your Meeting Session is Confirmed";
@@ -108,5 +129,207 @@
                     Support Team
                     """;
         }
+
+        public const string SUBJECT_SESSION_ACCEPTED = "Booked Session Successfully";
+
+        public static string BodySessionAcceptedEmail(string mentorName, DateOnly date, TimeOnly startTime, TimeOnly endTime) => $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Booked Session Successfully</title>
+    <style>
+        body, html {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }}
+        h1 {{
+            color: #2d7a2d;
+            text-align: center;
+            font-size: 24px;
+        }}
+        p {{
+            color: #333;
+            margin: 15px 0;
+            line-height: 1.6;
+        }}
+        .footer {{
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <h1>📌 Booked Session Successfully</h1>
+        <p><strong>Sender:</strong> MentorConnect Project</p>
+        <p>Your booked sessions has been approved by the mentor.</p>
+        <p>Please check in the system for more information.</p>
+        <p>Mentor name: <strong>{mentorName}</strong></p>
+        <p>Time: <strong>{date:dd/MM/yyyy}: {startTime} - {endTime}</strong></p>
+        <p>We’re excited to support your learning journey!</p>
+        <div class=""footer"">
+            <p>This is an automated message. Please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+
+        public const string SUBJECT_SESSION_CANCELLED = "Booked Session Failed";
+
+        public static string BodySessionCancelledEmail(string mentorName, DateOnly date, TimeOnly startTime, TimeOnly endTime) => $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Booked Session Failed</title>
+    <style>
+        body, html {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 30px;
+        }}
+        h1 {{
+            color: #cc0000;
+            text-align: center;
+            font-size: 24px;
+        }}
+        p {{
+            color: #333;
+            margin: 15px 0;
+            line-height: 1.6;
+        }}
+        .footer {{
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <h1>⚠️ Booked Session Failed</h1>
+        <p><strong>Sender:</strong> MentorConnect Project</p>
+        <p>Your booked sessions has been rejected by the mentor.</p>
+        <p>Please check in the system for more information.</p>
+        <p>Mentor name: <strong>{mentorName}</strong></p>
+        <p>Time: <strong>{date:dd/MM/yyyy}: {startTime} - {endTime}</strong></p>
+        <p>Feel free to book a new session or contact support for assistance.</p>
+        <div class=""footer"">
+            <p>This is an automated message. Please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+
+        public const string SUBJECT_SESSION_RESCHEDULED = "Your Mentoring Session Has Been Rescheduled";
+
+        public static string BodySessionRescheduledEmail(Guid id, DateOnly date, TimeOnly startTime, TimeOnly endTime, string? reason) => $@"
+<!DOCTYPE html>
+<html lang=""en"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Mentoring Session Rescheduled</title>
+    <style>
+        body, html {{
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }}
+        .container {{
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }}
+        h1 {{
+            font-size: 24px;
+            text-align: center;
+            color: #3366cc;
+        }}
+        p {{
+            margin-bottom: 20px;
+            color: #555;
+        }}
+        .footer {{
+            margin-top: 20px;
+            text-align: center;
+            color: #999;
+        }}
+        .btn-container {{
+            text-align: center;
+            margin-top: 30px;
+        }}
+        .btn {{
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 5px;
+        }}
+        .accept {{
+            background-color: #28a745;
+            color: white;
+        }}
+        .cancel {{
+            background-color: #dc3545;
+            color: white;
+        }}
+    </style>
+</head>
+<body>
+    <div class=""container"">
+        <h1>Session Rescheduled</h1>
+        <p>Hello,</p>
+        <p>Your mentoring session (Request ID: <strong>{id}</strong>) has been successfully rescheduled.</p>
+        <p><strong>New Schedule:</strong> {date:MMM dd, yyyy}, from {startTime} to {endTime}</p>
+        {(string.IsNullOrWhiteSpace(reason) ? "" : $"<p><strong>Reason:</strong> {reason}</p>")}
+
+        <div class=""btn-container"">
+            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn accept"">Accept</a>
+            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn cancel"">Cancel</a>
+        </div>
+
+        <p>If you have any questions or concerns, feel free to contact our support team.</p>
+        <p>Thank you,</p>
+        <p>The Mentoring Team</p>
+        <div class=""footer"">
+            <p>This is an automated message. Please do not reply.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
     }
 }

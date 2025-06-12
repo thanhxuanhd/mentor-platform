@@ -17,7 +17,7 @@ public class UserLoggingStrategy : IEntityLoggingStrategy
         if (!IsLoggingState(entry))
             return string.Empty;
 
-        var claimName = claimUser?.FullName ?? $"{claimUser!.Id} (name not found)";
+        var claimName = claimUser is null ? claimUser?.FullName : $"{claimUser!.Id} (name not found)";
 
         var entryUser = (User)entry.Entity;
         var entryName = entryUser?.FullName ?? $"{entryUser!.Id} (name not found)";
@@ -27,29 +27,31 @@ public class UserLoggingStrategy : IEntityLoggingStrategy
         var currentRole = entry.CurrentValues.GetValue<int>("RoleId");
         var originalStatus = entry.OriginalValues.GetValue<UserStatus>("Status");
         var currentStatus = entry.CurrentValues.GetValue<UserStatus>("Status");
+        var originalActive = entry.OriginalValues.GetValue<DateOnly>("LastActive");
+        var currentActive = entry.CurrentValues.GetValue<DateOnly>("LastActive");
 
-        if (claimUser.RoleId == (int)UserRole.Admin)
+        if (originalActive != currentActive) return string.Empty;
+
+        if (claimUser is not { RoleId: (int)UserRole.Admin })
+            return originalRole != currentRole
+                ? $"User {entryName} registered to the system as role {entryRole}"
+                : $"User {entryName} modified profile";
+
+        if (entry.State == EntityState.Added)
         {
-            if (entry.State == EntityState.Added)
-            {
-                return claimUser.Id == entryUser.Id
-                    ? $"Admin {entryName} created their account."
-                    : $"Admin {claimName} created a {entryRole} account. User {entryName}.";
-            }
-
-            if (originalRole != currentRole)
-            {
-                return $"Admin {claimName} modified account {entryName} from role {originalRole} to {currentRole}.";
-            }
-
-            return originalStatus != currentStatus 
-                ? $"Admin {claimName} change the account {entryName} status from {originalStatus} to {currentStatus}." 
-                : $"Admin {claimName} modified account {entryName}";
+            return claimUser.Id == entryUser.Id
+                ? $"Admin {entryName} created their account."
+                : $"Admin {claimName} created a {entryRole} account. User {entryName}.";
         }
 
-        return originalRole != currentRole
-            ? $"User {entryName} registered to the system as role {entryRole}"
-            : $"User {entryName} modified profile";
+        if (originalRole != currentRole)
+        {
+            return $"Admin {claimName} modified account {entryName} from role {originalRole} to {currentRole}.";
+        }
+
+        return originalStatus != currentStatus 
+            ? $"Admin {claimName} change the account {entryName} status from {originalStatus} to {currentStatus}." 
+            : $"Admin {claimName} modified account {entryName}";
     }
 
     private static string? GetRoleName(int roleId)

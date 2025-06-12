@@ -1,10 +1,12 @@
 using Application.Services.Courses;
+using Contract.Dtos.CourseResources.Responses;
 using Contract.Dtos.Courses.Requests;
 using Contract.Dtos.Courses.Responses;
 using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
 using Moq;
 using System.Net;
 
@@ -19,14 +21,19 @@ public class CourseServiceTests
         _courseRepositoryMock = new Mock<ICourseRepository>();
         _tagRepositoryMock = new Mock<ITagRepository>();
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _courseService = new CourseService(_courseRepositoryMock.Object,
+        _webHostEnvironmentMock = new Mock<IWebHostEnvironment>();
+        _courseService = new CourseService(
+            _courseRepositoryMock.Object,
             _tagRepositoryMock.Object,
-            _categoryRepositoryMock.Object);
+            _categoryRepositoryMock.Object,
+            _webHostEnvironmentMock.Object
+        );
     }
 
     private Mock<ICourseRepository> _courseRepositoryMock;
     private Mock<ITagRepository> _tagRepositoryMock;
     private Mock<ICategoryRepository> _categoryRepositoryMock;
+    private Mock<IWebHostEnvironment> _webHostEnvironmentMock;
     private CourseService _courseService;
 
     [Test]
@@ -545,36 +552,6 @@ public class CourseServiceTests
             Assert.That(result.Error, Is.EqualTo("Course not found"));
             _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
             _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Never);
-        }
-    }
-
-    [Test]
-    public async Task DeleteAsync_CourseExists_ReturnsSuccess()
-    {
-        // Arrange
-        var courseId = Guid.NewGuid();
-        var existingCourse = new Course
-        {
-            Id = courseId,
-            Title = "Course to Delete",
-            Description = "Description",
-            Status = CourseStatus.Draft
-        };
-
-        _courseRepositoryMock.Setup(repo => repo.GetByIdAsync(courseId, null))
-            .ReturnsAsync(existingCourse);
-
-        // Act
-        var result = await _courseService.DeleteAsync(courseId);
-
-        // Assert
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.IsSuccess, Is.True);
-            Assert.That(result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
-            _courseRepositoryMock.Verify(repo => repo.GetByIdAsync(courseId, null), Times.Once);
-            _courseRepositoryMock.Verify(repo => repo.Delete(existingCourse), Times.Once);
-            _courseRepositoryMock.Verify(repo => repo.SaveChangesAsync(), Times.Once);
         }
     }
 

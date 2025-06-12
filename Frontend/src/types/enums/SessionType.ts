@@ -5,3 +5,4 @@ export const SessionType = {
 } as const;
 
 export type SessionTypeValue = (typeof SessionType)[keyof typeof SessionType];
+export type SessionType = "Virtual" | "OneOnOne" | "Onsite";

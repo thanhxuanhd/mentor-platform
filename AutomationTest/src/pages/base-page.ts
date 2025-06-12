@@ -58,6 +58,11 @@ export class BasePage {
     }
   }
 
+  async uploadFile(selector: string | Locator, filePath: string | string[]) {
+    const input = typeof selector === 'string' ? this.page.locator(selector) : selector;
+    await input.setInputFiles(filePath);
+  }
+
   async selectFromDropdown(
     locator: Locator,
     options: (item: string) => Locator,

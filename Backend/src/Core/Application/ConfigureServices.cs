@@ -12,6 +12,7 @@ using Application.Services.SessionBooking;
 using Application.Services.MentorApplications;
 using Application.Services.TeachingApproaches;
 using Application.Services.Users;
+using Application.Services.LearnerDashboard;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Application;
@@ -35,6 +36,7 @@ public static class ConfigureServices
         services.AddScoped<IMentorApplicationService, MentorApplicationService>();
         services.AddScoped<IActivityLogService, ActivityLogService>();
         services.AddScoped<IAdminDashboardService, AdminDashboardService>();
+        services.AddScoped<ILearnerDashboardService, LearnerDashboardService>();
 
         return services;
     }

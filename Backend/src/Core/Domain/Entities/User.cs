@@ -25,6 +25,7 @@ public class User : BaseEntity<Guid>
     public bool IsPrivate { get; set; }
     public bool IsAllowedMessage { get; set; }
     public bool IsReceiveNotification { get; set; }
+    public string Timezone { get; set; } = "Asia/Bangkok";
     public virtual ICollection<MentorApplication> MentorApplications { get; set; } = [];
     public virtual ICollection<MentorApplication> ReviewedMentorApplications { get; set; } = [];
     public virtual ICollection<UserTeachingApproach> UserTeachingApproaches { get; set; } = [];
@@ -33,7 +34,7 @@ public class User : BaseEntity<Guid>
     public virtual ICollection<UserExpertise> UserExpertises { get; set; } = [];
     public virtual Role Role { get; set; } = null!;
     public virtual ICollection<Course>? Courses { get; set; }
-    public virtual ICollection<Schedules>? Schedules { get; set; } 
+    public virtual ICollection<Schedules>? Schedules { get; set; }
     public virtual ICollection<Sessions>? Sessions { get; set; }
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; } = null!;
 }

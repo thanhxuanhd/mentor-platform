@@ -1,0 +1,86 @@
+{
+  "create_valid_resource": {
+    "title": "Resource Title",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"],
+    "description": "Resource description",
+    "expectedMessage": "The resource has been successfully created."
+  },
+  "create_oversize_file": {
+    "title": "A New Valid Course",
+    "fileName": ["tests/test-data/resource/bigsizefile.jpg"],
+    "description": "Resource description",
+    "expectedMessage": "File size must smaller than 1MB!"
+  },
+  "create_empty_title": {
+    "title": "",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"],
+    "description": "Resource description",
+    "expectedMessage": "Please enter material title"
+  },
+  "create_overlength_title": {
+    "title": "A New Valid Course asdadasdada dasd ada dassda sdad  asd ada das",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"], 
+    "description": "Resource description",
+    "expectedMessage": "Title should not exceed 50 characters"
+  },
+  "create_overlength_description": {
+    "title": "A New Valid Course",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"],
+    "description": "Resource description Resource description Resource description Resource description Resource description Resource description Resource descriptionResource description Resource description Resource description Resource description Resource description Resource description Resource description Resource description ",
+    "expectedMessage": "Description cannot exceed 300 characters"
+  },
+  "create_wrongformat": {
+    "title": "A New Valid Course",
+    "fileName": ["tests/test-data/resource/wrongformatfile.webp"],
+    "description": "Resource description",
+    "expectedMessage": "File content type is not allowed."
+  },
+  "create_empty_resource": {
+    "title": "A New Valid Course",
+    "fileName": [],
+    "description": "Resource description",
+    "expectedMessage": "Please upload a resource file"
+  },
+  "update_valid_resource": {
+    "title": "Resource Title",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"],
+    "description": "Resource description",
+    "expectedMessage": "The resource has been successfully updated."
+  },
+  "update_oversize_file": {
+    "title": "A New Valid Course",
+    "fileName": ["tests/test-data/resource/bigsizefile.jpg"],
+    "description": "Resource description",
+    "expectedMessage": "File size must smaller than 1MB!"
+  },
+  "update_empty_title": {
+    "title": "",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"],
+    "description": "Resource description",
+    "expectedMessage": "Please enter material title"
+  },
+  "update_overlength_title": {
+    "title": "A New Valid Course asdadasdada dasd ada dassda sdad  asd ada das",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"], 
+    "description": "Resource description",
+    "expectedMessage": "Title should not exceed 50 characters"
+  },
+  "update_overlength_description": {
+    "title": "A New Valid Course",
+    "fileName": ["tests/test-data/resource/imagefile.jpg"],
+    "description": "Resource description Resource description Resource description Resource description Resource description Resource description Resource descriptionResource description Resource description Resource description Resource description Resource description Resource description Resource description Resource description ",
+    "expectedMessage": "Description cannot exceed 300 characters"
+  },
+  "update_wrongformat": {
+    "title": "A New Valid Course",
+    "fileName": ["tests/test-data/resource/wrongformatfile.webp"],
+    "description": "Resource description",
+    "expectedMessage": "File content type is not allowed."
+  },
+  "update_empty_resource": {
+    "title": "A New Valid Course",
+    "fileName": [],
+    "description": "Resource description",
+    "expectedMessage": "Please upload a resource file"
+  }
+}

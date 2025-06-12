@@ -4,8 +4,13 @@ import type { CourseTableProps } from "../../../types/pages/courses/types.ts";
 import type { FC } from "react";
 import { useAuth } from "../../../hooks/useAuth.ts";
 import { applicationRole } from "../../../constants/role.ts";
-import {DeleteOutlined, FolderOutlined, EyeOutlined, EditOutlined} from "@ant-design/icons";
-import {formatDate} from "../../../utils/DateFormat.ts";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  FolderOutlined,
+} from "@ant-design/icons";
+import { formatDate } from "../../../utils/DateFormat.ts";
 
 export const CourseTable: FC<CourseTableProps> = ({
   courses,
@@ -91,7 +96,7 @@ export const CourseTable: FC<CourseTableProps> = ({
           )}
         </Space>
       ),
-    }
+    },
   ];
 
   return (
@@ -101,7 +106,7 @@ export const CourseTable: FC<CourseTableProps> = ({
       rowKey="id"
       loading={tableProps.loading}
       pagination={tableProps.pagination}
-      scroll={{x: "max-content"}}
+      scroll={{ x: "max-content" }}
     />
   );
 };

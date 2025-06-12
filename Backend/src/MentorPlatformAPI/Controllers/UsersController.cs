@@ -4,7 +4,6 @@ using Contract.Dtos.Users.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Infrastructure.Services.Authorization;
 
 namespace MentorPlatformAPI.Controllers;
 
@@ -119,6 +118,15 @@ public class UsersController(IUserService userService) : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         var result = await userService.RemoveDocumentAsync(Guid.Parse(userId!), documentUrl);
 
+        return StatusCode((int)result.StatusCode, result);
+    }
+    
+    [Authorize]
+    [HttpGet]
+    [Route("mentors")]
+    public async Task<IActionResult> GetAllMentor()
+    {
+        var result = await userService.GetAllMentorAsync();
         return StatusCode((int)result.StatusCode, result);
     }
 }

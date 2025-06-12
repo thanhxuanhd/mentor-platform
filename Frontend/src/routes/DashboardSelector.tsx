@@ -2,8 +2,8 @@ import React from "react";
 import { useAuth } from "../hooks";
 import AdminDashboard from "../pages/Dashboard/AdminDashboard";
 import { applicationRole } from "../constants/role";
-import DashboardPage from "../pages/Dashboard";
 import MentorDashboard from "../pages/Dashboard/MentorDashboard";
+import LearnerDashboard from "../pages/Dashboard/LearnerDashboard";
 
 const DashboardSelector: React.FC = () => {
   const { user } = useAuth();
@@ -14,7 +14,7 @@ const DashboardSelector: React.FC = () => {
     case applicationRole.MENTOR:
       return <MentorDashboard />;
     case applicationRole.LEARNER:
-      return <DashboardPage />;
+      return <LearnerDashboard />;
     default:
       return <div>Unauthorized or invalid role</div>;
   }

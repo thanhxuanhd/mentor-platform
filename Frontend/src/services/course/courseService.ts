@@ -142,6 +142,22 @@ export const courseService = {
   ): Promise<void> => {
     await axiosClient.delete(`/Courses/${courseId}/resources/${resourceId}`);
   },
+
+  /**
+   * Publish a course - Admin only
+   */
+  publishCourse: async (courseId: string) => {
+    const response = await axiosClient.put(`/Courses/${courseId}/publish`);
+    return response.data;
+  },
+
+  /**
+   * Archive a course - Admin or course owner
+   */
+  archiveCourse: async (courseId: string) => {
+    const response = await axiosClient.put(`/Courses/${courseId}/archive`);
+    return response.data;
+  },
 };
 
 export default courseService;

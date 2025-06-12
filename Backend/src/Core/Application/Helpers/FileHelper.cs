@@ -1,5 +1,5 @@
-﻿using Application.Exceptions;
 using Domain.Enums;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Application.Helpers
 {
@@ -28,35 +28,26 @@ namespace Application.Helpers
                 ".jpg" or ".jpeg" or ".png" => FileType.Image,
                 ".mp4" or ".avi" or ".mpeg" => FileType.Video,
                 ".mp3" or ".wav" or ".aac" => FileType.Audio,
-                _ => FileType.ExternalWebAddress
+                _ => throw new ArgumentException($"Unsupported file extension: {extension}", nameof(url))
             };
         }
 
-        public static string VerifyFileUrl(string userId, string url)
+        public static string GetFileContentTypeFromExtension(string fileExtension)
         {
-            if (string.IsNullOrWhiteSpace(url))
+            // Ensure the extension starts with a dot
+            if (!fileExtension.StartsWith("."))
             {
-                throw new ArgumentException("URL cannot be null or empty", nameof(url));
+                fileExtension = "." + fileExtension;
             }
 
-            if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (provider.TryGetContentType(fileExtension, out var mimeType))
             {
-                throw new InvalidOperationException("Invalid document URL format.");
+                return mimeType;
             }
 
-            var path = uri.IsAbsoluteUri ? uri.LocalPath : url;
-            var fileName = Path.GetFileName(path);
-
-            var segments = uri.Segments;
-
-            string userIdString = segments[2].TrimEnd('/');
-
-            if (!userId.ToString().Equals(userIdString, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new ForbiddenAccessException("You are not allowed to delete this file.");
-            }
-
-            return url;
+            return "application/octet-stream"; // default for unknown types
         }
     }
 }

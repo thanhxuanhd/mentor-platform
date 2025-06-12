@@ -18,8 +18,11 @@ import ProfileSetup from "../pages/Auth/ProfileSetup";
 import MentorApplicationPage from "../pages/MentorApplication";
 import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
+import ScheduleSession from "../pages/SessionTracking/components/ScheduledSessions";
 import AvailabilityManager from "../pages/Availability";
 import DashboardSelector from "./DashboardSelector";
+import CourseResourcesPage from "../pages/CourseResources";
+import SessionBooking from "../pages/Sessions";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -56,7 +59,7 @@ const AppRoutes = () => {
         <Route path="courses" element={<CoursesPage />} />
         <Route path="applications" element={<MentorApplicationPage />} />
         <Route path="categories" element={<CategoriesPage />} />
-        <Route path="availability" element={<AvailabilityManager />} />
+        <Route path="resources" element={<CourseResourcesPage />} />
       </Route>
 
       <Route
@@ -87,6 +90,15 @@ const AppRoutes = () => {
       </Route>
       <Route
         element={
+          <ProtectedRoute requiredRole={[applicationRole.LEARNER]}>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="sessions" element={<SessionBooking />} />
+      </Route>
+      <Route
+        element={
           <ProtectedRoute requiredRole={[applicationRole.MENTOR]}>
             <MainLayout />
           </ProtectedRoute>
@@ -106,11 +118,14 @@ const AppRoutes = () => {
       </Route>
       <Route
         element={
-          <ProtectedRoute requiredRole={[applicationRole.MENTOR]} checkMentorApplication={true}>
+          <ProtectedRoute
+            requiredRole={[applicationRole.MENTOR]}
+            checkMentorApplication={true}>
             <MainLayout />
           </ProtectedRoute>
         }
       >
+        <Route path="sessions-tracking" element={<ScheduleSession />} />
         <Route path="availability" element={<AvailabilityManager />} />
       </Route>
     </Routes>

@@ -3,7 +3,6 @@ export const FileType = {
   Video: "Video",
   Audio: "Audio",
   Image: "Image",
-  ExternalWebAddress: "External Web Address",
 } as const;
 
 export type FileType = (typeof FileType)[keyof typeof FileType];

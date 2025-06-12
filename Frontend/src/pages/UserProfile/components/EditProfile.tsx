@@ -385,7 +385,7 @@ export default function EditProfile() {
         form={form}
         layout="vertical"
         name="user_profile_form"
-        requiredMark={false}
+        requiredMark={true}
         onFinish={handleSubmit}
       >
         <h1 className="text-2xl font-semibold mb-6">Edit Your Profile</h1>
@@ -618,12 +618,15 @@ export default function EditProfile() {
                   </Button>
                 ))}
               </div>
-            </Form.Item>
-
-            <Form.Item
+            </Form.Item>            <Form.Item
               name="teachingApproach"
-              label="Teaching Approach"
-              rules={[]}
+              label="Your Teaching Approach"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select at least one teaching approach",
+                },
+              ]}
             >
               <Select
                 mode="multiple"

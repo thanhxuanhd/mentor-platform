@@ -14,6 +14,11 @@ Content-Type: application/json
  client.global.set("auth_token", response.body.value.token);
 %}
 
+### List Booking Requests
+GET {{MentorConnectAPI_HostAddress}}/api/SessionBooking/timeslots/requests/{{availableTimeSlotId}}
+Accept: application/json
+Authorization: Bearer {{auth_token}}
+
 ### Accept Booking Session
 POST {{MentorConnectAPI_HostAddress}}/api/SessionBooking/request/{{bookingId}}/accept
 Accept: application/json
