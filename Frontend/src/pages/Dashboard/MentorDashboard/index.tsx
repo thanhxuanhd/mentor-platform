@@ -3,7 +3,6 @@ import { Card, Avatar, List, App } from "antd"
 import {
   CalendarOutlined,
 } from "@ant-design/icons"
-import { formatDate } from "../../../utils/DateFormat"
 import { useEffect, useState } from "react"
 import mentorDashboardService, { type MentorDashboardResponse } from "../../../services/mentor/mentorDashboardService"
 import { useAuth } from "../../../hooks"
@@ -13,6 +12,7 @@ import MentorDashboardStatistics from "./components/MentorDashboardStatistics"
 import { type SessionTypeValue } from "../../../types/enums/SessionType"
 import { getSessionTypeIcon, getSessionTypeText, parseTimeRange } from "./utils/MentorDashboardUtils"
 import type { NotificationProps } from "../../../types/Notification"
+import { convertUTCDateTimeToLocal } from "../../../utils/timezoneUtils"
 
 interface UpcomingSession {
   id: string
@@ -73,14 +73,13 @@ export default function MentorDashboard() {
       id: session.sessionId,
       learnerName: session.learnerName,
       learnerAvatar: session.learnerProfilePhotoUrl || DefaultAvatar,
-      date: formatDate(session.scheduledDate),
+      date: session.scheduledDate,
       time,
       duration,
       sessionType: session.type as SessionTypeValue,
       topic: "Mentoring Session",
     }
   }) || []
-
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
@@ -124,8 +123,12 @@ export default function MentorDashboard() {
             locale={{ emptyText: "No upcoming sessions" }}
             renderItem={(session, index) => (
               <List.Item
-                className={`border-b border-slate-500/20 last:border-b-0 py-4 ${index === 0 && upcomingSessions.length > 0 ? 'bg-blue-500/10 border-blue-400/30 rounded-lg' : ''
+                className={`border-b border-slate-500/20 px-4 last:border-b-0 py-4 ${index === 0 && upcomingSessions.length > 0 ? 'bg-blue-500/10 border-blue-400/30 rounded-lg' : ''
                   }`}
+                style={{
+                  paddingLeft: 12,
+                  paddingRight: 12
+                }}
               >
                 <List.Item.Meta
                   avatar={
@@ -152,8 +155,8 @@ export default function MentorDashboard() {
                           {getSessionTypeIcon(session.sessionType)}
                           {getSessionTypeText(session.sessionType)}
                         </span>
-                        <span>📅 {session.date}</span>
-                        <span>🕐 {session.time}</span>
+                        <span>📅 {convertUTCDateTimeToLocal(session.date, session.time, "", user?.timezone || "utc").localDate}</span>
+                        <span>🕐 {convertUTCDateTimeToLocal(session.date, session.time, "", user?.timezone || "utc").localStartTime}</span>
                         <span>⏱️ {session.duration}</span>
                       </div>
                     </div>

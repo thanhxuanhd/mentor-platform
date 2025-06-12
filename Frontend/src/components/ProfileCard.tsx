@@ -12,7 +12,7 @@ export default function UserProfileDropdown({
 }: UserProfileDropdownProps) {
 
   return (
-    <div className="flex items-center pr-2 gap-4 px-3 rounded-lg hover:bg-slate-600/50 cursor-pointer transition-all duration-200 group">
+    <div className="flex items-center pr-2 gap-4 px-3 rounded-lg transition-all disabled duration-200 group">
       <div className="relative">
         <Avatar
           src={userDetail?.profilePhotoUrl || DefaultAvatar}

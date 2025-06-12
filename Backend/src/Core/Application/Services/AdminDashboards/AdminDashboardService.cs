@@ -17,7 +17,7 @@ public class AdminDashboardService(
 {
     public async Task<Result<AdminDashboardResponse>> GetAdminDashboardAsync()
     {
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         var startOfWeek = now.Date.AddDays(-(int)now.DayOfWeek);
         var startOfWeekDateOnly = DateOnly.FromDateTime(startOfWeek);
 
@@ -78,8 +78,8 @@ public class AdminDashboardService(
 
     public async Task<byte[]> GetMentorApplicationReportCurrentYearAsync()
     {
-        var currentYear = DateTime.Now.Year;
-        var currentMonth = DateTime.Now.Month;
+        var currentYear = DateTime.UtcNow.Year;
+        var currentMonth = DateTime.UtcNow.Month;
         var approvedApps = mentorApplicationRepository.GetAll()
             .Where(ma => ma.Status == ApplicationStatus.Approved && ma.ReviewedAt.HasValue &&
                          ma.ReviewedAt.Value.Year == currentYear)

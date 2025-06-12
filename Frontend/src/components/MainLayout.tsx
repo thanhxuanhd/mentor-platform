@@ -133,10 +133,6 @@ const MainLayout = () => {
         <Header className="flex justify-end border-b border-gray-700 top-0">
           {user &&
             <div className="flex items-center gap-3">
-              <Button type="text" icon={<BellOutlined />} className="text-white hover:bg-slate-700 relative">
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-              </Button>
-
               <UserProfileDropdown user={user} userDetail={userDetails} />
             </div>
           }

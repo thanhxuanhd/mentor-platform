@@ -11,8 +11,8 @@ public class ActivityLogService(IActivityLogRepository activityLogRepository) : 
     public async Task<Result<PaginatedList<GetActivityLogResponse>>> GetPaginatedActivityLogs(
         GetActivityLogRequest request)
     {
-        var end = request.EndDateTime ?? DateTime.Now;
-        var start = request.StartDateTime ?? DateTime.Now.Subtract(TimeSpan.FromDays(7));
+        var end = request.EndDateTime ?? DateTime.UtcNow;
+        var start = request.StartDateTime ?? DateTime.UtcNow.Subtract(TimeSpan.FromDays(7));
         var keyword = request.Keyword ?? "";
 
         var activityLogs = activityLogRepository

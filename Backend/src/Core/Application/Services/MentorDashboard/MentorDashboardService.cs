@@ -17,10 +17,10 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         {
             return Result.Failure<GetMentorDashboardResponse>("User not found", HttpStatusCode.NotFound);
         }
-        DateOnly weekStartDate;
-        var today = DateTime.Now;
+
+        var today = DateTime.UtcNow;
         int daysToSubtract = (int)today.DayOfWeek;
-        weekStartDate = DateOnly.FromDateTime(today.AddDays(-daysToSubtract));
+        var weekStartDate = DateOnly.FromDateTime(today.AddDays(-daysToSubtract));
         DateOnly weekEndDate = weekStartDate.AddDays(6);
 
         Schedules? upcomingSchedule = await scheduleRepository.GetScheduleSettingsAsync(mentorId, weekStartDate, weekEndDate);
@@ -28,32 +28,24 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         int pendingSessions = 0;
         int completedSessions = 0;
         int upcomingSessions = 0;
-        int totalCourses = mentor.Courses!.Count(c => c.Status == CourseStatus.Published);
+        int totalCourses = mentor.Courses!.Count();
         List<UpcomingSessionResponse> upcomingSessionsList = new();
         HashSet<Guid> uniqueLearners = new();
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
         DateOnly currentDate = DateOnly.FromDateTime(now);
         TimeOnly currentTime = TimeOnly.FromDateTime(now);
-
-
 
         if (upcomingSchedule != null)
         {
             foreach (var timeSlot in upcomingSchedule.AvailableTimeSlots!)
             {
+                if (timeSlot.Date < currentDate || (timeSlot.Date == currentDate && timeSlot.EndTime < currentTime))
+                {
+                    continue;
+                }
                 foreach (var session in timeSlot.Sessions!)
                 {
-                    if (session.Status == SessionStatus.Pending || session.Status == SessionStatus.Rescheduled)
-                    {
-                        pendingSessions++;
-                        continue;
-                    }
-                    else if (session.Status == SessionStatus.Completed)
-                    {
-                        completedSessions++;
-                        uniqueLearners.Add(session.LearnerId);
-                    }
-                    else if (session.Status == SessionStatus.Approved)
+                    if (session.Status == SessionStatus.Approved)
                     {
                         upcomingSessions++;
                         upcomingSessionsList.Add(new UpcomingSessionResponse
@@ -70,6 +62,33 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
             }
         }
 
+        IEnumerable<Schedules> allSchedules = await scheduleRepository.GetAllSchedulesAsync(mentorId);
+
+        foreach (var schedule in allSchedules)
+        {
+            foreach (var timeSlot in schedule.AvailableTimeSlots!)
+            {
+                foreach (var session in timeSlot.Sessions!)
+                {
+                    if (currentDate > timeSlot.Date || (currentDate == timeSlot.Date && currentTime > timeSlot.EndTime))
+                    {
+                        if (session.Status == SessionStatus.Completed)
+                        {
+                            completedSessions++;
+                            uniqueLearners.Add(session.Learner!.Id);
+                        }
+                        break;
+                    }
+
+                    if (session.Status is SessionStatus.Pending or SessionStatus.Rescheduled)
+                    {
+                        pendingSessions++;
+                    }
+                }
+            }
+        }
+
+
         var result = new GetMentorDashboardResponse
         {
             TotalPendingSessions = pendingSessions,
@@ -83,5 +102,3 @@ public class MentorDashboardService(IUserRepository userRepository, IScheduleRep
         return Result.Success(result, HttpStatusCode.OK);
     }
 }
-
-

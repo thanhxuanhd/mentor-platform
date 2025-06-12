@@ -424,7 +424,7 @@ export default function AvailabilityManager() {
     };
   });
   return (
-    <div className="min-h-screen bg-slate-800 text-white p-4 md:p-6">
+    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
       {/* Header */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
         <div>

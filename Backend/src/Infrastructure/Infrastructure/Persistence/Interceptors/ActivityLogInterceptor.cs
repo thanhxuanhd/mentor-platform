@@ -58,7 +58,7 @@ public class ActivityLogInterceptor(IHttpContextAccessor httpContextAccessor, IS
             {
                 UserId = user?.Id ?? null,
                 Action = action,
-                Timestamp = DateTime.Now
+                Timestamp = DateTime.UtcNow
             });
         }
 

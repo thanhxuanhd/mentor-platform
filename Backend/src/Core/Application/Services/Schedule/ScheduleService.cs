@@ -202,14 +202,14 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     public Dictionary<DateOnly, List<TimeSlotResponse>> GetAllDefaultTimeSlots(Schedules scheduleSettings, string userTimezone)
     {
         Dictionary<DateOnly, List<TimeSlotResponse>> allTimeSlots = new();
-        
+
         // Create TimeZoneInfo from user's timezone
         TimeZoneInfo userTimeZoneInfo;
-        try 
+        try
         {
             userTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(userTimezone);
         }
-        catch 
+        catch
         {
             // Fallback to UTC if timezone is invalid
             userTimeZoneInfo = TimeZoneInfo.Utc;
@@ -223,23 +223,22 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         for (int dayIndex = 0; dayIndex < dayCount; dayIndex++)
         {
             var currentLocalDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
-            
-            var localStartDateTime = currentLocalDate.ToDateTime(scheduleSettings.StartHour);
-            DateTime localEndDateTime;
 
-            localEndDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
+            var localStartDateTime = currentLocalDate.ToDateTime(scheduleSettings.StartHour);
+
+            var localEndDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
                 ? currentLocalDate.AddDays(1).ToDateTime(scheduleSettings.EndHour)
                 : currentLocalDate.ToDateTime(scheduleSettings.EndHour);
-            
+
             var localSlotDateTime = localStartDateTime;
-            
+
             while (localSlotDateTime.AddMinutes(scheduleSettings.SessionDuration) <= localEndDateTime)
             {
                 var localEndSlotTime = localSlotDateTime.AddMinutes(scheduleSettings.SessionDuration);
-                
+
                 var utcSlotDateTime = TimeZoneInfo.ConvertTimeToUtc(localSlotDateTime, userTimeZoneInfo);
                 var utcEndSlotTime = TimeZoneInfo.ConvertTimeToUtc(localEndSlotTime, userTimeZoneInfo);
-                
+
                 if (utcSlotDateTime > utcNow)
                 {
                     var timeSlot = new TimeSlotResponse
@@ -252,12 +251,12 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
                     };
 
                     var utcDate = DateOnly.FromDateTime(utcSlotDateTime);
-                    
+
                     if (!allTimeSlots.ContainsKey(utcDate))
                     {
                         allTimeSlots[utcDate] = new List<TimeSlotResponse>();
                     }
-                    
+
                     allTimeSlots[utcDate].Add(timeSlot);
                 }
 

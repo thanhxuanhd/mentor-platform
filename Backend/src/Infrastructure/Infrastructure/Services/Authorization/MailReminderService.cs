@@ -1,12 +1,14 @@
-﻿using Contract.Repositories;
+﻿using System.Net;
+using System.Net.Mail;
+using Contract.Repositories;
 using Domain.Enums;
 using Infrastructure.Persistence.Settings;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using System.Net.Mail;
-using System.Net;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace Infrastructure.Services.Authorization;
 
 public class MailReminderService : BackgroundService
 {

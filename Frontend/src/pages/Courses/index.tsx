@@ -200,8 +200,13 @@ const Page: React.FC = () => {
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg container p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">Course Management</h1>
+      <div className="flex justify-between items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold">Courses Management</h1>
+          <p className="text-slate-300 text-sm">
+            Manage your courses in the system
+          </p>
+        </div>
         {user?.role === applicationRole.MENTOR && (
           <button
             onClick={() => {
