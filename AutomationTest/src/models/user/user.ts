@@ -19,6 +19,7 @@ export interface SignUpUser {
 }
 
 export interface UserProfileCreation {
+  avatar?: string;
   fullname: string;
   phoneNumber: string;
   bio?: string;
@@ -44,5 +45,3 @@ export interface UserPreferencesSetup {
   isReceiveNotification: boolean;
   expectedMessage: string;
 }
-
-

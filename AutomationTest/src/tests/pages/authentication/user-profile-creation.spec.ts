@@ -15,22 +15,22 @@ test.describe("@Registration Sign Up test", () => {
   test.beforeEach(async ({ page }) => {
     signUpPage = new SignUpPage(page);
     profileSetupPage = new UserProfileSetupPage(page);
-
     await fillAndSubmitRegistrationStep1(signUpPage, validSignUpData);
   });
 
   const userData: { [label: string]: UserProfileCreation } = {
-    "@SmokeTest Verify create user profile successfully":
+    "@SmokeTest @Regression Verify create user profile successfully":
       profileSetupData.valid_case,
-    "Empty fullname": profileSetupData.empty_fullname,
-    "Empty phone number": profileSetupData.empty_phone_number,
-    "Incorrect phone number format": profileSetupData.wrong_phone_number_format,
-    "Empty availability": profileSetupData.empty_availability,
-    "Verify user can search for expertise value":
+    "@Regression Empty fullname": profileSetupData.empty_fullname,
+    "@Regression Empty phone number": profileSetupData.empty_phone_number,
+    "@Regression Incorrect phone number format":
+      profileSetupData.wrong_phone_number_format,
+    "@Regression Empty availability": profileSetupData.empty_availability,
+    "@Regression Verify user can search for expertise value":
       profileSetupData.search_expertise,
-    "Verify display error message when skills exceed 200 characters":
+    "@Regression Verify display error message when skills exceed 200 characters":
       profileSetupData.professional_skills_exceed_200_characters,
-    "Verify display error message when experience exceed 200 characters":
+    "@Regression Verify display error message when experience exceed 200 characters":
       profileSetupData.industry_experience_exceed_200_characters,
   };
 

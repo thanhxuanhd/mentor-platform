@@ -1,5 +1,6 @@
 {
   "valid_case": {
+    "avatar": "tests/test-data/mentor-application/img/user_avatar.png",
     "fullname": "Le Kim Cuong",
     "phoneNumber": "0912345678",
     "bio": "My name is Cuong",
@@ -23,24 +24,6 @@
     "phoneNumber": "0912345678",
     "availbility": [2, 3],
     "expectedMessage": "Full name is required and cannot be all white space!"
-  },
-  "wrong_format_fullname": {
-    "fullname": "18237!!!!",
-    "phoneNumber": "0912345678",
-    "availbility": [2, 3],
-    "expectedMessage": "Full name can only contain letters and spaces!"
-  },
-  "invalid_image_format": {
-    "fullname": "Le Kim Cuong",
-    "phoneNumber": "0912345678",
-    "availbility": [2, 3],
-    "expectedMessage": "File format not allowed!"
-  },
-  "image_over_1MB": {
-    "fullname": "Le Kim Cuong",
-    "phoneNumber": "0912345678",
-    "availbility": [2, 3],
-    "expectedMessage": "Image must smaller than 1MB!"
   },
   "empty_phone_number": {
     "fullname": "Le Kim Cuong",

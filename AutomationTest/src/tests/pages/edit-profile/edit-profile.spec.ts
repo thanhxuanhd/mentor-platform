@@ -11,16 +11,16 @@ test.describe("@Edit profile test", () => {
   });
 
   const userData: { [label: string]: EditUserProfileInterface } = {
-    "@SmokeTest Verify update user profile successfully":
+    "@SmokeTest @Regression Verify update user profile successfully":
       editUserProfileData.valid_case,
-    "Empty fullname": editUserProfileData.empty_fullname,
-    "Empty phone number": editUserProfileData.empty_phone_number,
-    "Empty availability": editUserProfileData.empty_availability,
-    "Incorrect phone number format":
+    "@Regression Empty fullname": editUserProfileData.empty_fullname,
+    "@Regression Empty phone number": editUserProfileData.empty_phone_number,
+    "@Regression Empty availability": editUserProfileData.empty_availability,
+    "@Regression Incorrect phone number format":
       editUserProfileData.wrong_phone_number_format,
-    "Verify display error message when skills exceed 200 characters":
+    "@Regression Verify display error message when skills exceed 200 characters":
       editUserProfileData.professional_skills_exceed_200_characters,
-    "Verify display error message when experience exceed 200 characters":
+    "@Regression Verify display error message when experience exceed 200 characters":
       editUserProfileData.industry_experience_exceed_200_characters,
   };
 
