@@ -949,7 +949,7 @@ public class MentorApplicationServiceTestsGetAll
         // Arrange
         var adminId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
-        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
+        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "ApprovedApplications" };
         _mockMentorApplicationRepository.Setup(repo => repo.GetMentorApplicationByIdAsync(applicationId))
             .ReturnsAsync(default(MentorApplication));
 
@@ -975,7 +975,7 @@ public class MentorApplicationServiceTestsGetAll
         // Arrange
         var adminId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
-        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
+        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "ApprovedApplications" };
         var application = new MentorApplication
         {
             Id = applicationId,
@@ -1007,7 +1007,7 @@ public class MentorApplicationServiceTestsGetAll
         // Arrange
         var adminId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
-        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
+        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "ApprovedApplications" };
         var application = new MentorApplication
         {
             Id = applicationId,
@@ -1042,7 +1042,7 @@ public class MentorApplicationServiceTestsGetAll
         // Arrange
         var adminId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
-        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "Approved" };
+        var request = new UpdateApplicationStatusRequest { Status = ApplicationStatus.Approved, Note = "ApprovedApplications" };
         var application = new MentorApplication
         {
             Id = applicationId,

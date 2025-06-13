@@ -112,5 +112,20 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(b => b.Learner)
             .HasForeignKey(b => b.LearnerId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(u => u.ConversationParticipants)
+            .WithOne(cp => cp.User)
+            .HasForeignKey(cp => cp.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(u => u.Messages)
+            .WithOne(m => m.Sender)
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(u => u.Notifications)
+            .WithOne(n => n.User)
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

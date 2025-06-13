@@ -1,6 +1,6 @@
-﻿using Domain.Abstractions;
+﻿using Contract.Shared;
+using Domain.Abstractions;
 using System.Linq.Expressions;
-using Contract.Shared;
 
 namespace Contract.Repositories;
 
@@ -18,4 +18,6 @@ public interface IBaseRepository<TEntity, TPrimaryKey> where TEntity : BaseEntit
         int pageSize = 5, int pageIndex = 1);
 
     Task<int> CountAsync(IQueryable<TEntity> queryable);
+    Task<PaginatedList<TResponse>> ToPaginatedListSkipAsync<TResponse>(IQueryable<TResponse> queryable, int skip,
+        int pageSize = 5, int pageIndex = 1);
 }

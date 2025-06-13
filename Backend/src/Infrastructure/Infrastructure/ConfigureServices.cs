@@ -62,10 +62,13 @@ public static class ConfigureServices
         services.AddScoped<IMentorApplicationRepository, MentorApplicationRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
+        services.AddScoped<IConversationRepository, ConversationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IConversationParticipantRepository, ConversationParticipantRepository>();
 
         services.AddHostedService(provider => new UserProfilePhotoCleanupService(
-            provider, 
-            provider.GetRequiredService<IWebHostEnvironment>(), 
+            provider,
+            provider.GetRequiredService<IWebHostEnvironment>(),
             provider.GetRequiredService<ILogger<UserProfilePhotoCleanupService>>()
         ));
         services.AddHostedService<MailReminderService>();
@@ -96,6 +99,22 @@ public static class ConfigureServices
                 ValidAudience = jwtSettings.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(
                     Encoding.UTF8.GetBytes(jwtSettings.Secret!))
+            };
+
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    var path = context.HttpContext.Request.Path;
+
+                    if (!string.IsNullOrEmpty(accessToken) &&
+                        path.StartsWithSegments("/message-hub"))
+                    {
+                        context.Token = accessToken;
+                    }
+                    return Task.CompletedTask;
+                }
             };
         });
 

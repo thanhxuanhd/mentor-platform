@@ -9,6 +9,7 @@ import {
   FolderOpenOutlined,
   HddOutlined,
   TeamOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
 
@@ -35,6 +36,17 @@ export const menuItems: MenuItemProps[] = [
     isMentorApprovedRequired: true,
   },
   {
+    key: "messages",
+    icon: <MessageOutlined />,
+    label: "Messages",
+    link: "messages",
+    role: [
+      applicationRole.ADMIN,
+      applicationRole.LEARNER,
+      applicationRole.MENTOR,
+    ],
+  },
+  {
     key: "users",
     icon: <UserOutlined />,
     label: "Users",
@@ -49,7 +61,7 @@ export const menuItems: MenuItemProps[] = [
     role: [
       applicationRole.ADMIN,
       applicationRole.MENTOR,
-      applicationRole.LEARNER
+      applicationRole.LEARNER,
     ],
     isMentorApprovedRequired: true,
   },

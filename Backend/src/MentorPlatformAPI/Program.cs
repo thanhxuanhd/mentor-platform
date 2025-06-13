@@ -3,6 +3,7 @@ using Infrastructure;
 using Infrastructure.Persistence.Data;
 using MentorPlatformAPI;
 using MentorPlatformAPI.Extensions;
+using MentorPlatformAPI.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,8 +56,11 @@ app.UseCors("AllowedOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseWebSockets();
 
 app.MapControllers();
+
+app.MapHub<MessageHub>("/message-hub");
 
 app.UseStaticFiles();
 

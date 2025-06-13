@@ -20,6 +20,7 @@ import MentorApplicationForm from "../pages/Auth/components/MentorApplication";
 import MentorStatusTrackingPage from "../pages/MentorStatusTracking";
 import ScheduleSession from "../pages/SessionTracking/components/ScheduledSessions";
 import AvailabilityManager from "../pages/Availability";
+import MessagingLayout from "../pages/Messaging/MessagingLayout";
 import DashboardSelector from "./DashboardSelector";
 import CourseResourcesPage from "../pages/CourseResources";
 import SessionBooking from "../pages/Sessions";
@@ -75,6 +76,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
+        <Route path="messages" element={<MessagingLayout />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/edit" element={<EditProfile />} />
       </Route>
@@ -120,7 +122,8 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute
             requiredRole={[applicationRole.MENTOR]}
-            checkMentorApplication={true}>
+            checkMentorApplication={true}
+          >
             <MainLayout />
           </ProtectedRoute>
         }
@@ -129,8 +132,6 @@ const AppRoutes = () => {
         <Route path="availability" element={<AvailabilityManager />} />
       </Route>
     </Routes>
-
-
   );
 };
 

@@ -1,68 +1,73 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button, App } from "antd"
-import type { Dayjs } from "dayjs"
-import dayjs from "dayjs"
-import { CalendarComponent } from "./components/Calendar"
-import type { NotificationProps } from "../../types/Notification"
-import BookedSessionsModal from "./components/BookedSessionsModal"
-import MentorProfile from "./components/MentorProfile"
-import type { SessionType } from "../../types/enums/SessionType"
-import SessionTypeSelector from "./components/SessionTypeSelector"
-import TimeSlotSelector from "./components/TimeSlotSelector"
-import { getAvailableTimeSlots, requestBooking } from "../../services/session-booking/sessionBookingService"
-import type { BookedSession, Mentor, TimeSlot } from "../../types/SessionsType"
-import { MentorSelectionModal } from "./components/MentorSelectionModal"
-import { convertUTCDateTimeToLocal } from "../../utils/timezoneUtils"
-import { getSystemStartDate } from "../../utils/CurrentDate"
+import { useEffect, useState } from "react";
+import { Button, App } from "antd";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
+import { CalendarComponent } from "./components/Calendar";
+import type { NotificationProps } from "../../types/Notification";
+import BookedSessionsModal from "./components/BookedSessionsModal";
+import MentorProfile from "./components/MentorProfile";
+import type { SessionType } from "../../types/enums/SessionType";
+import SessionTypeSelector from "./components/SessionTypeSelector";
+import TimeSlotSelector from "./components/TimeSlotSelector";
+import {
+  getAvailableTimeSlots,
+  requestBooking,
+} from "../../services/session-booking/sessionBookingService";
+import type { BookedSession, Mentor, TimeSlot } from "../../types/SessionsType";
+import { MentorSelectionModal } from "./components/MentorSelectionModal";
+import { convertUTCDateTimeToLocal } from "../../utils/timezoneUtils";
+import { getSystemStartDate } from "../../utils/CurrentDate";
 
 export default function SessionBooking() {
-  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null)
-  const [selectedTime, setSelectedTime] = useState<string>("")
-  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string>("")
-  const [selectedSessionType, setSelectedSessionType] = useState<SessionType | null>(null)
-  const [showMentorModal, setShowMentorModal] = useState(false)
-  const [showBookedSessionsModal, setShowBookedSessionsModal] = useState(false)
-  const [currentMonth, setCurrentMonth] = useState(dayjs())
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([])
-  const [timeSlotsLoading, setTimeSlotsLoading] = useState(false)
-  const sessionTypes: SessionType[] = ["Virtual", "OneOnOne", "Onsite"]
-  const [notify, setNotify] = useState<NotificationProps | null>(null)
-  const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([])
-  const { notification } = App.useApp()
-  const [userTimezone, setUserTimezone] = useState<string>("")
+  const [selectedMentor, setSelectedMentor] = useState<Mentor | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string>("");
+  const [selectedSessionType, setSelectedSessionType] =
+    useState<SessionType | null>(null);
+  const [showMentorModal, setShowMentorModal] = useState(false);
+  const [showBookedSessionsModal, setShowBookedSessionsModal] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(dayjs());
+  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+  const [timeSlotsLoading, setTimeSlotsLoading] = useState(false);
+  const sessionTypes: SessionType[] = ["Virtual", "OneOnOne", "Onsite"];
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const [bookedSessions, setBookedSessions] = useState<BookedSession[]>([]);
+  const { notification } = App.useApp();
+  const [userTimezone, setUserTimezone] = useState<string>("");
 
   useEffect(() => {
     // Get user's timezone
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-    setUserTimezone(timezone)
-  }, [])
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    setUserTimezone(timezone);
+  }, []);
 
   useEffect(() => {
     if (!selectedMentor || !selectedDate || !userTimezone) {
-      setTimeSlots([])
-      setSelectedTime("")
-      setSelectedTimeSlotId("")
-      return
+      setTimeSlots([]);
+      setSelectedTime("");
+      setSelectedTimeSlotId("");
+      return;
     }
 
     const fetchTimeSlots = async () => {
-      setTimeSlotsLoading(true)
+      setTimeSlotsLoading(true);
       try {
         const response = await getAvailableTimeSlots(selectedMentor.id, {
           date: getSystemStartDate(selectedDate.toDate()) ?? "",
-        })
-        console.log('time slot', response)
+        });
+        console.log("time slot", response);
         const localTimeSlots = response
           .map((slot) => {
-            const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
-              slot.date,
-              slot.startTime,
-              slot.endTime,
-              userTimezone,
-            )
+            const { localDate, localStartTime, localEndTime } =
+              convertUTCDateTimeToLocal(
+                slot.date,
+                slot.startTime,
+                slot.endTime,
+                userTimezone,
+              );
             return {
               ...slot,
               localDate,
@@ -71,53 +76,53 @@ export default function SessionBooking() {
               originalDate: slot.date,
               originalStartTime: slot.startTime,
               originalEndTime: slot.endTime,
-            }
+            };
           })
           .filter((slot) => {
-            return slot.localDate === selectedDate.format("YYYY-MM-DD")
-          })
+            return slot.localDate === selectedDate.format("YYYY-MM-DD");
+          });
 
-        setTimeSlots(localTimeSlots)
+        setTimeSlots(localTimeSlots);
       } catch (error) {
         setNotify({
           type: "error",
           message: "Error",
           description: "Failed to load time slots. Please try again.",
-        })
-        setTimeSlots([])
+        });
+        setTimeSlots([]);
       } finally {
-        setTimeSlotsLoading(false)
+        setTimeSlotsLoading(false);
       }
-    }
+    };
 
-    fetchTimeSlots()
-  }, [selectedMentor, selectedDate, userTimezone])
+    fetchTimeSlots();
+  }, [selectedMentor, selectedDate, userTimezone]);
 
   const handleDateSelect = (date: Dayjs) => {
-    setSelectedDate(date)
-    setSelectedTime("")
-    setSelectedTimeSlotId("")
-  }
+    setSelectedDate(date);
+    setSelectedTime("");
+    setSelectedTimeSlotId("");
+  };
 
   const handleMonthChange = (month: Dayjs) => {
-    setCurrentMonth(month)
-  }
+    setCurrentMonth(month);
+  };
 
   const handleTimeSelect = (time: string, id: string) => {
-    setSelectedTime(time)
-    setSelectedTimeSlotId(id)
-  }
+    setSelectedTime(time);
+    setSelectedTimeSlotId(id);
+  };
 
   const handleSessionTypeSelect = (type: SessionType) => {
-    setSelectedSessionType(type)
-  }
+    setSelectedSessionType(type);
+  };
 
   const handleMentorSelect = (mentor: Mentor) => {
-    setSelectedMentor(mentor)
-    setShowMentorModal(false)
-    setSelectedTime("")
-    setSelectedTimeSlotId("")
-  }
+    setSelectedMentor(mentor);
+    setShowMentorModal(false);
+    setSelectedTime("");
+    setSelectedTimeSlotId("");
+  };
 
   useEffect(() => {
     if (notify) {
@@ -125,29 +130,37 @@ export default function SessionBooking() {
         message: notify.message,
         description: notify.description,
         placement: "topRight",
-      })
-      setNotify(null)
+      });
+      setNotify(null);
     }
-  }, [notify, notification])
+  }, [notify, notification]);
 
   const handleConfirmBooking = async () => {
-    if (!selectedDate || !selectedTime || !selectedSessionType || !selectedMentor || !selectedTimeSlotId) return
+    if (
+      !selectedDate ||
+      !selectedTime ||
+      !selectedSessionType ||
+      !selectedMentor ||
+      !selectedTimeSlotId
+    )
+      return;
 
     try {
       const bookingRequest = {
         timeSlotId: selectedTimeSlotId,
         sessionType: selectedSessionType,
-      }
+      };
 
-      const response = await requestBooking(bookingRequest)
+      const response = await requestBooking(bookingRequest);
 
       // Convert the response times to local time for display
-      const { localDate, localStartTime, localEndTime } = convertUTCDateTimeToLocal(
-        response.day,
-        response.startTime,
-        response.endTime,
-        userTimezone,
-      )
+      const { localDate, localStartTime, localEndTime } =
+        convertUTCDateTimeToLocal(
+          response.day,
+          response.startTime,
+          response.endTime,
+          userTimezone,
+        );
 
       const newSession: BookedSession = {
         id: response.sessionId,
@@ -160,35 +173,42 @@ export default function SessionBooking() {
         originalDate: response.day,
         originalStartTime: response.startTime,
         originalEndTime: response.endTime,
-      }
+      };
 
-      setBookedSessions((prev) => [newSession, ...prev])
+      setBookedSessions((prev) => [newSession, ...prev]);
 
-      setSelectedDate(null)
-      setSelectedTime("")
-      setSelectedTimeSlotId("")
-      setSelectedSessionType(null)
-      setSelectedMentor(null)
+      setSelectedDate(null);
+      setSelectedTime("");
+      setSelectedTimeSlotId("");
+      setSelectedSessionType(null);
+      setSelectedMentor(null);
 
       setNotify({
         type: "success",
         message: "Success",
-        description: "Book successfully! Please wait mentor to accept your booking.",
-      })
+        description:
+          "Book successfully! Please wait mentor to accept your booking.",
+      });
     } catch (error: any) {
       setNotify({
         type: "error",
         message: "Booking Failed",
-        description: error.response.data.error || "An error occurred while booking the session. Please try again.",
-      })
+        description:
+          error.response.data.error ||
+          "An error occurred while booking the session. Please try again.",
+      });
     }
-  }
+  };
 
   const handleCancelSession = (sessionId: string) => {
     setBookedSessions((prev) =>
-      prev.map((session) => (session.id === sessionId ? { ...session, status: "Cancelled" as const } : session)),
-    )
-  }
+      prev.map((session) =>
+        session.id === sessionId
+          ? { ...session, status: "Cancelled" as const }
+          : session,
+      ),
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-800 text-white p-6">
@@ -201,13 +221,6 @@ export default function SessionBooking() {
         <MentorProfile
           selectedMentor={selectedMentor}
           onSelectMentor={() => setShowMentorModal(true)}
-          onMessage={() => {
-            setNotify({
-              type: "info",
-              message: "Message",
-              description: "Messaging functionality not implemented yet.",
-            })
-          }}
           onViewSessions={() => setShowBookedSessionsModal(true)}
         />
 
@@ -237,7 +250,13 @@ export default function SessionBooking() {
             size="large"
             className="w-full h-14 bg-orange-500 border-orange-500 hover:bg-orange-600 text-lg font-medium"
             onClick={handleConfirmBooking}
-            disabled={!selectedDate || !selectedTime || !selectedSessionType || !selectedMentor || !selectedTimeSlotId}
+            disabled={
+              !selectedDate ||
+              !selectedTime ||
+              !selectedSessionType ||
+              !selectedMentor ||
+              !selectedTimeSlotId
+            }
           >
             Confirm booking
           </Button>
@@ -257,5 +276,5 @@ export default function SessionBooking() {
         />
       </div>
     </div>
-  )
+  );
 }

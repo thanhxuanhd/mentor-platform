@@ -26,6 +26,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<MentorApplication> MentorApplications { get; set; }
     public DbSet<ApplicationDocument> ApplicationDocuments { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
