@@ -79,4 +79,8 @@ public class BaseRepository<TEntity, TPrimaryKey>(ApplicationDbContext context) 
         _context.Set<TEntity>().Remove(entity);
     }
 
+    public async Task<int> CountAsync(IQueryable<TEntity> queryable)
+    {
+        return await queryable.CountAsync();
+    }
 }

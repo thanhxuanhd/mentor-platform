@@ -21,6 +21,7 @@ import type {
   UpdateProfileRequest,
   UserProfile as UserProfileType,
 } from "../../../types/UserTypes"; // Explicitly used now
+import { useUser } from "../../../hooks/useUser";
 
 const { TextArea } = Input;
 
@@ -96,6 +97,7 @@ export default function EditProfile() {
 
   const { user } = useContext(AuthContext);
   const token = localStorage.getItem("token");
+  const { setProfileUpdated } = useUser();
 
   useEffect(() => {
     const fetchDropdownData = async () => {
@@ -189,7 +191,7 @@ export default function EditProfile() {
           objective: userProfileData.goal,
           communicationMethod:
             reverseCommunicationMethodMap[
-              userProfileData.preferredCommunicationMethod
+            userProfileData.preferredCommunicationMethod
             ] || "video",
           availability: userProfileData.availabilityIds || [],
           teachingApproach: userProfileData.teachingApproachIds || [],
@@ -361,7 +363,7 @@ export default function EditProfile() {
         message: "Success",
         description: "Profile updated successfully!",
       });
-
+      setProfileUpdated(true)
       setTimeout(() => {
         navigate("/profile");
       }, 1000);
@@ -378,12 +380,12 @@ export default function EditProfile() {
   };
 
   return (
-    <div className="text-white p-6 rounded-xl max-w-3xl my-10 mx-auto shadow-lg bg-gray-800">
+    <div className="text-white p-6 rounded-xl max-w-4xl mx-auto shadow-lg bg-gray-800">
       <Form
         form={form}
         layout="vertical"
         name="user_profile_form"
-        requiredMark={false}
+        requiredMark={true}
         onFinish={handleSubmit}
       >
         <h1 className="text-2xl font-semibold mb-6">Edit Your Profile</h1>
@@ -470,8 +472,8 @@ export default function EditProfile() {
                             value && value.trim().length > 0
                               ? Promise.resolve()
                               : Promise.reject(
-                                  "Full name is required and cannot be all white space!",
-                                ),
+                                "Full name is required and cannot be all white space!",
+                              ),
                         },
                       ]}
                     >
@@ -616,12 +618,15 @@ export default function EditProfile() {
                   </Button>
                 ))}
               </div>
-            </Form.Item>
-
-            <Form.Item
+            </Form.Item>            <Form.Item
               name="teachingApproach"
-              label="Teaching Approach"
-              rules={[]}
+              label="Your Teaching Approach"
+              rules={[
+                {
+                  required: true,
+                  message: "Please select at least one teaching approach",
+                },
+              ]}
             >
               <Select
                 mode="multiple"

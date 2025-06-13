@@ -7,18 +7,17 @@ import {
   UserOutlined,
 } from "@ant-design/icons/lib/icons";
 import {
-  Upload,
-  Button,
-  Input,
-  Form,
-  Select,
-  Radio,
   App,
+  Button,
+  Form,
   type FormInstance,
+  Input,
+  Radio,
+  Select,
+  Upload,
 } from "antd";
 import type { CheckboxGroupProps } from "antd/es/checkbox";
 import type { RcFile, UploadChangeParam, UploadFile } from "antd/es/upload";
-const { TextArea } = Input;
 import { useCallback, useEffect, useState } from "react";
 import type { NotificationProps } from "../../../types/Notification";
 import { userService } from "../../../services/user/userService";
@@ -27,6 +26,8 @@ import { axiosClient } from "../../../services/apiClient";
 import type { Expertise } from "../../../types/ExpertiseType";
 import type { AvailabilityType } from "../../../types/AvailabilityType";
 import { CommunicationMethod } from "../../../types/enums/CommunicationMethod";
+
+const { TextArea } = Input;
 // Populate this as needed
 const communicationMethodOptions: CheckboxGroupProps<CommunicationMethod>["options"] =
   [
@@ -247,7 +248,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
         form={form}
         layout="vertical"
         name="user_profile_form"
-        requiredMark={false}
+        requiredMark={true}
         onValuesChange={handleFormChange}
       >
         <h1 className="text-2xl font-semibold mb-6">
@@ -322,6 +323,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                       message: "Full name can only contain letters and spaces!",
                     },
                     {
+                      required: true,
                       validator: (_, value) =>
                         value && value.trim().length > 0
                           ? Promise.resolve()
@@ -388,7 +390,16 @@ const UserProfile: React.FC<UserProfileProps> = ({
         <Form.Item
           name="roleId"
           label="I am joining as"
-          rules={[{ required: true, message: "Please select a role!" }]}
+          rules={[
+            {
+              validator: (_, value) => {
+                if (!value) {
+                  return Promise.reject(new Error("Please select a role!"));
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
         >
           <Radio.Group
             block
@@ -499,8 +510,12 @@ const UserProfile: React.FC<UserProfileProps> = ({
           label="Communication Method"
           rules={[
             {
-              required: true,
-              message: "Please select a communication method!",
+              validator: (_, value) => {
+                if (value === undefined) {
+                  return Promise.reject(new Error("Please select a communication method!"));
+                }
+                return Promise.resolve();
+              },
             },
           ]}
           initialValue={userDetail.preferredCommunicationMethod}

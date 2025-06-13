@@ -3,13 +3,12 @@
 import { useEffect, useState, useContext } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button, Tag, Spin } from "antd"
-import { ShareAltOutlined } from "@ant-design/icons/lib/icons"
 
 import { userService } from "../../../services/user/userService"
 import { getListCategories } from "../../../services/category/categoryServices"
 import { AuthContext } from "../../../contexts/AuthContext"
 
-import type { UserProfile as UserProfileType } from "../../../types/UserTypes" 
+import type { UserProfile as UserProfileType } from "../../../types/UserTypes"
 
 interface ProfileProps {
   userId?: string
@@ -19,7 +18,7 @@ const communicationMethodMap: Record<number, string> = {
   0: "Video Call",
   1: "Audio Call",
   2: "Text Chat",
-        };
+};
 
 export default function UserProfile({ userId: propUserId }: ProfileProps) {
   const [userData, setUserData] = useState<UserProfileType | null>(null)
@@ -72,7 +71,7 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
         const currentUserId = propUserId || user.id
         if (!currentUserId) {
           throw new Error("User ID not found")
-    }
+        }
 
         if (!token) {
           throw new Error("Token not found")
@@ -85,16 +84,12 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
         setLoading(false)
         navigate("/login")
       }
-  };
+    };
 
     if (availabilities.length > 0 && expertises.length > 0 && teachingApproaches.length > 0 && categories.length > 0) {
       fetchUserData();
     }
   }, [propUserId, user, isAuthenticated, token, navigate, availabilities, expertises, teachingApproaches, categories])
-
-  const handleShareProfile = () => {
-    console.log("Sharing profile...")
-  }
 
   if (loading) {
     return (
@@ -137,89 +132,80 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
   }
 
   return (
-    <div className="text-white p-6 rounded-xl max-w-3xl my-10 mx-auto shadow-lg bg-gray-800">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold">Your Profile</h1>
-          <div className="flex gap-2">
-            <Button
-              type="primary"
-              size="large"
-              icon={<ShareAltOutlined />}
-              onClick={handleShareProfile}
-              className="bg-blue-500 hover:bg-blue-600"
-            >
-              Share Profile
-            </Button>
-            <Button
-              type="primary"
-              size="large"
+    <div className="text-white p-6 rounded-xl max-w-4xl mx-auto shadow-lg bg-gray-800">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold">Your Profile</h1>
+        <div className="flex gap-2">
+          <Button
+            type="primary"
+            size="large"
             onClick={() => navigate(`/profile/edit/${userData?.id || ""}`)}
-              className="bg-orange-500 hover:bg-orange-600"
-            >
-              Edit Profile
-            </Button>
-          </div>
+            className="bg-orange-500 hover:bg-orange-600"
+          >
+            Edit Profile
+          </Button>
         </div>
+      </div>
 
-        <div className="flex items-center gap-6 mb-8">
-          <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+      <div className="flex items-center gap-6 mb-8">
+        <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
           {userData?.profilePhotoUrl ? (
-              <img
+            <img
               src={userData.profilePhotoUrl || "/placeholder.svg"}
-                alt="Profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="text-gray-400">
+              alt="Profile"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="text-gray-400">
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
-          <div>
+                <path
+                  d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+          )}
+        </div>
+        <div>
           <h2 className="text-2xl font-medium">{userData?.fullName || "Loading..."}</h2>
-            <Tag color="orange" className="mt-1">
+          <Tag color="orange" className="mt-1">
             {userData?.roleId === 3 ? "Learner" : userData?.roleId === 2 ? "Mentor" : "Unknown"}
-            </Tag>
-          </div>
+          </Tag>
         </div>
+      </div>
 
-        <div className="mb-8">
-          <h3 className="text-gray-400 mb-2">About</h3>
-          <div className="space-y-2 whitespace-pre-wrap break-words">
-            <p><strong>Phone:</strong> {userData?.phoneNumber || "No phone number provided."}</p>
-            <p><strong>Bio:</strong> {userData?.bio || "No bio provided."}</p>
-          </div>
+      <div className="mb-8">
+        <h3 className="text-gray-400 mb-2">About</h3>
+        <div className="space-y-2 whitespace-pre-wrap break-words">
+          <p><strong>Phone:</strong> {userData?.phoneNumber || "No phone number provided."}</p>
+          <p><strong>Bio:</strong> {userData?.bio || "No bio provided."}</p>
         </div>
+      </div>
 
-        <div className="mb-8">
-          <h3 className="text-gray-400 mb-2">Areas of expertise</h3>
-          <div className="flex flex-wrap gap-2">
+      <div className="mb-8">
+        <h3 className="text-gray-400 mb-2">Areas of expertise</h3>
+        <div className="flex flex-wrap gap-2">
           {userData?.expertiseIds && userData.expertiseIds.length > 0 ? (
             getExpertiseNames(userData.expertiseIds).map((item) => (
               <Tag key={item} className="bg-gray-700 text-white border-none px-4 py-1 rounded-full">
-                  {item}
-                </Tag>
-              ))
-            ) : (
-              <p>No expertise provided.</p>
-            )}
-          </div>
+                {item}
+              </Tag>
+            ))
+          ) : (
+            <p>No expertise provided.</p>
+          )}
         </div>
+      </div>
 
-        <div className="mb-8">
-          <h3 className="text-gray-400 mb-2">Professional skills</h3>
-          <p className="whitespace-pre-wrap break-words">
-            {userData?.skills || "No skills provided."}
-          </p>
-        </div>
+      <div className="mb-8">
+        <h3 className="text-gray-400 mb-2">Professional skills</h3>
+        <p className="whitespace-pre-wrap break-words">
+          {userData?.skills || "No skills provided."}
+        </p>
+      </div>
 
-        <div className="mb-8">
-          <h3 className="text-gray-400 mb-2">Industry experience</h3>
+      <div className="mb-8">
+        <h3 className="text-gray-400 mb-2">Industry experience</h3>
         <p className="whitespace-pre-wrap break-words">
           {userData?.experiences || "No experience provided."}
         </p>
@@ -273,31 +259,19 @@ export default function UserProfile({ userId: propUserId }: ProfileProps) {
       <div className="mb-8">
         <h3 className="text-gray-400 mb-2">Preferred Communication</h3>
         <p>{getCommunicationMethod(userData?.preferredCommunicationMethod)}</p>
-        </div>
+      </div>
 
-        <div className="mb-8">
+      <div className="mb-8">
         <h3 className="text-gray-400 mb-2">Learning Goal</h3>
         <p className="whitespace-pre-wrap break-words">
           {userData?.goal || "No goal provided."}
         </p>
-        </div>
+      </div>
 
-        <div className="pt-4 border-t border-gray-700">
-          <Button
-            type="link"
-            className="text-orange-500 flex items-center gap-1 pl-0"
-            onClick={() => console.log("View additional settings")}
-          >
-            View Additional Profile Settings
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.59 16.59L13.17 12L8.59 7.41L10 6L16 12L10 18L8.59 16.59Z" fill="currentColor" />
-            </svg>
-          </Button>
-        </div>
       <div className="pt-4 border-gray-700">
         <Button type="primary" size="large" onClick={() => navigate("/")} className="bg-orange-500 hover:bg-orange-600">
-            Back
-          </Button>
+          Back
+        </Button>
       </div>
     </div>
   )

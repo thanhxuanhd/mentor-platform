@@ -28,6 +28,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasDefaultValue("")
             .HasMaxLength(100);
 
+        builder.Property(u => u.Timezone)
+            .IsRequired()
+            .HasDefaultValue("Asia/Bangkok")
+            .HasMaxLength(100);
+
         builder.Property(u => u.Bio)
             .HasMaxLength(300);
 
@@ -72,6 +77,21 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithMany(r => r.Users)
             .HasForeignKey(u => u.RoleId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.HasMany(u => u.Schedules)
+            .WithOne(s => s.Mentor)
+            .HasForeignKey(s => s.MentorId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(u => u.Sessions)
+            .WithOne(b => b.Learner)
+            .HasForeignKey(b => b.LearnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasMany(u => u.Courses)
+            .WithOne(c => c.Mentor)
+            .HasForeignKey(c => c.MentorId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(u => u.MentorApplications)
             .WithOne(ma => ma.Mentor)

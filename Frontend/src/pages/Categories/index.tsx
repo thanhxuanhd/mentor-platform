@@ -26,9 +26,9 @@ import {
   getCoursesByCategoryId,
   getListCategories,
 } from "../../services/category/categoryServices";
-import DisplayCourseModal from "./components/DisplayCoursesModal";
 import { useAuth } from "../../hooks";
 import { applicationRole } from "../../constants/role";
+import DisplayCourseModal from "./components/DisplayCoursesModal";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -300,8 +300,14 @@ export default function CategoriesPage() {
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg p-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Category Management</h2>
+      {/* Header */}
+      <div className="flex justify-between items-center gap-4 mb-4">
+        <div>
+          <h1 className="text-2xl font-semibold">Category Management</h1>
+          <p className="text-slate-300 text-sm">
+            Manage the courses categories
+          </p>
+        </div>
         {user?.role === applicationRole.ADMIN && (
           <Button
             type="primary"
@@ -343,11 +349,11 @@ export default function CategoriesPage() {
             ? { id: "", name: "", description: "", status: true }
             : selectedCategory
               ? {
-                  id: selectedCategory.id,
-                  name: selectedCategory.name.trimEnd().trimStart(),
-                  description: selectedCategory.description?.trimEnd() || "",
-                  status: selectedCategory.status,
-                }
+                id: selectedCategory.id,
+                name: selectedCategory.name.trimEnd().trimStart(),
+                description: selectedCategory.description?.trimEnd() || "",
+                status: selectedCategory.status,
+              }
               : { id: "", name: "", description: "", status: false }
         }
         onCancel={handleModalCancel}

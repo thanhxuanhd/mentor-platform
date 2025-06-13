@@ -161,7 +161,7 @@ public class MentorApplicationService(IUserRepository userRepository,
             );
         }
 
-        application.ReviewedAt = DateTime.Now;
+        application.ReviewedAt = DateTime.UtcNow;
         application.AdminId = adminId;
         application.Status = ApplicationStatus.WaitingInfo;
         application.Note = request.Note;
@@ -213,7 +213,7 @@ public class MentorApplicationService(IUserRepository userRepository,
 
         application.Status = request.Status;
         application.Note = request.Note;
-        application.ReviewedAt = DateTime.Now;
+        application.ReviewedAt = DateTime.UtcNow;
         application.AdminId = adminId;
 
         mentorApplicationRepository.Update(application);
@@ -281,7 +281,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 return Result.Failure<bool>($"Duplicate files detected in request: {string.Join(", ", duplicateFiles)}", HttpStatusCode.BadRequest);
             }
 
-            foreach (var doc in application.ApplicationDocuments.Where(d => d.DocumentType != FileType.ExternalWebAddress).ToList())
+            foreach (var doc in application.ApplicationDocuments)
             {
                 var oldFilePath = Path.Combine(env.WebRootPath, doc.DocumentUrl.TrimStart('/'));
                 if (File.Exists(oldFilePath))
@@ -325,7 +325,9 @@ public class MentorApplicationService(IUserRepository userRepository,
         var emailSent = await emailService.SendEmailAsync(application.Admin.Email, subject, body);
 
         if (!emailSent)
+        {
             return Result.Failure<bool>("Failed to send notification email.", HttpStatusCode.InternalServerError);
+        }
 
         return Result.Success(true, HttpStatusCode.OK);
     }
@@ -349,7 +351,7 @@ public class MentorApplicationService(IUserRepository userRepository,
         var mentorApplication = new MentorApplication
         {
             MentorId = userId,
-            SubmittedAt = DateTime.Now,
+            SubmittedAt = DateTime.UtcNow,
         };
         submission.ToMentorApplication(mentorApplication);
 
@@ -373,7 +375,7 @@ public class MentorApplicationService(IUserRepository userRepository,
                 }
 
                 var fileContentType = file.ContentType;
-                if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+                if (!FileConstants.FILE_CONTENT_TYPES.Contains(fileContentType))
                 {
                     return Result.Failure<bool>("File content type is not allowed.", HttpStatusCode.BadRequest);
                 }

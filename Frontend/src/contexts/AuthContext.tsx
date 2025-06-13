@@ -9,21 +9,15 @@ import React, {
 import type { ReactNode } from "react";
 import { mentorApplicationService } from "../services/mentorAppplications/mentorApplicationService";
 import { applicationRole } from "../constants/role";
-
-interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  role: string;
-}
+import type { UserContext } from "../types/UserTypes";
 
 export interface AuthContextProps {
-  user: User | null;
+  user: UserContext | null;
   isAuthenticated: boolean;
   setIsAuthenticated: (value: boolean) => void;
   isMentorApproved: boolean;
   setIsMentorApproved: (value: boolean) => void;
-  setUser: (value: User) => void;
+  setUser: (value: UserContext) => void;
   setToken: (value: string) => void;
   removeToken: () => void;
   loading: boolean;
@@ -32,12 +26,12 @@ export interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps>({
   user: null,
   isAuthenticated: false,
-  setIsAuthenticated: () => {},
+  setIsAuthenticated: () => { },
   isMentorApproved: false,
-  setIsMentorApproved: () => {},
-  setUser: () => {},
-  setToken: () => {},
-  removeToken: () => {},
+  setIsMentorApproved: () => { },
+  setUser: () => { },
+  setToken: () => { },
+  removeToken: () => { },
   loading: true,
 });
 
@@ -52,10 +46,11 @@ interface Token {
   email: string;
   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name": string;
   "http://schemas.microsoft.com/ws/2008/06/identity/claims/role": string;
+  timezone: string;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserContext | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isMentorApproved, setIsMentorApproved] = useState<boolean>(false);
@@ -95,16 +90,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return;
     }
 
-    const currentUser: User = {
+    const currentUser: UserContext = {
       id: decodedToken.sub,
       email: decodedToken.email,
       fullName:
         decodedToken[
-          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+        "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ],
       role: decodedToken[
         "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
       ],
+      timezone: decodedToken.timezone,
     };
 
     setUser(currentUser);
@@ -113,7 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setLoading(false);
   };
 
-  const checkMentorStatus = useCallback(async (currentUser: User) => {
+  const checkMentorStatus = useCallback(async (currentUser: UserContext) => {
     if (currentUser.role === applicationRole.MENTOR) {
       try {
         const response =

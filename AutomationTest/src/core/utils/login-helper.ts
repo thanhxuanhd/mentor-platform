@@ -22,3 +22,9 @@ export async function loginStep(page: any, user: LoginUser): Promise<LoginPage> 
 
     return loginPage;
 }
+
+export async function logout(page: any): Promise<LoginPage> {
+    const loginPage = new LoginPage(page);
+    loginPage.clickOnLogoutButton();
+    return loginPage;
+}

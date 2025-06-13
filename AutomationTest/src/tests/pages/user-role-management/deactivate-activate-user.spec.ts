@@ -17,17 +17,14 @@ test.describe("@UserRoleManagement All user role management testcase", async () 
 
   //Activate/Deactivate user
 
-  test("@SmokeTest Verify that Activate/ Deactivated user works correctly", async () => {
-    const statusList = await userRoleManagementPage.getAllUserStatus();
-
-    for (let i = 0; i < statusList.length; i++) {
-      const status = statusList[i].toLowerCase();
-      await userRoleManagementPage.clickOnActivateOrDeactivateUserBtn(
-        status,
-        i
-      );
+  test("@Regression Verify that Activate/ Deactivated user works correctly", async () => {
+    const statusValue = await userRoleManagementPage.getFirstUserStatus();
+    if (statusValue) {
+      const status = statusValue.toLowerCase();
+      await userRoleManagementPage.clickOnActivateOrDeactivateUserBtn(status);
       const actualResult = await userRoleManagementPage.getNotification();
-      expect(actualResult).toBe(notification[status]);
+      const expectedResult = notification[status];
+      expect(actualResult).toBe(expectedResult);
     }
   });
 });

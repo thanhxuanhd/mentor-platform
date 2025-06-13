@@ -154,7 +154,7 @@ export default function MessagingLayout() {
   }
 
   function handleFilteredContactChange(
-    value: string,
+    _: string,
     option?:
       | GetFilterConversationResponse
       | GetFilterConversationResponse[]

@@ -4,6 +4,8 @@ using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.AspNetCore.Hosting;
+using System.Net;
 using static System.Net.HttpStatusCode;
 
 namespace Application.Services.Courses;
@@ -11,7 +13,9 @@ namespace Application.Services.Courses;
 public class CourseService(
     ICourseRepository courseRepository,
     ITagRepository tagRepository,
-    ICategoryRepository categoryRepository) : ICourseService
+    ICategoryRepository categoryRepository,
+    IWebHostEnvironment env
+    ) : ICourseService
 {
     public async Task<Result<PaginatedList<CourseSummaryResponse>>> GetAllAsync(Guid userId, UserRole userRole,
         CourseListRequest request)
@@ -151,6 +155,27 @@ public class CourseService(
         if (course == null)
         {
             return Result.Failure<bool>("Course not found", NotFound);
+        }
+
+        var path = Directory.GetCurrentDirectory();
+
+        var resourcesPath = Path.Combine(path, env.WebRootPath, "resources", $"{id}");
+
+
+        if (course.Resources.Count > 0)
+        {
+            if (!Directory.Exists(resourcesPath))
+            {
+                return Result.Failure<bool>("Directory not found or deleted.", HttpStatusCode.NotFound);
+            }
+            try
+            {
+                Directory.Delete(resourcesPath, true);
+            }
+            catch (Exception ex)
+            {
+                return Result.Failure<bool>($"Failed to remove directory: {ex.Message}", HttpStatusCode.InternalServerError);
+            }
         }
 
         courseRepository.Delete(course);

@@ -1,18 +1,68 @@
-import { Button, Layout, Menu, Tooltip } from "antd";
-import { SettingFilled, LogoutOutlined } from "@ant-design/icons";
-
+import { App, Button, Layout, Menu } from "antd";
+import { LogoutOutlined } from "@ant-design/icons";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks";
 import { menuItems } from "../constants/navigation";
 import type { MenuItemType } from "antd/es/menu/interface";
 import { applicationRole } from "../constants/role";
+import UserProfileDropdown from "./ProfileCard";
+import { useCallback, useEffect, useState } from "react";
+import type { UserDetail } from "../types/UserTypes";
+import { userService } from "../services/user/userService";
+import type { NotificationProps } from "../types/Notification";
+import Loading from "./Loading";
+import { useUser } from "../hooks/useUser";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const MainLayout = () => {
+  const [loading, setLoading] = useState<boolean>()
   const navigate = useNavigate();
   const location = useLocation();
+  const [userDetails, setUserDetails] = useState<UserDetail | undefined>()
   const { user, removeToken, isMentorApproved } = useAuth();
+  const [notify, setNotify] = useState<NotificationProps | null>(null);
+  const { notification } = App.useApp();
+  const { isProfileUpdated, setProfileUpdated } = useUser();
+
+  useEffect(() => {
+    if (notify) {
+      notification[notify.type]({
+        message: notify.message,
+        description: notify.description,
+        placement: "topRight",
+        showProgress: true,
+        duration: 3,
+        pauseOnHover: true,
+      });
+      setNotify(null);
+    }
+  }, [notify, notification]);
+
+  const fetchUserDetails = useCallback(async () => {
+    try {
+      setLoading(true);
+      if (user?.id) {
+        const response = await userService.getUserDetail(user.id);
+        setUserDetails(response);
+        setProfileUpdated(false); // Reset the flag after successful fetch
+      }
+    } catch (error: any) {
+      setNotify({
+        type: "error",
+        message: "Failed to load user details",
+        description: error?.response?.data?.error || "Error loading user details",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, setProfileUpdated]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserDetails();
+    }
+  }, [user, isProfileUpdated, fetchUserDetails]);
 
   const roleMenuItems: MenuItemType[] = menuItems
     .filter((item) => item.role.includes(user?.role || "unauthorized"))
@@ -38,6 +88,10 @@ const MainLayout = () => {
       ? ["dashboard"]
       : [location.pathname.substring(1)];
 
+  if (loading) {
+    return <Loading />
+  }
+
   return (
     <Layout>
       <Sider
@@ -61,10 +115,6 @@ const MainLayout = () => {
         </div>
 
         <div className="flex justify-evenly border-t border-gray-700 py-4">
-          <Tooltip title="Settings">
-            <Button icon={<SettingFilled />} />
-          </Tooltip>
-
           <Button
             title="Logout"
             icon={<LogoutOutlined />}
@@ -79,7 +129,13 @@ const MainLayout = () => {
       </Sider>
 
       <Layout>
-        <Header className="border-b border-gray-700 top-0"></Header>
+        <Header className="flex justify-end border-b border-gray-700 top-0">
+          {user &&
+            <div className="flex items-center gap-3">
+              <UserProfileDropdown user={user} userDetail={userDetails} />
+            </div>
+          }
+        </Header>
 
         <Content className="flex-1 overflow-y-auto p-6 bg-gray-900">
           <Outlet />

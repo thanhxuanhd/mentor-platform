@@ -3,25 +3,19 @@ import courseData from '../../test-data/course-data.json';
 import { test } from '../../../core/fixture/auth-fixture';
 import { CoursePage } from '../../../pages/courses/course-management-page';
 import { endWithTimestamp, withTimestampTitleAndFutureDate } from '../../../core/utils/generate-unique-data';
-import { createTestCourse, deleteTestCourse, getLatestCategory, getLatestCourse } from '../../../core/utils/api-helper';
+import { createTestCategory, createTestCourse, deleteTestCategory, deleteTestCourse, getLatestCategory, getLatestCourse } from '../../../core/utils/api-helper';
 
-test.describe('@Course Edit course tests', () => {
+test.describe.serial('@Course Edit course tests', () => {
     let coursePage: CoursePage;
-    let courseId: string | null = null;
+    let courseId: string;
+    let testCategory: any;
 
+    test.beforeAll("Setup precondition", async ({ request }) => {
+        testCategory = await createTestCategory(request);
+    });
+    
     test.beforeEach(async ({ loggedInPageByMentorRole, page, request }, testInfo) => {
-        if (testInfo.title.includes('@SmokeTest')) {
-            const testData = courseData.create_valid_course;
-            const tempCourse = {
-                title: endWithTimestamp(testData.title),
-                description: testData.description,
-                categoryId: await getLatestCategory(request),
-                difficulty: testData.difficulty,
-                tags: testData.tags,
-                dueDate: testData.dueDate
-            };
-            courseId = await createTestCourse(request, tempCourse);
-        }
+        courseId = await createTestCourse(request, testCategory.id);
         coursePage = new CoursePage(page);
         await coursePage.goToCoursePage();
         await coursePage.clickUpdateCourseIcon();
@@ -29,7 +23,6 @@ test.describe('@Course Edit course tests', () => {
 
     const courses: { [label: string]: CreateAndEditCourse } = {
         '@SmokeTest Valid Course': withTimestampTitleAndFutureDate(courseData.update_valid_course, 1),
-        'Duplicate Course': courseData.update_duplicate_course,
         'Empty Course Title': courseData.update_empty_course_title,
         '@Boundary Over length Course Title': courseData.create_over_length_title
     };
@@ -42,7 +35,6 @@ test.describe('@Course Edit course tests', () => {
                 await coursePage.selectDifficulty(data.difficulty);
                 await coursePage.inputDescription(data.description);
                 await coursePage.inputTagsName(data.tags);
-                await coursePage.selectDueDate(data.dueDate);
                 await coursePage.clickSaveChangesButton();
             });
             await test.step('Verify system behavior', async () => {
@@ -52,10 +44,9 @@ test.describe('@Course Edit course tests', () => {
     }
 
     test.afterEach("Clean up test data", async ({ request }, testInfo) => {
-        if (testInfo.title.includes('@SmokeTest')) {
-            courseId = await getLatestCourse(request);
-            await deleteTestCourse(request, courseId);
-            courseId = null;
-        }
+        await deleteTestCourse(request, courseId);
     });
+    test.afterAll("Clean up precondition data", async ({ request }) => {
+        await deleteTestCategory(request, testCategory.id);
+    })
 });

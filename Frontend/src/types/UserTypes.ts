@@ -2,6 +2,14 @@ import type { CommunicationMethod } from "./enums/CommunicationMethod";
 import type { LearningStyle } from "./enums/LearningStyle";
 import type { SessionFrequency } from "./enums/SessionFrequency";
 
+export interface UserContext {
+  id: string;
+  fullName: string;
+  email: string;
+  role: string;
+  timezone: string;
+}
+
 export interface GetUserResponse {
   id: string;
   fullName: string;
@@ -80,6 +88,8 @@ export interface UserDetail {
   skills: string;
   experiences: string;
   goal: string;
+  joinedDate: string;
+  lastActive: string;
   preferredCommunicationMethod: CommunicationMethod;
   preferredSessionFrequency: SessionFrequency;
   preferredSessionDuration: number;

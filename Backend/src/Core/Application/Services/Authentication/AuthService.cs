@@ -30,6 +30,10 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             return Result.Failure<AuthResponse>("Invalid password", HttpStatusCode.Unauthorized);
         }
 
+        user.LastActive = DateOnly.FromDateTime(DateTime.UtcNow);
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+
         var signInResponse = ToAuthResponse(user);
 
         return Result.Success(signInResponse, HttpStatusCode.OK);
@@ -51,7 +55,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
             Email = request.Email,
             PasswordHash = passwordHash,
             RoleId = request.RoleId,
-            JoinedDate = DateOnly.FromDateTime(DateTime.Now)
+            JoinedDate = DateOnly.FromDateTime(DateTime.UtcNow)
         };
 
         await userRepository.AddAsync(newUser);
@@ -111,6 +115,7 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
 
     private async Task<AuthResponse> LoginOrRegisterAsync(string email)
     {
+        var now = DateTime.UtcNow;
         var user = await userRepository.GetUserByEmail(email);
         if (user == null)
         {
@@ -120,12 +125,17 @@ public class AuthService(IUserRepository userRepository, IJwtService jwtService,
                 PhoneNumber = "",
                 Email = email,
                 RoleId = (int)UserRole.Learner,
-                JoinedDate = DateOnly.FromDateTime(DateTime.Now)
+                JoinedDate = DateOnly.FromDateTime(now),
             };
             await userRepository.AddAsync(user);
             await userRepository.SaveChangesAsync();
         }
+
         user = await userRepository.GetUserByEmail(email);
+        user!.LastActive = DateOnly.FromDateTime(now);
+
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
 
         return ToAuthResponse(user!);
     }

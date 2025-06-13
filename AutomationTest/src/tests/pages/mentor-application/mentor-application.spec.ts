@@ -21,13 +21,14 @@ test.describe
     statusTrackingPage = new MentorApplicationStatusTrackingPage(page);
     mentorApplicationReview = new MentorApplicationReview(page);
     loginPage = new LoginPage(page);
-    await requestCreateNewApplication(request);
+    const status = await requestCreateNewApplication(request);
+    expect(status).toBe(200);
     await test.step("Navigate to applications page", async () => {
       await mentorApplicationReview.navigateToApplicationsPage();
     });
   });
 
-  test("@SmokeTest verify Edit button is enable when Application status = Waiting Info + Admin requests info from Mentor", async ({
+  test("Verify Edit button is enable when Application status = Waiting Info + Admin requests info from Mentor", async ({
     page,
   }) => {
     //Admin requests info from Mentor
@@ -54,7 +55,7 @@ test.describe
     });
   });
 
-  test("@SmokeTest Admin rejects application when Application status = Waiting Info", async ({
+  test("Admin rejects application when Application status = Waiting Info", async ({
     page,
   }) => {
     //Admin rejects mentor application
@@ -78,7 +79,7 @@ test.describe
     });
   });
 
-  test("@SmokeTest verify Add button is enable when Application status = Rejected", async ({
+  test("Verify Add button is enable when Application status = Rejected", async ({
     page,
   }) => {
     //Admin rejects mentor application
@@ -103,7 +104,7 @@ test.describe
     });
   });
 
-  test("@SmokeTest Admin rejects application", async () => {
+  test("Admin rejects application", async () => {
     await test.step("Reject mentor application", async () => {
       await mentorApplicationReview.clickOnMentorApplicationAdmin(
         mentorUser.mentor_name
@@ -115,7 +116,7 @@ test.describe
     });
   });
 
-  test("@SmokeTest Admin approves application", async () => {
+  test("Admin approves application", async () => {
     await test.step("Approve mentor application", async () => {
       await mentorApplicationReview.clickOnMentorApplicationAdmin(
         mentorUser.mentor_name

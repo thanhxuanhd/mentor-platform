@@ -4,8 +4,11 @@ import {
   AppstoreOutlined,
   BookOutlined,
   ProfileOutlined,
+  SettingOutlined,
   ScheduleOutlined,
+  FolderOpenOutlined,
   HddOutlined,
+  TeamOutlined,
   MessageOutlined,
 } from "@ant-design/icons";
 import { applicationRole } from "./role";
@@ -24,7 +27,7 @@ export const menuItems: MenuItemProps[] = [
     key: "dashboard",
     icon: <BarChartOutlined />,
     label: "Dashboard",
-    link: "dashboard",
+    link: "",
     role: [
       applicationRole.ADMIN,
       applicationRole.LEARNER,
@@ -57,8 +60,8 @@ export const menuItems: MenuItemProps[] = [
     link: "categories",
     role: [
       applicationRole.ADMIN,
-      applicationRole.LEARNER,
       applicationRole.MENTOR,
+      applicationRole.LEARNER,
     ],
     isMentorApprovedRequired: true,
   },
@@ -67,6 +70,18 @@ export const menuItems: MenuItemProps[] = [
     icon: <BookOutlined />,
     label: "Courses",
     link: "courses",
+    role: [
+      applicationRole.LEARNER,
+      applicationRole.ADMIN,
+      applicationRole.MENTOR,
+    ],
+    isMentorApprovedRequired: true,
+  },
+  {
+    key: "resources",
+    icon: <FolderOpenOutlined />,
+    label: "Resources",
+    link: "resources",
     role: [
       applicationRole.LEARNER,
       applicationRole.ADMIN,
@@ -100,6 +115,21 @@ export const menuItems: MenuItemProps[] = [
     icon: <ScheduleOutlined />,
     label: "Availability",
     link: "availability",
+    role: [applicationRole.MENTOR],
+    isMentorApprovedRequired: true,
+  },
+  {
+    key: "sessions",
+    icon: <TeamOutlined />,
+    label: "Sessions",
+    link: "sessions",
+    role: [applicationRole.LEARNER],
+  },
+  {
+    key: "sessions-tracking",
+    icon: <SettingOutlined />,
+    label: "Sessions Tracking",
+    link: "sessions-tracking",
     role: [applicationRole.MENTOR],
     isMentorApprovedRequired: true,
   },

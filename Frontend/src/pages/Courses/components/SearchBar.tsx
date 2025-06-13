@@ -49,38 +49,25 @@ export const SearchBar: FC<SearchBarProps> = ({
     });
   };
 
-  const fetchCategories = async (searchKeyword: string) => {
-    setLoadingCategories(true);
-    try {
-      const response = await categoryService.list({
-        keyword: searchKeyword,
-        status: undefined,
-      });
-      setFilteredCategories(response.items);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      setFilteredCategories([]);
-    } finally {
-      setLoadingCategories(false);
-    }
-  };
-
-  const fetchMentors = async (searchKeyword: string) => {
-    setLoadingMentors(true);
-    try {
-      const response = await mentorService.list({
-        fullName: searchKeyword,
-      });
-      setFilteredMentors(response.items);
-    } catch (error) {
-      console.error("Error fetching mentors:", error);
-      setFilteredMentors([]);
-    } finally {
-      setLoadingMentors(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchCategories = async (searchKeyword: string) => {
+      setLoadingCategories(true);
+      try {
+        const response = await categoryService.getActive()
+        const filteredCategories = searchKeyword
+          ? response.filter((category: { name: string }) =>
+            category.name.toLowerCase().includes(searchKeyword.toLowerCase()),
+          )
+          : response;
+        setFilteredCategories(filteredCategories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setFilteredCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
     if (categoryKeyword !== "") {
       const timer = setTimeout(() => {
         fetchCategories(categoryKeyword);
@@ -92,6 +79,21 @@ export const SearchBar: FC<SearchBarProps> = ({
   }, [categoryKeyword, categories]);
 
   useEffect(() => {
+    const fetchMentors = async (searchKeyword: string) => {
+      setLoadingMentors(true);
+      try {
+        const response = await mentorService.list({
+          fullName: searchKeyword,
+        });
+        setFilteredMentors(response.items);
+      } catch (error) {
+        console.error("Error fetching mentors:", error);
+        setFilteredMentors([]);
+      } finally {
+        setLoadingMentors(false);
+      }
+    };
+
     if (mentorKeyword !== "") {
       const timer = setTimeout(() => {
         fetchMentors(mentorKeyword);
@@ -236,9 +238,7 @@ export const SearchBar: FC<SearchBarProps> = ({
             }
           />
         </div>
-      )}
-
-      <div>
+      )}      <div>
         <label htmlFor="status" className="block text-sm font-medium mb-1">
           Status
         </label>
@@ -248,12 +248,13 @@ export const SearchBar: FC<SearchBarProps> = ({
           onChange={handleStatusChange}
           placeholder="Select Status"
           allowClear
-          className={commonInputClassName}
-          options={Object.entries(states).map(([key, stateValue]) => ({
-            key: key,
-            value: stateValue,
-            label: stateValue,
-          }))}
+          className={commonInputClassName}          options={Object.entries(states)
+            .map(([key, stateValue]) => ({
+              key: key,
+              value: stateValue,
+              label: stateValue,
+              disabled: user?.role === applicationRole.LEARNER && stateValue.toLowerCase().includes('draft'),
+            }))}
         />
       </div>
     </div>

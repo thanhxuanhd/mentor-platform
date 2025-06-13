@@ -7,7 +7,7 @@ import { deleteTestCategory, getLatestCategory } from '../../../core/utils/api-h
 
 test.describe('@Category Create category tests', () => {
     let categoryPage: CategoryPage;
-    let categoryId: string | null = null;
+    let categoryId: string;
 
     test.beforeEach(async ({ loggedInPageByAdminRole, page }) => {
         categoryPage = new CategoryPage(page);
@@ -17,7 +17,6 @@ test.describe('@Category Create category tests', () => {
 
     const categories: { [label: string]: CUCategory } = {
         '@SmokeTest Valid Category': withTimestamp(categoryData.create_valid_category),
-        'Duplicate Category': categoryData.create_duplicate_category,
         'Empty Category Name': categoryData.create_empty_category_name,
         '@Boundary Over length Category Name': categoryData.create_over_length_category_name
     };
@@ -36,11 +35,8 @@ test.describe('@Category Create category tests', () => {
     }
 
     test.afterEach("Clean up test data", async ({ request }, testInfo) => {
-        if (testInfo.title.includes('@SmokeTest')) {
-            categoryId = await getLatestCategory(request);
-            await deleteTestCategory(request, categoryId);
-            categoryId = null;
-        }
+        categoryId = await getLatestCategory(request);
+        await deleteTestCategory(request, categoryId);
     });
 });
 

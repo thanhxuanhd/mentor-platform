@@ -30,7 +30,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
         }
         else
         {
-            var today = DateTime.Now;
+            var today = DateTime.UtcNow;
             int daysToSubtract = (int)today.DayOfWeek;
             weekStartDate = DateOnly.FromDateTime(today.AddDays(-daysToSubtract));
         }
@@ -61,7 +61,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
             BufferTime = scheduleSettings.BufferTime,
         };
 
-        var defaultTimeSlot = GetAllDefaultTimeSlots(scheduleSettings);
+        var defaultTimeSlot = GetAllDefaultTimeSlots(scheduleSettings, mentor.Timezone);
         var existingTimeSlots = ConvertToDictionary(scheduleSettings);
         var allTimeSlots = ReplaceDefaultWithExistingTimeSlots(defaultTimeSlot, existingTimeSlots);
 
@@ -141,7 +141,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         var existingActiveSessions = mentorAvailableTimeSlotRepository.GetConfirmedTimeSlots(scheduleSettings.Id);
         StringBuilder stringBuilder = new();
-        
+
         foreach (var timeSlot in request.AvailableTimeSlots)
         {
             DateOnly date = timeSlot.Key;
@@ -199,50 +199,69 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     /// </summary>
     /// <param name="scheduleSettings">The schedule settings containing start/end dates, times, session duration, and buffer time.</param>
     /// <returns>A dictionary where the key is the date and the value is a list of default <see cref="TimeSlotResponse"/> objects for that date.</returns>
-    public Dictionary<DateOnly, List<TimeSlotResponse>> GetAllDefaultTimeSlots(Schedules scheduleSettings)
+    public Dictionary<DateOnly, List<TimeSlotResponse>> GetAllDefaultTimeSlots(Schedules scheduleSettings, string userTimezone)
     {
         Dictionary<DateOnly, List<TimeSlotResponse>> allTimeSlots = new();
-        
-        // Get current date and time
-        DateTime now = DateTime.Now;
+
+        // Create TimeZoneInfo from user's timezone
+        TimeZoneInfo userTimeZoneInfo;
+        try
+        {
+            userTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(userTimezone);
+        }
+        catch
+        {
+            // Fallback to UTC if timezone is invalid
+            userTimeZoneInfo = TimeZoneInfo.Utc;
+        }
+
+        // Get current date and time in UTC
+        DateTime utcNow = DateTime.UtcNow;
 
         int dayCount = scheduleSettings.WeekEndDate.DayNumber - scheduleSettings.WeekStartDate.DayNumber + 1;
 
         for (int dayIndex = 0; dayIndex < dayCount; dayIndex++)
         {
-            List<TimeSlotResponse> dailyTimeSlots = new();
-            var currentDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
-            var slotDateTime = currentDate.ToDateTime(scheduleSettings.StartHour);
-            DateTime endDateTime;
+            var currentLocalDate = scheduleSettings.WeekStartDate.AddDays(dayIndex);
 
-            endDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
-                ? currentDate.AddDays(1).ToDateTime(scheduleSettings.EndHour)
-                : currentDate.ToDateTime(scheduleSettings.EndHour);
+            var localStartDateTime = currentLocalDate.ToDateTime(scheduleSettings.StartHour);
 
-            while (slotDateTime.AddMinutes(scheduleSettings.SessionDuration) <= endDateTime)
+            var localEndDateTime = scheduleSettings.EndHour <= scheduleSettings.StartHour
+                ? currentLocalDate.AddDays(1).ToDateTime(scheduleSettings.EndHour)
+                : currentLocalDate.ToDateTime(scheduleSettings.EndHour);
+
+            var localSlotDateTime = localStartDateTime;
+
+            while (localSlotDateTime.AddMinutes(scheduleSettings.SessionDuration) <= localEndDateTime)
             {
-                var sessionEndDateTime = slotDateTime.AddMinutes(scheduleSettings.SessionDuration);
-                
-                // only add time slots that start in the future (current not included)
-                if (slotDateTime > now)
+                var localEndSlotTime = localSlotDateTime.AddMinutes(scheduleSettings.SessionDuration);
+
+                var utcSlotDateTime = TimeZoneInfo.ConvertTimeToUtc(localSlotDateTime, userTimeZoneInfo);
+                var utcEndSlotTime = TimeZoneInfo.ConvertTimeToUtc(localEndSlotTime, userTimeZoneInfo);
+
+                if (utcSlotDateTime > utcNow)
                 {
                     var timeSlot = new TimeSlotResponse
                     {
                         Id = Guid.NewGuid(),
-                        StartTime = TimeOnly.FromDateTime(slotDateTime).ToString("HH:mm"),
-                        EndTime = TimeOnly.FromDateTime(sessionEndDateTime).ToString("HH:mm"),
+                        StartTime = TimeOnly.FromDateTime(utcSlotDateTime).ToString("HH:mm"),
+                        EndTime = TimeOnly.FromDateTime(utcEndSlotTime).ToString("HH:mm"),
                         IsAvailable = false,
                         IsBooked = false
                     };
 
-                    dailyTimeSlots.Add(timeSlot);
+                    var utcDate = DateOnly.FromDateTime(utcSlotDateTime);
+
+                    if (!allTimeSlots.ContainsKey(utcDate))
+                    {
+                        allTimeSlots[utcDate] = new List<TimeSlotResponse>();
+                    }
+
+                    allTimeSlots[utcDate].Add(timeSlot);
                 }
 
-                slotDateTime = slotDateTime.AddMinutes(scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
+                localSlotDateTime = localSlotDateTime.AddMinutes(scheduleSettings.SessionDuration + scheduleSettings.BufferTime);
             }
-
-            // Add the date with its time slots (even if empty) to the dictionary
-            allTimeSlots.Add(currentDate, dailyTimeSlots);
         }
 
         return allTimeSlots;
@@ -266,7 +285,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
 
         // Group the available time slots by date
         var groupedByDate = scheduleSettings.AvailableTimeSlots.GroupBy(ts => ts.Date);
-        var now = DateTime.Now;
+        var now = DateTime.UtcNow;
 
         foreach (var group in groupedByDate)
         {
@@ -351,7 +370,7 @@ public class ScheduleService(IScheduleRepository scheduleRepository, IUserReposi
     // kvp stands for KeyValuePair<DateOnly, List<TimeSlotResponse>> if anyone is wondering.
     public bool IsLocked(Dictionary<DateOnly, List<TimeSlotResponse>> availableTimeSlots)
     {
-        DateTime now = DateTime.Now;
+        DateTime now = DateTime.UtcNow;
         DateOnly today = DateOnly.FromDateTime(now);
         TimeOnly currentTime = TimeOnly.FromDateTime(now);
 

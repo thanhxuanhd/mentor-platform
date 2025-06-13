@@ -16,7 +16,11 @@ using System.Net;
 
 namespace Application.Services.Users;
 
-public class UserService(IUserRepository userRepository, IEmailService emailService, IWebHostEnvironment env, ILogger<UserService> logger) : IUserService
+public class UserService(
+    IUserRepository userRepository,
+    IEmailService emailService,
+    IWebHostEnvironment env,
+    ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<GetUserResponse>> GetUserByEmailAsync(string email)
     {
@@ -69,7 +73,8 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             LastActive = u.LastActive
         });
 
-        PaginatedList<GetUserResponse> paginatedUsers = await userRepository.ToPaginatedListAsync(usersResponse, request.PageSize, request.PageIndex);
+        PaginatedList<GetUserResponse> paginatedUsers =
+            await userRepository.ToPaginatedListAsync(usersResponse, request.PageSize, request.PageIndex);
 
         return Result.Success(paginatedUsers, HttpStatusCode.OK);
     }
@@ -95,6 +100,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         {
             user.RoleId = (int)roleEnum;
         }
+
         user.FullName = request.FullName;
         user.Email = request.Email;
 
@@ -127,21 +133,25 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         {
             return Result.Failure($"User with ID {userId} not found.", HttpStatusCode.NotFound);
         }
+
         if (request.AvailabilityIds is not null &&
             !await userRepository.CheckEntityListExist<Availability, Guid>(request.AvailabilityIds))
         {
             return Result.Failure("Invalid Availability IDs", HttpStatusCode.BadRequest);
         }
+
         if (request.ExpertiseIds is not null &&
             !await userRepository.CheckEntityListExist<Expertise, Guid>(request.ExpertiseIds))
         {
             return Result.Failure("Invalid Expertise IDs", HttpStatusCode.BadRequest);
         }
+
         if (request.TeachingApproachIds is not null &&
             !await userRepository.CheckEntityListExist<TeachingApproach, Guid>(request.TeachingApproachIds))
         {
             return Result.Failure("Invalid Teaching Approach IDs", HttpStatusCode.BadRequest);
         }
+
         if (request.CategoryIds is not null &&
             !await userRepository.CheckEntityListExist<Category, Guid>(request.CategoryIds))
         {
@@ -155,6 +165,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
                 .Select(id => new UserAvailability { UserId = user.Id, AvailabilityId = id })
                 .ToList();
         }
+
         if (request.ExpertiseIds != null)
         {
             user.UserExpertises.Clear();
@@ -162,6 +173,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
                 .Select(id => new UserExpertise { UserId = user.Id, ExpertiseId = id })
                 .ToList();
         }
+
         if (request.CategoryIds != null)
         {
             user.UserCategories.Clear();
@@ -169,6 +181,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
                 .Select(id => new UserCategory { UserId = user.Id, CategoryId = id })
                 .ToList();
         }
+
         if (request.TeachingApproachIds != null)
         {
             user.UserTeachingApproaches.Clear();
@@ -192,6 +205,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         {
             return Result.Failure<GetUserResponse>("User not found", HttpStatusCode.NotFound);
         }
+
         var newPassword = GenerateRandomPassword(10);
         var newHashedPassword = PasswordHelper.HashPassword(newPassword);
         user.PasswordHash = newHashedPassword;
@@ -260,11 +274,12 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         }
 
         var path = Directory.GetCurrentDirectory();
-        logger.LogInformation($"RootPath: {env.WebRootPath}");
+
         if (!Directory.Exists(Path.Combine(path, env.WebRootPath)))
         {
             Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
         }
+
         var imagesPath = Path.Combine(path, env.WebRootPath, "images");
 
         if (!Directory.Exists(imagesPath))
@@ -277,8 +292,8 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             var userIdStr = userId.ToString();
 
             var existingFile = Directory.GetFiles(imagesPath)
-            .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f)
-                            .Split("_")[0].Equals(userIdStr, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(f => Path.GetFileNameWithoutExtension(f)
+                    .Split("_")[0].Equals(userIdStr, StringComparison.OrdinalIgnoreCase));
 
             if (existingFile != null)
             {
@@ -293,7 +308,8 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
             using var stream = new FileStream(filePath, FileMode.Create);
 
-            await file.CopyToAsync(stream); var baseUrl = $"{request?.Scheme}://{request?.Host}";
+            await file.CopyToAsync(stream);
+            var baseUrl = $"{request?.Scheme}://{request?.Host}";
 
             var fileUrl = $"{baseUrl}/images/{fileName}";
 
@@ -312,7 +328,8 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<bool>("Image URL is required.", HttpStatusCode.BadRequest);
         }
 
-        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        if (!Uri.TryCreate(imageUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
             return Result.Failure<bool>("Invalid image URL format.", HttpStatusCode.BadRequest);
         }
@@ -355,7 +372,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
 
         var fileContentType = file.ContentType;
 
-        if (!FileConstants.DOCUMENT_CONTENT_TYPES.Contains(fileContentType))
+        if (!FileConstants.FILE_CONTENT_TYPES.Contains(fileContentType))
         {
             return Result.Failure<string>("File content type is not allowed.", HttpStatusCode.BadRequest);
         }
@@ -373,6 +390,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         {
             Directory.CreateDirectory(Path.Combine(path, env.WebRootPath));
         }
+
         var documentsPath = Path.Combine(path, env.WebRootPath, "documents", $"{userId}");
 
         if (!Directory.Exists(documentsPath))
@@ -403,6 +421,7 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<string>($"Failed to save file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
     }
+
     public async Task<Result<bool>> RemoveDocumentAsync(Guid userId, string documentUrl)
     {
         var user = await userRepository.GetByIdAsync(userId);
@@ -416,7 +435,8 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
             return Result.Failure<bool>("Document URL is required.", HttpStatusCode.BadRequest);
         }
 
-        if (!Uri.TryCreate(documentUrl, UriKind.Absolute, out var uri) || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+        if (!Uri.TryCreate(documentUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
         {
             return Result.Failure<bool>("Invalid document URL format.", HttpStatusCode.BadRequest);
         }
@@ -451,5 +471,27 @@ public class UserService(IUserRepository userRepository, IEmailService emailServ
         {
             return Result.Failure<bool>($"Failed to remove file: {ex.Message}", HttpStatusCode.InternalServerError);
         }
+    }
+
+    public async Task<Result<List<GetUserResponse>>> GetAllMentorAsync()
+    {
+        var users = userRepository.GetAll();
+
+        users = users.Where(user => user.RoleId == (int)UserRole.Mentor);
+
+        var usersResponse = users.Select(u => new GetUserResponse()
+        {
+            Id = u.Id,
+            FullName = u.FullName,
+            Email = u.Email,
+            Role = u.Role.Name.ToString(),
+            Status = u.Status.ToString(),
+            JoinedDate = u.JoinedDate,
+            LastActive = u.LastActive
+        });
+
+        List<GetUserResponse> userResponses = await userRepository.ToListAsync(usersResponse);
+
+        return Result.Success(userResponses, HttpStatusCode.OK);
     }
 }
