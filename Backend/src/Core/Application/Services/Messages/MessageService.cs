@@ -4,7 +4,6 @@ using Contract.Repositories;
 using Contract.Shared;
 using Domain.Entities;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using System.Net;
 
 namespace Application.Services.Messages;
@@ -79,7 +78,10 @@ public class MessageService(
         await messageRepository.AddAsync(message);
         await messageRepository.SaveChangesAsync();
 
-        conversation = await conversationRepository.GetAllInclude().FirstOrDefaultAsync(c => c.Id == targetConversation);
+
+        var conversationQuery = conversationRepository.GetAllInclude();
+        var conversationList = await conversationRepository.ToListAsync(conversationQuery);
+        conversation = conversationList.FirstOrDefault(c => c.Id == targetConversation);
         message = await messageRepository.GetByIdAsync(message.Id, m => m.Sender);
 
         var response = new GetMinimalConversationResponse
