@@ -250,7 +250,7 @@
 
         public const string SUBJECT_SESSION_RESCHEDULED = "Your Mentoring Session Has Been Rescheduled";
 
-        public static string BodySessionRescheduledEmail(Guid id, DateOnly date, TimeOnly startTime, TimeOnly endTime, string? reason) => $@"
+        public static string BodySessionRescheduledEmail(Guid id, string mentorName, DateOnly date, TimeOnly startTime, TimeOnly endTime, string? reason) => $@"
 <!DOCTYPE html>
 <html lang=""en"">
 <head>
@@ -262,29 +262,31 @@
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            line-height: 1.6;
+            background-color: #f4f4f4;
         }}
         .container {{
             max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
+            margin: 30px auto;
+            background-color: #ffffff;
             border-radius: 10px;
-            background-color: #f9f9f9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 30px;
         }}
         h1 {{
-            font-size: 24px;
+            color: #000;
             text-align: center;
-            color: #3366cc;
+            font-size: 22px;
         }}
         p {{
-            margin-bottom: 20px;
-            color: #555;
+            color: #000;
+            margin: 15px 0;
+            line-height: 1.6;
         }}
         .footer {{
-            margin-top: 20px;
+            margin-top: 30px;
             text-align: center;
-            color: #999;
+            font-size: 12px;
+            color: #888;
         }}
         .btn-container {{
             text-align: center;
@@ -292,38 +294,31 @@
         }}
         .btn {{
             display: inline-block;
-            padding: 10px 20px;
-            margin: 5px;
-            font-size: 16px;
+            padding: 8px 16px;
+            margin: 5px 10px;
+            font-size: 14px;
             text-decoration: none;
             border-radius: 5px;
-        }}
-        .accept {{
-            background-color: #28a745;
-            color: white;
-        }}
-        .cancel {{
-            background-color: #dc3545;
-            color: white;
+            border: 1px solid #000;
+            color: #000;
         }}
     </style>
 </head>
 <body>
     <div class=""container"">
         <h1>Session Rescheduled</h1>
-        <p>Hello,</p>
-        <p>Your mentoring session (Request ID: <strong>{id}</strong>) has been successfully rescheduled.</p>
-        <p><strong>New Schedule:</strong> {date:MMM dd, yyyy}, from {startTime} to {endTime}</p>
+        <p><strong>Sender:</strong> MentorConnect Project</p>
+        <p>Your mentoring session has been <strong>rescheduled</strong>.</p>
+        <p><strong>Mentor:</strong> {mentorName}</p>
+        <p><strong>New Time:</strong> {date:dd/MM/yyyy}, {startTime} - {endTime}</p>
         {(string.IsNullOrWhiteSpace(reason) ? "" : $"<p><strong>Reason:</strong> {reason}</p>")}
 
         <div class=""btn-container"">
-            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn accept"">Accept</a>
-            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn cancel"">Cancel</a>
+            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn"">Cancel</a>
+            <a href=""https://localhost:5000/api/SessionBooking/{id}"" class=""btn"">Accept</a>
         </div>
 
-        <p>If you have any questions or concerns, feel free to contact our support team.</p>
-        <p>Thank you,</p>
-        <p>The Mentoring Team</p>
+        <p>If you have any questions, feel free to contact our team.</p>
         <div class=""footer"">
             <p>This is an automated message. Please do not reply.</p>
         </div>
