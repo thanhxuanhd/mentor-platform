@@ -34,22 +34,46 @@ test.describe("@Edit profile test", () => {
         await editUserProfile.clickOnEditProfileButton();
       });
 
-      await test.step("Input details data in all fields", async () => {
+      await test.step("Fill in fullname field", async () => {
         await editUserProfile.fillInFullnameField(data.fullname);
+      });
+      
+      await test.step("Fill in phone number field", async () => {
         await editUserProfile.fillInPhoneField(data.phoneNumber);
+      });
+      
+      await test.step("Fill in bio field", async () => {
         await editUserProfile.fillInBioField(data.bio!);
+      });
+      
+      await test.step("Select expertise", async () => {
         await editUserProfile.selectExpertise(data.expertise!);
+      });
+      
+      await test.step("Fill in professional skills field", async () => {
         await editUserProfile.fillProfessionalSkillsField(data.skills!);
+      });
+      
+      await test.step("Fill in experience field", async () => {
         await editUserProfile.fillExperienceField(data.experience!);
+      });
+      
+      await test.step("Select availability options", async () => {
         await editUserProfile.unselectAvailabilityOptions();
         await editUserProfile.selectAvailabilityOptions(data.availbility);
-        await editUserProfile.selectTeaching(data.teaching!);
-        await editUserProfile.selectCategory(data.category!);
-        await editUserProfile.selectCommunicationMethod(
-          data.communication_method!
-        );
-        await editUserProfile.fillObjectiveField(data.objective!);
       });
+      
+      await test.step("Select teaching", async () => {
+        await editUserProfile.selectTeaching(data.teaching!);
+      });
+      
+      await test.step("Select communication method", async () => {
+        await editUserProfile.selectCommunicationMethod(data.communication_method!);
+      });
+      
+      await test.step("Fill in objective field", async () => {
+        await editUserProfile.fillObjectiveField(data.objective!);
+      });      
 
       await test.step("Click on Save change button", async () => {
         await editUserProfile.clickOnSaveChangeButton();
