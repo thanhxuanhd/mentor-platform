@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Card, Avatar, List, App } from "antd"
 import { CalendarOutlined } from "@ant-design/icons"
@@ -177,9 +175,6 @@ export default function LearnerDashboard() {
           <div>
             <h1 className="text-2xl font-semibold">Learner Dashboard</h1>
             <p className="text-slate-300 text-sm">Track your learning journey and connect with mentors</p>
-            {userTimezone && (
-              <p className="text-slate-400 text-xs mt-1">All times shown in your timezone: {userTimezone}</p>
-            )}
           </div>
         </div>
       </div>

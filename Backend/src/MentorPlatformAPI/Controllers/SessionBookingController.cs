@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace MentorPlatformAPI.Controllers;
 
 [Authorize]
-//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class SessionBookingController(
@@ -125,7 +124,7 @@ public class SessionBookingController(
 
     [HttpGet("available-mentors/timeslots/get/{mentorId}")]
     //[Authorize(Policy = RequiredRole.Learner)]
-    public async Task<IActionResult> GetAllTimeSlotByMentor(Guid mentorId, DateOnly date)
+    public async Task<IActionResult> GetAllTimeSlotByMentor(Guid mentorId, DateTime date)
         {
         var result = await sessionBookingService.GetAllTimeSlotByMentorAsync(mentorId, date);
         return StatusCode((int)result.StatusCode, result);

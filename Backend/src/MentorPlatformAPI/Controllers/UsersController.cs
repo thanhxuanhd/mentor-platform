@@ -129,4 +129,12 @@ public class UsersController(IUserService userService) : ControllerBase
         var result = await userService.GetAllMentorAsync();
         return StatusCode((int)result.StatusCode, result);
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("admin")]
+    public async Task<IActionResult> CreateAdminUser([FromBody]CreateAdminRequest request)
+    {
+        var result = await userService.CreateAdminAsync(request);
+        return StatusCode((int)result.StatusCode, result);
+    }
 }

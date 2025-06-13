@@ -31,7 +31,7 @@ export const sessionBookingService = {
       throw error;
     }
   },
-  
+
   getSessionDetails: async (sessionId: string): Promise<SessionBookingRequest> => {
     try {
       const response = await axiosClient.get(`SessionBooking/request/get/${sessionId}`);
@@ -54,9 +54,8 @@ export const sessionBookingService = {
   },
 
   getAvailableTimeslotsByDate: async (mentorId: string, date?: string): Promise<TimeSlot[]> => {
-    const formattedDate = date?.split("T")[0];
-    const url = formattedDate
-      ? `SessionBooking/available-mentors/timeslots/get/${mentorId}?date=${formattedDate}`
+    const url = date
+      ? `SessionBooking/available-mentors/timeslots/get/${mentorId}?date=${date}`
       : `SessionBooking/available-mentors/timeslots/get/${mentorId}`;
 
     try {
@@ -79,7 +78,7 @@ export const sessionBookingService = {
         id: slot.id || "",
         startTime: slot.startTime || "00:00",
         endTime: slot.endTime || "00:00",
-        date: typeof slot.date === "string" ? slot.date.split("T")[0] : formattedDate || "",
+        date: typeof slot.date === "string" ? slot.date.split("T")[0] : date || "",
         mentorId: slot.mentorId || mentorId,
         mentorName: slot.mentorName || "",
         isBooked: slot.isBooked || false,

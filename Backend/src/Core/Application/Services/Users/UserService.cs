@@ -494,4 +494,28 @@ public class UserService(
 
         return Result.Success(userResponses, HttpStatusCode.OK);
     }
+    
+    public async Task<Result> CreateAdminAsync(CreateAdminRequest request)
+    {
+        var newAdmin = new User
+        {
+            Id = Guid.NewGuid(),
+            FullName = request.FullName,
+            Email = request.Email,
+            PasswordHash = PasswordHelper.HashPassword(request.Password),
+            RoleId = (int)UserRole.Admin,
+            Status = UserStatus.Active,
+            JoinedDate = DateOnly.FromDateTime(DateTime.UtcNow),
+            LastActive = DateOnly.FromDateTime(DateTime.UtcNow)
+        };
+
+        if (await userRepository.ExistByEmailExcludeAsync(newAdmin.Id, request.Email))
+        {
+            return Result.Failure("Email already exists.", HttpStatusCode.Conflict);
+        }
+
+        await userRepository.AddAsync(newAdmin);
+        await userRepository.SaveChangesAsync();
+        return Result.Success("Admin created successfully.", HttpStatusCode.Created);
+    }
 }
