@@ -117,7 +117,7 @@ export default function MessagingSession({
           sentAt,
         };
         refreshConversations();
-
+        scrollToBottom();
         console.log(messageSkip + 1);
         if (!conversationDetails && contactId) {
           setConversationDetails({
